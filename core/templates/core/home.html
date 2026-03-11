@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>הדרייב הסטודנטיאלי</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 40px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-item {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn-item:hover { background-color: #2980b9; }
+
+        /* עיצוב לתיבת החיפוש */
+        .search-container { margin-bottom: 20px; background: #ebf5fb; padding: 15px; border-radius: 8px; }
+        .search-form { display: flex; gap: 10px; }
+        .search-input { flex: 1; padding: 10px; border: 1px solid #3498db; border-radius: 5px; }
+        .search-btn { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div style="text-align: left; padding: 10px; background: #ecf0f1;">
+        {% if user.is_authenticated %}
+            שלום, <strong>{{ user.username }}</strong> |
+            <a href="{% url 'profile' %}" style="color: #2ecc71; text-decoration: none; font-weight: bold;">הפרופיל שלי 👤</a> |
+            <a href="{% url 'account_logout' %}" style="color: #e74c3c; text-decoration: none;">התנתק</a>
+        {% else %}
+            <a href="{% url 'account_login' %}" style="color: #2ecc71; text-decoration: none; font-weight: bold;">התחברות</a> |
+            <a href="{% url 'account_signup' %}" style="color: #3498db; text-decoration: none;">הרשמה חדשה</a>
+        {% endif %}
+    </div>
+
+    <h1>הדרייב הסטודנטיאלי 🎓</h1>
+
+    <div class="container search-container">
+        <form method="GET" action="{% url 'home' %}" class="search-form">
+            <input type="text" name="search" class="search-input" placeholder="חפש קורס (למשל: אינפי, חשמל...)" value="{{ search_query|default:'' }}">
+            <button type="submit" class="search-btn">חפש 🔍</button>
+        </form>
+    </div>
+
+    <div class="container">
+        {% if step == 'select_uni' %}
+            <h2>בחר אוניברסיטה:</h2>
+            {% for uni in universities %}
+                <a href="?university={{ uni.id }}" class="btn-item">{{ uni.name }}</a>
+            {% empty %}
+                <p>לא נמצאו אוניברסיטאות. הוסף אחת בפאנל הניהול.</p>
+            {% endfor %}
+
+        {% elif step == 'select_major' %}
+            <h2>בחר מקצוע לימוד:</h2>
+            {% for major in majors %}
+                <a href="?university={{ uni_id }}&major={{ major.id }}" class="btn-item">{{ major.name }}</a>
+            {% endfor %}
+            <br>
+            <a href="{% url 'home' %}" style="color: #7f8c8d;">חזרה לבחירת מוסד</a>
+
+        {% elif step == 'select_year' %}
+            <h2>בחר שנת לימוד:</h2>
+            {% for y in years %}
+                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y }}" class="btn-item">שנה {{ y }}</a>
+            {% endfor %}
+            <br>
+            <a href="?university={{ uni_id }}" style="color: #7f8c8d;">חזרה לבחירת מקצוע</a>
+
+        {% elif step == 'show_courses' %}
+            <h2>הקורסים שנמצאו:</h2>
+
+            {% for course in courses %}
+                <a href="{% url 'course_detail' course.id %}" class="btn-item" style="background-color: #2ecc71;">
+                    {{ course.name }} ({{ course.course_number }})
+                </a>
+            {% empty %}
+                <p>לא נמצאו קורסים לשנה זו או לחיפוש זה.</p>
+            {% endfor %}
+
+            <br>
+            <a href="{% url 'home' %}" style="color: #3498db;">חזרה להתחלה</a>
+        {% endif %}
+    </div>
+
+    <footer style="margin-top: 40px; padding-bottom: 20px; font-size: 0.8em; color: #95a5a6;">
+        <hr style="border: 0; border-top: 1px solid #eee; width: 600px; margin

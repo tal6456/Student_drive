@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ course.name }} - הדרייב הסטודנטיאלי</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; margin: 40px; text-align: center; }
+        .container { max-width: 750px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+        h1 { color: #2c3e50; margin-bottom: 5px; }
+        .course-info { color: #7f8c8d; margin-bottom: 25px; }
+
+        /* עיצוב רשימת הקבצים */
+        .documents-list { text-align: right; margin-top: 20px; }
+        .doc-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        .doc-item:hover { background-color: #fafafa; }
+        .doc-main { display: flex; align-items: center; gap: 12px; }
+        .doc-title { font-weight: bold; color: #2c3e50; text-decoration: none; }
+        .doc-category { font-size: 0.85em; color: #95a5a6; background: #f8f9fa; padding: 2px 8px; border-radius: 4px; }
+
+        /* עיצוב לטופס ההעלאה - מופיע רק למחוברים */
+        .upload-section { background: #ebf5fb; padding: 20px; border: 2px dashed #3498db; margin: 25px 0; border-radius: 8px; text-align: right; }
+        .upload-section h4 { margin-top: 0; color: #2980b9; }
+        .upload-btn { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+        .upload-btn:hover { background: #2980b9; }
+
+        /* הודעת פיתוי להרשמה */
+        .promo-box { background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 30px; border: 1px solid #ffeeba; }
+        .btn-register { background-color: #3498db; color: white; padding: 10px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-top: 10px; }
+
+        .btn-back { color: #3498db; text-decoration: none; display: inline-block; margin-top: 25px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>{{ course.name }}</h1>
+        <p class="course-info">מספר קורס: {{ course.course_number }}</p>
+
+        {% if user.is_authenticated %}
+            <div class="upload-section">
+                <h4><i class="fas fa-cloud-upload-alt"></i> העלאת קובץ חדש לדרייב:</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="upload-btn">העלה קובץ עכשיו</button>
+                </form>
+                <p style="font-size: 0.8em; color: #7f8c8d; margin-top: 10px;">* שים לב: האחריות על זכויות היוצרים היא עליך בלבד.</p>
+            </div>
+        {% endif %}
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+        <div class="documents-list">
+            <h3>קבצים וחומרי לימוד קיימים:</h3>
+            {% for doc in documents %}
+                <div class="doc-item">
+                    <div class="doc-main">
+                        {% if doc.category == 'summary' %}<i class="fas fa-file-alt" style="color: #3498db;"></i>
+                        {% elif doc.category == 'exam' %}<i class="fas fa-graduation-cap" style="color: #e67e22;"></i>
+                        {% elif doc.category == 'hw' %}<i class="fas fa-book" style="color: #2ecc71;"></i>
+                        {% else %}<i class="fas fa-file" style="color: #95a5a6;"></i>{% endif %}
+
+                        <div>
+                            <span class="doc-title">{{ doc.title }}</span>
+                            <span class="doc-category">{{ doc.get_category_display }}</span>
+                            <br>
+                            <span style="font-size: 0.8em; color: #7f8c8d;">
+                                📅 {{ doc.upload_date|date:"d/m/Y" }} |
+                                👤 ע"י:
+                                {% if doc.is_anonymous %}
+                                    סטודנט אנונימי 👻
+                                {% else %}
+                                    {% if doc.uploaded_by %}{{ doc.uploaded_by.username }}{% else %}מערכת{% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'download_file' doc.id %}" target="_blank" style="color: #2ecc71; text-decoration: none; font-weight: bold;">
+                            צפה/הורד <i class="fas fa-download"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register' %}" style="color: #e74c3c; text-decoration: none; font-size: 0.9em; font-weight: bold;">
+                            <i class="fas fa-lock"></i> הירשם להורדה
+                        </a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p style="text-align: center; color: #95a5a6;">אין עדיין קבצים לקורס זה. היה הראשון להעלות!</p>
+            {% endfor %}
+        </div>
+
+        {% if not user.is_authenticated %}
+            <div class="promo-box">
+                <p>רוצה גישה לכל המבחנים, הסיכומים ועבודות הבית? 🔓</p>
+                <p><strong>הצטרף לקהילה שלנו כדי לקבל גישה מלאה!</strong></p>
+                <a href="{% url 'register' %}" class="btn-register">להרשמה מהירה בחינם</a>
+            </div>
+        {% endif %}
+
+        <a href="{% url 'home' %}?university={{ uni_id }}&major={{ major_id }}&year={{ year }}" class="btn-back">
+            <i class="fas fa-arrow-right"></i> חזרה לרשימת הקורסים
+        </a>
+    </div>
+
+</body>
+</html>

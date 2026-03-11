@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>התנתקות - הדרייב הסטודנטיאלי</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .auth-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+
+        .icon-box { font-size: 3em; color: #e74c3c; margin-bottom: 20px; }
+        h1 { color: #2c3e50; margin-bottom: 15px; font-size: 1.6em; }
+        p { color: #7f8c8d; margin-bottom: 30px; font-size: 1.1em; line-height: 1.5; }
+
+        .btn-logout { background-color: #e74c3c; color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: background 0.2s; margin-bottom: 15px; }
+        .btn-logout:hover { background-color: #c0392b; }
+
+        .btn-cancel { display: block; background-color: #f8f9fa; color: #34495e; border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-weight: bold; text-decoration: none; transition: background 0.2s; }
+        .btn-cancel:hover { background-color: #e9ecef; }
+
+        .footer-note { margin-top: 25px; font-size: 0.9em; color: #bdc3c7; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="icon-box">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+
+        <h1>מתנתקים כבר?</h1>
+        <p>האם אתה בטוח שברצונך להתנתק מהחשבון שלך בדרייב הסטודנטיאלי?</p>
+
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+            {% endif %}
+
+            <button type="submit" class="btn-logout">כן, התנתק עכשיו</button>
+            <a href="{% url 'home' %}" class="btn-cancel">לא, החזר אותי לדף הבית</a>
+        </form>
+
+        <div class="footer-note">
+            נתראה בפעם הבאה! 👋
+        </div>
+    </div>
+
+</body>
+</html>

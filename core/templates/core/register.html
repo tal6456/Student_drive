@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>הרשמה לדרייב</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 40px; display: flex; justify-content: center; }
+        .register-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 20px;}
+
+        p { text-align: right; }
+        input[type="text"], input[type="password"], input[type="email"] {
+            width: 95%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px;
+        }
+
+        /* עיצוב מד עוצמת סיסמה */
+        .strength-meter { height: 6px; width: 95%; background-color: #eee; border-radius: 3px; margin: 10px 0; overflow: hidden; display: none; }
+        .strength-bar { height: 100%; width: 0%; transition: all 0.3s; }
+
+        .show-pass-container { display: flex; align-items: center; font-size: 0.85em; color: #555; margin-bottom: 15px; margin-top: -5px; }
+        input[type="checkbox"] { margin-left: 8px; cursor: pointer; }
+
+        button { background-color: #3498db; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; cursor: pointer; font-size: 1.1em; margin-top: 15px;}
+        button:hover { background-color: #2980b9; }
+
+        .terms-link { font-size: 0.85em; color: #7f8c8d; margin-top: 15px; display: block; text-align: center; }
+        .helptext { font-size: 0.8em; color: #7f8c8d; display: block; margin-bottom: 10px;}
+        ul { color: #e74c3c; font-size: 0.85em; padding-right: 20px; text-align: right;}
+    </style>
+</head>
+<body>
+
+    <div class="register-box">
+        <h1>הרשמה לדרייב הסטודנטיאלי 🎓</h1>
+        <form method="POST" id="regForm">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <p>
+                    {{ field.label_tag }}<br>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <span class="helptext">{{ field.help_text|safe }}</span>
+                    {% endif %}
+
+                    {% if field.name == "password1" %}
+                        <div id="meter-container" class="strength-meter">
+                            <div id="strength-bar" class="strength-bar"></div>
+                        </div>
+                        <div id="strength-text" style="font-size: 0.8em; text-align: right; margin-top: -5px; margin-bottom: 10px;"></div>
+
+                        <div class="show-pass-container">
+                            <input type="checkbox" onchange="toggleSingle(this, 'id_password1')"> הצג סיסמה
+                        </div>
+                    {% endif %}
+
+                    {% if field.name == "password2" %}
+                        <div class="show-pass-container">
+                            <input type="checkbox" onchange="toggleSingle(this, 'id_password2')"> הצג סיסמה לאימות
+                        </div>
+                    {% endif %}
+                </p>
+            {% endfor %}
+
+            <button type="submit">הירשם עכשיו</button>
+
+            <span class="terms-link">
+                לעיון ב- <a href="{% url 'terms' %}" target="_blank">תנאי השימוש ומדיניות הפרטיות</a> המלאים
+            </span>
+        </form>
+    </div>
+
+    <script>
+        // פונקציה להצגת סיסמה ספציפית
+        function toggleSingle(cb, targetId) {
+            const input = document.getElementById(targetId);
+            if (input) {
+                input.type = cb.checked ? "text" : "password";
+            }
+        }
+
+        // לוגיקת מד עוצמה
+        const pass1 = document.getElementById("id_password1");
+        const bar = document.getElementById("strength-bar");
+        const text = document.getElementById("strength-text");
+        const container = document.getElementById("meter-container");
+
+        if (pass1) {
+            pass1.addEventListener("input", function() {
+                const val = pass1.value;
+                if (val.length > 0) {
+                    container.style.display = "block";
+                } else {
+                    container.style.display = "none";
+                    text.innerText = "";
+                    return;
+                }
+
+                let score = 0;
+                if (val.length > 7) score += 25;
+                if (/[a-z]/.test(val) && /[A-Z]/.test(val)) score += 25;
+                if (/\d/.test(val)) score += 25;
+                if (/[^A-Za-z0-9]/.test(val)) score += 25;
+
+                bar.style.width = score + "%";
+
+                if (score <= 25) {
+                    bar.style.backgroundColor = "#e74c3c";
+                    text.innerText = "חלשה"; text.style.color = "#e74c3c";
+                } else if (score <= 50) {
+                    bar.style.backgroundColor = "#e67e22";
+                    text.innerText = "בינונית"; text.style.color = "#e67e22";
+                } else if (score <= 75) {
+                    bar.style.backgroundColor = "#f1c40f";
+                    text.innerText = "טובה"; text.style.color = "#f1c40f";
+                } else {
+                    bar.style.backgroundColor = "#2ecc71";
+                    text.innerText = "חזקה מאוד!"; text.style.color = "#2ecc71";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

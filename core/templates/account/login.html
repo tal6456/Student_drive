@@ -1,0 +1,30 @@
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>התחברות - הדרייב הסטודנטיאלי</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .auth-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 30px; }
+        .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; background: white; color: #757575; border: 1px solid #ddd; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 20px; }
+        .auth-form input { width: 90%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-submit { background: #3498db; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h1>ברוך שובך 🎓</h1>
+        <a href="{% provider_login_url 'google' %}" class="btn-google">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> התחברות מהירה עם גוגל
+        </a>
+        <form class="auth-form" method="post" action="{% url 'account_login' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-submit">התחבר</button>
+        </form>
+        <p style="margin-top:20px;">עוד לא רשום? <a href="{% url 'account_signup' %}" style="color:#3498db;">צור חשבון</a></p>
+    </div>
+</body>
+</html>
