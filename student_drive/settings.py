@@ -157,4 +157,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ACCOUNT_LOGOUT_ON_GET = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 #hey kozo
-#nfosnfn
+#nfosnfnסחעה'חVDJHVWHDJJKHDWJQDJHDJHEWJNDWEJHCD J
