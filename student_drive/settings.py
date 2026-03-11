@@ -156,5 +156,3 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # התנתקות מיד בלחיצה ללא צורך באישור בדף נוסף
 ACCOUNT_LOGOUT_ON_GET = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
-#hey kozo
-#nfosnfnסחעה'חVDJHVWHDJJKHDWJQDJHDJHEWJNDWEJHCD J
