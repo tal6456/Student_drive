@@ -37,4 +37,4 @@ def run_import():
         print(f"עודכן/נוצר: {course.name}")
 
 if __name__ == '__main__':
-    run_import()
+    run_import
