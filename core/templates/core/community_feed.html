@@ -1,0 +1,189 @@
+{% extends "core/social_base.html" %}
+{% load static %}
+
+{% block title %}פיד הקהילה - {{ university.name }}{% endblock %}
+
+{% block social_content %}
+<div class="card border-0 shadow-sm rounded-4 mb-4 animate__animated animate__fadeInDown">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+            <h6 class="fw-bold mb-0">מה חדש בקהילה, {{ user.username }}?</h6>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="post-form">
+            {% csrf_token %}
+            <input type="hidden" name="post_type" id="post_type" value="normal">
+
+            <textarea name="content" class="form-control border-0 bg-light rounded-4 p-3 mb-3" rows="3" placeholder="שתף משהו עם הסטודנטים ב{{ university.name }}..." required style="resize: none;"></textarea>
+
+            <div id="extra-fields" class="mb-3">
+                <div id="market-fields" class="row g-2 d-none">
+                    <div class="col-md-6">
+                        <select name="category" class="form-select rounded-pill">
+                            <option value="other">בחר קטגוריה...</option>
+                            <option value="rent">דיור/שותפים</option>
+                            <option value="sell">מכירת ציוד</option>
+                            <option value="giveaway">למסירה בחינם</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" name="price" class="form-control rounded-pill" placeholder="מחיר (₪) - אופציונלי">
+                    </div>
+                </div>
+
+                <div id="video-fields" class="d-none">
+                    <input type="file" name="video_file" class="form-control rounded-pill" accept="video/*">
+                    <div class="form-text mt-1">העלה סרטון של הרצאה או הסבר קצר</div>
+                </div>
+
+                <div id="image-fields">
+                    <input type="file" name="image" class="form-control rounded-pill" accept="image/*">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <div class="d-flex gap-2">
+                    <button type="button" onclick="setPostType('normal')" class="btn btn-sm btn-outline-primary rounded-pill px-3 active-type" id="btn-normal">
+                        <i class="fas fa-pen me-1"></i> פוסט
+                    </button>
+                    <button type="button" onclick="setPostType('market')" class="btn btn-sm btn-outline-success rounded-pill px-3" id="btn-market">
+                        <i class="fas fa-shopping-bag me-1"></i> מודעה
+                    </button>
+{#                    <button type="button" onclick="setPostType('video')" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="btn-video">#}
+{#                        <i class="fas fa-video me-1"></i> סרטון#}
+{#                    </button>#}
+                </div>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">פרסם</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="feed-container">
+    {% for post in posts %}
+        <div class="card border-0 shadow-sm rounded-4 mb-4 post-card animate__animated animate__fadeInUp">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="{% url 'public_profile' post.user.username %}" class="text-decoration-none">
+                            {% if post.user.profile.profile_picture %}
+                                <img src="{{ post.user.profile.profile_picture.url }}" class="rounded-circle shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div>
+                            <a href="{% url 'public_profile' post.user.username %}" class="fw-bold text-dark text-decoration-none mb-0 d-block">{{ post.user.username }}</a>
+                            <span class="text-muted small">{{ post.created_at|timesince }}</span>
+                        </div>
+                    </div>
+
+                    {% if post.marketplacepost %}
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">לוח מודעות: {{ post.marketplacepost.get_category_display }}</span>
+                    {% elif post.videopost %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">סרטון</span>
+                    {% endif %}
+                </div>
+
+                <p class="fs-5 mb-3">{{ post.content }}</p>
+
+                {% if post.marketplacepost and post.marketplacepost.price %}
+                    <div class="alert alert-success border-0 rounded-4 d-flex justify-content-between align-items-center py-2 mb-3">
+                        <span class="fw-bold">מחיר מבוקש:</span>
+                        <span class="fs-4 fw-bolder">₪{{ post.marketplacepost.price }}</span>
+                    </div>
+                {% endif %}
+
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="img-fluid rounded-4 mb-3 border w-100 shadow-sm" style="max-height: 400px; object-fit: cover;">
+                {% endif %}
+
+                {% if post.videopost %}
+                    <div class="ratio ratio-16x9 mb-3 shadow-sm rounded-4 overflow-hidden border">
+                        <video controls>
+                            <source src="{{ post.videopost.video_file.url }}" type="video/mp4">
+                            הדפדפן שלך לא תומך בסרטונים.
+                        </video>
+                    </div>
+                {% endif %}
+
+                <div class="d-flex gap-4 border-top pt-3 mt-2">
+                    <button class="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2 {% if user in post.likes.all %}text-primary fw-bold{% else %}text-muted{% endif %}" onclick="likePost({{ post.id }}, this)">
+                        <i class="fa{% if user in post.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i>
+                        <span class="like-count">{{ post.likes.count }}</span>
+                    </button>
+                    <button class="btn btn-link text-muted text-decoration-none p-0 d-flex align-items-center gap-2">
+                        <i class="far fa-comment"></i>
+                        <span>{{ post.comments.count }} תגובות</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-comment-slash fa-4x text-muted mb-3 opacity-25"></i>
+            <h5 class="text-muted fw-bold">הפיד עדיין שקט...</h5>
+            <p class="text-muted">היה הראשון לפרסם משהו בקהילת {{ university.name }}!</p>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+function setPostType(type) {
+    document.getElementById('post_type').value = type;
+
+    // החלפת תצוגת שדות
+    document.getElementById('market-fields').classList.toggle('d-none', type !== 'market');
+    document.getElementById('video-fields').classList.toggle('d-none', type !== 'video');
+    document.getElementById('image-fields').classList.toggle('d-none', type === 'video'); // סרטון לא צריך תמונה
+
+    // עדכון כפתורים
+    ['normal', 'market', 'video'].forEach(t => {
+        document.getElementById('btn-' + t).classList.toggle('active-type', t === type);
+    });
+}
+
+function likePost(postId, btn) {
+    fetch(`/post/${postId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const countSpan = btn.querySelector('.like-count');
+        const icon = btn.querySelector('i');
+        countSpan.innerText = data.total_likes;
+
+        if (data.liked) {
+            btn.classList.add('text-primary', 'fw-bold');
+            btn.classList.remove('text-muted');
+            icon.className = 'fas fa-thumbs-up';
+        } else {
+            btn.classList.remove('text-primary', 'fw-bold');
+            btn.classList.add('text-muted');
+            icon.className = 'far fa-thumbs-up';
+        }
+    });
+}
+</script>
+
+<style>
+    .active-type { background-color: var(--bs-primary) !important; color: white !important; }
+    #btn-market.active-type { background-color: var(--bs-success) !important; }
+    #btn-video.active-type { background-color: var(--bs-danger) !important; }
+    .post-card { transition: all 0.2s; border: 1px solid rgba(0,0,0,0.05) !important; }
+    .post-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
+</style>
+{% endblock %}

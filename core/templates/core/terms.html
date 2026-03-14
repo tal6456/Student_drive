@@ -1,44 +1,63 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>תנאי שימוש ומדיניות פרטיות - הדרייב הסטודנטיאלי</title>
-    <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; padding: 20px; }
-        .terms-container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        h2 { color: #2980b9; margin-top: 25px; }
-        .highlight { background-color: #fff3cd; padding: 10px; border-right: 5px solid #ffecb5; margin: 20px 0; font-weight: bold; }
-        .footer-links { margin-top: 30px; text-align: center; }
-        .btn { background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
-    </style>
-</head>
-<body>
+{% extends "core/base.html" %}
 
-    <div class="terms-container">
-        <h1>תנאי שימוש ומדיניות פרטיות</h1>
-        <p>ברוכים הבאים ל<strong>"הדרייב הסטודנטיאלי"</strong>. השימוש באתר מותנה בהסכמתך לתנאים הבאים:</p>
+{% block title %}תנאי שימוש ופרטיות | הדרייב הסטודנטיאלי{% endblock %}
 
-        <div class="highlight">
-            חשוב: השימוש באתר הוא באחריות המשתמש בלבד. בעל האתר אינו נושא באחריות לתוכן המועלה על ידי המשתמשים.
-        </div>
+{% block content %}
+<div class="container mt-5 mb-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-5">
 
-        <h2>1. זכויות יוצרים וקניין רוחני</h2>
-        <p>המשתמש מצהיר ומתחייב כי הוא בעל הזכויות או קיבל הרשאה כדין להעלות את התכנים (סיכומים, מצגות, תרגילים וכו') לאתר. חל איסור מוחלט על העלאת חומרים המפרים זכויות יוצרים של מרצים, מוסדות אקדמיים או צדדים שלישיים.</p>
+                    <div class="text-center mb-5">
+                        <i class="fas fa-file-contract fa-4x text-primary mb-3"></i>
+                        <h1 class="fw-bold text-dark border-bottom pb-3">תנאי שימוש ומדיניות פרטיות</h1>
+                        <p class="lead text-muted mt-3">ברוכים הבאים ל<strong>"הדרייב הסטודנטיאלי"</strong>. השימוש באתר מותנה בהסכמתך לתנאים הבאים:</p>
+                    </div>
 
-        <h2>2. הגבלת אחריות (Disclaimer)</h2>
-        <p>בעל האתר משמש כפלטפורמה לאחסון תוכן בלבד ("Safe Harbor"). האחריות הבלעדית לכל נזק, תביעה או דרישה הנובעת מהעלאת תוכן מפר חלה על המשתמש המעלה. בעל האתר יסיר כל תוכן מפר מייד עם קבלת הודעה מסודרת על כך.</p>
+                    <div class="alert alert-warning border-0 shadow-sm p-4 mb-5 rounded-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x ms-3 text-warning"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1 text-dark">חשוב לדעת:</h5>
+                                <p class="mb-0">השימוש באתר הוא באחריות המשתמש בלבד. צוות האתר אינו נושא באחריות לתוכן המועלה על ידי המשתמשים.</p>
+                            </div>
+                        </div>
+                    </div>
 
-        <h2>3. פרטיות ואיסוף נתונים</h2>
-        <p>אנו אוספים נתונים אגרגטיביים (כגון מספר הורדות ופופולריות של קורסים) לצרכי ניתוח ושיפור המערכת. נתונים אלו אינם כוללים מידע אישי מזהה ואינם מועברים לצד ג'.</p>
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-copyright ms-2"></i> 1. זכויות יוצרים וקניין רוחני</h2>
+                        <p class="text-secondary fs-5">המשתמש מצהיר ומתחייב כי הוא בעל הזכויות או קיבל הרשאה כדין להעלות את התכנים (סיכומים, מצגות, תרגילים וכו') לאתר. חל איסור מוחלט על העלאת חומרים המפרים זכויות יוצרים של מרצים, מוסדות אקדמיים או צדדים שלישיים.</p>
+                    </section>
 
-        <h2>4. שימוש הוגן</h2>
-        <p>האתר נועד לצרכי למידה בלבד. אין לעשות שימוש מסחרי בתכני האתר ללא אישור בכתב.</p>
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-shield-alt ms-2"></i> 2. הגבלת אחריות (Disclaimer)</h2>
+                        <p class="text-secondary fs-5">בעל האתר משמש כפלטפורמה לאחסון תוכן בלבד ("Safe Harbor"). האחריות הבלעדית לכל נזק, תביעה או דרישה הנובעת מהעלאת תוכן מפר חלה על המשתמש המעלה. בעל האתר יסיר כל תוכן מפר מייד עם קבלת הודעה מסודרת על כך.</p>
+                    </section>
 
-        <div class="footer-links">
-            <a href="{% url 'register' %}" class="btn">חזרה להרשמה</a>
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-user-secret ms-2"></i> 3. פרטיות ואיסוף נתונים</h2>
+                        <p class="text-secondary fs-5">אנו אוספים נתונים אגרגטיביים (כגון מספר הורדות ופופולריות של קורסים) לצרכי ניתוח ושיפור המערכת. נתונים אלו עוזרים לנו להבין אילו פקולטות פעילות יותר ולשפר את חווית המשתמש. המידע אינו מועבר לצד ג'.</p>
+                    </section>
+
+                    <section class="mb-5 border-bottom pb-4">
+                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-balance-scale ms-2"></i> 4. שימוש הוגן</h2>
+                        <p class="text-secondary fs-5">האתר נועד לצרכי למידה בלבד. אין לעשות שימוש מסחרי בתכני האתר ללא אישור בכתב מבעלי האתר.</p>
+                    </section>
+
+                    <div class="text-center mt-5">
+                        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow">
+                             המשך להרשמה <i class="fas fa-arrow-left me-2"></i>
+                        </a>
+                        <br>
+                        <a href="{% url 'home' %}" class="btn btn-link text-muted mt-3 text-decoration-none small">
+                            חזרה לדף הבית
+                        </a>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
-
-</body>
-</html>
+</div>
+{% endblock %}

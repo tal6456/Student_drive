@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+
+{% block container_class %}container-fluid px-md-5{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-lg-3 d-none d-lg-block">
+        <div class="card border-0 shadow-sm rounded-4 p-3 position-sticky" style="top: 90px;">
+            <div class="list-group list-group-flush">
+                <a href="{% url 'community_feed' %}" class="list-group-item list-group-item-action border-0 rounded-3 py-3 mb-1 {% if request.resolver_match.url_name == 'community_feed' %}active-social{% endif %}">
+                    <i class="fas fa-newspaper me-2 text-primary"></i> פיד הקהילה
+                </a>
+                <a href="#" class="list-group-item list-group-item-action border-0 rounded-3 py-3 mb-1">
+                    <i class="fas fa-shopping-bag me-2 text-success"></i> לוח מודעות (דירות/ציוד)
+                </a>
+                <a href="#" class="list-group-item list-group-item-action border-0 rounded-3 py-3 mb-1">
+                    <i class="fas fa-video me-2 text-danger"></i> סרטוני הרצאות
+                </a>
+                <a href="{% url 'my_friends' %}" class="text-decoration-none d-block py-2 text-white opacity-75 hover-opacity-100 transition {% if request.resolver_match.url_name == 'my_friends' %}fw-bold opacity-100{% endif %}">
+                    <i class="fas fa-user-friends ms-2 text-info"></i> החברים שלי
+                </a>
+                <div class="border-top my-3"></div>
+                <h6 class="ps-3 mb-3 text-muted small fw-bold text-uppercase">הקבוצות שלי</h6>
+                <div class="ps-3">
+                    <p class="small mb-2"><i class="fas fa-university opacity-50 ms-1"></i> {{ user.profile.university.name }}</p>
+                    <p class="small"><i class="fas fa-graduation-cap opacity-50 ms-1"></i> {{ user.profile.major.name }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-md-8">
+        {% block social_content %}{% endblock %}
+    </div>
+
+    <div class="col-lg-3 col-md-4">
+        <div class="position-sticky" style="top: 90px;">
+            {% block social_widgets %}
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                    <div class="card-header bg-white border-0 pt-4 text-center">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-trophy text-warning ms-2"></i>מובילי הקהילה</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <p class="text-center text-muted small p-4">טוען נתונים...</p>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .active-social {
+        background-color: rgba(26, 115, 232, 0.1) !important;
+        color: var(--gd-primary) !important;
+        font-weight: bold;
+    }
+    .list-group-item-action:hover {
+        background-color: var(--gd-hover) !important;
+    }
+    .post-card {
+        transition: transform 0.2s;
+    }
+    .post-card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

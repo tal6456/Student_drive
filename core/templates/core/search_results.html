@@ -1,0 +1,134 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}תוצאות חיפוש - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container mt-4 animate__animated animate__fadeIn" dir="rtl">
+    <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center me-3 ms-3" style="width: 50px; height: 50px;">
+            <i class="fas fa-search text-primary fs-4"></i>
+        </div>
+        <div>
+            <h3 class="fw-bold mb-0" style="color: var(--gd-text);">תוצאות עבור: "<span class="text-primary">{{ query }}</span>"</h3>
+            <p class="text-muted mb-0 small">נמצאו {{ total_results }} תוצאות מכל רחבי הדרייב</p>
+        </div>
+    </div>
+
+    {% if total_results == 0 and query %}
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-4x text-muted opacity-25 mb-3"></i>
+            <h4 class="fw-bold" style="color: var(--gd-text);">לא מצאנו שום דבר שמתאים לחיפוש הזה</h4>
+            <p class="text-muted">נסה להשתמש במילים נרדפות או לבדוק שגיאות כתיב.</p>
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            {% if documents %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-file-pdf text-danger ms-2"></i> קבצים וסיכומים ({{ documents|length }})</h5>
+                </div>
+                <div class="list-group list-group-flush rounded-bottom-4">
+                    {% for doc in documents %}
+                        <a href="{% url 'download_file' doc.id %}" class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="fas fa-file-alt fs-4 text-secondary"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-0" style="color: var(--gd-text);">{{ doc.title }}</h6>
+                                    <small class="text-muted">{{ doc.course.name }} | הועלה ע"י {{ doc.uploaded_by.username }}</small>
+                                </div>
+                            </div>
+                            <i class="fas fa-download text-muted"></i>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if courses %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-graduation-cap text-success ms-2"></i> קורסים ({{ courses|length }})</h5>
+                </div>
+                <div class="list-group list-group-flush rounded-bottom-4">
+                    {% for course in courses %}
+                        <a href="{% url 'course_detail' course.id %}" class="list-group-item list-group-item-action p-3">
+                            <h6 class="fw-bold mb-1" style="color: var(--gd-text);">{{ course.name }}</h6>
+                            <small class="text-muted">{{ course.major.name }} | קורס מס' {{ course.course_number|default:"לא צוין" }}</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="col-lg-4">
+
+            {% if users %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-users text-primary ms-2"></i> סטודנטים ({{ users|length }})</h5>
+                </div>
+                <div class="list-group list-group-flush rounded-bottom-4">
+                    {% for u in users %}
+                        <a href="{% url 'public_profile' u.username %}" class="list-group-item list-group-item-action p-3 d-flex align-items-center gap-3">
+                            {% if u.profile.profile_picture %}
+                                <img src="{{ u.profile.profile_picture.url }}" class="rounded-circle object-fit-cover shadow-sm" style="width: 40px; height: 40px;">
+                            {% else %}
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h6 class="fw-bold mb-0" style="color: var(--gd-text);">{{ u.username }}</h6>
+                                <small class="text-muted">{{ u.profile.rank_name }}</small>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if lecturers %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-chalkboard-teacher text-warning ms-2"></i> מרצים ({{ lecturers|length }})</h5>
+                </div>
+                <div class="list-group list-group-flush rounded-bottom-4">
+                    {% for lecturer in lecturers %}
+                        <a href="{% url 'lecturers_index' %}" class="list-group-item list-group-item-action p-3">
+                            <h6 class="fw-bold mb-0" style="color: var(--gd-text);">{{ lecturer.name }}</h6>
+                            <small class="text-muted"><i class="fas fa-star text-warning"></i> דירוג: {{ lecturer.average_rating }}/5</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% if folders %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+                <div class="card-header bg-transparent border-bottom p-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-folder text-warning ms-2"></i> תיקיות ({{ folders|length }})</h5>
+                </div>
+                <div class="list-group list-group-flush rounded-bottom-4">
+                    {% for folder in folders %}
+                        <a href="{% url 'course_detail' folder.course.id %}" class="list-group-item list-group-item-action p-3 d-flex align-items-center gap-3">
+                            <i class="fas fa-folder fs-4" style="color: {{ folder.color|default:'#ffc107' }};"></i>
+                            <div>
+                                <h6 class="fw-bold mb-0" style="color: var(--gd-text);">{{ folder.name }}</h6>
+                                <small class="text-muted">בתוך קורס: {{ folder.course.name }}</small>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

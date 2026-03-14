@@ -1,30 +1,153 @@
+{% extends "core/base.html" %}
+{% load i18n %}
 {% load socialaccount %}
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>התחברות - הדרייב הסטודנטיאלי</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .auth-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
-        h1 { color: #2c3e50; margin-bottom: 30px; }
-        .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; background: white; color: #757575; border: 1px solid #ddd; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 20px; }
-        .auth-form input { width: 90%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; }
-        .btn-submit { background: #3498db; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div class="auth-card">
-        <h1>ברוך שובך 🎓</h1>
-        <a href="{% provider_login_url 'google' %}" class="btn-google">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> התחברות מהירה עם גוגל
-        </a>
-        <form class="auth-form" method="post" action="{% url 'account_login' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn-submit">התחבר</button>
-        </form>
-        <p style="margin-top:20px;">עוד לא רשום? <a href="{% url 'account_signup' %}" style="color:#3498db;">צור חשבון</a></p>
+
+{% block title %}התחברות - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;" dir="rtl">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--card-bg);">
+
+        <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3">
+                <i class="fas fa-graduation-cap fa-2x text-primary"></i>
+            </div>
+            <h2 class="fw-bold mb-1" style="color: var(--text-main);">ברוך שובך!</h2>
+            <p class="text-muted small">התחבר כדי לגשת לחומרי הלימוד שלך</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5 pt-2">
+
+            <div class="mb-4">
+                <a href="{% provider_login_url 'google' %}" class="btn-google-pro shadow-sm">
+                    <span class="google-icon-wrapper">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width: 20px;">
+                    </span>
+                    <span class="google-text">התחברות מהירה עם Google</span>
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
+                <span class="mx-3 text-muted small fw-bold">או באמצעות אימייל</span>
+                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
+            </div>
+
+            <form class="allauth-form" method="POST" action="{% url 'account_login' %}" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-3 border-0 shadow-sm mb-4 animate__animated animate__shakeX">
+                        {% for error in form.non_field_errors %}
+                            <div class="small fw-bold"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    {% if field.name != 'remember' %}
+                    <div class="mb-4 text-start">
+                        <label class="form-label small fw-bold text-muted mb-2 d-block text-end" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <div class="text-danger small mt-2 fw-bold animate__animated animate__fadeInRight text-end">
+                                {% for error in field.errors %}
+                                    <div class="mb-1"><i class="fas fa-exclamation-triangle me-1"></i> {{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                <div class="d-flex justify-content-between align-items-center mb-4 px-1">
+                    <div class="form-check form-switch d-flex align-items-center gap-2">
+                        {{ form.remember }}
+                        <label class="form-check-label small text-muted cursor-pointer" for="{{ form.remember.id_for_label }}">זכור אותי</label>
+                    </div>
+                    <a href="{% url 'account_reset_password' %}" class="small text-primary text-decoration-none fw-bold hover-underline">שכחת סיסמה?</a>
+                </div>
+
+                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-lg py-3 mt-2 hover-scale" type="submit" style="background-color: #1a73e8; border: none;">
+                    התחברות <i class="fas fa-sign-in-alt ms-2 small"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-2">
+                <p class="text-muted small">עדיין אין לך חשבון? <a href="{% url 'account_signup' %}" class="text-primary fw-bold text-decoration-none">הצטרף עכשיו</a></p>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<style>
+    /* כפתור גוגל */
+    .btn-google-pro {
+        display: flex;
+        align-items: center;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        color: var(--text-main);
+        text-decoration: none;
+        padding: 4px;
+        transition: all 0.2s ease;
+    }
+    .btn-google-pro:hover {
+        background-color: rgba(0,0,0,0.02);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        transform: translateY(-1px);
+    }
+    .google-icon-wrapper {
+        background: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .google-text {
+        flex-grow: 1;
+        text-align: center;
+        font-weight: 600;
+        padding-right: 12px;
+        font-size: 0.9rem;
+    }
+
+    /* עיצוב שדות קלט */
+    .allauth-form input:not([type="checkbox"]) {
+        width: 100%;
+        padding: 0.8rem 1.2rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        transition: 0.3s;
+        text-align: right;
+    }
+    .allauth-form input:focus {
+        border-color: #1a73e8;
+        background-color: var(--card-bg);
+        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+        outline: none;
+    }
+
+    /* עיצוב Checkbox/Switch */
+    .form-check-input { cursor: pointer; width: 2.5em; height: 1.25em; }
+    .cursor-pointer { cursor: pointer; }
+
+    /* אפקטים */
+    .hover-scale { transition: 0.2s; }
+    .hover-scale:hover { transform: scale(1.02); }
+    .hover-underline:hover { text-decoration: underline !important; }
+
+    [data-theme='dark'] .btn-google-pro:hover { background-color: rgba(255,255,255,0.05); }
+    [data-theme='dark'] .form-check-input { background-color: #444; border-color: #555; }
+</style>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+
+{% block branding %}
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">
+            ניהול הדרייב הסטודנטיאלי 🎓
+        </a>
+    </h1>
+{% endblock %}
+
+{% block userlinks %}
+    {% if pending_reports_count > 0 %}
+        <a href="{% url 'admin:core_report_changelist' %}?is_resolved__exact=0" 
+           style="background-color: #e74c3c; color: white; padding: 2px 10px; border-radius: 12px; font-weight: bold; margin-left: 15px; text-decoration: none; animation: pulse-red 2s infinite;">
+            🔔 {{ pending_reports_count }} דיווחים לטיפול
+        </a>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+    </style>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "core/base.html" %}
+
+{% block title %}השלמת פרטים - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="text-center mb-4 animate__animated animate__fadeInDown">
+                <div class="display-1 text-primary mb-3">🎓</div>
+                <h2 class="fw-bold">ברוך הבא לדרייב!</h2>
+                <p class="text-muted">כדי שנוכל להציג לך את החומרים שרלוונטיים בדיוק אליך, ספר לנו איפה ומה אתה לומד.</p>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeInUp">
+                <div class="card-body p-5 bg-white">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                            <div class="mb-4 text-end" id="wrapper-{{ field.name }}">
+                                <label class="form-label fw-bold text-dark">{{ field.label }}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="alert alert-light border-warning border-start border-4 rounded-3 small text-muted p-3 mb-4 text-end">
+                            <i class="fas fa-info-circle text-warning me-1"></i> המוסד או התואר שלך חסר ברשימה? <a href="{% url 'submit_feedback' %}" class="fw-bold text-decoration-none">שלח לנו הודעה</a> ונוסיף אותו מיד!
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow">
+                            שמור והתחל לחקור <i class="fas fa-arrow-left ms-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type=text], select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        transition: border-color 0.15s ease-in-out;
+    }
+    input[type=text]:focus, select:focus {
+        border-color: #0d6efd;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        background-color: #fff;
+    }
+    select:disabled { background-color: #e9ecef; cursor: not-allowed; opacity: 0.7; }
+
+    /* התאמה למצב לילה */
+    [data-theme='dark'] select { background-color: #2c2c2c !important; color: white !important; border-color: #444 !important; }
+    [data-theme='dark'] select:disabled { background-color: #1a1a1a !important; color: #666 !important; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ג'נגו נותן לשדות טופס מזהים אוטומטיים שמתחילים ב-id_
+        const uniSelect = document.getElementById('id_university');
+        const majorSelect = document.getElementById('id_major');
+
+        // פונקציה שעושה קסמים: מביאה תארים מהשרת
+        function fetchMajors(uniId, selectedMajorId = null) {
+            if (!uniId) {
+                majorSelect.innerHTML = '<option value="">--- בחרו פקולטה / מסלול ---</option>';
+                majorSelect.disabled = true;
+                return;
+            }
+
+            // מציג למשתמש שהמערכת טוענת נתונים
+            majorSelect.disabled = true;
+            majorSelect.innerHTML = '<option value="">טוען פקולטות...</option>';
+
+            fetch(`/ajax/load-majors/?university=${uniId}`)
+                .then(response => response.json())
+                .then(data => {
+                    majorSelect.innerHTML = '<option value="">--- בחרו פקולטה / מסלול ---</option>';
+                        const option = document.createElement('option');
+                        option.value = major.id;
+                        option.textContent = major.name;
+                        // אם כבר היה תואר נבחר קודם, שומר עליו מסומן
+                        if (selectedMajorId && selectedMajorId == major.id) {
+                            option.selected = true;
+                        }
+                        majorSelect.appendChild(option);
+                    });
+                    majorSelect.disabled = false; // מדליק בחזרה את שדה התארים
+                })
+                .catch(error => console.error('Error fetching majors:', error));
+        }
+
+        if (uniSelect && majorSelect) {
+            // מה קורה בעת טעינת העמוד (בדיקה אם יש כבר אוניברסיטה ותואר נבחרים)
+            const initialUni = uniSelect.value;
+            const initialMajor = majorSelect.value;
+            fetchMajors(initialUni, initialMajor);
+
+            // מה קורה כשהסטודנט משנה את האוניברסיטה
+            uniSelect.addEventListener('change', function() {
+                fetchMajors(this.value);
+            });
+        }
+    });
+</script>
+{% endblock %}

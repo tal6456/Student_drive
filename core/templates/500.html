@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+
+{% block title %}תקלה בשרת{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5 mt-5" dir="rtl">
+    <div class="display-1 fw-bold text-danger mb-2">500</div>
+    <i class="fas fa-tools fa-5x text-muted mb-4 opacity-25"></i>
+    <h2 class="fw-bold" style="color: var(--text-main);">משהו נשבר בשרת...</h2>
+    <p class="text-muted fs-5 mb-5">
+        נראה שיש עומס במזכירות של האתר. המפתחים שלנו כבר בדרך לטפל בזה.<br>
+        נסה לרענן את הדף בעוד כמה דקות.
+    </p>
+    <button onclick="location.reload()" class="btn btn-danger btn-lg rounded-pill px-5 shadow-sm fw-bold">
+        <i class="fas fa-sync me-2"></i> נסה לרענן
+    </button>
+</div>
+{% endblock %}

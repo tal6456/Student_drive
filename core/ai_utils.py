@@ -1,0 +1,56 @@
+from google import genai
+import PyPDF2
+import os
+
+# הדבק כאן את המפתח שהעתקת מקודם:
+GEMINI_API_KEY = "AIzaSyDLYw0RhhpwkNnCUv1rMjOpnnDVLmlgoaQ"
+
+# אתחול הלקוח החדש של גוגל
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+
+def extract_text_from_pdf(file_path):
+    """פונקציה שפותחת את ה-PDF ומוציאה ממנו טקסט"""
+    text = ""
+    try:
+        with open(file_path, 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            num_pages = min(5, len(reader.pages))
+            for i in range(num_pages):
+                page_text = reader.pages[i].extract_text()
+                if page_text:
+                    text += page_text + "\n"
+    except Exception as e:
+        print(f"Error reading PDF: {e}")
+    return text
+
+
+def generate_smart_summary(file_path):
+    """שולח את הטקסט ל-Gemini ומחזיר סיכום בעברית"""
+    if not os.path.exists(file_path):
+        return "שגיאה: הקובץ לא נמצא על השרת."
+
+    text = extract_text_from_pdf(file_path)
+
+    if not text.strip():
+        return "לא הצלחנו לקרוא טקסט מהקובץ. ייתכן והוא סרוק כתמונה."
+
+    prompt = f"""
+    אתה עוזר אקדמי חכם. קיבלת טקסט מתוך חומר לימודי של סטודנט.
+    עליך לכתוב סיכום קצר, ברור וממוקד בעברית בנקודות (Bullet points).
+    התמקד במושגי המפתח ובשורות התחתונות.
+
+    הטקסט לסיכום:
+    {text}
+    """
+
+    try:
+        # הקריאה החדשה והמעודכנת למודל
+        response = client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=prompt,
+        )
+        return response.text
+    except Exception as e:
+        print(f"AI Generation Error: {e}")
+        return "אופס! ה-AI נתקל בבעיה ביצירת הסיכום. נסה שוב מאוחר יותר."

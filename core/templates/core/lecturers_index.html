@@ -1,0 +1,142 @@
+{% extends "core/base.html" %}
+
+{% block title %}מאגר המרצים - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 fw-bold text-primary mb-3"><i class="fas fa-chalkboard-teacher"></i> מאגר המרצים והמתרגלים</h1>
+            <p class="lead text-muted">קרא חוות דעת, שתף את החוויה שלך, ותכנן את הסמסטר הבא בצורה חכמה!</p>
+
+            {% if user.is_authenticated %}
+                <div class="badge bg-warning text-dark fs-6 p-2 rounded-pill shadow-sm mt-2">
+                    <i class="fas fa-coins"></i> על כל דירוג מרצה תקבל 2 מטבעות דרייב!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center flex-wrap gap-2 mb-5 border-bottom pb-4">
+        <a href="{% url 'lecturers_index' %}" class="btn {% if not selected_uni %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill fw-bold px-4">
+            כל המוסדות
+        </a>
+        {% for uni in universities %}
+            <a href="?university={{ uni.id }}" class="btn {% if selected_uni.id == uni.id %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill fw-bold px-4">
+                {{ uni.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="row g-4">
+        {% for lecturer in lecturers %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 hover-effect bg-white">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <div class="d-inline-block bg-primary bg-opacity-10 text-primary rounded-circle p-3 mb-2">
+                                <i class="fas fa-user-tie fa-2x"></i>
+                            </div>
+                            <h4 class="fw-bold mb-0 text-dark">{{ lecturer.name }}</h4>
+                            <p class="text-muted small mb-0">{{ lecturer.university.name }}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            {% if lecturer.average_rating > 0 %}
+                                <div class="display-5 fw-bold text-warning mb-1">
+                                    {{ lecturer.average_rating }} <i class="fas fa-star" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div class="text-secondary small">{{ lecturer.reviews.count }} חוות דעת</div>
+                            {% else %}
+                                <div class="display-6 fw-bold text-muted mb-1 opacity-50">טרם דורג</div>
+                                <div class="text-secondary small">היה הראשון לדרג!</div>
+                            {% endif %}
+                        </div>
+
+                        <button class="btn btn-dark w-100 rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#lecturerModal{{ lecturer.id }}">
+                            צפה ודרג 📝
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="lecturerModal{{ lecturer.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+                        <div class="modal-header bg-primary text-white border-0">
+                            <h5 class="modal-title fw-bold">חוות דעת: {{ lecturer.name }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body p-0 bg-light">
+                            <div class="p-4" style="max-height: 300px; overflow-y: auto;">
+                                {% for review in lecturer.reviews.all %}
+                                    <div class="bg-white p-3 rounded-3 shadow-sm border mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="fw-bold text-dark"><i class="fas fa-user-graduate text-secondary ms-1"></i>{{ review.user.username }}</div>
+                                            <div class="text-warning fw-bold">
+                                                {{ review.rating }} <i class="fas fa-star"></i>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted mb-1">{{ review.review_text }}</p>
+                                        <div class="text-secondary small" style="font-size: 0.75rem;">📅 {{ review.created_at|date:"d/m/Y" }}</div>
+                                    </div>
+                                {% empty %}
+                                    <div class="text-center text-muted my-4">
+                                        <i class="far fa-comment-dots fa-3x mb-2 opacity-25"></i>
+                                        <p>אין עדיין חוות דעת על מרצה זה.</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="p-4 bg-white border-top">
+                                {% if user.is_authenticated %}
+                                    <h6 class="fw-bold mb-3"><i class="fas fa-pen text-primary ms-1"></i> הוסף דירוג חדש</h6>
+                                    <form action="{% url 'rate_lecturer' lecturer.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">דירוג כללי:</label>
+                                            <select name="rating" class="form-select shadow-sm" required>
+                                                <option value="" disabled selected>בחר מספר כוכבים...</option>
+                                                <option value="5">⭐⭐⭐⭐⭐ מדהים!</option>
+                                                <option value="4">⭐⭐⭐⭐ טוב מאוד</option>
+                                                <option value="3">⭐⭐⭐ בסדר</option>
+                                                <option value="2">⭐⭐ טעון שיפור</option>
+                                                <option value="1">⭐ מאכזב</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">חוות הדעת שלך:</label>
+                                            <textarea name="review_text" class="form-control shadow-sm" rows="3" placeholder="איך היו ההרצאות? המבחן היה הוגן?..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm">שלח דירוג וקבל 2 מטבעות 💰</button>
+                                    </form>
+                                {% else %}
+                                    <div class="alert alert-warning text-center m-0 border-0 rounded-3">
+                                        <i class="fas fa-lock mb-2 fa-2x opacity-50"></i>
+                                        <p class="mb-2">רק סטודנטים מחוברים יכולים לדרג.</p>
+                                        <a href="{% url 'account_login' %}" class="btn btn-sm btn-dark fw-bold px-4">התחבר עכשיו</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-users-slash fa-4x text-muted mb-3 opacity-25"></i>
+                <h3 class="text-muted fw-bold">טרם נוספו מרצים לאוניברסיטה זו.</h3>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .hover-effect { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; border-bottom: 5px solid transparent; }
+    .hover-effect:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; border-bottom: 5px solid #0d6efd; }
+    .form-control, .form-select { border-radius: 8px; border: 1px solid #dee2e6; }
+    .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+</style>
+{% endblock %}

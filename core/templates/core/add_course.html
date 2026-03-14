@@ -1,0 +1,94 @@
+{% extends "core/base.html" %}
+
+{% block title %}פתיחת קורס חדש - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="text-center mb-4">
+                <div class="display-4 text-primary mb-3"><i class="fas fa-plus-circle"></i></div>
+                <h2 class="fw-bold">פתיחת קורס חדש</h2>
+                <p class="text-muted">לא מצאת את הקורס שלך בחיפוש? הוסף אותו עכשיו למאגר ותעזור לסטודנטים אחרים! (ותקבל 5 מטבעות דרייב 🪙)</p>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5 bg-white">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                            <div class="mb-4 text-end" id="wrapper-{{ field.name }}">
+                                <label class="form-label fw-bold text-dark">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text small text-muted">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            {% if field.name == 'major' %}
+                                <div class="mb-4 text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="toggleNewMajorField()">
+                                        <i class="fas fa-magic"></i> התואר שלי לא מופיע ברשימה!
+                                    </button>
+                                </div>
+
+                                <div id="new-major-container" class="mb-4 text-end" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px dashed #0d6efd;">
+                                    <label class="form-label fw-bold text-primary">שם התואר / פקולטה חדשה:</label>
+                                    <input type="text" name="new_major_name" id="new_major_input" class="form-control border-primary" placeholder="למשל: פסיכולוגיה, הנדסת תעשייה וניהול...">
+                                    <div class="form-text small text-muted mt-1"><i class="fas fa-info-circle"></i> התואר יתווסף אוטומטית לאוניברסיטה שלך לאחר השמירה.</div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow mt-2">
+                            פתח קורס והתחל להעלות חומר <i class="fas fa-rocket ms-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* עיצוב אחיד לשדות הג'נגו */
+    input[type=text], input[type=number], select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    input[type=text]:focus, input[type=number]:focus, select:focus {
+        border-color: #0d6efd;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        background-color: #fff;
+    }
+</style>
+
+<script>
+    function toggleNewMajorField() {
+        const container = document.getElementById('new-major-container');
+        const input = document.getElementById('new_major_input');
+        const majorSelect = document.querySelector('select[name="major"]');
+
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+            majorSelect.disabled = true; // מכבה את הבחירה הרגילה כדי לא לבלבל את השרת
+            input.focus();
+        } else {
+            container.style.display = 'none';
+            majorSelect.disabled = false;
+            input.value = ''; // מאפס את הטקסט
+        }
+    }
+</script>
+{% endblock %}

@@ -1,117 +1,656 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ course.name }} - הדרייב הסטודנטיאלי</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; margin: 40px; text-align: center; }
-        .container { max-width: 750px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+{% extends "core/base.html" %}
 
-        h1 { color: #2c3e50; margin-bottom: 5px; }
-        .course-info { color: #7f8c8d; margin-bottom: 25px; }
+{% block title %}{{ course.name }} - הדרייב הסטודנטיאלי{% endblock %}
 
-        /* עיצוב רשימת הקבצים */
-        .documents-list { text-align: right; margin-top: 20px; }
-        .doc-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.2s;
-        }
-        .doc-item:hover { background-color: #fafafa; }
-        .doc-main { display: flex; align-items: center; gap: 12px; }
-        .doc-title { font-weight: bold; color: #2c3e50; text-decoration: none; }
-        .doc-category { font-size: 0.85em; color: #95a5a6; background: #f8f9fa; padding: 2px 8px; border-radius: 4px; }
+{% block content %}
+<div class="container-fluid mt-4 mb-5 px-md-5" dir="rtl">
 
-        /* עיצוב לטופס ההעלאה - מופיע רק למחוברים */
-        .upload-section { background: #ebf5fb; padding: 20px; border: 2px dashed #3498db; margin: 25px 0; border-radius: 8px; text-align: right; }
-        .upload-section h4 { margin-top: 0; color: #2980b9; }
-        .upload-btn { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
-        .upload-btn:hover { background: #2980b9; }
+    <div class="row">
+        <div class="col-12 col-md-4 col-lg-3 mb-4">
 
-        /* הודעת פיתוי להרשמה */
-        .promo-box { background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 30px; border: 1px solid #ffeeba; }
-        .btn-register { background-color: #3498db; color: white; padding: 10px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-top: 10px; }
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden position-sticky" style="top: 80px;">
+                <div class="py-4 text-center border-bottom" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                    <div class="icon-circle shadow-sm mx-auto mb-3 text-primary d-flex align-items-center justify-content-center" style="width: 65px; height: 65px; font-size: 2rem; border-radius: 50%; background-color: var(--gd-card);">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h4 class="fw-bold px-3 mb-0" style="color: var(--gd-text);">{{ course.name }}</h4>
+                </div>
 
-        .btn-back { color: #3498db; text-decoration: none; display: inline-block; margin-top: 25px; font-weight: bold; }
-    </style>
-</head>
-<body>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column gap-3 mb-4 small">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="fas fa-university text-danger mt-1 fs-6"></i>
+                            <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">{{ course.major.university.name }}</span>
+                        </div>
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="fas fa-book-reader text-success mt-1 fs-6"></i>
+                            <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">{{ course.major.name }}</span>
+                        </div>
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="far fa-calendar-alt text-warning mt-1 fs-6"></i>
+                            <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">שנת לימוד: {{ course.year }}</span>
+                        </div>
+                    </div>
 
-    <div class="container">
-        <h1>{{ course.name }}</h1>
-        <p class="course-info">מספר קורס: {{ course.course_number }}</p>
-
-        {% if user.is_authenticated %}
-            <div class="upload-section">
-                <h4><i class="fas fa-cloud-upload-alt"></i> העלאת קובץ חדש לדרייב:</h4>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="upload-btn">העלה קובץ עכשיו</button>
-                </form>
-                <p style="font-size: 0.8em; color: #7f8c8d; margin-top: 10px;">* שים לב: האחריות על זכויות היוצרים היא עליך בלבד.</p>
-            </div>
-        {% endif %}
-
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-
-        <div class="documents-list">
-            <h3>קבצים וחומרי לימוד קיימים:</h3>
-            {% for doc in documents %}
-                <div class="doc-item">
-                    <div class="doc-main">
-                        {% if doc.category == 'summary' %}<i class="fas fa-file-alt" style="color: #3498db;"></i>
-                        {% elif doc.category == 'exam' %}<i class="fas fa-graduation-cap" style="color: #e67e22;"></i>
-                        {% elif doc.category == 'hw' %}<i class="fas fa-book" style="color: #2ecc71;"></i>
-                        {% else %}<i class="fas fa-file" style="color: #95a5a6;"></i>{% endif %}
-
-                        <div>
-                            <span class="doc-title">{{ doc.title }}</span>
-                            <span class="doc-category">{{ doc.get_category_display }}</span>
-                            <br>
-                            <span style="font-size: 0.8em; color: #7f8c8d;">
-                                📅 {{ doc.upload_date|date:"d/m/Y" }} |
-                                👤 ע"י:
-                                {% if doc.is_anonymous %}
-                                    סטודנט אנונימי 👻
-                                {% else %}
-                                    {% if doc.uploaded_by %}{{ doc.uploaded_by.username }}{% else %}מערכת{% endif %}
-                                {% endif %}
-                            </span>
+                    <div class="row text-center g-2 mb-4">
+                        <div class="col-6">
+                            <div class="p-2 rounded-3 border" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                                <i class="fas fa-file-alt text-primary mb-1 d-block fs-5"></i>
+                                <span class="fw-bold" style="color: var(--gd-text);">{{ course.document_set.count }}</span>
+                                <div class="text-muted" style="font-size: 0.75rem;">קבצים</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded-3 border" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                                <i class="fas fa-eye text-info mb-1 d-block fs-5"></i>
+                                <span class="fw-bold" style="color: var(--gd-text);">{{ course.view_count }}</span>
+                                <div class="text-muted" style="font-size: 0.75rem;">צפיות</div>
+                            </div>
                         </div>
                     </div>
 
                     {% if user.is_authenticated %}
-                        <a href="{% url 'download_file' doc.id %}" target="_blank" style="color: #2ecc71; text-decoration: none; font-weight: bold;">
-                            צפה/הורד <i class="fas fa-download"></i>
-                        </a>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary rounded-pill fw-bold shadow-sm py-2 hover-scale" onclick="triggerQuickUpload()">
+                            <i class="fas fa-cloud-upload-alt me-1"></i> העלאת קבצים
+                        </button>
+                        <button class="btn btn-outline-success rounded-pill fw-bold py-2 hover-scale" onclick="promptNewFolder()" style="border-width: 2px;">
+                            <i class="fas fa-folder-plus me-1"></i> תיקייה חדשה
+                        </button>
+                    </div>
                     {% else %}
-                        <a href="{% url 'register' %}" style="color: #e74c3c; text-decoration: none; font-size: 0.9em; font-weight: bold;">
-                            <i class="fas fa-lock"></i> הירשם להורדה
+                    <div class="d-grid">
+                        <a href="{% url 'account_login' %}" class="btn btn-warning text-dark rounded-pill fw-bold shadow-sm py-2 hover-scale">
+                            <i class="fas fa-lock me-1"></i> התחבר כדי לשתף
                         </a>
+                    </div>
                     {% endif %}
                 </div>
-            {% empty %}
-                <p style="text-align: center; color: #95a5a6;">אין עדיין קבצים לקורס זה. היה הראשון להעלות!</p>
-            {% endfor %}
+            </div>
         </div>
 
-        {% if not user.is_authenticated %}
-            <div class="promo-box">
-                <p>רוצה גישה לכל המבחנים, הסיכומים ועבודות הבית? 🔓</p>
-                <p><strong>הצטרף לקהילה שלנו כדי לקבל גישה מלאה!</strong></p>
-                <a href="{% url 'register' %}" class="btn-register">להרשמה מהירה בחינם</a>
+        <div class="col-12 col-md-8 col-lg-9">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden" id="drive-main-container" style="min-height: 75vh;">
+
+                <div class="border-bottom py-3 px-4" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                    <nav aria-label="breadcrumb" class="breadcrumb-wrapper w-100" id="drive-breadcrumb"></nav>
+                </div>
+
+                <div id="main-drop-zone" class="card-body p-4 position-relative" style="min-height: 60vh;">
+
+                    <div id="drop-overlay" class="position-absolute top-0 start-0 w-100 h-100 bg-primary bg-opacity-10 d-flex justify-content-center align-items-center rounded-4 d-none" style="z-index: 50; border: 3px dashed #0d6efd; backdrop-filter: blur(2px);">
+                        <div class="text-center">
+                            <i class="fas fa-cloud-upload-alt fa-5x text-primary mb-3 bounce-anim"></i>
+                            <h2 class="fw-bold text-primary">שחרר להעלאה לתיקייה זו!</h2>
+                        </div>
+                    </div>
+
+                    <h3 class="fw-bold mb-4" id="folder-display-name" style="color: var(--gd-text); display: none;"></h3>
+
+                    <h6 class="fw-bold mb-3 drive-section-title d-none" id="folders-title" style="color: var(--gd-text-muted);">תיקיות</h6>
+
+                    <div id="drive-folders" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm mb-4" style="border-color: var(--gd-border) !important;">
+                        {% for folder in folders %}
+                            <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
+                                 data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
+                                 data-path="folder_{{ folder.id }}"
+                                 data-name="{{ folder.name|escapejs }}"
+                                 data-lecturer-id="{{ folder.lecturer.id|default:'' }}"
+                                 onclick="navigateTo('folder_{{ folder.id }}', '{{ folder.name|escapejs }}')"
+                                 style="background-color: transparent; border-color: var(--gd-border) !important;">
+
+                                <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+                                    <div class="text-center" style="width: 40px;">
+                                        <i class="fas fa-folder" style="font-size: 1.5rem; color: {{ folder.color|default:'#fbbc04' }};"></i>
+                                    </div>
+                                    <span class="fw-bold text-truncate fs-6" style="color: var(--gd-text);">
+                                        {{ folder.name }}
+                                    </span>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3 text-nowrap">
+                                    {% if folder.lecturer %}
+                                        <a href="{% url 'lecturers_index' %}?university={{ course.major.university.id }}"
+                                           class="badge rounded-pill border px-3 py-2 fw-normal shadow-sm text-decoration-none hover-bg-light d-none d-sm-flex align-items-center gap-2"
+                                           onclick="event.stopPropagation();" title="לדירוג המרצה"
+                                           style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">
+                                            {% if folder.lecturer.average_rating > 0 %}
+                                                <span style="color: #d4af37; font-weight: bold;"><i class="fas fa-star"></i> {{ folder.lecturer.average_rating }}</span>
+                                                <span class="opacity-25 mx-1">|</span>
+                                            {% endif %}
+                                            <span>{{ folder.lecturer.name }}</span>
+                                            <i class="fas fa-user-tie ms-1 text-info opacity-75"></i>
+                                        </a>
+                                    {% else %}
+                                        {% if user.is_authenticated %}
+                                        <button class="btn btn-sm border rounded-pill hover-bg-light px-3 py-1 d-none d-sm-block"
+                                              onclick="event.stopPropagation(); openEditFolderModal('folder_{{ folder.id }}', '{{ folder.name|escapejs }}', '')"
+                                              style="background-color: var(--gd-bg); color: var(--gd-text-muted); border-color: var(--gd-border) !important; font-size: 0.8rem;">
+                                            <i class="fas fa-plus text-success"></i> שייך מרצה
+                                        </button>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <i class="fas fa-chevron-left opacity-50 ms-2" style="color: var(--gd-text-muted); font-size: 0.85rem;"></i>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <h6 class="fw-bold mb-3 drive-section-title d-none" id="files-title" style="color: var(--gd-text-muted);">קבצים</h6>
+                    <div id="drive-files" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
+                        {% for doc in documents %}
+                            <div class="file-card d-none"
+                                 data-parent="{% if doc.folder %}folder_{{ doc.folder.id }}{% else %}root{% endif %}"
+                                 data-doc-id="{{ doc.id }}"
+                                 data-doc-name="{{ doc.title|escapejs }}"
+                                 data-download-url="{% url 'download_file' doc.id %}">
+                                {% include "core/partials/doc_row.html" %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div id="empty-state" class="text-center py-5 d-none">
+                        <i class="fas fa-folder-open fa-5x mb-3 opacity-25" style="color: var(--gd-text-muted);"></i>
+                        <h4 class="fw-bold" style="color: var(--gd-text-muted);">התיקייה הזו עדיין ריקה</h4>
+                        <p style="color: var(--gd-text-muted);">קליק ימני בעכבר או גרירת קבצים כדי להוסיף חומרים.</p>
+                    </div>
+
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+    <input type="file" id="quick-upload-input" multiple style="display: none;">
+
+    <div id="upload-progress-toast" class="toast position-fixed bottom-0 start-0 m-4 align-items-center text-white bg-primary border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 10600; display: none;">
+        <div class="d-flex">
+            <div class="toast-body fw-bold fs-6 d-flex align-items-center gap-3 py-3">
+                <div class="spinner-border spinner-border-sm text-light" role="status"></div>
+                מעלה קבצים... אנא המתן בבקשה.
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div id="menu-workspace" class="custom-context-menu shadow-lg rounded-3 d-none" dir="rtl">
+    {% if user.is_authenticated %}
+        <button class="context-action" onclick="triggerQuickUpload()">
+            <i class="fas fa-cloud-upload-alt text-primary"></i> העלאת קבצים לכאן
+        </button>
+        <button class="context-action" onclick="promptNewFolder()">
+            <i class="fas fa-folder-plus text-success"></i> תיקייה חדשה
+        </button>
+        <div class="context-divider"></div>
+    {% endif %}
+    <button class="context-action" onclick="navigateUp()">
+        <i class="fas fa-level-up-alt text-secondary"></i> חזור אחורה
+    </button>
+    <button class="context-action" onclick="window.location.reload()">
+        <i class="fas fa-sync text-info"></i> רענן עמוד
+    </button>
+</div>
+
+<div id="menu-folder" class="custom-context-menu shadow-lg rounded-3 d-none" dir="rtl">
+    <div class="context-header" id="ctx-folder-name">שם התיקייה</div>
+    <button class="context-action" id="ctx-folder-open">
+        <i class="fas fa-folder-open text-warning"></i> פתח תיקייה
+    </button>
+    {% if user.is_authenticated %}
+        <button class="context-action" id="ctx-folder-upload">
+            <i class="fas fa-upload text-primary"></i> העלה קבצים לכאן
+        </button>
+        <div class="context-divider"></div>
+        <button class="context-action" id="ctx-folder-edit">
+            <i class="fas fa-edit text-secondary"></i> ערוך / שייך מרצה
+        </button>
+    {% endif %}
+</div>
+
+<div id="menu-file" class="custom-context-menu shadow-lg rounded-3 d-none" dir="rtl">
+    <div class="context-header" id="ctx-file-name">שם הקובץ</div>
+    <a href="#" class="context-action text-decoration-none" id="ctx-file-download" target="_blank">
+        <i class="fas fa-download text-success"></i> הורד קובץ
+    </a>
+    <button class="context-action" id="ctx-file-link">
+        <i class="fas fa-link text-info"></i> העתק קישור
+    </button>
+    {% if user.is_authenticated %}
+        <div class="context-divider"></div>
+        <button class="context-action text-danger" onclick="alert('כדי לדווח, השתמש באייקון הדגל ליד הקובץ.')">
+            <i class="fas fa-flag"></i> דווח על בעיה
+        </button>
+    {% endif %}
+</div>
+
+{% if user.is_authenticated %}
+<div class="modal fade" id="createFolderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" dir="rtl">
+            <div class="modal-header bg-success text-white border-0 rounded-top-4">
+                <h5 class="modal-title fw-bold fs-5"><i class="fas fa-folder-plus me-2"></i> תיקייה חדשה</h5>
+                <button type="button" class="btn-close btn-close-white ms-0 me-auto" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="post" action="{% url 'course_detail' course.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create_folder">
+                    <input type="hidden" name="parent_folder" id="parent_folder_input" value="">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">שם התיקייה <span class="text-danger">*</span></label>
+                        <input type="text" name="folder_name" id="create_folder_name_input" class="form-control form-control-lg" placeholder="למשל: סיכומי הרצאות" required autocomplete="off">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small" style="color: var(--gd-text-muted);">
+                            <i class="fas fa-user-tie me-1"></i> שיוך מרצה (אופציונלי)
+                        </label>
+
+                        <select name="lecturer" id="create_lecturer_select" class="form-select">
+                            <option value="">-- ללא שיוך מרצה --</option>
+                            {% for lec in uni_lecturers %}
+                                <option value="{{ lec.id }}">{{ lec.name }} {% if lec.average_rating > 0 %}(⭐ {{ lec.average_rating }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="text" name="new_lecturer_name" id="create_new_lecturer_input" class="form-control d-none mt-2" placeholder="הקלד שם מרצה חדש (למשל: דוקטור כהן)..." autocomplete="off">
+
+                        <div class="mt-2 text-start">
+                            <span class="badge border cursor-pointer py-1 px-2" style="background-color: var(--gd-bg); color: var(--gd-primary); border-color: var(--gd-border) !important;" onclick="toggleNewLecturer('create')">
+                                <i class="fas fa-plus"></i> המרצה לא ברשימה? הוסף חדש
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-2">
+                        <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm">צור תיקייה</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editFolderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" dir="rtl">
+            <div class="modal-header bg-secondary text-white border-0 rounded-top-4">
+                <h5 class="modal-title fw-bold fs-5"><i class="fas fa-edit me-2"></i> עריכת תיקייה</h5>
+                <button type="button" class="btn-close btn-close-white ms-0 me-auto" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="post" action="{% url 'course_detail' course.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit_folder">
+                    <input type="hidden" name="folder_id" id="edit_folder_id_input" value="">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">שם התיקייה <span class="text-danger">*</span></label>
+                        <input type="text" name="folder_name" id="edit_folder_name_input" class="form-control form-control-lg" required autocomplete="off">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small" style="color: var(--gd-text-muted);">
+                            <i class="fas fa-user-tie me-1"></i> שיוך מרצה
+                        </label>
+
+                        <select name="lecturer" id="edit_lecturer_select" class="form-select">
+                            <option value="">-- ללא שיוך מרצה --</option>
+                            {% for lec in uni_lecturers %}
+                                <option value="{{ lec.id }}">{{ lec.name }} {% if lec.average_rating > 0 %}(⭐ {{ lec.average_rating }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="text" name="new_lecturer_name" id="edit_new_lecturer_input" class="form-control d-none mt-2" placeholder="הקלד שם מרצה חדש..." autocomplete="off">
+
+                        <div class="mt-2 text-start">
+                            <span class="badge border cursor-pointer py-1 px-2" style="background-color: var(--gd-bg); color: var(--gd-primary); border-color: var(--gd-border) !important;" onclick="toggleNewLecturer('edit')">
+                                <i class="fas fa-plus"></i> המרצה לא ברשימה? הוסף חדש
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-2">
+                        <button type="submit" class="btn btn-secondary btn-lg rounded-pill fw-bold shadow-sm">שמור שינויים</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    /* ניווט היררכי */
+    .breadcrumb-item + .breadcrumb-item::before { content: "\f104"; font-family: "Font Awesome 5 Free"; font-weight: 900; color: var(--gd-text-muted); padding: 0 10px; }
+    .breadcrumb-link { color: var(--gd-primary); cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
+    .breadcrumb-link:hover { text-decoration: underline; opacity: 0.8; }
+
+    /* תיקיות */
+    .folder-ui { border-right: 4px solid transparent; transition: 0.2s; }
+    .folder-ui:hover { background-color: var(--gd-hover) !important; border-right-color: var(--gd-primary) !important; }
+    .hover-bg-light:hover { background-color: var(--gd-hover) !important; }
+
+    /* תפריט ימני */
+    .custom-context-menu { position: fixed; z-index: 10001; min-width: 220px; background-color: var(--gd-card); border: 1px solid var(--gd-border); padding: 8px 0; }
+    .context-header { padding: 5px 15px 10px 15px; font-size: 0.85rem; font-weight: bold; color: var(--gd-text-muted); border-bottom: 1px solid var(--gd-border); margin-bottom: 5px; }
+    .context-action { width: 100%; text-align: right; background: none; border: none; padding: 10px 15px; font-weight: 600; color: var(--gd-text); display: flex; align-items: center; transition: 0.15s; }
+    .context-action:hover { background-color: var(--gd-hover); color: var(--gd-primary); }
+    .context-action i { width: 25px; text-align: center; margin-left: 10px; }
+    .context-divider { height: 1px; background-color: var(--gd-border); margin: 8px 0; }
+
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: scale(1.03); }
+</style>
+
+<script>
+    let currentPath = 'root';
+    let pathHistory = [{path: 'root', name: "{{ course.name|escapejs }}"}];
+
+    function escapeHTML(str) { return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function rebuildHistoryFromPath(targetPath) {
+        let tempHistory = [];
+        let curr = targetPath;
+        let safetyCounter = 0;
+
+        if (curr !== 'root' && !document.querySelector(`.folder-card[data-path="${curr}"]`)) { curr = 'root'; }
+
+        while (curr && curr !== 'root' && safetyCounter < 50) {
+            const folderEl = document.querySelector(`.folder-card[data-path="${curr}"]`);
+            if (folderEl) {
+                tempHistory.unshift({ path: curr, name: folderEl.getAttribute('data-name') });
+                curr = folderEl.getAttribute('data-parent');
+            } else { curr = 'root'; }
+            safetyCounter++;
+        }
+
+        pathHistory = [{path: 'root', name: "{{ course.name|escapejs }}"}].concat(tempHistory);
+        currentPath = targetPath === 'root' || document.querySelector(`.folder-card[data-path="${targetPath}"]`) ? targetPath : 'root';
+    }
+
+    function navigateTo(path, name, updateHash = true) {
+        if (updateHash) {
+            if (path === 'root') { history.pushState(null, null, window.location.pathname); }
+            else { window.location.hash = path; }
+        }
+        rebuildHistoryFromPath(path);
+        renderDrive();
+    }
+
+    function navigateUp() {
+        if (pathHistory.length > 1) {
+            const targetPath = pathHistory[pathHistory.length - 2].path;
+            const targetName = pathHistory[pathHistory.length - 2].name;
+            navigateTo(targetPath, targetName);
+        }
+    }
+
+    window.addEventListener('hashchange', () => {
+        let hashPath = window.location.hash ? window.location.hash.substring(1) : 'root';
+        rebuildHistoryFromPath(hashPath);
+        renderDrive();
+    });
+
+    function renderDrive() {
+        const breadcrumbNav = document.getElementById('drive-breadcrumb');
+        const folderDisplayName = document.getElementById('folder-display-name');
+
+        const currentFolder = pathHistory[pathHistory.length - 1];
+        if (currentFolder.path === 'root') folderDisplayName.style.display = 'none';
+        else { folderDisplayName.innerText = currentFolder.name; folderDisplayName.style.display = 'block'; }
+
+        let breadcrumbHTML = '<ol class="breadcrumb mb-0 p-0 fs-6 align-items-center">';
+        breadcrumbHTML += `<li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none" style="color: var(--gd-text-muted);" title="לדף הבית"><i class="fas fa-home"></i></a></li>`;
+
+        pathHistory.forEach((item, index) => {
+            let safeNameHTML = escapeHTML(item.name);
+            if (index === pathHistory.length - 1) {
+                breadcrumbHTML += `<li class="breadcrumb-item active" aria-current="page" style="color: var(--gd-text) !important; font-weight: bold;">${safeNameHTML}</li>`;
+            } else {
+                breadcrumbHTML += `<li class="breadcrumb-item"><span class="breadcrumb-link nav-crumb" data-path="${item.path}" data-name="${safeNameHTML}">${safeNameHTML}</span></li>`;
+            }
+        });
+        breadcrumbHTML += '</ol>';
+        breadcrumbNav.innerHTML = breadcrumbHTML;
+
+        let visibleFolders = 0, visibleFiles = 0;
+        document.querySelectorAll('.folder-card').forEach(el => {
+            if (el.getAttribute('data-parent') === currentPath) { el.classList.remove('d-none'); visibleFolders++; }
+            else { el.classList.add('d-none'); }
+        });
+        document.querySelectorAll('.file-card').forEach(el => {
+            if (el.getAttribute('data-parent') === currentPath) { el.classList.remove('d-none'); visibleFiles++; }
+            else { el.classList.add('d-none'); }
+        });
+
+        document.getElementById('folders-title').classList.toggle('d-none', visibleFolders === 0);
+        document.getElementById('files-title').classList.toggle('d-none', visibleFiles === 0);
+        document.getElementById('empty-state').classList.toggle('d-none', visibleFolders > 0 || visibleFiles > 0);
+    }
+
+    function setupContextMenu() {
+        const workspace = document.getElementById('drive-main-container');
+        const menus = document.querySelectorAll('.custom-context-menu');
+
+        function hideAllMenus() { menus.forEach(m => m.classList.add('d-none')); }
+
+        workspace.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            hideAllMenus();
+
+            const folderCard = e.target.closest('.folder-card');
+            const fileCard = e.target.closest('.file-card');
+            let activeMenu = null;
+
+            if (folderCard) {
+                activeMenu = document.getElementById('menu-folder');
+                const folderId = folderCard.getAttribute('data-path');
+                const folderName = folderCard.getAttribute('data-name');
+                const lecturerId = folderCard.getAttribute('data-lecturer-id');
+
+                document.getElementById('ctx-folder-name').innerText = folderName;
+                document.getElementById('ctx-folder-open').onclick = function() { navigateTo(folderId, folderName); hideAllMenus(); };
+
+                const uploadBtn = document.getElementById('ctx-folder-upload');
+                if(uploadBtn) uploadBtn.onclick = function() { triggerQuickUpload(folderId.split('_')[1]); hideAllMenus(); };
+
+                const editBtn = document.getElementById('ctx-folder-edit');
+                if(editBtn) editBtn.onclick = function() { openEditFolderModal(folderId, folderName, lecturerId); hideAllMenus(); };
+
+            } else if (fileCard) {
+                activeMenu = document.getElementById('menu-file');
+                const docName = fileCard.getAttribute('data-doc-name');
+                const downloadUrl = fileCard.getAttribute('data-download-url');
+
+                document.getElementById('ctx-file-name').innerText = docName;
+                document.getElementById('ctx-file-download').href = downloadUrl;
+                document.getElementById('ctx-file-link').onclick = function() {
+                    const fullUrl = window.location.origin + downloadUrl;
+                    navigator.clipboard.writeText(fullUrl).then(() => { alert('הקישור הועתק בהצלחה ללוח!'); });
+                    hideAllMenus();
+                };
+
+            } else {
+                activeMenu = document.getElementById('menu-workspace');
+            }
+
+            if (activeMenu) {
+                activeMenu.classList.remove('d-none');
+                let x = e.clientX; let y = e.clientY;
+                if (x + activeMenu.offsetWidth > window.innerWidth) x = window.innerWidth - activeMenu.offsetWidth - 10;
+                if (y + activeMenu.offsetHeight > window.innerHeight) y = window.innerHeight - activeMenu.offsetHeight - 10;
+                activeMenu.style.left = x + 'px'; activeMenu.style.top = y + 'px';
+            }
+        });
+
+        document.addEventListener('click', hideAllMenus);
+        window.addEventListener('scroll', hideAllMenus);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.location.hash && window.location.hash.startsWith('#folder_')) {
+            rebuildHistoryFromPath(window.location.hash.substring(1));
+        }
+
+        renderDrive();
+        setupContextMenu();
+        setupQuickUpload();
+
+        document.getElementById('drive-breadcrumb').addEventListener('click', function(e) {
+            if (e.target.classList.contains('nav-crumb')) {
+                const path = e.target.getAttribute('data-path');
+                const name = e.target.getAttribute('data-name');
+                if (path && name) navigateTo(path, name);
+            }
+        });
+    });
+
+    function toggleNewLecturer(modalType) {
+        const selectElement = document.getElementById(modalType + '_lecturer_select');
+        const inputElement = document.getElementById(modalType + '_new_lecturer_input');
+        const toggleButton = event.currentTarget;
+
+        if (inputElement.classList.contains('d-none')) {
+            inputElement.classList.remove('d-none');
+            selectElement.classList.add('d-none');
+            selectElement.value = '';
+            toggleButton.innerHTML = '<i class="fas fa-list"></i> חזור לבחירה מרשימה';
+            inputElement.focus();
+        } else {
+            inputElement.classList.add('d-none');
+            selectElement.classList.remove('d-none');
+            inputElement.value = '';
+            toggleButton.innerHTML = '<i class="fas fa-plus"></i> המרצה לא ברשימה? הוסף חדש';
+        }
+    }
+
+    function resetLecturerToggle(modalType) {
+        const selectElement = document.getElementById(modalType + '_lecturer_select');
+        const inputElement = document.getElementById(modalType + '_new_lecturer_input');
+        const toggleButton = inputElement.nextElementSibling.querySelector('.badge');
+
+        if(selectElement && inputElement && toggleButton) {
+            inputElement.classList.add('d-none');
+            selectElement.classList.remove('d-none');
+            inputElement.value = '';
+            toggleButton.innerHTML = '<i class="fas fa-plus"></i> המרצה לא ברשימה? הוסף חדש';
+        }
+    }
+
+    function promptNewFolder() {
+        let parentId = '';
+        if (currentPath.startsWith('folder_')) parentId = currentPath.split('_')[1];
+
+        document.getElementById('parent_folder_input').value = parentId;
+        document.getElementById('create_folder_name_input').value = '';
+
+        const lecSelect = document.getElementById('create_lecturer_select');
+        if(lecSelect) lecSelect.value = '';
+
+        resetLecturerToggle('create');
+
+        const folderModal = new bootstrap.Modal(document.getElementById('createFolderModal'));
+        folderModal.show();
+
+        document.getElementById('createFolderModal').addEventListener('shown.bs.modal', function () {
+            document.getElementById('create_folder_name_input').focus();
+        }, { once: true });
+    }
+
+    function openEditFolderModal(folderId, currentName, currentLecturerId) {
+        document.getElementById('edit_folder_id_input').value = folderId;
+        document.getElementById('edit_folder_name_input').value = currentName;
+
+        const lecSelect = document.getElementById('edit_lecturer_select');
+        if(lecSelect) {
+            lecSelect.value = currentLecturerId || '';
+        }
+
+        resetLecturerToggle('edit');
+
+        const editModal = new bootstrap.Modal(document.getElementById('editFolderModal'));
+        editModal.show();
+    }
+
+    function triggerQuickUpload(forcedFolderId = null) {
+        {% if not user.is_authenticated %}
+            window.location.href = "{% url 'account_login' %}";
+            return;
         {% endif %}
 
-        <a href="{% url 'home' %}?university={{ uni_id }}&major={{ major_id }}&year={{ year }}" class="btn-back">
-            <i class="fas fa-arrow-right"></i> חזרה לרשימת הקורסים
-        </a>
-    </div>
+        const fileInput = document.getElementById('quick-upload-input');
+        if (!fileInput) return;
 
-</body>
-</html>
+        let targetFolder = 'root';
+        if (forcedFolderId) {
+            targetFolder = forcedFolderId;
+        } else if (currentPath.startsWith('folder_')) {
+            targetFolder = currentPath.split('_')[1];
+        }
+
+        fileInput.dataset.targetFolder = targetFolder;
+        fileInput.click();
+    }
+
+    function setupQuickUpload() {
+        {% if user.is_authenticated %}
+        const fileInput = document.getElementById('quick-upload-input');
+        const dropZone = document.getElementById('main-drop-zone');
+        const overlay = document.getElementById('drop-overlay');
+        let dragCounter = 0;
+
+        if(fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                if(this.files.length > 0) { uploadFilesAJAX(this.files, this.dataset.targetFolder); }
+                this.value = '';
+            });
+        }
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => { dropZone.addEventListener(e, (evt) => { evt.preventDefault(); evt.stopPropagation(); }); });
+        dropZone.addEventListener('dragenter', () => { dragCounter++; overlay.classList.remove('d-none'); });
+        dropZone.addEventListener('dragleave', () => { dragCounter--; if (dragCounter === 0) overlay.classList.add('d-none'); });
+
+        dropZone.addEventListener('drop', (e) => {
+            dragCounter = 0; overlay.classList.add('d-none');
+            if (e.dataTransfer.files.length > 0) {
+                let targetFolder = currentPath.startsWith('folder_') ? currentPath.split('_')[1] : 'root';
+                uploadFilesAJAX(e.dataTransfer.files, targetFolder);
+            }
+        });
+        {% endif %}
+    }
+
+    function uploadFilesAJAX(files, folderId) {
+        const uploadToast = document.getElementById('upload-progress-toast');
+        uploadToast.style.display = 'block';
+        uploadToast.classList.add('show');
+
+        const formData = new FormData();
+        formData.append('action', 'quick_upload');
+        formData.append('folder_id', folderId);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        for(let i = 0; i < files.length; i++) { formData.append('file', files[i]); }
+
+        fetch("{% url 'course_detail' course.id %}", {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) window.location.reload();
+            else { alert(data.error || 'אירעה שגיאה בהעלאה'); uploadToast.style.display = 'none'; }
+        })
+        .catch(err => {
+            console.error('Upload Error:', err);
+            alert('שגיאת תקשורת בזמן ההעלאה, נסה שוב.');
+            uploadToast.style.display = 'none';
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+
+{% block title %}מדיניות פרטיות - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" dir="rtl">
+    <div class="row justify-content-center animate__animated animate__fadeIn">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5 bg-white text-end">
+
+                    <div class="text-center mb-5">
+                        <i class="fas fa-user-shield fa-4x text-primary mb-3"></i>
+                        <h1 class="fw-bold text-dark">מדיניות פרטיות</h1>
+                        <p class="text-muted">עודכן לאחרונה: מרץ 2026</p>
+                    </div>
+
+                    <p class="lead">ברוכים הבאים ל"דרייב הסטודנטיאלי". הפרטיות שלכם חשובה לנו מאוד. מסמך זה מפרט איזה מידע אנחנו אוספים, כיצד אנו משתמשים בו, וכיצד אנו שומרים עליו. בעצם השימוש באתר, אתם מסכימים למדיניות זו.</p>
+
+                    <h4 class="fw-bold mt-5 text-primary border-bottom pb-2"><i class="fas fa-database me-2"></i> 1. איזה מידע אנו אוספים?</h4>
+                    <p>אנו אוספים מידע שאתם מספקים לנו באופן אקטיבי בעת ההרשמה והשימוש באתר, כולל:</p>
+                    <ul>
+                        <li><strong>פרטי חשבון:</strong> כתובת אימייל, שם משתמש (שיוצג בפומבי), וסיסמה (אשר נשמרת באופן מוצפן).</li>
+                        <li><strong>פרטי לימודים:</strong> מוסד לימודים, תואר/מסלול, ושנת לימוד (על מנת להתאים עבורכם את הקורסים הרלוונטיים).</li>
+                        <li><strong>תוכן גולשים (UGC):</strong> קבצים, סיכומים, מבחנים, וביקורות על מרצים שאתם מעלים למערכת.</li>
+                        <li><strong>נתוני פעילות:</strong> אילו קבצים הורדתם, לאילו קבצים עשיתם "לייק", וכמות "מטבעות הדרייב" שצברתם.</li>
+                    </ul>
+
+                    <h4 class="fw-bold mt-5 text-primary border-bottom pb-2"><i class="fas fa-cookie-bite me-2"></i> 2. שימוש בעוגיות (Cookies) ואחסון מקומי</h4>
+                    <p>האתר עושה שימוש בטכנולוגיות כגון Cookies ו-Local Storage בדפדפן שלכם כדי:</p>
+                    <ul>
+                        <li>לשמור את החיבור שלכם לאתר (Log in session).</li>
+                        <li>לזכור את העדפות התצוגה שלכם (מצב לילה / מצב יום).</li>
+                        <li>לשמור את הגדרות הנגישות שבחרתם (כגון גודל טקסט או ניגודיות).</li>
+                    </ul>
+                    <p>תוכלו למחוק או לחסום עוגיות דרך הגדרות הדפדפן שלכם, אך הדבר עשוי לפגוע בחווית השימוש (למשל, תצטרכו להתחבר מחדש בכל כניסה).</p>
+
+                    <h4 class="fw-bold mt-5 text-primary border-bottom pb-2"><i class="fas fa-robot me-2"></i> 3. שירותי צד שלישי ובינה מלאכותית (AI)</h4>
+                    <p>באתר קיימת אפשרות ליצירת "סיכום חכם" לקבצים באמצעות מנועי בינה מלאכותית (AI). בעת בקשת סיכום:</p>
+                    <ul>
+                        <li>הטקסט של הקובץ עשוי להישלח באופן מאובטח לשרתי צד-שלישי (כגון שרתי Google API) לצורך עיבוד הסיכום.</li>
+                        <li>המידע מועבר לטובת יצירת הסיכום בלבד, ואנו לא משתפים מידע אישי מזהה שלכם (כמו אימייל) עם ספקי הבינה המלאכותית.</li>
+                    </ul>
+
+                    <h4 class="fw-bold mt-5 text-primary border-bottom pb-2"><i class="fas fa-lock me-2"></i> 4. אבטחת מידע</h4>
+                    <p>אנו נוקטים באמצעי אבטחה מקובלים ומתקדמים (כגון תקן הצפנה של סביבת Django) כדי להגן על המידע שלכם. עם זאת, אין מערכת המאובטחת ב-100%, ולכן איננו יכולים להבטיח חסינות מוחלטת מפני פריצות וגישה בלתי מורשית.</p>
+
+                    <h4 class="fw-bold mt-5 text-primary border-bottom pb-2"><i class="fas fa-user-edit me-2"></i> 5. הזכויות שלכם</h4>
+                    <p>כבדו את זכויותיכם. בכל עת תוכלו:</p>
+                    <ul>
+                        <li>לערוך את פרטי הפרופיל שלכם בעמוד ההגדרות והפרופיל.</li>
+                        <li>לבקש למחוק קבצים שהעליתם.</li>
+                        <li>לפנות אלינו בבקשה למחיקת החשבון והמידע האישי שלכם לחלוטין.</li>
+                    </ul>
+
+                    <h4 class="fw-bold mt-5 text-primary border-bottom pb-2"><i class="fas fa-balance-scale me-2"></i> 6. תכני גולשים וזכויות יוצרים</h4>
+                    <p>המשתמשים באתר מתחייבים לא להעלות חומרים המפרים זכויות יוצרים. אין לנו שליטה מלאה על התוכן המועלה. במידה וגיליתם שתוכן שלכם הועלה ללא אישור, אנא דווחו לנו מיד (דרך כפתור "דווח" או ביצירת קשר), ואנו נסיר אותו בהתאם לנהלי הודעה והסרה הנהוגים בחוק.</p>
+
+                    <div class="mt-5 p-4 bg-light rounded-4 border text-center">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-envelope text-primary"></i> יצירת קשר</h5>
+                        <p class="mb-0">לכל שאלה בנושא פרטיות או בקשה למחיקת מידע, ניתן לפנות לצוות האתר דרך טופס צור קשר או במייל:<br>
+                        <a href="mailto:privacy@studentdrive.com" class="fw-bold text-decoration-none">privacy@studentdrive.com</a></p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* התאמה למצב לילה */
+    [data-theme='dark'] .bg-light { background-color: #252525 !important; border-color: #444 !important; }
+    [data-theme='dark'] .card { background-color: var(--card-bg) !important; color: var(--text-main) !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,165 @@
+<div class="list-group-item list-group-item-action d-flex flex-column border-0 border-bottom py-3 hover-bg-light" style="background-color: transparent; border-color: var(--border-color) !important;">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-center" style="width: 45px;">
+                {% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
+                    <i class="fas fa-file-pdf fa-2x text-danger drop-shadow"></i>
+                {% elif doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" %}
+                    <i class="fas fa-file-word fa-2x text-primary drop-shadow"></i>
+                {% elif doc.file.name|lower|slice:"-4:" == "pptx" or doc.file.name|lower|slice:"-3:" == "ppt" %}
+                    <i class="fas fa-file-powerpoint fa-2x text-warning drop-shadow"></i>
+                {% elif doc.file.name|lower|slice:"-4:" == ".zip" or doc.file.name|lower|slice:"-4:" == ".rar" %}
+                    <i class="fas fa-file-archive fa-2x text-secondary drop-shadow"></i>
+                {% else %}
+                    <i class="fas fa-file-alt fa-2x text-info drop-shadow"></i>
+                {% endif %}
+            </div>
+
+            <div>
+                <a href="{% url 'download_file' doc.id %}" target="_blank" class="text-decoration-none fw-bold fs-6 hover-primary d-block mb-1" style="color: var(--text-main);">
+                    {{ doc.title }}
+                </a>
+
+                <div class="text-muted d-flex flex-wrap align-items-center gap-3" style="font-size: 0.75rem; color: var(--text-muted) !important;">
+                    <span><i class="far fa-calendar-alt"></i> {{ doc.upload_date|date:"d/m/Y" }}</span>
+
+                    {% if doc.file_size_bytes %}
+                        <span><i class="fas fa-hdd"></i> {{ doc.file_size_bytes|filesizeformat }}</span>
+                    {% endif %}
+
+                    <span class="d-flex align-items-center gap-1">
+                        {% if doc.is_anonymous %}
+                            <i class="fas fa-user-secret"></i> אנונימי
+                        {% elif doc.uploaded_by %}
+                            {% if doc.uploaded_by.profile.profile_picture %}
+                                <img src="{{ doc.uploaded_by.profile.profile_picture.url }}" class="rounded-circle border border-secondary border-opacity-25" style="width: 18px; height: 18px; object-fit: cover;">
+                            {% else %}
+                                <i class="far fa-user"></i>
+                            {% endif %}
+                            {{ doc.uploaded_by.username }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if doc.file.name|lower|slice:"-4:" == ".pdf" or doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" or doc.file.name|lower|slice:"-4:" == "pptx" or doc.file.name|lower|slice:"-3:" == "ppt" %}
+                <button class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#previewModal{{ doc.id }}" title="תצוגה מקדימה">
+                    <i class="fas fa-eye"></i> <span class="d-none d-md-inline">הצצה</span>
+                </button>
+            {% endif %}
+
+            {% if user.is_staff and doc.file.name|lower|slice:"-4:" == ".pdf" %}
+                 <button onclick="generateAISummary({{ doc.id }}, this)" class="btn btn-sm btn-outline-warning rounded-pill fw-bold shadow-sm d-flex align-items-center gap-1 ai-btn" title="תקצר לי (ניסיוני)">
+                     <i class="fas fa-magic"></i> <span class="d-none d-md-inline">AI</span>
+                 </button>
+            {% endif %}
+
+            <div class="vr mx-1 d-none d-md-block" style="background-color: var(--border-color);"></div>
+
+            {% if user.is_authenticated %}
+                <button onclick="toggleLike(event, this)" data-url="{% url 'like_document' doc.id %}" class="btn btn-sm {% if user in doc.likes.all %}btn-primary text-white{% else %}btn-outline-primary{% endif %} rounded-pill px-3 shadow-sm like-btn" title="אהבתי">
+                    <i class="fas fa-thumbs-up"></i> <span class="like-count">{{ doc.total_likes }}</span>
+                </button>
+            {% else %}
+                <span class="badge rounded-pill border px-3 py-2" style="background-color: var(--bg-main); color: var(--text-main); border-color: var(--border-color) !important;">
+                    <i class="fas fa-thumbs-up text-primary me-1"></i> {{ doc.total_likes }}
+                </span>
+            {% endif %}
+
+            <a href="{% url 'download_file' doc.id %}" target="_blank" class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm" title="הורד קובץ">
+                <i class="fas fa-download"></i> <span class="d-none d-md-inline">{{ doc.download_count }}</span>
+            </a>
+
+            {% if user.is_authenticated %}
+            <button class="btn btn-sm text-secondary ms-1 p-1 report-btn-hover" data-bs-toggle="modal" data-bs-target="#reportModal{{ doc.id }}" title="דווח על קובץ">
+                <i class="fas fa-flag"></i>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="ai-summary-container-{{ doc.id }}" class="collapse mt-3">
+        <div class="card border-warning border-2 shadow-sm rounded-4" style="background-color: var(--card-bg);">
+            <div class="card-body position-relative">
+                <button type="button" class="btn-close position-absolute top-0 start-0 m-3" onclick="document.getElementById('ai-summary-container-{{ doc.id }}').classList.remove('show');"></button>
+                <h6 class="fw-bold text-warning mb-3"><i class="fas fa-robot"></i> סיכום ה-AI של הדרייב:</h6>
+                <div class="summary-text" style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; color: var(--text-main);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+</style>
+
+{% if doc.file.name|lower|slice:"-4:" == ".pdf" or doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" or doc.file.name|lower|slice:"-4:" == "pptx" or doc.file.name|lower|slice:"-3:" == "ppt" %}
+<div class="modal fade" id="previewModal{{ doc.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background-color: var(--card-bg);">
+            <div class="modal-header border-bottom px-4 py-3" style="border-color: var(--border-color) !important;">
+                <h5 class="modal-title fw-bold" style="color: var(--text-main);">
+                    {% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
+                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                    {% elif doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" %}
+                        <i class="fas fa-file-word text-primary me-2"></i>
+                    {% else %}
+                        <i class="fas fa-file-powerpoint text-warning me-2"></i>
+                    {% endif %}
+                    {{ doc.title }}
+                </h5>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted small d-none d-md-inline" style="color: var(--text-muted) !important;"><i class="fas fa-info-circle"></i> Google Docs Preview</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--close-btn-filter);"></button>
+                </div>
+            </div>
+            <div class="modal-body p-0 position-relative" style="height: 75vh; overflow: hidden; background: var(--bg-main);">
+                <div class="position-absolute top-50 start-50 translate-middle text-center text-muted" id="loader{{ doc.id }}" style="z-index: 1;">
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <div style="color: var(--text-main);">טוען תצוגה...</div>
+                </div>
+                <iframe src="https://docs.google.com/gview?url={{ request.build_absolute_uri|slice:':-1' }}{{ doc.file.url }}&embedded=true"
+                        onload="document.getElementById('loader{{ doc.id }}').style.display='none';"
+                        style="width: 100%; height: 100%; border: none; z-index: 2; position: relative;">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if user.is_authenticated %}
+<div class="modal fade" id="reportModal{{ doc.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--card-bg);">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle ms-2"></i> דיווח על קובץ</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'report_document' doc.id %}">
+                {% csrf_token %}
+                <div class="modal-body p-4 text-end">
+                    <p class="small text-muted mb-3" style="color: var(--text-muted) !important;">דיווח על: <strong>"{{ doc.title }}"</strong></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small" style="color: var(--text-main);">סיבת הדיווח:</label>
+                        <select name="reason" class="form-select" style="background-color: var(--bg-main); color: var(--text-main); border-color: var(--border-color);" required>
+                            <option value="">בחר סיבה...</option>
+                            <option value="broken">הקובץ פגום / לא נפתח</option>
+                            <option value="inappropriate">תוכן פוגעני / לא ראוי</option>
+                            <option value="irrelevant">לא קשור לקורס</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small" style="color: var(--text-main);">פירוט נוסף:</label>
+                        <textarea name="description" class="form-control" rows="2" style="background-color: var(--bg-main); color: var(--text-main); border-color: var(--border-color);"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill">שלח דיווח</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -1,63 +1,145 @@
+{% extends "core/base.html" %}
+{% load i18n %}
 {% load socialaccount %}
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>הרשמה - הדרייב הסטודנטיאלי</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .auth-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 450px; text-align: center; }
 
-        h1 { color: #2c3e50; margin-bottom: 30px; font-size: 1.8em; }
+{% block title %}הרשמה - הדרייב הסטודנטיאלי{% endblock %}
 
-        /* עיצוב כפתור גוגל */
-        .btn-google { display: block; background-color: #ffffff; color: #757575; border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1em; text-decoration: none; transition: background 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .btn-google:hover { background-color: #f8f9fa; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .btn-google img { width: 24px; height: 24px; } /* אייקון גוגל צבעוני */
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;" dir="rtl">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--card-bg);">
 
-        /* קו מפריד */
-        .divider { display: flex; align-items: center; text-align: center; color: #95a5a6; margin-bottom: 25px; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eee; }
-        .divider span { padding: 0 15px; font-size: 0.9em; }
+        <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
+            <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
+                <i class="fas fa-user-plus fa-2x text-warning"></i>
+            </div>
+            <h2 class="fw-bold mb-1" style="color: var(--text-main);">יצירת חשבון</h2>
+            <p class="text-muted small">הצטרף לאלפי סטודנטים בדרייב</p>
+        </div>
 
-        /* עיצוב הטופס הרגיל */
-        .auth-form p { text-align: right; margin-bottom: 15px; color: #34495e; }
-        .auth-form input[type="text"], .auth-form input[type="email"], .auth-form input[type="password"] { width: 90%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: #fdfdfd; font-size: 1em; }
-        .auth-form input:focus { outline: none; border-color: #3498db; background: white; }
-        .helptext, .errorlist { font-size: 0.8em; color: #e74c3c; text-align: right; display: block; margin-top: 5px; list-style-type: none; padding: 0; }
+        <div class="card-body p-4 p-md-5 pt-2">
 
-        .btn-submit { background-color: #3498db; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
-        .btn-submit:hover { background-color: #2980b9; }
+            <div class="mb-4">
+                <a href="{% provider_login_url 'google' %}" class="btn-google-pro">
+                    <span class="google-icon-wrapper">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width: 20px;">
+                    </span>
+                    <span class="google-text">הרשמה מהירה עם Google</span>
+                </a>
+            </div>
 
-        .links { margin-top: 25px; font-size: 0.95em; color: #7f8c8d; }
-        .links a { color: #3498db; text-decoration: none; font-weight: bold; }
-        .links a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
+                <span class="mx-3 text-muted small fw-bold">או בדרך המסורתית</span>
+                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
+            </div>
 
-    <div class="auth-card">
-        <h1>הצטרף לדרייב הסטודנטיאלי 🎓</h1>
+            <form class="allauth-form" method="POST" action="{% url 'account_signup' %}" novalidate>
+                {% csrf_token %}
 
-        <a href="{% provider_login_url 'google' %}" class="btn-google">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
-            הרשמה מהירה עם גוגל
-        </a>
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-3 border-0 shadow-sm mb-4 animate__animated animate__shakeX">
+                        {% for error in form.non_field_errors %}
+                            <div class="small fw-bold"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-        <div class="divider"><span>או עם אימייל וסיסמה</span></div>
+                {% for field in form %}
+                    <div class="mb-4 text-start">
+                        <label class="form-label small fw-bold text-muted mb-2 d-block text-end" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
 
-        <form class="auth-form" id="signup_form" method="post" action="{% url 'account_signup' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn-submit">צור משתמש חדש</button>
-        </form>
+                        <div class="field-wrapper">
+                            {{ field }}
+                        </div>
 
-        <div class="links">
-            <p>כבר יש לך חשבון? <a href="{% url 'account_login' %}">התחבר כאן</a></p>
-            <a href="{% url 'home' %}" style="color: #95a5a6; display: inline-block; margin-top: 10px;">← חזרה לדף הבית</a>
+                        {% if field.errors %}
+                            <div class="text-danger small mt-2 fw-bold animate__animated animate__fadeInRight text-end">
+                                {% for error in field.errors %}
+                                    <div class="mb-1"><i class="fas fa-exclamation-triangle me-1"></i> {{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <div class="form-text small opacity-50 mt-1 text-end" style="font-size: 0.7rem;">
+                                {{ field.help_text|safe }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-lg py-3 mt-3 hover-scale" type="submit" style="background-color: #1a73e8; border: none;">
+                    צור חשבון <i class="fas fa-arrow-left ms-2 small"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-2">
+                <p class="text-muted small">כבר חבר? <a href="{% url 'account_login' %}" class="text-primary fw-bold text-decoration-none">התחבר כאן</a></p>
+            </div>
         </div>
     </div>
+</div>
 
-</body>
-</html>
+<style>
+    /* כפתור גוגל נקי */
+    .btn-google-pro {
+        display: flex;
+        align-items: center;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        color: var(--text-main);
+        text-decoration: none;
+        padding: 4px;
+        transition: all 0.2s ease;
+    }
+    .btn-google-pro:hover {
+        background-color: rgba(0,0,0,0.02);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+    .google-icon-wrapper {
+        background: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .google-text {
+        flex-grow: 1;
+        text-align: center;
+        font-weight: 600;
+        padding-right: 12px;
+        font-size: 0.9rem;
+    }
+
+    /* עיצוב שדות הקלט */
+    .allauth-form input:not([type="checkbox"]) {
+        width: 100%;
+        padding: 0.8rem 1.2rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        transition: 0.3s;
+        text-align: right;
+    }
+    .allauth-form input:focus {
+        border-color: #1a73e8;
+        background-color: var(--card-bg);
+        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+        outline: none;
+    }
+
+    /* אפקטים */
+    .hover-scale { transition: 0.2s; }
+    .hover-scale:hover { transform: scale(1.02); }
+
+    [data-theme='dark'] .btn-google-pro:hover { background-color: rgba(255,255,255,0.05); }
+</style>
+{% endblock %}
