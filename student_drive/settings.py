@@ -1,16 +1,18 @@
 """
 Django settings for student_drive project.
 """
-
+from dotenv import load_dotenv
 from pathlib import Path
 import os
-from django.utils.translation import gettext_lazy as _  # הוספנו למען מנוע התרגום
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-up1@h&nik=hd!*j@xbv$uk9w0z631t5f-vt&sk^*afmtyu6ng%'
-
-DEBUG = True
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+# --- אבטחה: מפתח סודי ---
+# מומלץ להעביר את זה לקובץ .env בעתיד
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = []
 
@@ -39,7 +41,7 @@ SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # <--- מנוע השפות הוסף כאן!
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -61,7 +63,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # מונה דיווחים למנהלים
                 'core.context_processors.pending_reports_count',
             ],
         },
@@ -77,6 +78,15 @@ DATABASES = {
     }
 }
 
+# ==========================================
+# אבטחת סיסמאות (הצפנה משופרת)
+# ==========================================
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher', # ההצפנה הכי חזקה
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -85,7 +95,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ==========================================
-# Internationalization (שפות ותרגום)
+# אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
+# ==========================================
+SESSION_COOKIE_HTTPONLY = True  # מונע מ-JS לגשת לסשן
+CSRF_COOKIE_HTTPONLY = True     # מונע מ-JS לגשת ל-CSRF
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# ==========================================
+# Internationalization
 # ==========================================
 LANGUAGE_CODE = 'he'
 TIME_ZONE = 'Asia/Jerusalem'
@@ -109,8 +127,7 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# --- הגדרות אימות (Allauth) - גרסה נקייה ללא Conflict ---
-
+# --- הגדרות אימות ---
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -120,34 +137,17 @@ LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
-# הגדרת שיטות ההתחברות (מייל ושם משתמש)
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}
-
-# חובה להגדיר אימייל ולוודא שהוא ייחודי
 ACCOUNT_UNIQUE_EMAIL = True
-
-# ביטול ה-Conflict: לא מגדירים כאן מייל או שם משתמש כי הם כבר ב-Methods למעלה
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-
-# הגדרות אימות מייל (בוטל לנוחות עם גוגל)
 ACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
-
-# התחברות מהירה
 ACCOUNT_LOGOUT_ON_GET = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# חיבור טופס ההרשמה המותאם שלנו (כולל אישור תנאי השימוש)
 ACCOUNT_SIGNUP_FORM_CLASS = 'core.forms.CustomSignupForm'
-
-# הגדרות שליחת אימיילים
-# כרגע, המיילים "ישלחו" ויודפסו בטרמינל שלך כדי שתוכל לראות שזה עובד בלי להסתבך עם סיסמאות של Gmail.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'admin@studentdrive.com'
 
-# מאפשר תצוגה מקדימה של קבצי PDF בתוך האתר שלנו
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 handler404 = 'core.views.error_404'
