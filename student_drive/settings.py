@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 from django.utils.translation import gettext_lazy as _
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +15,12 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = []
+
+#TODO
+ALLOWED_HOSTS = []#טלרווווווווויא גבר תוסיף םה דומיין אחרת לא היהי גישה לאתר לכלום!!!!!W@E>/'קגךףכגף'ק
+
+if DEBUG:
+    ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
@@ -40,6 +46,7 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -72,10 +79,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'student_drive.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600
+    )
 }
 
 # ==========================================
@@ -124,6 +131,8 @@ LOCALE_PATHS = [
 # Static & Media
 # ==========================================
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # התיקייה שהשרת יאסוף אליה את העיצוב
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' # דחיסה של הקבצים למהירות
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -152,3 +161,15 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 handler404 = 'core.views.error_404'
 handler500 = 'core.views.error_500'
+if not DEBUG:
+    # מאלץ את כל התעבורה לעבור דרך HTTPS
+    SECURE_SSL_REDIRECT = True
+
+    # הגנה על העוגיות (Cookies) כך שיישלחו רק בחיבור מאובטח
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
+    SECURE_HSTS_SECONDS = 31536000  # שנה אחת
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
