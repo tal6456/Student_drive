@@ -124,45 +124,6 @@ def live_search(request):
 
 
 @login_required
-def complete_profile(request):
-    profile = request.user.profile
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=profile)
-        if form.is_valid():
-            user_profile = form.save()
-
-            # --- לוגיקת הבונוס ---
-            # בודקים אם יש קוד שיתוף בזיכרון של הדפדפן
-            ref_code_session = request.session.get('referral_code')
-            if ref_code_session and not user_profile.referred_by:
-                try:
-                    # מוצאים את המשתמש שהזמין
-                    referrer_profile = UserProfile.objects.get(referral_code=ref_code_session)
-                    referrer = referrer_profile.user
-
-                    # מונעים מצב שאדם מזמין את עצמו
-                    if referrer != request.user:
-                        user_profile.referred_by = referrer
-                        user_profile.drive_coins += 20  # בונוס לנרשם
-                        referrer_profile.drive_coins += 50  # בונוס למזמין
-
-                        user_profile.save()
-                        referrer_profile.save()
-                        messages.success(request,
-                                         f"איזה כיף! קיבלת 20 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
-                except UserProfile.DoesNotExist:
-                    pass
-            # ---------------------
-
-            messages.success(request, 'הפרופיל עודכן בהצלחה!')
-            return redirect('profile')
-    # ... שאר הקוד ...
-    else:
-        form = UserProfileForm(instance=profile)
-    return render(request, 'core/complete_profile.html', {'form': form})
-
-
-@login_required
 def settings_view(request):
     profile = request.user.profile
     if request.method == 'POST':
@@ -395,24 +356,6 @@ def analytics_dashboard(request):
     }
 
     return render(request, 'core/analytics.html', context)
-
-
-@login_required
-def like_document(request, document_id):
-    document = get_object_or_404(Document, id=document_id)
-    liked = False
-    if document.likes.filter(id=request.user.id).exists():
-        document.likes.remove(request.user)
-        if document.uploaded_by:
-            document.uploaded_by.profile.drive_coins = max(0, document.uploaded_by.profile.drive_coins - 5)
-            document.uploaded_by.profile.save()
-    else:
-        document.likes.add(request.user)
-        liked = True
-        if document.uploaded_by:
-            document.uploaded_by.profile.drive_coins += 5
-            document.uploaded_by.profile.save()
-    return JsonResponse({'liked': liked, 'total_likes': document.total_likes})
 
 
 @login_required
@@ -818,17 +761,48 @@ def remove_friend(request, friend_username):
 
 @login_required
 def complete_profile(request):
-    """מסך השלמת הנתונים לאחר הרשמה ראשונית"""
+    """מסך השלמת הנתונים לאחר הרשמה ראשונית - כולל לוגיקת בונוס והזמנת חברים"""
     profile = request.user.profile
+
     if request.method == 'POST':
-        # קוראים לטופס בשמו הנכון: UserProfileForm
+        # אנחנו מעבירים את ה-user לטופס כדי שיוכל למשוך שמות פרטיים ומשפחה
         form = UserProfileForm(request.POST, instance=profile, user=request.user)
+
         if form.is_valid():
-            form.save()
-            messages.success(request, "הפרופיל הושלם בהצלחה!")
+            user_profile = form.save()
+
+            # --- לוגיקת הבונוס (Referral System) ---
+            # בודקים האם שמור קוד שיתוף בזיכרון של הדפדפן (מהפונקציה home)
+            ref_code_session = request.session.get('referral_code')
+
+            # אם יש קוד וזו הפעם הראשונה שהפרופיל מושלם (אין עדיין referred_by)
+            if ref_code_session and not user_profile.referred_by:
+                try:
+                    # מוצאים את המשתמש שהזמין
+                    referrer_profile = UserProfile.objects.get(referral_code=ref_code_session)
+                    referrer = referrer_profile.user
+
+                    # מונעים מצב שאדם מזמין את עצמו
+                    if referrer != request.user:
+                        user_profile.referred_by = referrer
+                        user_profile.drive_coins += 20  # בונוס לסטודנט החדש
+                        referrer_profile.drive_coins += 50  # בונוס למי שהזמין
+
+                        user_profile.save()
+                        referrer_profile.save()
+
+                        # מנקים את הקוד מה-session כדי שלא יופעל שוב
+                        del request.session['referral_code']
+
+                        messages.success(request,
+                                         f"איזה כיף! קיבלת 20 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
+                except UserProfile.DoesNotExist:
+                    pass
+            # ---------------------------------------
+
+            messages.success(request, "הפרופיל הושלם בהצלחה! ברוך הבא לקהילה. ✨")
             return redirect('home')
     else:
-        # גם כאן קוראים לו בשמו הנכון
         form = UserProfileForm(instance=profile, user=request.user)
 
     return render(request, 'core/complete_profile.html', {'form': form})

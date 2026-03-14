@@ -1,0 +1,25 @@
+<div class="d-flex align-items-center justify-content-between mb-3 px-2 sorting-bar animate__animated animate__fadeIn">
+    <div class="d-flex align-items-center gap-2">
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-dynamic rounded-pill px-3 dropdown-toggle shadow-sm d-flex align-items-center gap-2" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-sort-amount-down-alt text-primary"></i>
+                <span id="current-sort-label">מיין לפי שם</span>
+            </button>
+            <ul class="dropdown-menu shadow-lg border-0 rounded-3" aria-labelledby="sortDropdown" dir="rtl">
+                <li><a class="dropdown-item py-2 d-flex align-items-center justify-content-between" href="#" onclick="updateSort('name', 'שם')"><span>שם</span><i class="fas fa-font opacity-25"></i></a></li>
+                <li><a class="dropdown-item py-2 d-flex align-items-center justify-content-between" href="#" onclick="updateSort('date', 'תאריך')"><span>תאריך יצירה</span><i class="far fa-calendar-alt opacity-25"></i></a></li>
+                <li><a class="dropdown-item py-2 d-flex align-items-center justify-content-between" href="#" onclick="updateSort('files', 'כמות קבצים')"><span>כמות קבצים</span><i class="far fa-file-alt opacity-25"></i></a></li>
+            </ul>
+        </div>
+
+        <button class="btn btn-sm btn-outline-dynamic rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" onclick="toggleSortDirection()" title="שנה כיוון">
+            <i class="fas fa-arrow-down transition-transform" id="direction-icon"></i>
+        </button>
+    </div>
+
+    <div class="d-none d-sm-flex gap-1">
+        <span class="badge rounded-pill border py-2 px-3" style="background-color: var(--gd-bg); color: var(--gd-text-muted);">
+            <i class="fas fa-info-circle ms-1"></i> סדר גרירה חופשי (בקרוב)
+        </span>
+    </div>
+</div>

@@ -86,10 +86,19 @@
                     </div>
 
                     <h3 class="fw-bold mb-4" id="folder-display-name" style="color: var(--gd-text); display: none;"></h3>
+                    {% include "core/partials/sorting_toolbar.html" %}
 
                     <h6 class="fw-bold mb-3 drive-section-title d-none" id="folders-title" style="color: var(--gd-text-muted);">תיקיות</h6>
 
-                    <div id="drive-folders" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm mb-4" style="border-color: var(--gd-border) !important;">
+                    <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
+                         data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
+                         data-path="folder_{{ folder.id }}"
+                         data-name="{{ folder.name|escapejs }}"
+                         data-date="{{ folder.created_at|date:'U' }}"
+                         data-files="{{ folder.documents.count }}"
+                         data-lecturer-id="{{ folder.lecturer.id|default:'' }}"
+                         onclick="navigateTo('folder_{{ folder.id }}', '{{ folder.name|escapejs }}')"
+                         style="background-color: transparent; border-color: var(--gd-border) !important;">
                         {% for folder in folders %}
                             <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
                                  data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
@@ -347,6 +356,8 @@
 </style>
 
 <script>
+    let currentSortField = 'name';
+    let isAscending = true;
     let currentPath = 'root';
     let pathHistory = [{path: 'root', name: "{{ course.name|escapejs }}"}];
 

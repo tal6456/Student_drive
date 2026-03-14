@@ -1,83 +1,71 @@
 from django.core.management.base import BaseCommand
+# ייבוא המודלים הקיימים - זה החלק החשוב!
 from core.models import University, Major, Course
 
 
 class Command(BaseCommand):
-    help = 'טוען נתוני בסיס של הנדסת חשמל ומחשבים באוניברסיטת בן-גוריון'
+    help = 'טוען ומעדכן נתוני קורסים של הנדסת חשמל ומחשבים בבן-גוריון'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write("מתחיל בטעינת נתונים... 🚀")
+        self.stdout.write("מתחיל בטעינה ועדכון נתונים... 🚀")
 
+        # 1. איתור המוסד והתואר
         uni_name = "אוניברסיטת בן-גוריון בנגב"
-        bgu, created = University.objects.get_or_create(
-            name=uni_name,
-            defaults={'domain': 'bgu.ac.il'}
-        )
-
         major_name = "הנדסת חשמל ומחשבים"
-        ee_major, created = Major.objects.get_or_create(
-            name=major_name,
-            university=bgu
-        )
 
+        bgu, _ = University.objects.get_or_create(name=uni_name)
+        ee_major, _ = Major.objects.get_or_create(name=major_name, university=bgu)
+
+        # 2. נתוני הקורסים מהסילבוס [cite: 157, 159, 166, 168, 172, 175]
         courses_data = [
-            {'name': 'חשבון דיפרנציאלי להנדסת חשמל', 'number': '21219671', 'year': '1', 'semester': '1'},
-            {'name': 'מבוא מתמטי למהנדסים', 'number': '36111081', 'year': '1', 'semester': '1'},
-            {'name': 'פיזיקה 1 - הנדסת חשמל', 'number': '20311371', 'year': '1', 'semester': '1'},
-            {'name': 'אלגברה ליניארית להנדסת חשמל 1', 'number': '21219511', 'year': '1', 'semester': '1'},
-            {'name': 'מתמטיקה דיסקרטית', 'number': '21216201', 'year': '1', 'semester': '1'},
+            # שנה א'
+            {'name': 'חשבון דיפרנציאלי להנדסת חשמל', 'num': '21219671', 'y': 1, 's': 'A'},
+            {'name': 'מבוא מתמטי למהנדסים', 'num': '36111081', 'y': 1, 's': 'A'},
+            {'name': 'פיזיקה 1 - הנדסת חשמל', 'num': '20311371', 'y': 1, 's': 'A'},
+            {'name': 'אלגברה ליניארית להנדסת חשמל 1', 'num': '21219511', 'y': 1, 's': 'A'},
+            {'name': 'מתמטיקה דיסקרטית', 'num': '21216201', 'y': 1, 's': 'A'},
+            {'name': 'מערכות ספרתיות להנדסת חשמל ומחשבים', 'num': '36113231', 'y': 1, 's': 'B'},
+            {'name': 'חשבון אינטגרלי ומשוואות דיפרנציאליות', 'num': '21219681', 'y': 1, 's': 'B'},
+            {'name': 'אלגברה ליניארית להנדסת חשמל 2', 'num': '21219521', 'y': 1, 's': 'B'},
+            {'name': 'פיזיקה א2', 'num': '20311471', 'y': 1, 's': 'B'},
+            {'name': 'יסודות מדעי המחשב', 'num': '37111601', 'y': 1, 's': 'B'},
 
-            {'name': 'מערכות ספרתיות להנדסת חשמל ומחשבים', 'number': '36113231', 'year': '1', 'semester': '2'},
-            {'name': 'חשבון אינטגרלי ומשוואות דיפרנציאליות', 'number': '21219681', 'year': '1', 'semester': '2'},
-            {'name': 'אלגברה ליניארית להנדסת חשמל 2', 'number': '21219521', 'year': '1', 'semester': '2'},
-            {'name': 'פיזיקה א2', 'number': '20311471', 'year': '1', 'semester': '2'},
-            {'name': 'יסודות מדעי המחשב', 'number': '37111601', 'year': '1', 'semester': '2'},
+            # שנה ב'
+            {'name': 'חדו"א וקטורי להנדסת חשמל', 'num': '21219631', 'y': 2, 's': 'A'},
+            {'name': 'אנליזת פוריה להנדסת חשמל', 'num': '21219901', 'y': 2, 's': 'A'},
+            {'name': 'מבוא למחשבים', 'num': '36113201', 'y': 2, 's': 'A'},
+            {'name': 'פיסיקה א3', 'num': '20312391', 'y': 2, 's': 'A'},
+            {'name': 'מבוא להנדסת חשמל', 'num': '36111021', 'y': 2, 's': 'A'},
+            {'name': 'מבוא למערכות ליניאריות', 'num': '36112011', 'y': 2, 's': 'B'},
+            {'name': 'מבוא להתקני מוליכים למחצה', 'num': '36112171', 'y': 2, 's': 'B'},
+            {'name': 'תורת הפונקציות המרוכבות', 'num': '21210071', 'y': 2, 's': 'B'},
+            {'name': 'מבוא לשיטות חישוביות', 'num': '36112251', 'y': 2, 's': 'B'},
+            {'name': 'שדות אלקטרומגנטיים', 'num': '36113011', 'y': 2, 's': 'B'},
+            {'name': 'תורת ההסתברות', 'num': '21219831', 'y': 2, 's': 'B'},
 
-            {'name': 'חדו"א וקטורי להנדסת חשמל', 'number': '21219631', 'year': '2', 'semester': '1'},
-            {'name': 'אנליזת פוריה להנדסת חשמל', 'number': '21219901', 'year': '2', 'semester': '1'},
-            {'name': 'מבוא למחשבים', 'number': '36113201', 'year': '2', 'semester': '1'},
-            {'name': 'פיסיקה א3', 'number': '20312391', 'year': '2', 'semester': '1'},
-            {'name': 'מבוא להנדסת חשמל', 'number': '36111021', 'year': '2', 'semester': '1'},
-
-            {'name': 'מבוא למערכות ליניאריות', 'number': '36112011', 'year': '2', 'semester': '2'},
-            {'name': 'מבוא להתקני מוליכים למחצה', 'number': '36112171', 'year': '2', 'semester': '2'},
-            {'name': 'תורת הפונקציות המרוכבות', 'number': '21210071', 'year': '2', 'semester': '2'},
-            {'name': 'מבוא לשיטות חישוביות', 'number': '36112251', 'year': '2', 'semester': '2'},
-            {'name': 'שדות אלקטרומגנטיים', 'number': '36113011', 'year': '2', 'semester': '2'},
-            {'name': 'תורת ההסתברות', 'number': '21219831', 'year': '2', 'semester': '2'},
-
-            {'name': 'מבוא לעיבוד אותות', 'number': '36113321', 'year': '3', 'semester': '1'},
-            {'name': 'מבוא לתהליכים אקראיים', 'number': '36113061', 'year': '3', 'semester': '1'},
-            {'name': 'מבוא למעגלים אלקטרונים אנלוגיים', 'number': '36113661', 'year': '3', 'semester': '1'},
-            {'name': 'מעגלים אלקטרוניים ספרתיים', 'number': '36113021', 'year': '3', 'semester': '2'},
-            {'name': 'מבוא להמרת אנרגיה', 'number': '36113031', 'year': '3', 'semester': '1'},
-            {'name': 'מבוא לבקרה', 'number': '36113581', 'year': '3', 'semester': '1'},
-            {'name': 'מבוא לתקשורת מודרנית', 'number': '36113221', 'year': '3', 'semester': '1'},
-            {'name': 'מבני נתונים', 'number': '37110341', 'year': '3', 'semester': '2'},
+            # שנה ג'
+            {'name': 'מבוא לעיבוד אותות', 'num': '36113321', 'y': 3, 's': 'A'},
+            {'name': 'מבוא לתהליכים אקראיים', 'num': '36113061', 'y': 3, 's': 'A'},
+            {'name': 'מבוא למעגלים אלקטרונים אנלוגיים', 'num': '36113661', 'y': 3, 's': 'A'},
+            {'name': 'מעגלים אלקטרוניים ספרתיים', 'num': '36113021', 'y': 3, 's': 'B'},
         ]
 
-        courses_created = 0
-
-        for c_data in courses_data:
-            course, created = Course.objects.get_or_create(
+        count = 0
+        for data in courses_data:
+            # עדכון או יצירה של הקורס
+            course, created = Course.objects.update_or_create(
                 major=ee_major,
-                name=c_data['name']
+                name=data['name'],
+                defaults={
+                    'course_number': data['num'],
+                    'year': data['y'],
+                    'semester': data['s'],
+                    'track': 'general'
+                }
             )
 
-            course.course_number = c_data['number']
-            course.year = c_data['year']
+            # יצירת עץ התיקיות (2020-2026) דרך המתודה שבמודל
+            course.create_default_folder_tree()
+            count += 1
 
-            if c_data['semester'] == '1':
-                course.semester = 'א'
-            elif c_data['semester'] == '2':
-                course.semester = 'ב'
-            else:
-                course.semester = c_data['semester']
-
-            course.save()
-
-            if created:
-                courses_created += 1
-
-        self.stdout.write(
-            self.style.SUCCESS(f'הטעינה הושלמה! 🎉 נוצרו/עודכנו {len(courses_data)} קורסים. המערכת תדאג לתיקיות.'))
+        self.stdout.write(self.style.SUCCESS(f'הושלם! {count} קורסים עודכנו עם סמסטרים תקינים ועץ תיקיות מלא. 🎓'))

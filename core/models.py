@@ -53,6 +53,37 @@ class Course(models.Model):
     description = models.TextField(blank=True, verbose_name="תיאור הקורס")
     view_count = models.PositiveIntegerField(default=0, verbose_name="מספר צפיות")
 
+    def create_default_folder_tree(self):
+        """
+        מתודה מרכזית ליצירת עץ התיקיות.
+        מונעת כפילויות על ידי בדיקת .exists() לפני כל יצירה.
+        """
+        root_folders_names = ['הרצאות', 'תרגולים', 'מטלות', 'מבחני עבר', 'חומרי עזר נוספים']
+        years = [str(y) for y in range(2020, 2027)]
+        semesters = ['סמסטר א\'', 'סמסטר ב\'', 'סמסטר קיץ']
+
+        for root_name in root_folders_names:
+            # שימוש ב-get_or_create מונע כפילות ברמת ה-Root
+            root_folder, _ = Folder.objects.get_or_create(
+                course=self,
+                name=root_name,
+                parent=None
+            )
+
+            if root_name != 'חומרי עזר נוספים':
+                for year in years:
+                    year_folder, _ = Folder.objects.get_or_create(
+                        course=self,
+                        name=year,
+                        parent=root_folder
+                    )
+
+                    for sem in semesters:
+                        Folder.objects.get_or_create(
+                            course=self,
+                            name=sem,
+                            parent=year_folder
+                        )
     def __str__(self): return self.name
 
 
@@ -326,14 +357,59 @@ class Feedback(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_resolved = models.BooleanField(default=False, verbose_name="טופל?")
 
+
 # ==========================================
 # 6. אוטומיזציה (סיגנלים ליצירת תיקיות)
 # ==========================================
 
 @receiver(post_save, sender=Course)
 def create_course_folder_structure(sender, instance, created, **kwargs):
+    """
+    סיגנל שמופעל אוטומטית בכל פעם שקורס חדש נוצר במסד הנתונים.
+    הוא בונה עץ תיקיות מלא: קטגוריות ראשיות -> שנים -> סמסטרים.
+    """
     if created:
-        # יצירת מבנה בסיסי לכל קורס חדש שנוסף
-        categories = ['הרצאות', 'תרגולים', 'מטלות', 'מבחני עבר']
-        for cat in categories:
-            Folder.objects.create(course=instance, name=cat)
+        # 1. הגדרת התיקיות הראשיות
+        root_folders_names = [
+            'הרצאות',
+            'תרגולים',
+            'מטלות',
+            'מבחני עבר',
+            'חומרי עזר נוספים'
+        ]
+
+        # 2. הגדרת השנים והסמסטרים
+        years = [str(year) for year in range(2020, 2027)]  # יוצר רשימה מ-2020 עד 2026
+        semesters = ['סמסטר א\'', 'סמסטר ב\'', 'סמסטר קיץ']
+
+        # 3. בניית העץ
+        for root_name in root_folders_names:
+            # יצירת תיקיית האב (Root)
+            root_folder = Folder.objects.create(
+                name=root_name,
+                course=instance,
+                parent=None
+            )
+
+            # אם זו לא תיקיית "חומרי עזר נוספים", ניצור לה את מבנה השנים והסמסטרים
+            if root_name != 'חומרי עזר נוספים':
+                for year in years:
+                    # יצירת תיקיית השנה בתוך התיקייה הראשית
+                    year_folder = Folder.objects.create(
+                        name=year,
+                        course=instance,
+                        parent=root_folder
+                    )
+
+                    # יצירת תיקיות הסמסטרים בתוך תיקיית השנה
+                    for semester in semesters:
+                        Folder.objects.create(
+                            name=semester,
+                            course=instance,
+                            parent=year_folder
+                        )
+
+@receiver(post_save, sender=Course)
+def auto_create_course_folders(sender, instance, created, **kwargs):
+    if created:
+        instance.create_default_folder_tree()

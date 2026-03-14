@@ -307,8 +307,40 @@
         letter-spacing: 1px !important;
         word-spacing: 2px !important;
     }
+/* -----------------------------------------
+       7. COLLAPSIBLE SEMESTERS & ELEMENTS
+       ----------------------------------------- */
+
+    .semester-header {
+        transition: all 0.2s ease;
+        user-select: none; /* מונע סימון טקסט כשלוחצים הרבה פעמים */
+        cursor: pointer;
+    }
+
+    .semester-header:hover {
+        background-color: var(--gd-hover) !important;
+    }
+
+    /* סיבוב החץ - הקסם קורה כאן */
+    /* כשהאלמנט סגור (aria-expanded="false"), נסובב את החץ */
+    .semester-header[aria-expanded="false"] .collapse-arrow i {
+        transform: rotate(-90deg);
+    }
+
+    .transition-transform {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-block;
+    }
+
+    /* עיצוב עדין לרשימה בתוך הקיפול */
+    .collapse .list-group {
+        margin-top: 4px;
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+    }
 </style>
 
+/* ----------END STYLE---------------------------------------- */
 </head>
 <body data-theme="{{ user.profile.theme_preference|default:'auto' }}">
 

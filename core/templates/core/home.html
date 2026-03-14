@@ -124,8 +124,9 @@
                         {% if search_query %}<i class="fas fa-search ms-2" style="color: var(--gd-primary);"></i> תוצאות חיפוש{% else %}<i class="fas fa-th-list ms-2" style="color: var(--gd-primary);"></i> הקורסים שלכם{% endif %}
                     </h4>
 
-                    <div class="list-group list-group-flush border rounded-4 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
-                        {% if search_query %}
+                    {# ================= הצגת הקורסים (חיפוש או סמסטרים) ================= #}
+                    {% if search_query %}
+                        <div class="list-group list-group-flush border rounded-4 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
                             {% for course in courses %}
                                 {% include "core/partials/course_row.html" %}
                             {% empty %}
@@ -134,23 +135,22 @@
                                     לא נמצאו קורסים העונים לחיפוש...
                                 </div>
                             {% endfor %}
-                        {% else %}
+                        </div>
+                    {% else %}
+                        <div class="semesters-wrapper d-flex flex-column gap-2">
                             {% if sem_a %}
-                                <div class="p-3 fw-bold text-success border-bottom" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;"><i class="fas fa-leaf ms-2"></i> סמסטר א'</div>
-                                {% for course in sem_a %}{% include "core/partials/course_row.html" %}{% endfor %}
+                                {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="leaf" color="success" %}
                             {% endif %}
 
                             {% if sem_b %}
-                                <div class="p-3 fw-bold text-warning border-bottom mt-2" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;"><i class="fas fa-sun ms-2"></i> סמסטר ב'</div>
-                                {% for course in sem_b %}{% include "core/partials/course_row.html" %}{% endfor %}
+                                {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
                             {% endif %}
 
                             {% if specializations %}
-                                <div class="p-3 fw-bold text-info border-bottom mt-2" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;"><i class="fas fa-star ms-2"></i> קורסי בחירה ומסלולים</div>
-                                {% for course in specializations %}{% include "core/partials/course_row.html" %}{% endfor %}
+                                {% include "core/partials/collapsible_semester.html" with title="קורסי בחירה ומסלולים" semester_id="special" courses=specializations icon="star" color="info" %}
                             {% endif %}
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
 
                     <div class="text-center mt-5">
                         <p class="small" style="color: var(--gd-text-muted);">לא מצאת את הקורס שחיפשת?</p>

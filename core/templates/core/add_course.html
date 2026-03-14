@@ -3,51 +3,113 @@
 {% block title %}פתיחת קורס חדש - הדרייב הסטודנטיאלי{% endblock %}
 
 {% block content %}
-<div class="container mt-5" dir="rtl">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+<div class="container mt-5 mb-5" dir="rtl">
+    <div class="row justify-content-center animate__animated animate__fadeInUp">
+        <div class="col-md-10 col-lg-8">
 
             <div class="text-center mb-4">
-                <div class="display-4 text-primary mb-3"><i class="fas fa-plus-circle"></i></div>
-                <h2 class="fw-bold">פתיחת קורס חדש</h2>
-                <p class="text-muted">לא מצאת את הקורס שלך בחיפוש? הוסף אותו עכשיו למאגר ותעזור לסטודנטים אחרים! (ותקבל 5 מטבעות דרייב 🪙)</p>
+                <div class="icon-circle shadow-sm mx-auto mb-3 text-primary d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2.2rem; border-radius: 50%; background-color: var(--gd-card);">
+                    <i class="fas fa-folder-plus"></i>
+                </div>
+                <h2 class="fw-bold mb-2" style="color: var(--gd-text);">פתיחת קורס חדש</h2>
+                <p class="mb-0" style="color: var(--gd-text-muted);">
+                    לא מצאת את הקורס בחיפוש? עזור לקהילה ופתח לו תיקייה ראשית!
+                </p>
+                <div class="mt-2 badge rounded-pill px-3 py-2 fw-normal" style="background-color: rgba(255, 193, 7, 0.1); color: #d4af37; border: 1px solid #d4af37;">
+                    <i class="fas fa-coins me-1"></i> תקבל 5 מטבעות דרייב על פתיחת הקורס!
+                </div>
             </div>
 
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-body p-5 bg-white">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background-color: var(--gd-card);">
+                <div class="card-body p-4 p-md-5">
                     <form method="POST">
                         {% csrf_token %}
 
-                        {% for field in form %}
-                            <div class="mb-4 text-end" id="wrapper-{{ field.name }}">
-                                <label class="form-label fw-bold text-dark">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <div class="form-text small text-muted">{{ field.help_text }}</div>
-                                {% endif %}
-                                {% for error in field.errors %}
-                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
-                                {% endfor %}
-                            </div>
+                        <h5 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--gd-text); border-color: var(--gd-border) !important;">
+                            <i class="fas fa-university ms-2 text-primary"></i> שיוך אקדמי
+                        </h5>
 
-                            {% if field.name == 'major' %}
-                                <div class="mb-4 text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="toggleNewMajorField()">
-                                        <i class="fas fa-magic"></i> התואר שלי לא מופיע ברשימה!
+                        <div class="row g-4 mb-4">
+                            <div class="col-12" id="wrapper-major">
+                                <label class="form-label fw-bold small text-muted"><i class="fas fa-book-reader ms-1"></i> מקצוע / פקולטה <span class="text-danger">*</span></label>
+                                {{ form.major }}
+                                {% for error in form.major.errors %}<div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+
+                                <div class="mt-2 text-start">
+                                    <button type="button" class="badge border cursor-pointer py-1 px-2 text-decoration-none" style="background-color: var(--gd-bg); color: var(--gd-primary); border-color: var(--gd-border) !important;" onclick="toggleNewMajorField()">
+                                        <i class="fas fa-magic ms-1"></i> התואר שלי לא מופיע ברשימה!
                                     </button>
                                 </div>
 
-                                <div id="new-major-container" class="mb-4 text-end" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px dashed #0d6efd;">
-                                    <label class="form-label fw-bold text-primary">שם התואר / פקולטה חדשה:</label>
-                                    <input type="text" name="new_major_name" id="new_major_input" class="form-control border-primary" placeholder="למשל: פסיכולוגיה, הנדסת תעשייה וניהול...">
-                                    <div class="form-text small text-muted mt-1"><i class="fas fa-info-circle"></i> התואר יתווסף אוטומטית לאוניברסיטה שלך לאחר השמירה.</div>
+                                <div id="new-major-container" class="mt-3 p-3 rounded-3 d-none animate__animated animate__fadeIn" style="background-color: var(--gd-bg); border: 1px dashed var(--gd-primary);">
+                                    <label class="form-label fw-bold small" style="color: var(--gd-primary);">שם התואר / פקולטה חדשה:</label>
+                                    <input type="text" name="new_major_name" id="new_major_input" class="form-control mb-1" placeholder="למשל: פסיכולוגיה, הנדסת תעשייה וניהול...">
+                                    <div class="form-text small opacity-75"><i class="fas fa-info-circle ms-1"></i> התואר יתווסף אוטומטית לאוניברסיטה שלך.</div>
                                 </div>
-                            {% endif %}
-                        {% endfor %}
+                            </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow mt-2">
-                            פתח קורס והתחל להעלות חומר <i class="fas fa-rocket ms-1"></i>
-                        </button>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted"><i class="far fa-calendar-alt ms-1"></i> שנת לימוד <span class="text-danger">*</span></label>
+                                {{ form.year }}
+                                {% for error in form.year.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted"><i class="fas fa-hourglass-half ms-1"></i> סמסטר <span class="text-danger">*</span></label>
+                                {{ form.semester }}
+                                {% for error in form.semester.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted"><i class="fas fa-route ms-1"></i> מסלול התמחות</label>
+                                {{ form.track }}
+                                {% for error in form.track.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+
+
+                        <h5 class="fw-bold mb-3 border-bottom pb-2 mt-5" style="color: var(--gd-text); border-color: var(--gd-border) !important;">
+                            <i class="fas fa-info-circle ms-2 text-info"></i> פרטי הקורס
+                        </h5>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold small text-muted">שם הקורס <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% for error in form.name.errors %}<div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>{% endfor %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">מספר קורס</label>
+                                {{ form.course_number }}
+                                <div class="form-text small" style="color: var(--gd-text-muted);">לא חובה</div>
+                                {% for error in form.course_number.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">תיאור הקורס / סילבוס (אופציונלי)</label>
+                                {{ form.description }}
+                                {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert border-danger mb-4 text-danger d-flex align-items-center rounded-3" style="background-color: rgba(220, 53, 69, 0.1);">
+                                <i class="fas fa-exclamation-triangle fa-2x ms-3"></i>
+                                <div>
+                                    {% for error in form.non_field_errors %}
+                                        <p class="mb-0 fw-bold">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 hover-scale">
+                                <i class="fas fa-rocket"></i> פתח קורס והתחל לשתף!
+                            </button>
+                        </div>
+
                     </form>
                 </div>
             </div>
@@ -57,21 +119,33 @@
 </div>
 
 <style>
-    /* עיצוב אחיד לשדות הג'נגו */
-    input[type=text], input[type=number], select {
-        width: 100%;
+    /* דריסת עיצוב ברירת מחדל של הטופס כדי להתאים למשתני האתר */
+    .form-control, .form-select {
+        background-color: var(--gd-bg) !important;
+        border: 1px solid var(--gd-border) !important;
+        color: var(--gd-text) !important;
+        border-radius: 10px;
         padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #dee2e6;
-        background-color: #f8f9fa;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
-    input[type=text]:focus, input[type=number]:focus, select:focus {
-        border-color: #0d6efd;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        background-color: #fff;
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--gd-primary) !important;
+        box-shadow: 0 0 0 0.25rem rgba(26, 115, 232, 0.25) !important;
+        background-color: var(--gd-card) !important;
     }
+
+    .form-control::placeholder {
+        color: var(--gd-text-muted) !important;
+        opacity: 0.7;
+    }
+
+    .cursor-pointer { cursor: pointer; }
+
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: scale(1.02); }
+
+    /* הסתרת אזור בחירת תואר במידה והשתמשו בטופס ידני */
+    .d-none { display: none !important; }
 </style>
 
 <script>
@@ -79,14 +153,21 @@
         const container = document.getElementById('new-major-container');
         const input = document.getElementById('new_major_input');
         const majorSelect = document.querySelector('select[name="major"]');
+        const btn = event.currentTarget;
 
-        if (container.style.display === 'none') {
-            container.style.display = 'block';
+        if (container.classList.contains('d-none')) {
+            // מציג את השדה המוסתר
+            container.classList.remove('d-none');
             majorSelect.disabled = true; // מכבה את הבחירה הרגילה כדי לא לבלבל את השרת
+            btn.innerHTML = '<i class="fas fa-list ms-1"></i> ביטול, מצאתי את התואר ברשימה';
+            btn.classList.replace('text-primary', 'text-danger');
             input.focus();
         } else {
-            container.style.display = 'none';
+            // מסתיר את השדה
+            container.classList.add('d-none');
             majorSelect.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic ms-1"></i> התואר שלי לא מופיע ברשימה!';
+            btn.classList.replace('text-danger', 'text-primary');
             input.value = ''; // מאפס את הטקסט
         }
     }

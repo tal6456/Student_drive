@@ -58,7 +58,7 @@ class DocumentUploadForm(BaseStyledModelForm):
 class CourseForm(BaseStyledModelForm):
     class Meta:
         model = Course
-        fields = ['major', 'name', 'course_number', 'year', 'description']
+        fields = ['major', 'name', 'course_number', 'year', 'semester', 'track', 'description']
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'לדוגמה: מבוא למדעי המחשב'}),
             'course_number': forms.TextInput(attrs={'placeholder': 'מספר קורס (לא חובה)'}),
