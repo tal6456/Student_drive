@@ -1,0 +1,80 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-13 13:24+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\core\templates\core\settings.html:2
+msgid "הגדרות מערכת - הדרייב הסטודנטיאלי"
+msgstr "System Settings - The Student Drive"
+
+#: .\core\templates\core\settings.html:12
+#: .\core\templates\core\settings.html:27
+msgid "תצוגה ושפה"
+msgstr "Display & Language"
+
+#: .\core\templates\core\settings.html:15
+msgid "שינוי סיסמה"
+msgstr "Change Password"
+
+#: .\core\templates\core\settings.html:32
+msgid "ערכת נושא (Theme):"
+msgstr "Theme:"
+
+#: .\core\templates\core\settings.html:38
+msgid "מצב יום"
+msgstr "Light Mode"
+
+#: .\core\templates\core\settings.html:45
+msgid "מצב לילה"
+msgstr "Dark Mode"
+
+#: .\core\templates\core\settings.html:52
+msgid "שפת הממשק (Language):"
+msgstr "Interface Language:"
+
+#: .\core\templates\core\settings.html:59
+msgid "מעבר לאנגלית יהפוך את כיוון האתר לסטנדרטי (משמאל לימין)."
+msgstr "Switching to English will change the site direction to standard (Left-to-Right)."
+
+#: .\core\templates\core\settings.html:68
+msgid "פרטיות"
+msgstr "Privacy"
+
+#: .\core\templates\core\settings.html:74
+msgid "הצג את המטבעות שלי בטבלת האלופים"
+msgstr "Show my coins on the leaderboard"
+
+#: .\core\templates\core\settings.html:75
+msgid "אם תכבה את זה, לא תופיע בדף הבית גם אם יש לך הכי הרבה מטבעות."
+msgstr "If you turn this off, you won't appear on the home page even if you have the most coins."
+
+#: .\core\templates\core\settings.html:83
+msgid "שמור שינויים"
+msgstr "Save Changes"
+
+#: .\student_drive\settings.py:96
+msgid "Hebrew"
+msgstr "Hebrew"
+
+#: .\student_drive\settings.py:97
+msgid "English"
+msgstr "English"
+
+#: .\student_drive\settings.py:98
+msgid "Arabic"
+msgstr "Arabic"
