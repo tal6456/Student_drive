@@ -90,20 +90,14 @@
 
                     <h6 class="fw-bold mb-3 drive-section-title d-none" id="folders-title" style="color: var(--gd-text-muted);">תיקיות</h6>
 
-                    <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
-                         data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
-                         data-path="folder_{{ folder.id }}"
-                         data-name="{{ folder.name|escapejs }}"
-                         data-date="{{ folder.created_at|date:'U' }}"
-                         data-files="{{ folder.documents.count }}"
-                         data-lecturer-id="{{ folder.lecturer.id|default:'' }}"
-                         onclick="navigateTo('folder_{{ folder.id }}', '{{ folder.name|escapejs }}')"
-                         style="background-color: transparent; border-color: var(--gd-border) !important;">
+                    <div id="drive-folders" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm mb-4" style="border-color: var(--gd-border) !important;">
                         {% for folder in folders %}
                             <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
                                  data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
                                  data-path="folder_{{ folder.id }}"
                                  data-name="{{ folder.name|escapejs }}"
+                                 data-date="{{ folder.created_at|date:'U' }}"
+                                 data-files="{{ folder.documents.count }}"
                                  data-lecturer-id="{{ folder.lecturer.id|default:'' }}"
                                  onclick="navigateTo('folder_{{ folder.id }}', '{{ folder.name|escapejs }}')"
                                  style="background-color: transparent; border-color: var(--gd-border) !important;">
@@ -127,7 +121,7 @@
                                                 <span style="color: #d4af37; font-weight: bold;"><i class="fas fa-star"></i> {{ folder.lecturer.average_rating }}</span>
                                                 <span class="opacity-25 mx-1">|</span>
                                             {% endif %}
-                                            <span>{{ folder.lecturer.name }}</span>
+                                            <span style="color: var(--gd-text);">{{ folder.lecturer.name }}</span>
                                             <i class="fas fa-user-tie ms-1 text-info opacity-75"></i>
                                         </a>
                                     {% else %}
@@ -145,7 +139,6 @@
                             </div>
                         {% endfor %}
                     </div>
-
                     <h6 class="fw-bold mb-3 drive-section-title d-none" id="files-title" style="color: var(--gd-text-muted);">קבצים</h6>
                     <div id="drive-files" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
                         {% for doc in documents %}
@@ -409,14 +402,16 @@
     function renderDrive() {
         const breadcrumbNav = document.getElementById('drive-breadcrumb');
         const folderDisplayName = document.getElementById('folder-display-name');
+        const folderContainer = document.getElementById('drive-folders'); // הקונטיינר של התיקיות
+        const fileContainer = document.getElementById('drive-files');     // הקונטיינר של הקבצים
 
         const currentFolder = pathHistory[pathHistory.length - 1];
         if (currentFolder.path === 'root') folderDisplayName.style.display = 'none';
         else { folderDisplayName.innerText = currentFolder.name; folderDisplayName.style.display = 'block'; }
 
+        // פירורי לחם (נשאר ללא שינוי)
         let breadcrumbHTML = '<ol class="breadcrumb mb-0 p-0 fs-6 align-items-center">';
         breadcrumbHTML += `<li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none" style="color: var(--gd-text-muted);" title="לדף הבית"><i class="fas fa-home"></i></a></li>`;
-
         pathHistory.forEach((item, index) => {
             let safeNameHTML = escapeHTML(item.name);
             if (index === pathHistory.length - 1) {
@@ -428,19 +423,65 @@
         breadcrumbHTML += '</ol>';
         breadcrumbNav.innerHTML = breadcrumbHTML;
 
-        let visibleFolders = 0, visibleFiles = 0;
-        document.querySelectorAll('.folder-card').forEach(el => {
-            if (el.getAttribute('data-parent') === currentPath) { el.classList.remove('d-none'); visibleFolders++; }
-            else { el.classList.add('d-none'); }
-        });
-        document.querySelectorAll('.file-card').forEach(el => {
-            if (el.getAttribute('data-parent') === currentPath) { el.classList.remove('d-none'); visibleFiles++; }
-            else { el.classList.add('d-none'); }
+        // --- לוגיקת המיון והצגת התיקיות ---
+        const folders = Array.from(document.querySelectorAll('.folder-card'));
+
+        // מיון התיקיות
+        folders.sort((a, b) => {
+            let valA, valB;
+            if (currentSortField === 'name') {
+                valA = a.getAttribute('data-name').toLowerCase();
+                valB = b.getAttribute('data-name').toLowerCase();
+                return isAscending ? valA.localeCompare(valB, 'he') : valB.localeCompare(valA, 'he');
+            } else {
+                valA = parseInt(a.getAttribute('data-' + currentSortField)) || 0;
+                valB = parseInt(b.getAttribute('data-' + currentSortField)) || 0;
+                return isAscending ? valA - valB : valB - valA;
+            }
         });
 
+        let visibleFolders = 0;
+        folders.forEach(el => {
+            if (el.getAttribute('data-parent') === currentPath) {
+                folderContainer.appendChild(el); // דוחף מחדש לפי הסדר
+                el.classList.remove('d-none');
+                visibleFolders++;
+            } else {
+                el.classList.add('d-none');
+            }
+        });
+
+        // --- הצגת הקבצים ---
+        let visibleFiles = 0;
+        const files = Array.from(document.querySelectorAll('.file-card'));
+        // אופציונלי: אפשר להוסיף מיון גם לקבצים כאן באותה צורה
+        files.forEach(el => {
+            if (el.getAttribute('data-parent') === currentPath) {
+                fileContainer.appendChild(el);
+                el.classList.remove('d-none');
+                visibleFiles++;
+            } else {
+                el.classList.add('d-none');
+            }
+        });
+
+        // עדכון כותרות ומצב ריק
         document.getElementById('folders-title').classList.toggle('d-none', visibleFolders === 0);
         document.getElementById('files-title').classList.toggle('d-none', visibleFiles === 0);
         document.getElementById('empty-state').classList.toggle('d-none', visibleFolders > 0 || visibleFiles > 0);
+    }
+
+    function updateSort(field, label) {
+    currentSortField = field;
+    document.getElementById('current-sort-label').innerText = 'מיין לפי ' + label;
+    renderDrive();
+    }
+
+    function toggleSortDirection() {
+        isAscending = !isAscending;
+        const icon = document.getElementById('direction-icon');
+        icon.style.transform = isAscending ? 'rotate(0deg)' : 'rotate(180deg)';
+        renderDrive();
     }
 
     function setupContextMenu() {
@@ -510,6 +551,11 @@
         renderDrive();
         setupContextMenu();
         setupQuickUpload();
+        // מוודא שהחץ מצביע למעלה (מיון יורד) בהתחלה
+        const icon = document.getElementById('direction-icon');
+        if(icon) icon.style.transform = 'rotate(180deg)';
+
+        renderDrive();
 
         document.getElementById('drive-breadcrumb').addEventListener('click', function(e) {
             if (e.target.classList.contains('nav-crumb')) {

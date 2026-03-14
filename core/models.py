@@ -379,7 +379,7 @@ def create_course_folder_structure(sender, instance, created, **kwargs):
         ]
 
         # 2. הגדרת השנים והסמסטרים
-        years = [str(year) for year in range(2020, 2027)]  # יוצר רשימה מ-2020 עד 2026
+        years_list = [str(y) for y in range(2026, 2019, -1)] # יוצר: 2026, 2025... 2020
         semesters = ['סמסטר א\'', 'סמסטר ב\'', 'סמסטר קיץ']
 
         # 3. בניית העץ
