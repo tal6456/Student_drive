@@ -10,7 +10,7 @@ python manage.py collectstatic --no-input
 python manage.py migrate
 
 # 3. טעינת נתוני האוניברסיטאות והקורסים (הקבצים שיצרת)
-#python manage.py load_bgu_courses
+python manage.py load_bgu_courses
 python manage.py seed_bgu_ee
 
 # 4. הגדרות אוטומטיות בתוך ה-Shell (מנהל מערכת וניקוי גוגל)
