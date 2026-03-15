@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'storages'
 
     # Apps שלנו
     'core',
@@ -161,6 +162,9 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 handler404 = 'core.views.error_404'
 handler500 = 'core.views.error_500'
+
+# -----------------------------------------------------------
+# -----------------------------------------------------------
 if not DEBUG:
     # מאלץ את כל התעבורה לעבור דרך HTTPS
     SECURE_SSL_REDIRECT = True
@@ -173,3 +177,15 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+    # הגדרות אמזון S3
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+
+    # הגדרות שגורמות לג'נגו להשתמש ב-S3 עבור קבצי מדיה (הקבצים שהסטודנטים מעלים)
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    # כתובת ה-URL שדרכה הסטודנטים יראו את הקבצים
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
