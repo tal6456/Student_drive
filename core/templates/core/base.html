@@ -338,6 +338,24 @@
         border-top-left-radius: 0 !important;
         border-top-right-radius: 0 !important;
     }
+    /* Google Translate - Hidden Engine Fix */
+    .translate-wrapper { display: flex; align-items: center; gap: 5px; }
+    .lang-btn {
+        background: var(--gd-hover);
+        border: 1px solid var(--gd-border);
+        color: var(--gd-text) !important;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+    .lang-btn:hover { background: var(--gd-primary); color: white !important; }
+
+    /* חסימת כל אלמנט ויזואלי של גוגל */
+    .skiptranslate, .goog-te-banner-frame, #goog-gt-tt { display: none !important; visibility: hidden !important; }
+    body { top: 0px !important; position: static !important; }
 </style>
 
 
@@ -395,6 +413,11 @@
                     {% endif %}
                 </ul>
 
+                <div class="translate-wrapper mx-2 align-self-center">
+    <a href="javascript:void(0)" onclick="doGTranslate('he|en')" class="lang-btn">English</a>
+    <a href="javascript:void(0)" onclick="doGTranslate('he|he')" class="lang-btn">עברית</a>
+</div>
+<div id="google_translate_element" style="display:none"></div>
                 <form class="d-flex mx-lg-4 my-2 my-lg-0 flex-grow-1" action="{% url 'global_search' %}" method="GET" style="max-width: 400px;">
                     <div class="input-group shadow-sm rounded-pill overflow-hidden border">
                         <button class="btn bg-white border-0 text-muted px-3" type="submit">
@@ -682,6 +705,61 @@
         })
         .catch(error => console.error('Error:', error));
     }
+    </script>
+<script type="text/javascript">
+    // 1. אתחול בסיסי ושקט
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'he',
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+
+    // 2. פונקציית התרגום - בלי רענון דף!
+    function doGTranslate(lang_pair) {
+        const lang = lang_pair.split('|')[1];
+        const teCombo = document.querySelector('.goog-te-combo');
+
+        // שמירת השפה בעוגייה בפורמט שגוגל אוהבת (זה מה שמונע חזרה לעברית במעבר דפים)
+        const domain = window.location.hostname;
+        document.cookie = "googtrans=/he/" + lang + "; path=/";
+        document.cookie = "googtrans=/he/" + lang + "; domain=" + domain + "; path=/";
+
+        if (teCombo) {
+            teCombo.value = lang;
+            teCombo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        // אם בחרנו עברית, פשוט ננקה ונחזיר למקור
+        if (lang === 'he') {
+            document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            location.reload();
+        }
+    }
+
+    // 3. מנגנון שמוודא שגוגל לא "בורחת" לנו במעבר דפים
+    (function() {
+        const checkInterval = setInterval(() => {
+            const teCombo = document.querySelector('.goog-te-combo');
+            const cookieValue = document.cookie.split('; ').find(row => row.startsWith('googtrans='));
+
+            if (teCombo && cookieValue) {
+                const savedLang = cookieValue.split('/')[2];
+                if (teCombo.value !== savedLang) {
+                    teCombo.value = savedLang;
+                    teCombo.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        }, 1000); // בודק כל שנייה אם השפה נכונה
+    })();
+
+    // 4. העלמת הבאנרים המציקים בלי להפריע ללחיצות
+    setInterval(function() {
+        const frame = document.querySelector('.goog-te-banner-frame');
+        if (frame) frame.remove();
+        document.body.style.top = "0px";
+    }, 500);
 </script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
