@@ -1,0 +1,19 @@
+# Python bytecode (החרא שראינו קודם)
+**/__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+.env
+media/
+staticfiles/
+
+# Environments
+.venv/
+venv/
+env/
+
+# IDEs (כדי שלא יריבו איתך על הגדרות ה-IDE)
+.idea/
+.vscode/
+*.iml
