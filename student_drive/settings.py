@@ -189,3 +189,25 @@ if not DEBUG:
 
     # כתובת ה-URL שדרכה הסטודנטים יראו את הקבצים
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# ==========================================
+# Google Social Auth Configuration
+# ==========================================
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+                'secret': os.getenv('GOOGLE_CLIENT_SECRET'),
+                'key': ''
+            },
+        ],
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
