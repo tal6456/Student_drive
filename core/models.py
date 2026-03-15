@@ -393,7 +393,7 @@ def create_course_folder_structure(sender, instance, created, **kwargs):
 
             # אם זו לא תיקיית "חומרי עזר נוספים", ניצור לה את מבנה השנים והסמסטרים
             if root_name != 'חומרי עזר נוספים':
-                for year in years:
+                for year in years_list:
                     # יצירת תיקיית השנה בתוך התיקייה הראשית
                     year_folder = Folder.objects.create(
                         name=year,
