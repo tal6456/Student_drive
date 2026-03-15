@@ -17,7 +17,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 
 #TODO
-ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost']#טלרווווווווויא גבר תוסיף םה דומיין אחרת לא היהי גישה לאתר לכלום!!!!!W@E>/'קגךףכגף'ק
+ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost'] # the * here is risky ...
 
 if DEBUG:
     ALLOWED_HOSTS += ['127.0.0.1', 'localhost']

@@ -1,21 +1,28 @@
-# Environments
+# Environments (סביבות עבודה של שניכם)
 .env
 venv/
 env/
 .venv/
 
-# Database
+# Database (מסד הנתונים המקומי - לא עולה לגיט)
 db.sqlite3
 
-# Python caches
+# Python & Django Caches (קבצים זמניים והחרא שראינו קודם)
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
-# Static and Media
+# Static and Media (קבצים שהמשתמשים מעלים - עוברים ל-AWS או נשארים מקומיים)
 staticfiles/
 media/
 
-# IDEs
+# IDEs (הגדרות של PyCharm ו-VSCode כדי שלא יתנגשו לכם)
 .idea/
 .vscode/
+*.iml
+
+# OS and Log files
+.DS_Store
+*.log
