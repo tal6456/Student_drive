@@ -525,6 +525,9 @@
         </div>
     </nav>
 
+    {% url 'submit_feedback' as feedback_url %}
+    {% include "core/partials/alert_banner.html" with banner_id="beta_launch_v1" alert_type="primary" icon="tools" message="ברוכים הבאים לדרייב הסטודנטיאלי! האתר כרגע בהרצה. מצאתם תקלה או שיש לכם רעיון לשיפור?" link_url=feedback_url link_text="ספרו לנו כאן!" %}
+
     <main id="main-content" class="{% block container_class %}container{% endblock %} mb-5 mt-4">
         {% block content %}{% endblock %}
     </main>
