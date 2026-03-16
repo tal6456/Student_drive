@@ -254,3 +254,52 @@ function submitComment(postId) {
     .catch(err => console.error("Error submitting comment:", err))
     .finally(() => btn.disabled = false);
 }
+//
+// /* =====================================================================
+//    AI FEATURES - Document Summarization
+//    ===================================================================== */
+//
+// function generateAISummary(docId, btn) {
+//     // 1. מציאת אלמנטים במסך
+//     const container = document.getElementById(`ai-summary-container-${docId}`);
+//     const textDiv = container.querySelector('.summary-text');
+//
+//     // 2. שמירת המצב המקורי של הכפתור ושינוי למצב "טעינה"
+//     const originalHtml = btn.innerHTML;
+//     btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> חושב...';
+//     btn.disabled = true;
+//
+//     // 3. קריאה לשרת עם הנתיב המדויק מתוך urls.py שלך!
+//     secureFetch(`/document/${docId}/ai-summary/`, {
+//         method: 'POST'
+//     })
+//     .then(response => {
+//         if (!response.ok) throw new Error("Server error");
+//         return response.json();
+//     })
+//     .then(data => {
+//         if (data.success) {
+//             // הכל עבד! נציג את הסיכום
+//             textDiv.innerText = data.summary;
+//
+//             // פתיחת חלונית הסיכום
+//             const bsCollapse = new bootstrap.Collapse(container, {
+//                 toggle: false
+//             });
+//             bsCollapse.show();
+//
+//         } else {
+//             // השרת החזיר שגיאה (למשל: אין מספיק מטבעות)
+//             alert("שגיאה: " + data.error);
+//         }
+//     })
+//     .catch(err => {
+//         console.error("Error generating AI summary:", err);
+//         alert("אירעה שגיאה בתקשורת מול השרת. אנא נסה שוב.");
+//     })
+//     .finally(() => {
+//         // 4. החזרת הכפתור למצב הרגיל
+//         btn.innerHTML = originalHtml;
+//         btn.disabled = false;
+//     });
+// }

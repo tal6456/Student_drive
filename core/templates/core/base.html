@@ -229,6 +229,43 @@
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     {% block extra_js %}{% endblock %}
+<script>
+        function generateAISummary(docId, btn) {
+            const container = document.getElementById(`ai-summary-container-${docId}`);
+            const textDiv = container.querySelector('.summary-text');
 
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> חושב...';
+            btn.disabled = true;
+
+            // שימוש ב-secureFetch שבנינו
+            secureFetch(`/document/${docId}/ai-summary/`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Server error");
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    textDiv.innerText = data.summary;
+                    const bsCollapse = new bootstrap.Collapse(container, { toggle: false });
+                    bsCollapse.show();
+                } else {
+                    alert("שגיאה: " + data.error);
+                }
+            })
+            .catch(err => {
+                console.error("Error generating AI summary:", err);
+                alert("אירעה שגיאה בתקשורת מול השרת.");
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>

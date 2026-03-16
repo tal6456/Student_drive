@@ -459,17 +459,33 @@ def download_file(request, document_id):
     d.download_count += 1
     d.save()
     return redirect(d.file.url)
-
+# ==========================================
+    # יצירת סיכום AI
+    # ==========================================
 
 @login_required
 def summarize_document_ai(request, document_id):
     d, p = get_object_or_404(Document, id=document_id), request.user.profile
-    if p.drive_coins < 5: return JsonResponse({'success': False, 'error': 'אין לך מספיק מטבעות!'})
+
+    ## בודק אם המשתמש הוא מנהל מערכת
+    is_admin = request.user.is_staff or request.user.is_superuser
+
+    # --- מערכת מטבעות (מושתקת כרגע לתקופת הרצה) ---
+    # if not is_admin:
+    #     if p.drive_coins < 5:
+    #         return JsonResponse({'success': False, 'error': 'אין לך מספיק מטבעות!'})
+
+    ## מייצר את הסיכום מ-Gemini
     s = generate_smart_summary(d.file.path)
+
     if "שגיאה" not in s:
-        p.drive_coins -= 5
-        p.save()
+        ## --- חיוב מטבעות (מושתק כרגע) ---
+        # if not is_admin:
+        #     p.drive_coins -= 5
+        #     p.save()
+
         return JsonResponse({'success': True, 'summary': s, 'new_coins': p.drive_coins})
+
     return JsonResponse({'success': False, 'error': s})
 
 
@@ -701,11 +717,9 @@ def like_post(request, post_id):
     return JsonResponse({'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)
 
 
-
 # ==========================================
 # מערכת חברים (Friendship)
 # ==========================================
-
 @login_required
 def send_friend_request(request, username):
     """שליחת בקשת חברות למשתמש אחר"""
