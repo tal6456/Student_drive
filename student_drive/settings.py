@@ -170,9 +170,11 @@ if not DEBUG:
     # מאלץ את כל התעבורה לעבור דרך HTTPS
     SECURE_SSL_REDIRECT = True
 
-    # הגנה על העוגיות (Cookies) כך שיישלחו רק בחיבור מאובטח
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # ==========================================
+    # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
+    # ==========================================
+    SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
+    CSRF_COOKIE_HTTPONLY = False  # חייב להיות False כדי ש-AJAX יוכל לעבוד
 
     # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת

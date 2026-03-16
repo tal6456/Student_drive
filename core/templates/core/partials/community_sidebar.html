@@ -1,0 +1,37 @@
+<div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+    <div class="card-body p-0">
+        <a href="?community={{ current_community.id }}" class="d-flex align-items-center gap-3 p-3 text-decoration-none border-bottom" style="color: var(--gd-text); border-color: var(--gd-border) !important;">
+            <div class="bg-primary bg-opacity-10 p-2 rounded-3">
+                <i class="fas fa-stream text-primary"></i>
+            </div>
+            <span class="fw-bold">פיד הקהילה</span>
+        </a>
+
+        <a href="?community={{ current_community.id }}&type=market" class="d-flex align-items-center gap-3 p-3 text-decoration-none border-bottom transition-all hover-bg-light" style="color: var(--gd-text); border-color: var(--gd-border) !important;">
+            <div class="bg-success bg-opacity-10 p-2 rounded-3">
+                <i class="fas fa-tags text-success"></i>
+            </div>
+            <span>לוח מודעות (דירות/ציוד)</span>
+        </a>
+
+        <a href="{% url 'my_friends' %}" class="d-flex align-items-center gap-3 p-3 text-decoration-none transition-all hover-bg-light" style="color: var(--gd-text);">
+            <div class="bg-info bg-opacity-10 p-2 rounded-3">
+                <i class="fas fa-user-friends text-info"></i>
+            </div>
+            <span>החברים שלי</span>
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+    <div class="card-body p-3">
+        <h6 class="fw-bold mb-3 small text-muted">הקבוצות שלי</h6>
+        <div class="list-group list-group-flush gap-1">
+            {% for comm in my_communities %}
+                <a href="?community={{ comm.id }}" class="list-group-item list-group-item-action rounded-3 border-0 small {% if comm.id == current_community.id %}active-comm fw-bold{% endif %}">
+                    <i class="fas fa-graduation-cap ms-2 opacity-50"></i> {{ comm.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>

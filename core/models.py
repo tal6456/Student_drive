@@ -252,30 +252,49 @@ class Friendship(models.Model):
 # ==========================================
 # 4. מערכת הקהילה (הפיד החברתי)
 # ==========================================
+class Community(models.Model):
+    COMMUNITY_TYPES = [
+        ('global', 'כלל ארצי'),
+        ('university', 'אוניברסיטה'),
+        ('major', 'מסלול לימודים'),
+        ('year', 'שנתון ספציפי'),
+        ('custom', 'קהילה חופשית (עתידי)')
+    ]
+
+    name = models.CharField(max_length=150, verbose_name="שם הקהילה")
+    description = models.TextField(blank=True, verbose_name="תיאור")
+    community_type = models.CharField(max_length=20, choices=COMMUNITY_TYPES, default='custom')
+
+    # שיוך לוגי (כדי שהמערכת תדע למי להציע את הקהילה אוטומטית)
+    university = models.ForeignKey(University, on_delete=models.CASCADE, null=True, blank=True)
+    major = models.ForeignKey(Major, on_delete=models.CASCADE, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+
+    # חברי הקהילה
+    members = models.ManyToManyField(User, related_name='joined_communities', blank=True)
+
+    def __str__(self):
+        return self.name
+
 
 class Post(models.Model):
-    """
-    מודל האב של הפוסטים.
-    כל פוסט ברשת החברתית יתחיל כאן.
-    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField(verbose_name="תוכן הפוסט")
     image = models.ImageField(upload_to='posts_images/', null=True, blank=True)
 
-    # שיוך לקהילה - מאפשר לנו לסנן פוסטים לפי המוסד/מקצוע של הסטודנט
-    university = models.ForeignKey(University, on_delete=models.CASCADE)
-    major = models.ForeignKey(Major, on_delete=models.SET_NULL, null=True, blank=True)
+    # השיוך החדש לקהילה (במקום אוניברסיטה ומקצוע). מוגדר כרגע עם null=True כדי לא לשבור פוסטים קיימים!
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', verbose_name="קהילה",
+                                  null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
 
     @property
     def total_likes(self):
-        """מחזיר את כמות הלייקים שיש לפוסט"""
         return self.likes.count()
 
     class Meta:
-        ordering = ['-created_at']  # הכי חדש מופיע למעלה
+        ordering = ['-created_at']
 
 
 class MarketplacePost(Post):
@@ -450,3 +469,22 @@ def create_course_folder_structure(sender, instance, created, **kwargs):
 # def auto_create_course_folders(sender, instance, created, **kwargs):
 #     if created:
 #         instance.create_default_folder_tree()
+
+@receiver(post_save, sender=UserProfile)
+def auto_join_communities(sender, instance, created, **kwargs):
+    if instance.university:
+        uni_community, _ = Community.objects.get_or_create(
+            name=f"קהילת {instance.university.name}",
+            community_type='university',
+            university=instance.university
+        )
+        uni_community.members.add(instance.user)
+
+        if instance.major:
+            major_community, _ = Community.objects.get_or_create(
+                name=f"{instance.major.name} - {instance.university.name}",
+                community_type='major',
+                university=instance.university,
+                major=instance.major
+            )
+            major_community.members.add(instance.user)

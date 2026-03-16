@@ -24,6 +24,8 @@
 </head>
 <body data-theme="{{ user.profile.theme_preference|default:'auto' }}">
 
+    <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
+
     <div id="loading-bar"></div>
 
     <nav class="navbar navbar-expand-lg sticky-top">

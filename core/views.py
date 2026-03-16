@@ -13,7 +13,7 @@ import os
 from django.db import models
 from .models import (University, Major, Course, Document, UserProfile,
     Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
-    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff)
+    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
 
 from .forms import CourseForm, UserProfileForm
 from .ai_utils import generate_smart_summary
@@ -23,6 +23,9 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 
 from django.contrib.admin.views.decorators import staff_member_required
+
+from django.shortcuts import get_object_or_404
+from .models import Friendship
 
 
 
@@ -537,51 +540,88 @@ def set_semester_lecturer(request, course_id):
 @login_required
 def community_feed(request):
     profile = request.user.profile
-    # אם המשתמש לא הגדיר אוניברסיטה, נשלח אותו להשלים פרופיל
     if not profile.university:
         messages.info(request, "כדי לראות את הקהילה שלך, אנא בחר מוסד לימודים.")
         return redirect('complete_profile')
 
-    # שליפת כל הפוסטים השייכים לאוניברסיטה של המשתמש
-    # אנחנו משתמשים ב-select_related כדי שהאתר יעבוד מהר יותר
-    posts = Post.objects.filter(university=profile.university).select_related('user', 'user__profile').order_by(
-        '-created_at')
+    # שליפת כל הקהילות שהמשתמש חבר בהן
+    my_communities = request.user.joined_communities.all()
 
-    # טיפול ביצירת פוסט חדש (POST)
+    # זיהוי הקהילה הנוכחית שמוצגת (לפי query param או ברירת מחדל לאוניברסיטה)
+    community_id = request.GET.get('community')
+    if community_id:
+        current_community = get_object_or_404(Community, id=community_id)
+    else:
+        # ברירת מחדל: קהילת האוניברסיטה של המשתמש
+        current_community = Community.objects.filter(
+            university=profile.university,
+            community_type='university'
+        ).first()
+
+    # שליפת הפוסטים של הקהילה הנבחרת בלבד
+    posts = Post.objects.filter(community=current_community).select_related('user', 'user__profile')
+
+    # סינון לפי סוג (חדש!)
+    post_filter = request.GET.get('type')  # 'market' או None
+    if post_filter == 'market':
+        posts = posts.filter(marketplacepost__isnull=False)
+
+    posts = posts.order_by('-created_at')
+
+    # טיפול ביצירת פוסט חדש
     if request.method == 'POST':
         content = request.POST.get('content')
-        post_type = request.POST.get('post_type')  # 'normal', 'market', 'video'
+        post_type = request.POST.get('post_type')
+
+        # הגנה: אם אין target_community בטופס, נשתמש בקהילה הנוכחית שהמשתמש צופה בה
+        target_community_id = request.POST.get('target_community')
+        if target_community_id:
+            target_community = get_object_or_404(Community, id=target_community_id)
+        else:
+            target_community = current_community
+
+        # אם עדיין אין קהילה (למשל משתמש חדש שלא שויך לכלום)
+        if not target_community:
+            messages.error(request, "עליך להיות חבר בקהילה כדי לפרסם פוסט.")
+            return redirect('community_feed')
 
         if content:
             if post_type == 'market':
-                category = request.POST.get('category')
-                price = request.POST.get('price') or None
                 MarketplacePost.objects.create(
                     user=request.user, content=content,
-                    university=profile.university, major=profile.major,
-                    category=category, price=price
+                    community=target_community,
+                    category=request.POST.get('category'),
+                    price=request.POST.get('price') or None
                 )
+            # ... שאר הקוד של וידאו ופוסט רגיל ...
             elif post_type == 'video':
-                video_file = request.FILES.get('video_file')
                 VideoPost.objects.create(
                     user=request.user, content=content,
-                    university=profile.university, major=profile.major,
-                    video_file=video_file
+                    community=target_community,
+                    video_file=request.FILES.get('video_file')
                 )
             else:
                 Post.objects.create(
                     user=request.user, content=content,
-                    university=profile.university, major=profile.major,
+                    community=target_community,
                     image=request.FILES.get('image')
                 )
 
-            messages.success(request, "הפוסט פורסם בקהילה! ✨")
-            return redirect('community_feed')
+            messages.success(request, f"הפוסט פורסם ב{target_community.name}! ✨")
+            return redirect(f"{reverse('community_feed')}?community={target_community.id}")
+
+    suggested_communities = Community.objects.filter(
+        university=profile.university
+    ).exclude(
+        members=request.user
+    ).order_by('?')[:3]  # שליפת 3 קהילות רנדומליות להגברת הגילוי
 
     context = {
         'posts': posts,
+        'my_communities': my_communities,
+        'current_community': current_community,
+        'suggested_communities': suggested_communities,  # המשתנה החדש
         'university': profile.university,
-        'major': profile.major,
     }
     return render(request, 'core/community_feed.html', context)
 
@@ -636,21 +676,30 @@ def public_profile(request, username):
     return render(request, 'core/public_profile.html', context)
 
 
+# ==========================================
+# פונקציות אינטראקציה (קהילה - AJAX)
+# ==========================================
 @login_required
 def like_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if post.likes.filter(id=request.user.id).exists():
-        post.likes.remove(request.user)
-        liked = False
-    else:
-        post.likes.add(request.user)
-        liked = True
+    # נוודא שזו בקשת POST כדי למנוע שגיאות
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
 
-    return JsonResponse({'liked': liked, 'total_likes': post.likes.count()})
+        # לוגיקת הלייק: הסרה אם קיים, הוספה אם לא
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
 
+        return JsonResponse({
+            'liked': liked,
+            'total_likes': post.likes.count()
+        })
 
-from django.shortcuts import get_object_or_404
-from .models import Friendship
+    return JsonResponse({'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)
+
 
 
 # ==========================================
@@ -863,3 +912,64 @@ def toggle_favorite_course(request, course_id):
 
         return JsonResponse({'is_favorite': is_favorite})
     return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
+
+@login_required
+def join_community(request, community_id):
+    """ הצטרפות לקהילה קיימת """
+    community = get_object_or_404(Community, id=community_id)
+    community.members.add(request.user)
+    messages.success(request, f"ברוך הבא ל{community.name}! הקהילה נוספה לפיד שלך.")
+    return redirect(f"{reverse('community_feed')}?community={community.id}")
+
+
+@login_required
+def discover_communities(request):
+    query = request.GET.get('q', '')
+
+    # חיפוש קהילות לפי שם או תיאור
+    all_communities = Community.objects.all()
+    if query:
+        all_communities = all_communities.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+
+    # חלוקה לקטגוריות לתצוגה נוחה (ירושות לוגיות)
+    context = {
+        'global_comm': all_communities.filter(community_type='global'),
+        'uni_comm': all_communities.filter(community_type='university'),
+        'major_comm': all_communities.filter(community_type='major'),
+        'query': query,
+        'my_community_ids': request.user.joined_communities.values_list('id', flat=True)
+    }
+
+    return render(request, 'core/discover_communities.html', context)
+
+
+@login_required
+def add_comment(request, post_id):
+    # הורדנו את הבדיקה הנוקשה של ה-headers כדי למנוע חסימות מיותרות
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+
+        # תמיכה בשאיבת הטקסט מה-FormData של ה-JS
+        text = request.POST.get('text', '').strip()
+
+        if text:
+            comment = Comment.objects.create(post=post, user=request.user, text=text)
+
+            # בדיקה בטוחה לתמונת הפרופיל
+            user_img = None
+            if hasattr(request.user, 'profile') and request.user.profile.profile_picture:
+                user_img = request.user.profile.profile_picture.url
+
+            return JsonResponse({
+                'success': True,
+                'username': comment.user.username,
+                'text': comment.text,
+                'created_at': 'עכשיו',
+                'user_img': user_img
+            })
+
+        return JsonResponse({'success': False, 'error': 'לא ניתן לפרסם תגובה ריקה.'}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)

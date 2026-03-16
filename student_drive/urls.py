@@ -24,6 +24,9 @@ urlpatterns = [
     path('feed/', views.community_feed, name='community_feed'),
     path('u/<str:username>/', views.public_profile, name='public_profile'),  # פרופיל ציבורי
     path('post/<int:post_id>/like/', views.like_post, name='like_post'),  # לייק לפוסט (AJAX)
+    path('community/<int:community_id>/join/', views.join_community, name='join_community'),  # נתיב הצטרפות לקהילה
+    path('communities/discover/', views.discover_communities, name='discover_communities'),  # דף גילוי קהילות (Discover Communities)
+    path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
 
     # חיפושים דינמיים ו-API
     path('search/live/', views.live_search, name='live_search'),
