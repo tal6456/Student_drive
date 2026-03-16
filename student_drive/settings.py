@@ -170,7 +170,9 @@ if not DEBUG:
 
     # הגנה על העוגיות (Cookies) כך שיישלחו רק בחיבור מאובטח
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = True
+
+    CSRF_TRUSTED_ORIGINS = ['https://student-drive.onrender.com']
 
     # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת

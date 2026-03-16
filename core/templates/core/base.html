@@ -720,7 +720,6 @@
         const lang = lang_pair.split('|')[1];
         const teCombo = document.querySelector('.goog-te-combo');
 
-        // שמירת השפה בעוגייה בפורמט שגוגל אוהבת (זה מה שמונע חזרה לעברית במעבר דפים)
         const domain = window.location.hostname;
         document.cookie = "googtrans=/he/" + lang + "; path=/";
         document.cookie = "googtrans=/he/" + lang + "; domain=" + domain + "; path=/";
@@ -730,7 +729,6 @@
             teCombo.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
-        // אם בחרנו עברית, פשוט ננקה ונחזיר למקור
         if (lang === 'he') {
             document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             location.reload();
@@ -750,7 +748,7 @@
                     teCombo.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             }
-        }, 1000); // בודק כל שנייה אם השפה נכונה
+        }, 1000);
     })();
 
     // 4. העלמת הבאנרים המציקים בלי להפריע ללחיצות
@@ -760,6 +758,24 @@
         document.body.style.top = "0px";
     }, 500);
 </script>
+
+{% csrf_token %}
+<script>
+    // התיקון הגלובלי לכל הכפתורים באתר
+    function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        let [resource, config] = arguments;
+        if (!config) { config = {}; }
+        if (!config.headers) { config.headers = {}; }
+        config.headers['X-CSRFToken'] = getCsrfToken();
+        return originalFetch(resource, config);
+    };
+</script>
+
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
