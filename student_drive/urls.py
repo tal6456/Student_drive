@@ -14,6 +14,7 @@ urlpatterns = [
     # דפי ניווט וקורסים
     path('', views.home, name='home'),
     path('course/<int:course_id>/', views.course_detail, name='course_detail'),
+    path('course/<int:course_id>/toggle_favorite/', views.toggle_favorite_course, name='toggle_favorite_course'),
     path('add-course/', views.add_course, name='add_course'),
     path('course/<int:course_id>/folder/<int:folder_id>/', views.course_detail, name='course_detail_folder'),
 
@@ -23,6 +24,9 @@ urlpatterns = [
     path('feed/', views.community_feed, name='community_feed'),
     path('u/<str:username>/', views.public_profile, name='public_profile'),  # פרופיל ציבורי
     path('post/<int:post_id>/like/', views.like_post, name='like_post'),  # לייק לפוסט (AJAX)
+    path('community/<int:community_id>/join/', views.join_community, name='join_community'),  # נתיב הצטרפות לקהילה
+    path('communities/discover/', views.discover_communities, name='discover_communities'),  # דף גילוי קהילות (Discover Communities)
+    path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
 
     # חיפושים דינמיים ו-API
     path('search/live/', views.live_search, name='live_search'),
@@ -48,9 +52,10 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('terms/', views.terms_view, name='terms'),
 
-    # מרצים ושונות
+    # סגל אקדמי ושונות
     path('lecturers/', views.lecturers_index, name='lecturers_index'),
-    path('lecturers/<int:lecturer_id>/rate/', views.rate_lecturer, name='rate_lecturer'),
+    path('staff/<int:staff_id>/rate/', views.rate_staff, name='rate_staff'),  # השורה שתוקנה!
+    path('staff/<int:staff_id>/', views.staff_detail, name='staff_detail'),
     path('course/<int:course_id>/set_lecturer/', views.set_semester_lecturer, name='set_semester_lecturer'),
     path('feedback/', views.submit_feedback, name='submit_feedback'),
     path('document/<int:document_id>/ai-summary/', views.summarize_document_ai, name='summarize_document_ai'),

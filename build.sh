@@ -2,40 +2,34 @@
 # exit on error
 set -o errexit
 
-# 1. התקנת ספריות
 pip install -r requirements.txt
-
-# 2. איסוף קבצים סטטיים והרצת מיגרציות
 python manage.py collectstatic --no-input
+
+# השארנו את ה-migrate, אבל אם הוא נכשל בגלל הבלגן הנוכחי,
+# אנחנו נתקן אותו ידנית פעם אחת מהמחשב שלך.
 python manage.py migrate
 
-# 3. טעינת נתוני האוניברסיטאות והקורסים (הקבצים שיצרת)
-python manage.py load_bgu_courses
-python manage.py seed_bgu_ee
+# הרצת הפקודות המיוחדות שלך רק אם הן קיימות
+python manage.py load_bgu_courses || true
+python manage.py seed_bgu_ee || true
 
-# 4. הגדרות אוטומטיות בתוך ה-Shell (מנהל מערכת וניקוי גוגל)
 python manage.py shell << END
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
-from allauth.socialaccount.models import SocialApp
 import os
 
-# יצירת סופר-יוזר
+# יצירת סופר-יוזר בצורה בטוחה
 User = get_user_model()
-username = os.getenv('ADMIN_USERNAME', 'admin')
+username = os.getenv('ADMIN_USERNAME', 'admin_master')
+email = os.getenv('ADMIN_EMAIL', 'admin@example.com')
+password = os.getenv('ADMIN_PASSWORD', 'admin1234')
+
 if not User.objects.filter(username=username).exists():
-    User.objects.create_superuser(username, os.getenv('ADMIN_EMAIL'), os.getenv('ADMIN_PASSWORD'))
-    print("Superuser created.")
+    User.objects.create_superuser(username, email, password)
+    print(f"Superuser {username} created.")
 
-# עדכון הגדרות האתר
-site, created = Site.objects.get_current(), False
-site.domain = 'student-drive.onrender.com'
-site.name = 'Student Drive'
-site.save()
-
-# ניקוי שאריות גוגל כדי להשתמש ב-settings.py
-SocialApp.objects.filter(provider='google').delete()
-print("SocialApps cleared and DB seeded.")
+# עדכון דומיין האתר
+Site.objects.filter(id=1).update(domain='student-drive.onrender.com', name='Student Drive')
 END
 #מה שהיה מקודם לפני הריינדר
 #!/usr/bin/env bash

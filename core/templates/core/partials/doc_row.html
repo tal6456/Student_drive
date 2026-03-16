@@ -28,6 +28,13 @@
                         <span><i class="fas fa-hdd"></i> {{ doc.file_size_bytes|filesizeformat }}</span>
                     {% endif %}
 
+                    {% if doc.staff_member %}
+                        <a href="{% url 'staff_detail' doc.staff_member.id %}" class="text-decoration-none d-flex align-items-center gap-1" style="color: #4285f4; font-weight: 600;">
+                            <i class="fas fa-user-tie" style="font-size: 0.8rem;"></i>
+                            {{ doc.staff_member.name.split.0|slice:":1" }}. {{ doc.staff_member.name.split|slice:"1:"|join:" " }}
+                        </a>
+                    {% endif %}
+
                     <span class="d-flex align-items-center gap-1">
                         {% if doc.is_anonymous %}
                             <i class="fas fa-user-secret"></i> אנונימי
@@ -69,7 +76,7 @@
                 </span>
             {% endif %}
 
-            <a href="{% url 'download_file' doc.id %}" target="_blank" class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm" title="הורד קובץ">
+            <a href="{% url 'download_file' doc.id %}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" title="הורד קובץ">
                 <i class="fas fa-download"></i> <span class="d-none d-md-inline">{{ doc.download_count }}</span>
             </a>
 

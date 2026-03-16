@@ -12,8 +12,8 @@ import datetime
 import os
 from django.db import models
 from .models import (University, Major, Course, Document, UserProfile,
-    Report, Lecturer, LecturerReview, CourseSemesterLecturer, Feedback, Folder,
-    Post, MarketplacePost, VideoPost, Comment, Friendship) # הוספנו את המודלים החדשים
+    Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
+    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
 
 from .forms import CourseForm, UserProfileForm
 from .ai_utils import generate_smart_summary
@@ -24,7 +24,6 @@ from django.http import JsonResponse
 
 from django.contrib.admin.views.decorators import staff_member_required
 
-# ייבוא ה-Decorator שמשחרר את חסימת ה-CSRF לבקשות JS
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -101,6 +100,11 @@ def home(request):
         context['major_id'] = major_id
         context['year'] = year_id
         context['uni_id'] = uni_id
+
+    # הוספת הקורסים המועדפים להקשר (Context) של דף הבית
+    if request.user.is_authenticated:
+        context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
+            'major__university').all()
 
     return render(request, 'core/home.html', context)
 
@@ -224,93 +228,81 @@ def course_detail(request, course_id):
         if action == 'create_folder':
             folder_name = request.POST.get('folder_name')
             parent_id = request.POST.get('parent_folder')
-            lecturer_id = request.POST.get('lecturer')
-            new_lecturer_name = request.POST.get('new_lecturer_name')
+            staff_id = request.POST.get('staff_member_id')  # שונה מ-lecturer_id
+            new_staff_name = request.POST.get('new_lecturer_name')
 
             parent_folder = None
             if parent_id and parent_id != 'root':
                 parent_folder = get_object_or_404(Folder, id=parent_id, course=course)
 
-            assigned_lecturer = None
-            if new_lecturer_name and new_lecturer_name.strip():
-                assigned_lecturer, created = Lecturer.objects.get_or_create(
-                    name=new_lecturer_name.strip(),
+            assigned_staff = None
+            if new_staff_name and new_staff_name.strip():
+                assigned_staff, _ = Lecturer.objects.get_or_create(
+                    name=new_staff_name.strip(),
                     university=course.major.university
                 )
-            elif lecturer_id:
-                assigned_lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+            elif staff_id:
+                assigned_staff = get_object_or_404(AcademicStaff, id=staff_id)
 
             if folder_name:
                 Folder.objects.create(
                     course=course,
                     name=folder_name.strip(),
                     parent=parent_folder,
-                    lecturer=assigned_lecturer,
+                    staff_member=assigned_staff,  # שונה ל-staff_member
                     created_by=request.user
                 )
                 messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
+
         elif action == 'edit_folder':
             folder_id_raw = request.POST.get('folder_id')
-            new_name = request.POST.get('folder_name')
-            lecturer_id = request.POST.get('lecturer')
-            new_lecturer_name = request.POST.get('new_lecturer_name')
+            staff_id = request.POST.get('staff_member_id')
+            new_first = request.POST.get('new_first_name')
+            new_last = request.POST.get('new_last_name')
 
             if folder_id_raw:
-                clean_folder_id = folder_id_raw.replace('folder_', '')
-                folder_to_edit = get_object_or_404(Folder, id=clean_folder_id, course=course)
+                clean_id = folder_id_raw.replace('folder_', '')
+                folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
 
-                if new_name:
-                    folder_to_edit.name = new_name.strip()
-
-                if new_lecturer_name and new_lecturer_name.strip():
-                    folder_to_edit.lecturer, _ = Lecturer.objects.get_or_create(
-                        name=new_lecturer_name.strip(),
+                # יצירת מרצה חדש עם שם מפוצל
+                if new_first and new_last:
+                    full_name = f"{new_first.strip()} {new_last.strip()}"
+                    folder_to_edit.staff_member, _ = Lecturer.objects.get_or_create(
+                        name=full_name,
                         university=course.major.university
                     )
-                elif lecturer_id:
-                    folder_to_edit.lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+
+                # או בחירה של מרצה קיים
+                elif staff_id:
+                    folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id)
                 else:
-                    folder_to_edit.lecturer = None
+                    folder_to_edit.staff_member = None
 
                 folder_to_edit.save()
-                messages.success(request, 'התיקייה עודכנה בהצלחה!')
+                messages.success(request, 'השיוך עודכן בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
         elif action == 'quick_upload':
             uploaded_files = request.FILES.getlist('file')
             folder_id = request.POST.get('folder_id')
             parent_folder = None
-
-            if folder_id and folder_id != 'root' and folder_id != 'null':
+            if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
-            # בדיקת הגדרות הפרטיות של המשתמש - האם מעלה אנונימי כברירת מחדל?
             is_anon = request.user.profile.default_anonymous_upload
-
             for uploaded_file in uploaded_files:
-                original_name = os.path.splitext(uploaded_file.name)[0]
-                assigned_lecturer = parent_folder.lecturer if parent_folder else None
-
+                assigned_staff = parent_folder.staff_member if parent_folder else None
                 Document.objects.create(
-                    course=course,
-                    folder=parent_folder,
-                    title=original_name,
-                    file=uploaded_file,
-                    lecturer=assigned_lecturer,
-                    uploaded_by=request.user,
-                    is_anonymous=is_anon  # שימוש בהגדרה החכמה!
+                    course=course, folder=parent_folder,
+                    title=os.path.splitext(uploaded_file.name)[0],
+                    file=uploaded_file, staff_member=assigned_staff,  # הורשת שיוך
+                    uploaded_by=request.user, is_anonymous=is_anon
                 )
                 request.user.profile.drive_coins += 1
-
             request.user.profile.save()
-
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                messages.success(request, f'{len(uploaded_files)} קבצים הועלו בהצלחה! תודה על התרומה 🪙')
-                return JsonResponse({'success': True})
-
-            return redirect('course_detail', course_id=course.id)
+            return JsonResponse({'success': True})
 
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
@@ -320,7 +312,8 @@ def course_detail(request, course_id):
         'course': course,
         'folders': all_folders,
         'documents': all_documents,
-        'uni_lecturers': university_lecturers,
+        'uni_lecturers': AcademicStaff.objects.filter(university=course.major.university).order_by('name'),
+        # שים לב לשינוי ל-AcademicStaff
     }
 
     return render(request, 'core/course_detail.html', context)
@@ -387,26 +380,70 @@ def add_course(request):
     return render(request, 'core/add_course.html', {'form': form})
 
 
+# --- פונקציות סגל אקדמי מעודכנות ---
+
 def lecturers_index(request):
     uid = request.GET.get('university')
-    lecs = Lecturer.objects.filter(university_id=uid) if uid else Lecturer.objects.all()
-    lecs = sorted(lecs, key=lambda l: l.average_rating, reverse=True)
-    return render(request, 'core/lecturers_index.html', {'lecturers': lecs, 'universities': University.objects.all()})
+    staff_members = AcademicStaff.objects.filter(university_id=uid) if uid else AcademicStaff.objects.all()
+    staff_members = staff_members.order_by('-average_rating')
+
+    # הוספת שם תצוגה לפרטיות
+    for staff in staff_members:
+        staff.display_name = staff.privacy_name  # משתמש ב-property שיצרנו במודל
+
+    return render(request, 'core/lecturers_index.html', {
+        'staff_members': staff_members,
+        'universities': University.objects.all(),
+        'selected_uni': get_object_or_404(University, id=uid) if uid else None
+    })
+
+
+def staff_detail(request, staff_id):
+    staff = get_object_or_404(AcademicStaff, id=staff_id)
+    reviews = staff.reviews.all().order_by('-created_at')
+
+    # חישוב התפלגות
+    total = reviews.count()
+    ratings_dist = {i: {'count': reviews.filter(rating=i).count(),
+                        'percentage': (reviews.filter(rating=i).count() / total * 100 if total > 0 else 0)}
+                    for i in range(1, 6)}
+
+    # חיפוש קורסים (חכם: גם סמסטרים וגם תיקיות)
+    courses = Course.objects.filter(
+        Q(semester_staff__staff_member=staff) | Q(folders__staff_member=staff)
+    ).distinct()
+
+    return render(request, 'core/staff_detail.html', {
+        'staff': staff,
+        'display_name': staff.privacy_name,
+        'reviews': reviews,
+        'ratings_dist': ratings_dist,
+        'courses': courses,
+    })
 
 
 @login_required
-def rate_lecturer(request, lecturer_id):
+def rate_staff(request, staff_id):
     if request.method == 'POST':
-        l = get_object_or_404(Lecturer, id=lecturer_id)
-        r, rt = int(request.POST.get('rating', 0)), request.POST.get('review_text', '')
-        if 1 <= r <= 5:
-            LecturerReview.objects.update_or_create(lecturer=l, user=request.user,
-                                                    defaults={'rating': r, 'review_text': rt})
-            request.user.profile.drive_coins += 2
-            request.user.profile.save()
-            messages.success(request, 'הדירוג נשמר! קיבלת 2 מטבעות דרייב 🪙')
-    return redirect(f"{reverse('lecturers_index')}?university={l.university.id}")
+        staff = get_object_or_404(AcademicStaff, id=staff_id)
+        rating = int(request.POST.get('rating', 0))
+        text = request.POST.get('review_text', '')
 
+        if 1 <= rating <= 5:
+            review, created = StaffReview.objects.update_or_create(
+                staff_member=staff, user=request.user,
+                defaults={'rating': rating, 'review_text': text}
+            )
+            # עדכון ממוצע
+            avg = staff.reviews.aggregate(models.Avg('rating'))['rating__avg']
+            staff.average_rating = round(avg, 1)
+            staff.save()
+
+            if created:
+                request.user.profile.drive_coins += 2
+                request.user.profile.save()
+            messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
+    return redirect('staff_detail', staff_id=staff.id)
 
 def terms_view(request): return render(request, 'core/terms.html')
 
@@ -501,51 +538,88 @@ def set_semester_lecturer(request, course_id):
 @login_required
 def community_feed(request):
     profile = request.user.profile
-    # אם המשתמש לא הגדיר אוניברסיטה, נשלח אותו להשלים פרופיל
     if not profile.university:
         messages.info(request, "כדי לראות את הקהילה שלך, אנא בחר מוסד לימודים.")
         return redirect('complete_profile')
 
-    # שליפת כל הפוסטים השייכים לאוניברסיטה של המשתמש
-    # אנחנו משתמשים ב-select_related כדי שהאתר יעבוד מהר יותר
-    posts = Post.objects.filter(university=profile.university).select_related('user', 'user__profile').order_by(
-        '-created_at')
+    # שליפת כל הקהילות שהמשתמש חבר בהן
+    my_communities = request.user.joined_communities.all()
 
-    # טיפול ביצירת פוסט חדש (POST)
+    # זיהוי הקהילה הנוכחית שמוצגת (לפי query param או ברירת מחדל לאוניברסיטה)
+    community_id = request.GET.get('community')
+    if community_id:
+        current_community = get_object_or_404(Community, id=community_id)
+    else:
+        # ברירת מחדל: קהילת האוניברסיטה של המשתמש
+        current_community = Community.objects.filter(
+            university=profile.university,
+            community_type='university'
+        ).first()
+
+    # שליפת הפוסטים של הקהילה הנבחרת בלבד
+    posts = Post.objects.filter(community=current_community).select_related('user', 'user__profile')
+
+    # סינון לפי סוג (חדש!)
+    post_filter = request.GET.get('type')  # 'market' או None
+    if post_filter == 'market':
+        posts = posts.filter(marketplacepost__isnull=False)
+
+    posts = posts.order_by('-created_at')
+
+    # טיפול ביצירת פוסט חדש
     if request.method == 'POST':
         content = request.POST.get('content')
-        post_type = request.POST.get('post_type')  # 'normal', 'market', 'video'
+        post_type = request.POST.get('post_type')
+
+        # הגנה: אם אין target_community בטופס, נשתמש בקהילה הנוכחית שהמשתמש צופה בה
+        target_community_id = request.POST.get('target_community')
+        if target_community_id:
+            target_community = get_object_or_404(Community, id=target_community_id)
+        else:
+            target_community = current_community
+
+        # אם עדיין אין קהילה (למשל משתמש חדש שלא שויך לכלום)
+        if not target_community:
+            messages.error(request, "עליך להיות חבר בקהילה כדי לפרסם פוסט.")
+            return redirect('community_feed')
 
         if content:
             if post_type == 'market':
-                category = request.POST.get('category')
-                price = request.POST.get('price') or None
                 MarketplacePost.objects.create(
                     user=request.user, content=content,
-                    university=profile.university, major=profile.major,
-                    category=category, price=price
+                    community=target_community,
+                    category=request.POST.get('category'),
+                    price=request.POST.get('price') or None
                 )
+            # ... שאר הקוד של וידאו ופוסט רגיל ...
             elif post_type == 'video':
-                video_file = request.FILES.get('video_file')
                 VideoPost.objects.create(
                     user=request.user, content=content,
-                    university=profile.university, major=profile.major,
-                    video_file=video_file
+                    community=target_community,
+                    video_file=request.FILES.get('video_file')
                 )
             else:
                 Post.objects.create(
                     user=request.user, content=content,
-                    university=profile.university, major=profile.major,
+                    community=target_community,
                     image=request.FILES.get('image')
                 )
 
-            messages.success(request, "הפוסט פורסם בקהילה! ✨")
-            return redirect('community_feed')
+            messages.success(request, f"הפוסט פורסם ב{target_community.name}! ✨")
+            return redirect(f"{reverse('community_feed')}?community={target_community.id}")
+
+    suggested_communities = Community.objects.filter(
+        university=profile.university
+    ).exclude(
+        members=request.user
+    ).order_by('?')[:3]  # שליפת 3 קהילות רנדומליות להגברת הגילוי
 
     context = {
         'posts': posts,
+        'my_communities': my_communities,
+        'current_community': current_community,
+        'suggested_communities': suggested_communities,  # המשתנה החדש
         'university': profile.university,
-        'major': profile.major,
     }
     return render(request, 'core/community_feed.html', context)
 
@@ -600,22 +674,31 @@ def public_profile(request, username):
     return render(request, 'core/public_profile.html', context)
 
 
+# ==========================================
+# פונקציות אינטראקציה (קהילה - AJAX)
+# ==========================================
 @csrf_exempt
 @login_required
 def like_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if post.likes.filter(id=request.user.id).exists():
-        post.likes.remove(request.user)
-        liked = False
-    else:
-        post.likes.add(request.user)
-        liked = True
+    # נוודא שזו בקשת POST כדי למנוע שגיאות
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
 
-    return JsonResponse({'liked': liked, 'total_likes': post.likes.count()})
+        # לוגיקת הלייק: הסרה אם קיים, הוספה אם לא
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
 
+        return JsonResponse({
+            'liked': liked,
+            'total_likes': post.likes.count()
+        })
 
-from django.shortcuts import get_object_or_404
-from .models import Friendship
+    return JsonResponse({'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)
+
 
 
 # ==========================================
@@ -810,3 +893,83 @@ def complete_profile(request):
         form = UserProfileForm(instance=profile, user=request.user)
 
     return render(request, 'core/complete_profile.html', {'form': form})
+
+
+@login_required
+def toggle_favorite_course(request, course_id):
+    """ הוספה או הסרה של קורס מהמועדפים (AJAX) """
+    if request.method == 'POST':
+        course = get_object_or_404(Course, id=course_id)
+        profile = request.user.profile
+
+        # אם הקורס כבר במועדפים - נסיר אותו. אם לא - נוסיף.
+        if course in profile.favorite_courses.all():
+            profile.favorite_courses.remove(course)
+            is_favorite = False
+        else:
+            profile.favorite_courses.add(course)
+            is_favorite = True
+
+        return JsonResponse({'is_favorite': is_favorite})
+    return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
+
+@login_required
+def join_community(request, community_id):
+    """ הצטרפות לקהילה קיימת """
+    community = get_object_or_404(Community, id=community_id)
+    community.members.add(request.user)
+    messages.success(request, f"ברוך הבא ל{community.name}! הקהילה נוספה לפיד שלך.")
+    return redirect(f"{reverse('community_feed')}?community={community.id}")
+
+
+@login_required
+def discover_communities(request):
+    query = request.GET.get('q', '')
+
+    # חיפוש קהילות לפי שם או תיאור
+    all_communities = Community.objects.all()
+    if query:
+        all_communities = all_communities.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+
+    # חלוקה לקטגוריות לתצוגה נוחה (ירושות לוגיות)
+    context = {
+        'global_comm': all_communities.filter(community_type='global'),
+        'uni_comm': all_communities.filter(community_type='university'),
+        'major_comm': all_communities.filter(community_type='major'),
+        'query': query,
+        'my_community_ids': request.user.joined_communities.values_list('id', flat=True)
+    }
+
+    return render(request, 'core/discover_communities.html', context)
+
+
+@login_required
+def add_comment(request, post_id):
+    # הורדנו את הבדיקה הנוקשה של ה-headers כדי למנוע חסימות מיותרות
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+
+        # תמיכה בשאיבת הטקסט מה-FormData של ה-JS
+        text = request.POST.get('text', '').strip()
+
+        if text:
+            comment = Comment.objects.create(post=post, user=request.user, text=text)
+
+            # בדיקה בטוחה לתמונת הפרופיל
+            user_img = None
+            if hasattr(request.user, 'profile') and request.user.profile.profile_picture:
+                user_img = request.user.profile.profile_picture.url
+
+            return JsonResponse({
+                'success': True,
+                'username': comment.user.username,
+                'text': comment.text,
+                'created_at': 'עכשיו',
+                'user_img': user_img
+            })
+
+        return JsonResponse({'success': False, 'error': 'לא ניתן לפרסם תגובה ריקה.'}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)

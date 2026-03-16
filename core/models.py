@@ -98,12 +98,14 @@ class Folder(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     color = models.CharField(max_length=10, default='#ffc107', verbose_name="צבע")
-    lecturer = models.ForeignKey('Lecturer', on_delete=models.SET_NULL, null=True, blank=True)
+    # הקישור תוקן לסגל אקדמי כללי
+    staff_member = models.ForeignKey('AcademicStaff', on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name="איש סגל")
 
     class Meta:
         unique_together = ('course', 'parent', 'name')
 
-    def __str__(self): return f"{self.name} ({self.course.name})"
+    def __str__(self): return self.name
 
 
 class Document(models.Model):
@@ -114,8 +116,11 @@ class Document(models.Model):
     file_extension = models.CharField(max_length=10, blank=True)
     file_size_bytes = models.PositiveIntegerField(default=0)
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    lecturer = models.ForeignKey('Lecturer', on_delete=models.SET_NULL, null=True, blank=True,
-                                 verbose_name="מרצה/מתרגל רלוונטי")
+
+    # הקישור תוקן לסגל אקדמי כללי
+    staff_member = models.ForeignKey('AcademicStaff', on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name="מרצה/מתרגל רלוונטי")
+
     upload_date = models.DateTimeField(auto_now_add=True)
     download_count = models.PositiveIntegerField(default=0)
     is_anonymous = models.BooleanField(default=False)
@@ -132,7 +137,6 @@ class Document(models.Model):
 
     @property
     def total_likes(self):
-        """מחזיר את כמות הלייקים הכוללת שיש לקובץ"""
         return self.likes.count()
 
     def __str__(self):
@@ -156,6 +160,9 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="מספר טלפון")
     drive_coins = models.PositiveIntegerField(default=0)
+    # הקורסים המועדפים של המשתמש (לגישה מהירה)
+    favorite_courses = models.ManyToManyField(Course, related_name='favorited_by', blank=True,
+                                              verbose_name="קורסים מועדפים")
 
     # הגדרות משתמש
     THEME_CHOICES = [('light', 'יום (בהיר)'), ('dark', 'לילה (כהה)'), ('auto', 'אוטומטי')]
@@ -245,30 +252,49 @@ class Friendship(models.Model):
 # ==========================================
 # 4. מערכת הקהילה (הפיד החברתי)
 # ==========================================
+class Community(models.Model):
+    COMMUNITY_TYPES = [
+        ('global', 'כלל ארצי'),
+        ('university', 'אוניברסיטה'),
+        ('major', 'מסלול לימודים'),
+        ('year', 'שנתון ספציפי'),
+        ('custom', 'קהילה חופשית (עתידי)')
+    ]
+
+    name = models.CharField(max_length=150, verbose_name="שם הקהילה")
+    description = models.TextField(blank=True, verbose_name="תיאור")
+    community_type = models.CharField(max_length=20, choices=COMMUNITY_TYPES, default='custom')
+
+    # שיוך לוגי (כדי שהמערכת תדע למי להציע את הקהילה אוטומטית)
+    university = models.ForeignKey(University, on_delete=models.CASCADE, null=True, blank=True)
+    major = models.ForeignKey(Major, on_delete=models.CASCADE, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+
+    # חברי הקהילה
+    members = models.ManyToManyField(User, related_name='joined_communities', blank=True)
+
+    def __str__(self):
+        return self.name
+
 
 class Post(models.Model):
-    """
-    מודל האב של הפוסטים.
-    כל פוסט ברשת החברתית יתחיל כאן.
-    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField(verbose_name="תוכן הפוסט")
     image = models.ImageField(upload_to='posts_images/', null=True, blank=True)
 
-    # שיוך לקהילה - מאפשר לנו לסנן פוסטים לפי המוסד/מקצוע של הסטודנט
-    university = models.ForeignKey(University, on_delete=models.CASCADE)
-    major = models.ForeignKey(Major, on_delete=models.SET_NULL, null=True, blank=True)
+    # השיוך החדש לקהילה (במקום אוניברסיטה ומקצוע). מוגדר כרגע עם null=True כדי לא לשבור פוסטים קיימים!
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', verbose_name="קהילה",
+                                  null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
 
     @property
     def total_likes(self):
-        """מחזיר את כמות הלייקים שיש לפוסט"""
         return self.likes.count()
 
     class Meta:
-        ordering = ['-created_at']  # הכי חדש מופיע למעלה
+        ordering = ['-created_at']
 
 
 class MarketplacePost(Post):
@@ -300,7 +326,7 @@ class Comment(models.Model):
 
 
 # ==========================================
-# 5. דיווחים, מרצים ופידבק (שאר המערכת)
+# 5. סגל אקדמי, דיווחים ופידבק
 # ==========================================
 
 class Report(models.Model):
@@ -312,42 +338,73 @@ class Report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class Lecturer(models.Model):
-    university = models.ForeignKey(University, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+class AcademicStaff(models.Model):
+    """
+    מודל אב מוחשי - אליו אנחנו מקשרים מסמכים, תיקיות וביקורות.
+    """
+    university = models.ForeignKey(University, on_delete=models.CASCADE, verbose_name="אוניברסיטה")
+    name = models.CharField(max_length=100, verbose_name="שם מלא")
+    email = models.EmailField(blank=True, null=True, verbose_name="אימייל (אופציונלי)")
+    image = models.ImageField(upload_to='staff_images/', null=True, blank=True, verbose_name="תמונה")
+
+    # --- השורה החדשה שהוספנו ---
+    # הופך את המאפיין לשדה אמיתי כדי שנוכל למיין לפי דירוג ב-SQL
+    average_rating = models.FloatField(default=0.0, verbose_name="דירוג ממוצע")
 
     @property
-    def average_rating(self):
-        reviews = self.reviews.all()
-        if reviews.exists():
-            return round(sum(r.rating for r in reviews) / reviews.count(), 1)
-        return 0
+    def privacy_name(self):
+        """פונקציה לשמירת פרטיות: מציגה אות ראשונה ושם משפחה מלא."""
+        parts = self.name.split()
+        if len(parts) >= 2:
+            first_initial = parts[0][0]
+            last_name = " ".join(parts[1:])
+            return f"{first_initial}. {last_name}"
+        return self.name
 
-    def __str__(self): return self.name
+    @property
+    def total_reviews(self):
+        return self.reviews.count()
+
+    def __str__(self):
+        return self.name
 
 
-class LecturerReview(models.Model):
-    lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='reviews')
+class Lecturer(AcademicStaff):
+    """מודל מרצה - יורש מסגל אקדמי"""
+    title = models.CharField(max_length=50, default="מרצה", verbose_name="תואר")
+
+
+class TeachingAssistant(AcademicStaff):
+    """מודל מתרגל - יורש מסגל אקדמי"""
+    title = models.CharField(max_length=50, default="מתרגל", verbose_name="תואר")
+
+
+class StaffReview(models.Model):
+    """ ביקורות לכל סוגי הסגל האקדמי """
+    staff_member = models.ForeignKey(AcademicStaff, on_delete=models.CASCADE, related_name='reviews', verbose_name="איש סגל")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    review_text = models.TextField()
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], verbose_name="דירוג")
+    review_text = models.TextField(verbose_name="חוות דעת")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('lecturer', 'user')
+        unique_together = ('staff_member', 'user') # משתמש לא יכול לדרג פעמיים את אותו אדם
+        ordering = ['-created_at']
 
-class CourseSemesterLecturer(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='semester_lecturers')
-    lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE)
+
+class CourseSemesterStaff(models.Model):
+    """ שיוך של איש סגל (מרצה או מתרגל) לקורס בסמסטר מסוים """
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='semester_staff')
+    staff_member = models.ForeignKey(AcademicStaff, on_delete=models.CASCADE)
     academic_year = models.IntegerField(verbose_name="שנה אקדמית")
-    semester = models.CharField(max_length=10, choices=[('A', 'סמסטר א׳'), ('B', 'סמסטר ב׳'), ('summer', 'סמסטר קיץ')],
-                                verbose_name="סמסטר")
+    semester = models.CharField(max_length=10, choices=[('A', 'סמסטר א׳'), ('B', 'סמסטר ב׳'), ('summer', 'סמסטר קיץ')], verbose_name="סמסטר")
 
     class Meta:
-        unique_together = ('course', 'academic_year', 'semester')
+        unique_together = ('course', 'academic_year', 'semester', 'staff_member')
 
     def __str__(self):
-        return f"{self.course.name} - {self.academic_year} {self.get_semester_display()}: {self.lecturer.name}"
+        return f"{self.course.name} - {self.academic_year} {self.get_semester_display()}: {self.staff_member.name}"
+
 
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -356,7 +413,6 @@ class Feedback(models.Model):
     screenshot = models.ImageField(upload_to='feedbacks/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_resolved = models.BooleanField(default=False, verbose_name="טופל?")
-
 
 # ==========================================
 # 6. אוטומיזציה (סיגנלים ליצירת תיקיות)
@@ -409,7 +465,26 @@ def create_course_folder_structure(sender, instance, created, **kwargs):
                             parent=year_folder
                         )
 
-@receiver(post_save, sender=Course)
-def auto_create_course_folders(sender, instance, created, **kwargs):
-    if created:
-        instance.create_default_folder_tree()
+# @receiver(post_save, sender=Course)
+# def auto_create_course_folders(sender, instance, created, **kwargs):
+#     if created:
+#         instance.create_default_folder_tree()
+
+@receiver(post_save, sender=UserProfile)
+def auto_join_communities(sender, instance, created, **kwargs):
+    if instance.university:
+        uni_community, _ = Community.objects.get_or_create(
+            name=f"קהילת {instance.university.name}",
+            community_type='university',
+            university=instance.university
+        )
+        uni_community.members.add(instance.user)
+
+        if instance.major:
+            major_community, _ = Community.objects.get_or_create(
+                name=f"{instance.major.name} - {instance.university.name}",
+                community_type='major',
+                university=instance.university,
+                major=instance.major
+            )
+            major_community.members.add(instance.user)

@@ -1,0 +1,56 @@
+{% extends "core/social_base.html" %}
+{% load static %}
+
+{% block title %}גילוי קהילות - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block social_content %}
+<div class="container py-4" dir="rtl">
+
+    <div class="text-center mb-5 animate__animated animate__fadeIn">
+        <h2 class="fw-bold" style="color: var(--gd-text);">גלה קהילות חדשות 🌎</h2>
+        <p class="text-muted">מצא את המקום שלך בדרייב - לפי מוסד, תואר או תחומי עניין כלל ארציים.</p>
+
+        <form method="GET" class="mx-auto mt-4" style="max-width: 600px;">
+            <div class="input-group shadow-sm rounded-pill overflow-hidden border" style="border-color: var(--gd-border) !important;">
+                <input type="text" name="q" class="form-control border-0 px-4 py-3" placeholder="חפש קהילה (למשל: 'הנדסה', 'תל אביב')..." value="{{ query }}">
+                <button class="btn btn-primary px-4" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if not global_comm and not uni_comm and not major_comm %}
+        <div class="text-center py-5">
+            <i class="fas fa-search-minus fa-4x text-muted mb-3 opacity-25"></i>
+            <h5 class="text-muted">לא מצאנו קהילה שתואמת לחיפוש שלך...</h5>
+        </div>
+    {% else %}
+
+        {# קהילות כלל ארציות #}
+        {% if global_comm %}
+        <h5 class="fw-bold mb-4 border-bottom pb-2" style="color: var(--gd-text);">
+            <i class="fas fa-globe-americas text-primary ms-2"></i> קהילות כלל ארציות
+        </h5>
+        <div class="row g-3 mb-5">
+            {% for comm in global_comm %}
+                {% include "core/partials/community_card_item.html" with comm=comm %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# קהילות אוניברסיטאיות #}
+        {% if uni_comm %}
+        <h5 class="fw-bold mb-4 border-bottom pb-2" style="color: var(--gd-text);">
+            <i class="fas fa-university text-info ms-2"></i> מוסדות לימוד
+        </h5>
+        <div class="row g-3 mb-5">
+            {% for comm in uni_comm %}
+                {% include "core/partials/community_card_item.html" with comm=comm %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}
