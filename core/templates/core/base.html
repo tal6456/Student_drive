@@ -17,347 +17,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-
-    <style>
-    /* =====================================================================
-       GOOGLE DRIVE THEME ENGINE - CORE CSS
-       ===================================================================== */
-
-    /* -----------------------------------------
-       1. COLOR VARIABLES (LIGHT & DARK MODES)
-       ----------------------------------------- */
-
-    /* LIGHT MODE (Google Drive Default) */
-    :root, [data-theme='light'] {
-        --gd-bg: #f8f9fa;
-        --gd-card: #ffffff;
-        --gd-text: #202124;
-        --gd-text-muted: #5f6368;
-        --gd-border: #dadce0;
-        --gd-primary: #1a73e8;
-        --gd-hover: #f1f3f4;
-        --gd-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-    }
-
-    /* DARK MODE (OS Preference) */
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --gd-bg: #202124;
-            --gd-card: #2d2e30;
-            --gd-text: #e8eaed;
-            --gd-text-muted: #9aa0a6;
-            --gd-border: #5f6368;
-            --gd-primary: #8ab4f8;
-            --gd-hover: #3c4043;
-            --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-        }
-    }
-
-    /* DARK MODE (Manual Toggle) */
-    [data-theme='dark'] {
-        --gd-bg: #202124;
-        --gd-card: #2d2e30;
-        --gd-text: #e8eaed;
-        --gd-text-muted: #9aa0a6;
-        --gd-border: #5f6368;
-        --gd-primary: #8ab4f8;
-        --gd-hover: #3c4043;
-        --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-    }
-
-    /* -----------------------------------------
-       2. GLOBAL HTML ELEMENTS & UTILITIES
-       ----------------------------------------- */
-
-    body {
-        background-color: var(--gd-bg) !important;
-        color: var(--gd-text) !important;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    main {
-        flex: 1;
-    }
-
-    /* Text & Background Utility Overrides */
-    .text-dark, a.text-dark { color: var(--gd-text) !important; }
-    .text-muted { color: var(--gd-text-muted) !important; }
-    .bg-light, .bg-white { background-color: var(--gd-card) !important; }
-    .border, .border-bottom { border-color: var(--gd-border) !important; }
-
-    /* -----------------------------------------
-       3. BOOTSTRAP COMPONENTS OVERRIDES
-       ----------------------------------------- */
-
-    /* Cards & Modals */
-    .card, .modal-content {
-        background-color: var(--gd-card) !important;
-        border: 1px solid var(--gd-border) !important;
-        box-shadow: var(--gd-shadow) !important;
-        color: var(--gd-text) !important;
-    }
-
-    /* Forms, Inputs & Selects */
-    input, select, textarea, .form-control, .form-select {
-        background-color: var(--gd-bg) !important;
-        color: var(--gd-text) !important;
-        border: 1px solid var(--gd-border) !important;
-    }
-    input:focus, select:focus, textarea:focus {
-        border-color: var(--gd-primary) !important;
-        box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25) !important;
-    }
-
-    /* Lists (Courses, Files) */
-    .list-group-item {
-        background-color: var(--gd-card) !important;
-        border-color: var(--gd-border) !important;
-        color: var(--gd-text) !important;
-    }
-    a.list-group-item, .list-group-item a {
-        color: var(--gd-text) !important;
-        text-decoration: none;
-    }
-    a.list-group-item:hover, .list-group-item a:hover {
-        color: var(--gd-primary) !important;
-        background-color: var(--gd-hover) !important;
-    }
-    /* תיקון נראות טקסט רקע (Placeholder) בשורות חיפוש וטפסים */
-    input::placeholder, select::placeholder, textarea::placeholder, .form-control::placeholder {
-        color: var(--gd-text-muted) !important;
-        opacity: 0.8 !important; /* מוודא שהטקסט לא יהיה שקוף מדי */
-    }
-
-    /* מוודא שהטקסט שמוקלד בפועל יהיה תמיד בצבע הנכון למצב הקיים */
-    input, .form-control {
-        color: var(--gd-text) !important;
-    }
-
-    /* -----------------------------------------
-       4. CUSTOM UI COMPONENTS
-       ----------------------------------------- */
-
-    /* Navbar */
-    .navbar {
-        background-color: var(--gd-card) !important;
-        border-bottom: 1px solid var(--gd-border);
-        padding: 0.5rem 0;
-    }
-    .navbar-brand {
-        color: var(--gd-text) !important;
-    }
-    .nav-link {
-        color: var(--gd-text-muted) !important;
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        transition: background-color 0.2s, color 0.2s;
-    }
-    .nav-link:hover {
-        background-color: var(--gd-hover);
-        color: var(--gd-text) !important;
-    }
-    .nav-profile-img {
-        width: 36px;
-        height: 36px;
-        object-fit: cover;
-        border: 1px solid var(--gd-border);
-    }
-
-    /* Buttons & Badges */
-    .btn-support {
-        background: transparent;
-        border: 1px solid var(--gd-border);
-        color: var(--gd-text) !important;
-    }
-    .btn-support:hover {
-        background: var(--gd-hover);
-    }
-    .coin-badge {
-        background: var(--gd-hover);
-        color: var(--gd-text) !important;
-        border: 1px solid var(--gd-border);
-    }
-
-    /* Interactive Hovers */
-    .report-btn-hover {
-        transition: 0.2s;
-        opacity: 0.6;
-    }
-    .report-btn-hover:hover {
-        color: #dc3545 !important;
-        opacity: 1;
-        transform: scale(1.1);
-    }
-    .hover-bg-light:hover {
-        background-color: rgba(13, 110, 253, 0.05) !important;
-    }
-
-    /* Layout Extras */
-    .footer {
-        background-color: var(--gd-bg) !important;
-        border-top: 1px solid var(--gd-border);
-    }
-    #loading-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--gd-primary);
-        z-index: 9999;
-        width: 0%;
-        transition: width 0.4s ease;
-    }
-
-/* -----------------------------------------
-       5. DARK MODE SPECIFIC FIXES (Anti-Glare)
-       ----------------------------------------- */
-
-    /* מצב לילה - בחירה ידנית */
-    [data-theme='dark'] .btn-warning,
-    [data-theme='dark'] .bg-warning {
-        background-color: #d4af37 !important; /* צהוב זהוב עדין */
-        border-color: #d4af37 !important;
-        color: #121212 !important;
-    }
-    [data-theme='dark'] .btn-warning:hover {
-        background-color: #b8962e !important;
-        border-color: #b8962e !important;
-    }
-    [data-theme='dark'] .text-warning {
-        color: #e6c243 !important;
-    }
-
-    /* מצב לילה - אוטומטי מהמערכת */
-    @media (prefers-color-scheme: dark) {
-        body:not([data-theme='light']) .btn-warning,
-        body:not([data-theme='light']) .bg-warning {
-            background-color: #d4af37 !important;
-            border-color: #d4af37 !important;
-            color: #121212 !important;
-        }
-        body:not([data-theme='light']) .btn-warning:hover {
-            background-color: #b8962e !important;
-            border-color: #b8962e !important;
-        }
-        body:not([data-theme='light']) .text-warning {
-            color: #e6c243 !important;
-        }
-    }
-    /* -----------------------------------------
-       6. ACCESSIBILITY (A11Y) ENGINE
-       ----------------------------------------- */
-
-    /* Floating Menu Controls */
-    #a11y-toggle {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        width: 60px;
-        height: 60px;
-        z-index: 9999;
-    }
-    #a11y-menu {
-        position: fixed;
-        bottom: 90px;
-        left: 20px;
-        width: 280px;
-        z-index: 9999;
-        border-radius: 12px;
-        background-color: var(--gd-card);
-        border: 1px solid var(--gd-border);
-        box-shadow: var(--gd-shadow);
-    }
-
-    /* A11Y Modifiers */
-    body.a11y-large-text, body.a11y-large-text * {
-        font-size: 104% !important;
-        line-height: 1.1 !important;
-    }
-    body.a11y-high-contrast {
-        --gd-bg: #000000 !important;
-        --gd-card: #121212 !important;
-        --gd-text: #ffff00 !important;
-        --gd-text-muted: #ffffff !important;
-        --gd-border: #ffff00 !important;
-        --gd-primary: #00ff00 !important;
-    }
-    body.a11y-high-contrast * {
-        border-color: #ffff00 !important;
-    }
-    body.a11y-high-contrast img, body.a11y-high-contrast video {
-        filter: grayscale(100%) contrast(120%);
-    }
-    body.a11y-highlight-links a {
-        text-decoration: underline !important;
-        text-decoration-thickness: 3px !important;
-        background-color: #ffff00 !important;
-        color: #000000 !important;
-        font-weight: bold !important;
-        padding: 2px 4px !important;
-        border-radius: 4px;
-    }
-    body.a11y-readable-font, body.a11y-readable-font * {
-        font-family: Arial, Helvetica, sans-serif !important;
-        letter-spacing: 1px !important;
-        word-spacing: 2px !important;
-    }
-/* -----------------------------------------
-       7. COLLAPSIBLE SEMESTERS & ELEMENTS
-       ----------------------------------------- */
-
-    .semester-header {
-        transition: all 0.2s ease;
-        user-select: none; /* מונע סימון טקסט כשלוחצים הרבה פעמים */
-        cursor: pointer;
-    }
-
-    .semester-header:hover {
-        background-color: var(--gd-hover) !important;
-    }
-
-    /* סיבוב החץ - הקסם קורה כאן */
-    /* כשהאלמנט סגור (aria-expanded="false"), נסובב את החץ */
-    .semester-header[aria-expanded="false"] .collapse-arrow i {
-        transform: rotate(-90deg);
-    }
-
-    .transition-transform {
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: inline-block;
-    }
-
-    /* עיצוב עדין לרשימה בתוך הקיפול */
-    .collapse .list-group {
-        margin-top: 4px;
-        border-top-left-radius: 0 !important;
-        border-top-right-radius: 0 !important;
-    }
-    /* Google Translate - Hidden Engine Fix */
-    .translate-wrapper { display: flex; align-items: center; gap: 5px; }
-    .lang-btn {
-        background: var(--gd-hover);
-        border: 1px solid var(--gd-border);
-        color: var(--gd-text) !important;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: bold;
-        text-decoration: none;
-        transition: 0.2s;
-    }
-    .lang-btn:hover { background: var(--gd-primary); color: white !important; }
-
-    /* חסימת כל אלמנט ויזואלי של גוגל */
-    .skiptranslate, .goog-te-banner-frame, #goog-gt-tt { display: none !important; visibility: hidden !important; }
-    body { top: 0px !important; position: static !important; }
-</style>
-
+    {% block extra_css %}{% endblock %}
 
 </head>
 <body data-theme="{{ user.profile.theme_preference|default:'auto' }}">
@@ -398,15 +60,6 @@
                             <i class="fas fa-users ms-1"></i> הקהילה שלי
                         </a>
                     </li>
-                    <ul class="navbar-nav mx-auto">
-
-                    {% if user.is_authenticated %}
-{#                    <li class="nav-item">#}
-{#                        <a class="nav-link {% if request.resolver_match.url_name == 'my_friends' %}active fw-bold text-primary{% endif %}" href="{% url 'my_friends' %}">#}
-{#                            <i class="fas fa-user-friends ms-1"></i> החברים שלי#}
-{#                        </a>#}
-{#                    </li>#}
-                    {% endif %}
 
                     {% if user.is_staff %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">אנליטיקס <i class="fas fa-chart-pie small"></i></a></li>
@@ -414,10 +67,11 @@
                 </ul>
 
                 <div class="translate-wrapper mx-2 align-self-center">
-    <a href="javascript:void(0)" onclick="doGTranslate('he|en')" class="lang-btn">English</a>
-    <a href="javascript:void(0)" onclick="doGTranslate('he|he')" class="lang-btn">עברית</a>
-</div>
-<div id="google_translate_element" style="display:none"></div>
+                    <a href="javascript:void(0)" onclick="doGTranslate('he|en')" class="lang-btn">English</a>
+                    <a href="javascript:void(0)" onclick="doGTranslate('he|he')" class="lang-btn">עברית</a>
+                </div>
+                <div id="google_translate_element" style="display:none"></div>
+
                 <form class="d-flex mx-lg-4 my-2 my-lg-0 flex-grow-1" action="{% url 'global_search' %}" method="GET" style="max-width: 400px;">
                     <div class="input-group shadow-sm rounded-pill overflow-hidden border">
                         <button class="btn bg-white border-0 text-muted px-3" type="submit">
@@ -426,6 +80,7 @@
                         <input class="form-control border-0 bg-white" type="search" name="q" placeholder="חיפוש..." aria-label="Search" value="{{ request.GET.q }}" required>
                     </div>
                 </form>
+
                 <ul class="navbar-nav align-items-center gap-2 mt-3 mt-lg-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item d-none d-lg-block me-2">
@@ -433,20 +88,6 @@
                                 <i class="fas fa-gift mx-1"></i> הזמן חברים
                             </a>
                         </li>
-                    {% endif %}
-
-{#                    <li class="nav-item d-none d-lg-block">#}
-{#                        <a href="{% url 'donations' %}" class="btn btn-sm btn-support rounded-pill fw-bold px-3">#}
-{#                            <i class="fas fa-heart text-danger mx-1"></i> תמיכה ביוצר#}
-{#                        </a>#}
-{#                    </li>#}
-
-                    {% if user.is_authenticated %}
-{#                        <li class="nav-item">#}
-{#                            <span class="badge rounded-pill coin-badge px-3 py-2 d-flex align-items-center gap-2" title="מטבעות הדרייב שלי">#}
-{#                                <i class="fas fa-coins text-warning"></i> {{ user.profile.drive_coins|default:"0" }}#}
-{#                            </span>#}
-{#                        </li>#}
 
                         <li class="nav-item">
                             <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center gap-2 px-2" style="border-radius: 50px;">
@@ -576,193 +217,16 @@
     </div>
 
     {% if user.is_authenticated %}
-    <div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true" dir="rtl">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow-lg" style="background-color: var(--gd-card);">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="סגור"></button>
-                </div>
-                <div class="modal-body text-center px-4 pb-5">
-                    <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; background-color: rgba(26, 115, 232, 0.1);">
-                        <i class="fas fa-gift text-primary fs-2"></i>
-                    </div>
-                    <h4 class="fw-bold" style="color: var(--gd-text);">הזמן חברים וקבל מטבעות!</h4>
-                    <p class="text-muted small mb-4">שתף את הקישור האישי שלך. על כל חבר שיירשם דרכו, שניכם תקבלו 20 מטבעות דרייב שיעלו אתכם בדירוג.</p>
-
-                    <div class="input-group mb-4 shadow-sm rounded-pill overflow-hidden border">
-                        <span class="input-group-text bg-light border-0 text-muted"><i class="fas fa-link"></i></span>
-                        <input type="text" id="global-ref-link" class="form-control bg-light border-0 text-start" dir="ltr"
-                               value="{{ request.scheme }}://{{ request.get_host }}?ref={{ user.profile.referral_code }}" readonly>
-                        <button class="btn btn-primary fw-bold px-4" onclick="copyGlobalRefLink()" id="global-copy-btn">
-                            העתק
-                        </button>
-                    </div>
-
-                    <a href="https://wa.me/?text=היי! מצאתי את אתר 'הדרייב הסטודנטיאלי', יש שם את כל הסיכומים והמבחנים שצריך לתואר. תירשם דרך הקישור שלי ושנינו נקבל מטבעות בונוס: {{ request.scheme }}://{{ request.get_host }}?ref={{ user.profile.referral_code }}"
-                       target="_blank" class="btn btn-success rounded-pill w-100 fw-bold py-3 shadow-sm fs-5">
-                        <i class="fab fa-whatsapp ms-2"></i> שלח לחברים בוואטסאפ
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    function copyGlobalRefLink() {
-        var copyText = document.getElementById("global-ref-link");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); // תאימות למובייל
-        navigator.clipboard.writeText(copyText.value).then(function() {
-            const btn = document.getElementById("global-copy-btn");
-            const originalText = btn.innerHTML;
-            btn.innerHTML = 'הועתק! <i class="fas fa-check ms-1"></i>';
-            btn.classList.replace("btn-primary", "btn-success");
-
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.classList.replace("btn-success", "btn-primary");
-            }, 2000);
-        });
-    }
-    </script>
+        {% include "core/partials/share_modal.html" %}
     {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        window.addEventListener('beforeunload', () => document.getElementById('loading-bar').style.width = '100%');
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-            const toastList = toastElList.map(function(toastEl) { return new bootstrap.Toast(toastEl); });
-            toastList.forEach(toast => toast.show());
+    <script src="{% static 'js/main.js' %}"></script>
 
-            document.getElementById('a11y-toggle').addEventListener('click', () => {
-                document.getElementById('a11y-menu').classList.toggle('d-none');
-            });
-            document.getElementById('a11y-close').addEventListener('click', () => {
-                document.getElementById('a11y-menu').classList.add('d-none');
-            });
-        });
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-        function toggleA11y(className) {
-            document.body.classList.toggle(className);
-            localStorage.setItem(className, document.body.classList.contains(className));
-        }
+    {% block extra_js %}{% endblock %}
 
-        window.addEventListener('load', function() {
-            ['a11y-large-text', 'a11y-high-contrast', 'a11y-highlight-links', 'a11y-readable-font'].forEach(cls => {
-                if(localStorage.getItem(cls) === 'true') document.body.classList.add(cls);
-            });
-        });
-    </script>
-    <script>
-    // פונקציית עזר למשיכת אסימון האבטחה (CSRF Token) של ג'נגו
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // הפונקציה שמפעילה את כפתור הלייק של הקבצים
-    function toggleLike(event, buttonElement) {
-        event.preventDefault(); // עוצר את רענון הדף
-        const url = buttonElement.getAttribute('data-url');
-        const csrftoken = getCookie('csrftoken');
-
-        // שולחים בקשה שקטה לשרת
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                console.error(data.error);
-                return;
-            }
-
-            // מוצאים את אלמנט המספר בתוך הכפתור
-            const countSpan = buttonElement.querySelector('.like-count');
-            countSpan.textContent = data.total_likes;
-
-            // משנים את העיצוב של הכפתור בהתאם לסטטוס
-            if (data.liked) {
-                buttonElement.classList.remove('btn-outline-primary');
-                buttonElement.classList.add('btn-primary', 'text-white');
-            } else {
-                buttonElement.classList.remove('btn-primary', 'text-white');
-                buttonElement.classList.add('btn-outline-primary');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-    </script>
-<script type="text/javascript">
-    // 1. אתחול בסיסי ושקט
-    function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-            pageLanguage: 'he',
-            autoDisplay: false
-        }, 'google_translate_element');
-    }
-
-    // 2. פונקציית התרגום - בלי רענון דף!
-    function doGTranslate(lang_pair) {
-        const lang = lang_pair.split('|')[1];
-        const teCombo = document.querySelector('.goog-te-combo');
-
-        // שמירת השפה בעוגייה בפורמט שגוגל אוהבת (זה מה שמונע חזרה לעברית במעבר דפים)
-        const domain = window.location.hostname;
-        document.cookie = "googtrans=/he/" + lang + "; path=/";
-        document.cookie = "googtrans=/he/" + lang + "; domain=" + domain + "; path=/";
-
-        if (teCombo) {
-            teCombo.value = lang;
-            teCombo.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        // אם בחרנו עברית, פשוט ננקה ונחזיר למקור
-        if (lang === 'he') {
-            document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            location.reload();
-        }
-    }
-
-    // 3. מנגנון שמוודא שגוגל לא "בורחת" לנו במעבר דפים
-    (function() {
-        const checkInterval = setInterval(() => {
-            const teCombo = document.querySelector('.goog-te-combo');
-            const cookieValue = document.cookie.split('; ').find(row => row.startsWith('googtrans='));
-
-            if (teCombo && cookieValue) {
-                const savedLang = cookieValue.split('/')[2];
-                if (teCombo.value !== savedLang) {
-                    teCombo.value = savedLang;
-                    teCombo.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }
-        }, 1000); // בודק כל שנייה אם השפה נכונה
-    })();
-
-    // 4. העלמת הבאנרים המציקים בלי להפריע ללחיצות
-    setInterval(function() {
-        const frame = document.querySelector('.goog-te-banner-frame');
-        if (frame) frame.remove();
-        document.body.style.top = "0px";
-    }, 500);
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
