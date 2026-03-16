@@ -170,7 +170,7 @@ if not DEBUG:
 
     # הגנה על העוגיות (Cookies) כך שיישלחו רק בחיבור מאובטח
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = False
 
     # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת
