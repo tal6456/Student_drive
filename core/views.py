@@ -100,6 +100,11 @@ def home(request):
         context['year'] = year_id
         context['uni_id'] = uni_id
 
+    # הוספת הקורסים המועדפים להקשר (Context) של דף הבית
+    if request.user.is_authenticated:
+        context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
+            'major__university').all()
+
     return render(request, 'core/home.html', context)
 
 
@@ -839,3 +844,22 @@ def complete_profile(request):
         form = UserProfileForm(instance=profile, user=request.user)
 
     return render(request, 'core/complete_profile.html', {'form': form})
+
+
+@login_required
+def toggle_favorite_course(request, course_id):
+    """ הוספה או הסרה של קורס מהמועדפים (AJAX) """
+    if request.method == 'POST':
+        course = get_object_or_404(Course, id=course_id)
+        profile = request.user.profile
+
+        # אם הקורס כבר במועדפים - נסיר אותו. אם לא - נוסיף.
+        if course in profile.favorite_courses.all():
+            profile.favorite_courses.remove(course)
+            is_favorite = False
+        else:
+            profile.favorite_courses.add(course)
+            is_favorite = True
+
+        return JsonResponse({'is_favorite': is_favorite})
+    return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)

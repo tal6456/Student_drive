@@ -160,6 +160,9 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="מספר טלפון")
     drive_coins = models.PositiveIntegerField(default=0)
+    # הקורסים המועדפים של המשתמש (לגישה מהירה)
+    favorite_courses = models.ManyToManyField(Course, related_name='favorited_by', blank=True,
+                                              verbose_name="קורסים מועדפים")
 
     # הגדרות משתמש
     THEME_CHOICES = [('light', 'יום (בהיר)'), ('dark', 'לילה (כהה)'), ('auto', 'אוטומטי')]
