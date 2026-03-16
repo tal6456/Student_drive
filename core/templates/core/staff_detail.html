@@ -1,0 +1,158 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ display_name }} - פרופיל סגל{% endblock %}
+
+{% block content %}
+<div class="container py-4" dir="rtl" style="color: var(--gd-text); min-height: 100vh;">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'lecturers_index' %}" class="text-decoration-none text-primary">סגל אקדמי</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ display_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden" style="background-color: var(--gd-surface);">
+        <div class="p-4 p-md-5 d-md-flex align-items-center gap-4">
+            <div class="avatar-wrapper mb-3 mb-md-0">
+                <div class="avatar-large shadow-sm d-flex align-items-center justify-content-center text-white fw-bold display-4"
+                     style="width: 120px; height: 120px; border-radius: 24px; background: linear-gradient(135deg, #4285f4, #34a853);">
+                    {{ staff.name|slice:":1" }}
+                </div>
+            </div>
+            <div class="info-wrapper flex-grow-1">
+                <h1 class="fw-bold mb-1">{{ display_name }}</h1>
+                <p class="text-muted mb-3 fs-5">{{ staff.university.name }} • {{ staff.get_role_display }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="px-3 py-2 rounded-3 d-flex align-items-center gap-2" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                        <i class="fas fa-star text-warning"></i>
+                        <span class="fw-bold fs-5">{{ staff.average_rating|default:"חדש" }}</span>
+                    </div>
+                    <div class="px-3 py-2 rounded-3 d-flex align-items-center gap-2" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                        <i class="fas fa-comment-dots text-primary"></i>
+                        <span>{{ reviews.count }} חוות דעת</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-wrapper mt-3 mt-md-0">
+                <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#rateModal">
+                    דרג עכשיו <i class="fas fa-pen-nib ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 rounded-4 shadow-sm p-4 mb-4" style="background-color: var(--gd-surface);">
+                <h6 class="fw-bold mb-4">סיכום דירוגים</h6>
+                <div class="ratings-container">
+                    {% for star, data in ratings_dist.items %}
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="small text-muted me-2" style="width: 15px;">{{ star }}</span>
+                        <div class="progress flex-grow-1" style="height: 10px; background-color: var(--gd-bg); border-radius: 5px;">
+                            <div class="progress-bar bg-warning" role="progressbar"
+                                 style="width: {{ data.percentage }}%; border-radius: 5px;"
+                                 aria-valuenow="{{ data.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="small text-muted ms-2" style="width: 25px;">{{ data.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card border-0 rounded-4 shadow-sm p-4" style="background-color: var(--gd-surface);">
+                <h6 class="fw-bold mb-3">קורסים באחריותו/ה</h6>
+                <div class="list-group list-group-flush">
+                    {% for course in courses %}
+                    <a href="{% url 'course_detail' course.id %}" class="list-group-item list-group-item-action border-0 px-0 bg-transparent py-3" style="color: var(--gd-text);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold mb-0" style="font-size: 0.9rem;">{{ course.name }}</div>
+                                <div class="text-muted small">קוד: {{ course.course_number }}</div>
+                            </div>
+                            <i class="fas fa-chevron-left text-muted opacity-50"></i>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted small">לא נמצאו קורסים מקושרים כרגע.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-4">מה הסטודנטים אומרים</h5>
+
+            {% for review in reviews %}
+            <div class="card border-0 rounded-4 shadow-sm p-4 mb-3" style="background-color: var(--gd-surface);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                            <i class="fas fa-user-graduate text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small">{{ review.user.username }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">{{ review.created_at|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="text-warning">
+                        {% for i in "12345"|make_list %}
+                            <i class="{% if forloop.counter <= review.rating %}fas{% else %}far{% endif %} fa-star small"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="mb-0 text-secondary" style="line-height: 1.6;">{{ review.review_text }}</p>
+            </div>
+            {% empty %}
+            <div class="card border-0 rounded-4 shadow-sm p-5 text-center" style="background-color: var(--gd-surface);">
+                <i class="far fa-comments fa-3x text-muted mb-3 opacity-25"></i>
+                <p class="text-muted">אין עדיין חוות דעת. שתף את הניסיון שלך עם המרצה!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4" style="background-color: var(--gd-surface); color: var(--gd-text);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">הוסף דירוג ל{{ display_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'rate_staff' staff.id %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-4 text-center">
+                        <label class="form-label d-block fw-bold mb-3">איך הייתה החוויה שלך?</label>
+                        <select name="rating" class="form-select border-0 bg-light shadow-sm py-3 rounded-3" style="background-color: var(--gd-bg) !important; color: var(--gd-text) !important;" required>
+                            <option value="5">⭐⭐⭐⭐⭐ מצוין - מרצה מעורר השראה</option>
+                            <option value="4">⭐⭐⭐⭐ טוב מאוד - ברור ומקצועי</option>
+                            <option value="3">⭐⭐⭐ בסדר גמור - עושה את העבודה</option>
+                            <option value="2">⭐⭐ טעון שיפור - פחות התחברתי</option>
+                            <option value="1">⭐ מאכזב - לא ממליץ/ה</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">פירוט (אופציונלי):</label>
+                        <textarea name="review_text" class="form-control border-0 bg-light shadow-sm rounded-3"
+                                  style="background-color: var(--gd-bg) !important; color: var(--gd-text) !important;"
+                                  rows="4" placeholder="איך המבחן? הוא זמין לשאלות?..."></textarea>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 mb-3 text-center">
+                        <span class="text-primary fw-bold small"><i class="fas fa-coins me-1"></i> תקבל 2 מטבעות דרייב על הדירוג הזה!</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow">שלח דירוג וקבל מטבעות 🚀</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-large { border: 4px solid var(--gd-surface); }
+    .list-group-item:hover { background-color: rgba(66, 133, 244, 0.05) !important; padding-right: 8px !important; transition: 0.2s; }
+    .progress-bar { transition: width 1s ease-in-out; }
+</style>
+{% endblock %}

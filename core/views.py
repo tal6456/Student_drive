@@ -12,8 +12,8 @@ import datetime
 import os
 from django.db import models
 from .models import (University, Major, Course, Document, UserProfile,
-    Report, Lecturer, LecturerReview, CourseSemesterLecturer, Feedback, Folder,
-    Post, MarketplacePost, VideoPost, Comment, Friendship) # הוספנו את המודלים החדשים
+    Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
+    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff)
 
 from .forms import CourseForm, UserProfileForm
 from .ai_utils import generate_smart_summary
@@ -222,93 +222,81 @@ def course_detail(request, course_id):
         if action == 'create_folder':
             folder_name = request.POST.get('folder_name')
             parent_id = request.POST.get('parent_folder')
-            lecturer_id = request.POST.get('lecturer')
-            new_lecturer_name = request.POST.get('new_lecturer_name')
+            staff_id = request.POST.get('staff_member_id')  # שונה מ-lecturer_id
+            new_staff_name = request.POST.get('new_lecturer_name')
 
             parent_folder = None
             if parent_id and parent_id != 'root':
                 parent_folder = get_object_or_404(Folder, id=parent_id, course=course)
 
-            assigned_lecturer = None
-            if new_lecturer_name and new_lecturer_name.strip():
-                assigned_lecturer, created = Lecturer.objects.get_or_create(
-                    name=new_lecturer_name.strip(),
+            assigned_staff = None
+            if new_staff_name and new_staff_name.strip():
+                assigned_staff, _ = Lecturer.objects.get_or_create(
+                    name=new_staff_name.strip(),
                     university=course.major.university
                 )
-            elif lecturer_id:
-                assigned_lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+            elif staff_id:
+                assigned_staff = get_object_or_404(AcademicStaff, id=staff_id)
 
             if folder_name:
                 Folder.objects.create(
                     course=course,
                     name=folder_name.strip(),
                     parent=parent_folder,
-                    lecturer=assigned_lecturer,
+                    staff_member=assigned_staff,  # שונה ל-staff_member
                     created_by=request.user
                 )
                 messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
+
         elif action == 'edit_folder':
             folder_id_raw = request.POST.get('folder_id')
-            new_name = request.POST.get('folder_name')
-            lecturer_id = request.POST.get('lecturer')
-            new_lecturer_name = request.POST.get('new_lecturer_name')
+            staff_id = request.POST.get('staff_member_id')
+            new_first = request.POST.get('new_first_name')
+            new_last = request.POST.get('new_last_name')
 
             if folder_id_raw:
-                clean_folder_id = folder_id_raw.replace('folder_', '')
-                folder_to_edit = get_object_or_404(Folder, id=clean_folder_id, course=course)
+                clean_id = folder_id_raw.replace('folder_', '')
+                folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
 
-                if new_name:
-                    folder_to_edit.name = new_name.strip()
-
-                if new_lecturer_name and new_lecturer_name.strip():
-                    folder_to_edit.lecturer, _ = Lecturer.objects.get_or_create(
-                        name=new_lecturer_name.strip(),
+                # יצירת מרצה חדש עם שם מפוצל
+                if new_first and new_last:
+                    full_name = f"{new_first.strip()} {new_last.strip()}"
+                    folder_to_edit.staff_member, _ = Lecturer.objects.get_or_create(
+                        name=full_name,
                         university=course.major.university
                     )
-                elif lecturer_id:
-                    folder_to_edit.lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+
+                # או בחירה של מרצה קיים
+                elif staff_id:
+                    folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id)
                 else:
-                    folder_to_edit.lecturer = None
+                    folder_to_edit.staff_member = None
 
                 folder_to_edit.save()
-                messages.success(request, 'התיקייה עודכנה בהצלחה!')
+                messages.success(request, 'השיוך עודכן בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
         elif action == 'quick_upload':
             uploaded_files = request.FILES.getlist('file')
             folder_id = request.POST.get('folder_id')
             parent_folder = None
-
-            if folder_id and folder_id != 'root' and folder_id != 'null':
+            if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
-            # בדיקת הגדרות הפרטיות של המשתמש - האם מעלה אנונימי כברירת מחדל?
             is_anon = request.user.profile.default_anonymous_upload
-
             for uploaded_file in uploaded_files:
-                original_name = os.path.splitext(uploaded_file.name)[0]
-                assigned_lecturer = parent_folder.lecturer if parent_folder else None
-
+                assigned_staff = parent_folder.staff_member if parent_folder else None
                 Document.objects.create(
-                    course=course,
-                    folder=parent_folder,
-                    title=original_name,
-                    file=uploaded_file,
-                    lecturer=assigned_lecturer,
-                    uploaded_by=request.user,
-                    is_anonymous=is_anon  # שימוש בהגדרה החכמה!
+                    course=course, folder=parent_folder,
+                    title=os.path.splitext(uploaded_file.name)[0],
+                    file=uploaded_file, staff_member=assigned_staff,  # הורשת שיוך
+                    uploaded_by=request.user, is_anonymous=is_anon
                 )
                 request.user.profile.drive_coins += 1
-
             request.user.profile.save()
-
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                messages.success(request, f'{len(uploaded_files)} קבצים הועלו בהצלחה! תודה על התרומה 🪙')
-                return JsonResponse({'success': True})
-
-            return redirect('course_detail', course_id=course.id)
+            return JsonResponse({'success': True})
 
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
@@ -318,7 +306,8 @@ def course_detail(request, course_id):
         'course': course,
         'folders': all_folders,
         'documents': all_documents,
-        'uni_lecturers': university_lecturers,
+        'uni_lecturers': AcademicStaff.objects.filter(university=course.major.university).order_by('name'),
+        # שים לב לשינוי ל-AcademicStaff
     }
 
     return render(request, 'core/course_detail.html', context)
@@ -385,26 +374,70 @@ def add_course(request):
     return render(request, 'core/add_course.html', {'form': form})
 
 
+# --- פונקציות סגל אקדמי מעודכנות ---
+
 def lecturers_index(request):
     uid = request.GET.get('university')
-    lecs = Lecturer.objects.filter(university_id=uid) if uid else Lecturer.objects.all()
-    lecs = sorted(lecs, key=lambda l: l.average_rating, reverse=True)
-    return render(request, 'core/lecturers_index.html', {'lecturers': lecs, 'universities': University.objects.all()})
+    staff_members = AcademicStaff.objects.filter(university_id=uid) if uid else AcademicStaff.objects.all()
+    staff_members = staff_members.order_by('-average_rating')
+
+    # הוספת שם תצוגה לפרטיות
+    for staff in staff_members:
+        staff.display_name = staff.privacy_name  # משתמש ב-property שיצרנו במודל
+
+    return render(request, 'core/lecturers_index.html', {
+        'staff_members': staff_members,
+        'universities': University.objects.all(),
+        'selected_uni': get_object_or_404(University, id=uid) if uid else None
+    })
+
+
+def staff_detail(request, staff_id):
+    staff = get_object_or_404(AcademicStaff, id=staff_id)
+    reviews = staff.reviews.all().order_by('-created_at')
+
+    # חישוב התפלגות
+    total = reviews.count()
+    ratings_dist = {i: {'count': reviews.filter(rating=i).count(),
+                        'percentage': (reviews.filter(rating=i).count() / total * 100 if total > 0 else 0)}
+                    for i in range(1, 6)}
+
+    # חיפוש קורסים (חכם: גם סמסטרים וגם תיקיות)
+    courses = Course.objects.filter(
+        Q(semester_staff__staff_member=staff) | Q(folders__staff_member=staff)
+    ).distinct()
+
+    return render(request, 'core/staff_detail.html', {
+        'staff': staff,
+        'display_name': staff.privacy_name,
+        'reviews': reviews,
+        'ratings_dist': ratings_dist,
+        'courses': courses,
+    })
 
 
 @login_required
-def rate_lecturer(request, lecturer_id):
+def rate_staff(request, staff_id):
     if request.method == 'POST':
-        l = get_object_or_404(Lecturer, id=lecturer_id)
-        r, rt = int(request.POST.get('rating', 0)), request.POST.get('review_text', '')
-        if 1 <= r <= 5:
-            LecturerReview.objects.update_or_create(lecturer=l, user=request.user,
-                                                    defaults={'rating': r, 'review_text': rt})
-            request.user.profile.drive_coins += 2
-            request.user.profile.save()
-            messages.success(request, 'הדירוג נשמר! קיבלת 2 מטבעות דרייב 🪙')
-    return redirect(f"{reverse('lecturers_index')}?university={l.university.id}")
+        staff = get_object_or_404(AcademicStaff, id=staff_id)
+        rating = int(request.POST.get('rating', 0))
+        text = request.POST.get('review_text', '')
 
+        if 1 <= rating <= 5:
+            review, created = StaffReview.objects.update_or_create(
+                staff_member=staff, user=request.user,
+                defaults={'rating': rating, 'review_text': text}
+            )
+            # עדכון ממוצע
+            avg = staff.reviews.aggregate(models.Avg('rating'))['rating__avg']
+            staff.average_rating = round(avg, 1)
+            staff.save()
+
+            if created:
+                request.user.profile.drive_coins += 2
+                request.user.profile.save()
+            messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
+    return redirect('staff_detail', staff_id=staff.id)
 
 def terms_view(request): return render(request, 'core/terms.html')
 

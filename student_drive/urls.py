@@ -48,9 +48,10 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('terms/', views.terms_view, name='terms'),
 
-    # מרצים ושונות
+    # סגל אקדמי ושונות
     path('lecturers/', views.lecturers_index, name='lecturers_index'),
-    path('lecturers/<int:lecturer_id>/rate/', views.rate_lecturer, name='rate_lecturer'),
+    path('staff/<int:staff_id>/rate/', views.rate_staff, name='rate_staff'),  # השורה שתוקנה!
+    path('staff/<int:staff_id>/', views.staff_detail, name='staff_detail'),
     path('course/<int:course_id>/set_lecturer/', views.set_semester_lecturer, name='set_semester_lecturer'),
     path('feedback/', views.submit_feedback, name='submit_feedback'),
     path('document/<int:document_id>/ai-summary/', views.summarize_document_ai, name='summarize_document_ai'),
