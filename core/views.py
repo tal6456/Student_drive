@@ -24,6 +24,8 @@ from django.http import JsonResponse
 
 from django.contrib.admin.views.decorators import staff_member_required
 
+# ייבוא ה-Decorator שמשחרר את חסימת ה-CSRF לבקשות JS
+from django.views.decorators.csrf import csrf_exempt
 
 
 def home(request):
@@ -598,6 +600,7 @@ def public_profile(request, username):
     return render(request, 'core/public_profile.html', context)
 
 
+@csrf_exempt
 @login_required
 def like_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
@@ -708,6 +711,7 @@ def global_search(request):
     return render(request, 'core/search_results.html', context)
 
 
+@csrf_exempt
 @login_required
 def like_document(request, document_id):
     """הוספה או הסרה של לייק לקובץ (AJAX)"""
