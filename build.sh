@@ -5,12 +5,8 @@ set -o errexit
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
-# תיקון מפורט לכל המיגרציות שנתקעו - לא מדלגים על כלום
-python manage.py migrate --fake core 0006
-python manage.py migrate --fake core 0010
-python manage.py migrate --fake core 0011
-python manage.py migrate --fake core 0012
-python manage.py migrate
+# פקודה שמנסה ליצור טבלאות חסרות (כמו core_university) בלי לקרוס על טבלאות קיימות
+python manage.py migrate --fake-initial
 
 # הרצת הפקודות המיוחדות שלך רק אם הן קיימות
 python manage.py load_bgu_courses || true
