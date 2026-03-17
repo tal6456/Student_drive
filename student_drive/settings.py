@@ -15,6 +15,9 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט
 
+# --- מפתח AI של גוגל ---
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
 
 
 #TODO
