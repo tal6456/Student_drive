@@ -19,6 +19,5 @@ password = os.getenv('ADMIN_PASSWORD', 'admin1234')
 if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(username, email, password)
 
-# עדכון דומיין האתר
 Site.objects.filter(id=1).update(domain='student-drive.onrender.com', name='Student Drive')
 END
