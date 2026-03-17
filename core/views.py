@@ -603,22 +603,27 @@ def community_feed(request):
         if content:
             if post_type == 'market':
                 MarketplacePost.objects.create(
-                    user=request.user, content=content,
+                    user=request.user,
+                    content=content,
                     community=target_community,
+                    university=profile.university,  # <--- התוספת שלנו
                     category=request.POST.get('category'),
                     price=request.POST.get('price') or None
                 )
-            # ... שאר הקוד של וידאו ופוסט רגיל ...
             elif post_type == 'video':
                 VideoPost.objects.create(
-                    user=request.user, content=content,
+                    user=request.user,
+                    content=content,
                     community=target_community,
+                    university=profile.university,  # <--- התוספת שלנו
                     video_file=request.FILES.get('video_file')
                 )
             else:
                 Post.objects.create(
-                    user=request.user, content=content,
+                    user=request.user,
+                    content=content,
                     community=target_community,
+                    university=profile.university,  # <--- התוספת שלנו
                     image=request.FILES.get('image')
                 )
 
