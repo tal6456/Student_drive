@@ -13,7 +13,9 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # --- אבטחה: מפתח סודי ---
 # מומלץ להעביר את זה לקובץ .env בעתיד
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+# DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט
+DEBUG = True # שורת עזר לעבודה מקומית על המחשב
+
 
 #TODO
 ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost'] # the * here is risky ...
@@ -168,9 +170,11 @@ if not DEBUG:
     # מאלץ את כל התעבורה לעבור דרך HTTPS
     SECURE_SSL_REDIRECT = True
 
-    # הגנה על העוגיות (Cookies) כך שיישלחו רק בחיבור מאובטח
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # ==========================================
+    # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
+    # ==========================================
+    SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
+    CSRF_COOKIE_HTTPONLY = False  # חייב להיות False כדי ש-AJAX יוכל לעבוד
 
     # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת
@@ -194,19 +198,17 @@ if not DEBUG:
 # ==========================================
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'APPS': [
-            {
-                'client_id': os.getenv('GOOGLE_CLIENT_ID'),
-                'secret': os.getenv('GOOGLE_CLIENT_SECRET'),
-                'key': ''
-            },
-        ],
         'SCOPE': [
             'profile',
             'email',
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-        }
+        },
+        # אופציונלי אבל מומלץ מאוד לאבטחה בגרסאות החדשות של ג'נגו
+        'OAUTH_PKCE_ENABLED': True,
     }
 }
+
+# מוודא שהמערכת מחפשת את הנתונים בטבלאות האדמין ולא בקוד
+SOCIALACCOUNT_STORE_TOKENS = True

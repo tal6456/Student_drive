@@ -1,13 +1,10 @@
+from django.conf import settings
 from google import genai
 import PyPDF2
 import os
 
-# הדבק כאן את המפתח שהעתקת מקודם:
-GEMINI_API_KEY = "AIzaSyDLYw0RhhpwkNnCUv1rMjOpnnDVLmlgoaQ"
 
-# אתחול הלקוח החדש של גוגל
-client = genai.Client(api_key=GEMINI_API_KEY)
-
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 def extract_text_from_pdf(file_path):
     """פונקציה שפותחת את ה-PDF ומוציאה ממנו טקסט"""
