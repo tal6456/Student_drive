@@ -1,9 +1,14 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+
+# הבאנו לכאן את המודלים החדשים מהארכיטקטורה שלנו!
 from .models import (University, Major, Course, Document, UserProfile,
-                     Report, Lecturer, LecturerReview, CourseSemesterLecturer,
-                     Feedback, Folder)
+                      Report, Feedback, Folder,
+                      AcademicStaff, Lecturer, TeachingAssistant,
+                     StaffReview, CourseSemesterStaff)
+from .models import (University, Major, Course, Document, UserProfile,
+                     Report, Folder,)
 
 
 # ==========================================
@@ -15,14 +20,13 @@ class BaseAdmin(admin.ModelAdmin):
     מחלקת אב לכל המודלים באדמין.
     כל מחלקה שתרש מפה תקבל אוטומטית את ההגדרות האלו.
     """
-    list_per_page = 50  # מציג 50 פריטים בכל עמוד במקום 100 (טוען מהר יותר)
-    empty_value_display = '- ריק -'  # מה להציג כשחסר מידע
+    list_per_page = 50
+    empty_value_display = '- ריק -'
 
 
 class ModerationAdmin(BaseAdmin):
     """
     מחלקת אב למודלים שדורשים טיפול של מנהלים (דיווחים ופידבקים).
-    היא יורשת מ-BaseAdmin ומוסיפה יכולות של סימון V מהיר ופעולות גורפות.
     """
     list_editable = ('is_resolved',)
     actions = ['mark_as_resolved']
@@ -94,8 +98,8 @@ class FolderAdmin(BaseAdmin):
 class DocumentAdmin(BaseAdmin):
     list_display = ('title', 'course', 'folder', 'file_extension', 'uploaded_by', 'upload_date')
     list_filter = ('course', 'file_extension', 'is_anonymous', 'upload_date')
-    search_fields = ('title', 'uploaded_by__username')  # חיפוש חכם גם לפי שם המעלה!
-    date_hierarchy = 'upload_date'  # סרגל זמנים עליון לסינון מהיר
+    search_fields = ('title', 'uploaded_by__username')
+    date_hierarchy = 'upload_date'
 
 
 @admin.register(UserProfile)
@@ -105,21 +109,30 @@ class UserProfileAdmin(BaseAdmin):
     search_fields = ('user__username', 'user__email')
 
 
+# --- מודלי הסגל החדשים שלנו ---
+
 @admin.register(Lecturer)
 class LecturerAdmin(BaseAdmin):
-    list_display = ('name', 'university')
-    search_fields = ('name',)
+     list_display = ('name', 'university', 'title')
+     list_filter = ('university',)
+     search_fields = ('name',)
+
+@admin.register(TeachingAssistant)
+class TeachingAssistantAdmin(BaseAdmin):
+     list_display = ('name', 'university', 'title')
+     list_filter = ('university',)
+     search_fields = ('name',)
 
 
-@admin.register(LecturerReview)
-class LecturerReviewAdmin(BaseAdmin):
-    list_display = ('lecturer', 'user', 'rating', 'created_at')
+@admin.register(StaffReview)
+class StaffReviewAdmin(BaseAdmin):
+    list_display = ('staff_member', 'user', 'rating', 'created_at')
     list_filter = ('rating',)
 
 
-@admin.register(CourseSemesterLecturer)
-class CourseSemesterLecturerAdmin(BaseAdmin):
-    list_display = ('course', 'academic_year', 'semester', 'lecturer')
+@admin.register(CourseSemesterStaff)
+class CourseSemesterStaffAdmin(BaseAdmin):
+    list_display = ('course', 'academic_year', 'semester', 'staff_member')
     list_filter = ('academic_year', 'semester')
 
 
@@ -128,16 +141,16 @@ class CourseSemesterLecturerAdmin(BaseAdmin):
 # ==========================================
 
 @admin.register(Report)
-class ReportAdmin(ModerationAdmin):  # יורש את פונקציות הטיפול!
+class ReportAdmin(ModerationAdmin):
     list_display = ('document', 'user', 'reason', 'is_resolved', 'created_at')
     list_filter = ('is_resolved', 'reason', 'created_at')
     search_fields = ('document__title', 'user__username')
 
 
 @admin.register(Feedback)
-class FeedbackAdmin(ModerationAdmin):  # יורש את פונקציות הטיפול!
-    list_display = ('subject', 'user', 'is_resolved', 'created_at')
-    list_filter = ('is_resolved', 'created_at')
+class FeedbackAdmin(ModerationAdmin):
+     list_display = ('subject', 'user', 'is_resolved', 'created_at')
+     list_filter = ('is_resolved', 'created_at')
 
 
 # ==========================================

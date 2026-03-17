@@ -13,8 +13,8 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # --- אבטחה: מפתח סודי ---
 # מומלץ להעביר את זה לקובץ .env בעתיד
 SECRET_KEY = os.getenv('SECRET_KEY')
-# DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט
-DEBUG = True # שורת עזר לעבודה מקומית על המחשב
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט
+
 
 
 #TODO
@@ -174,7 +174,9 @@ if not DEBUG:
     # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
     # ==========================================
     SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
-    CSRF_COOKIE_HTTPONLY = False  # חייב להיות False כדי ש-AJAX יוכל לעבוד
+    CSRF_COOKIE_HTTPONLY = True  # תוקן ל-True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
+
+    CSRF_TRUSTED_ORIGINS = ['https://student-drive.onrender.com']
 
     # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת

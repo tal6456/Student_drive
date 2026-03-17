@@ -1,0 +1,336 @@
+/* =====================================================================
+   GOOGLE DRIVE THEME ENGINE - CORE CSS
+   ===================================================================== */
+
+/* -----------------------------------------
+   1. COLOR VARIABLES (LIGHT & DARK MODES)
+   ----------------------------------------- */
+
+/* LIGHT MODE (Google Drive Default) */
+:root, [data-theme='light'] {
+    --gd-bg: #f8f9fa;
+    --gd-card: #ffffff;
+    --gd-text: #202124;
+    --gd-text-muted: #5f6368;
+    --gd-border: #dadce0;
+    --gd-primary: #1a73e8;
+    --gd-hover: #f1f3f4;
+    --gd-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+}
+
+/* DARK MODE (OS Preference) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --gd-bg: #202124;
+        --gd-card: #2d2e30;
+        --gd-text: #e8eaed;
+        --gd-text-muted: #9aa0a6;
+        --gd-border: #5f6368;
+        --gd-primary: #8ab4f8;
+        --gd-hover: #3c4043;
+        --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+    }
+}
+
+/* DARK MODE (Manual Toggle) */
+[data-theme='dark'] {
+    --gd-bg: #202124;
+    --gd-card: #2d2e30;
+    --gd-text: #e8eaed;
+    --gd-text-muted: #9aa0a6;
+    --gd-border: #5f6368;
+    --gd-primary: #8ab4f8;
+    --gd-hover: #3c4043;
+    --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+}
+
+/* -----------------------------------------
+   2. GLOBAL HTML ELEMENTS & UTILITIES
+   ----------------------------------------- */
+
+body {
+    background-color: var(--gd-bg) !important;
+    color: var(--gd-text) !important;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Text & Background Utility Overrides */
+.text-dark, a.text-dark { color: var(--gd-text) !important; }
+.text-muted { color: var(--gd-text-muted) !important; }
+.bg-light, .bg-white { background-color: var(--gd-card) !important; }
+.border, .border-bottom { border-color: var(--gd-border) !important; }
+
+/* -----------------------------------------
+   3. BOOTSTRAP COMPONENTS OVERRIDES
+   ----------------------------------------- */
+
+/* Cards & Modals */
+.card, .modal-content {
+    background-color: var(--gd-card) !important;
+    border: 1px solid var(--gd-border) !important;
+    box-shadow: var(--gd-shadow) !important;
+    color: var(--gd-text) !important;
+}
+
+/* Forms, Inputs & Selects */
+input, select, textarea, .form-control, .form-select {
+    background-color: var(--gd-bg) !important;
+    color: var(--gd-text) !important;
+    border: 1px solid var(--gd-border) !important;
+}
+input:focus, select:focus, textarea:focus {
+    border-color: var(--gd-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25) !important;
+}
+
+/* Lists (Courses, Files) */
+.list-group-item {
+    background-color: var(--gd-card) !important;
+    border-color: var(--gd-border) !important;
+    color: var(--gd-text) !important;
+}
+a.list-group-item, .list-group-item a {
+    color: var(--gd-text) !important;
+    text-decoration: none;
+}
+a.list-group-item:hover, .list-group-item a:hover {
+    color: var(--gd-primary) !important;
+    background-color: var(--gd-hover) !important;
+}
+/* תיקון נראות טקסט רקע (Placeholder) בשורות חיפוש וטפסים */
+input::placeholder, select::placeholder, textarea::placeholder, .form-control::placeholder {
+    color: var(--gd-text-muted) !important;
+    opacity: 0.8 !important; /* מוודא שהטקסט לא יהיה שקוף מדי */
+}
+
+/* מוודא שהטקסט שמוקלד בפועל יהיה תמיד בצבע הנכון למצב הקיים */
+input, .form-control {
+    color: var(--gd-text) !important;
+}
+
+/* -----------------------------------------
+   4. CUSTOM UI COMPONENTS
+   ----------------------------------------- */
+
+/* Navbar */
+.navbar {
+    background-color: var(--gd-card) !important;
+    border-bottom: 1px solid var(--gd-border);
+    padding: 0.5rem 0;
+}
+.navbar-brand {
+    color: var(--gd-text) !important;
+}
+.nav-link {
+    color: var(--gd-text-muted) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+.nav-link:hover {
+    background-color: var(--gd-hover);
+    color: var(--gd-text) !important;
+}
+.nav-profile-img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border: 1px solid var(--gd-border);
+}
+
+/* Buttons & Badges */
+.btn-support {
+    background: transparent;
+    border: 1px solid var(--gd-border);
+    color: var(--gd-text) !important;
+}
+.btn-support:hover {
+    background: var(--gd-hover);
+}
+.coin-badge {
+    background: var(--gd-hover);
+    color: var(--gd-text) !important;
+    border: 1px solid var(--gd-border);
+}
+
+/* Interactive Hovers */
+.report-btn-hover {
+    transition: 0.2s;
+    opacity: 0.6;
+}
+.report-btn-hover:hover {
+    color: #dc3545 !important;
+    opacity: 1;
+    transform: scale(1.1);
+}
+.hover-bg-light:hover {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+/* Layout Extras */
+.footer {
+    background-color: var(--gd-bg) !important;
+    border-top: 1px solid var(--gd-border);
+}
+#loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gd-primary);
+    z-index: 9999;
+    width: 0%;
+    transition: width 0.4s ease;
+}
+
+/* -----------------------------------------
+   5. DARK MODE SPECIFIC FIXES (Anti-Glare)
+   ----------------------------------------- */
+
+/* מצב לילה - בחירה ידנית */
+[data-theme='dark'] .btn-warning,
+[data-theme='dark'] .bg-warning {
+    background-color: #d4af37 !important; /* צהוב זהוב עדין */
+    border-color: #d4af37 !important;
+    color: #121212 !important;
+}
+[data-theme='dark'] .btn-warning:hover {
+    background-color: #b8962e !important;
+    border-color: #b8962e !important;
+}
+[data-theme='dark'] .text-warning {
+    color: #e6c243 !important;
+}
+
+/* מצב לילה - אוטומטי מהמערכת */
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme='light']) .btn-warning,
+    body:not([data-theme='light']) .bg-warning {
+        background-color: #d4af37 !important;
+        border-color: #d4af37 !important;
+        color: #121212 !important;
+    }
+    body:not([data-theme='light']) .btn-warning:hover {
+        background-color: #b8962e !important;
+        border-color: #b8962e !important;
+    }
+    body:not([data-theme='light']) .text-warning {
+        color: #e6c243 !important;
+    }
+}
+/* -----------------------------------------
+   6. ACCESSIBILITY (A11Y) ENGINE
+   ----------------------------------------- */
+
+/* Floating Menu Controls */
+#a11y-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    z-index: 9999;
+}
+#a11y-menu {
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    width: 280px;
+    z-index: 9999;
+    border-radius: 12px;
+    background-color: var(--gd-card);
+    border: 1px solid var(--gd-border);
+    box-shadow: var(--gd-shadow);
+}
+
+/* A11Y Modifiers */
+body.a11y-large-text, body.a11y-large-text * {
+    font-size: 104% !important;
+    line-height: 1.1 !important;
+}
+body.a11y-high-contrast {
+    --gd-bg: #000000 !important;
+    --gd-card: #121212 !important;
+    --gd-text: #ffff00 !important;
+    --gd-text-muted: #ffffff !important;
+    --gd-border: #ffff00 !important;
+    --gd-primary: #00ff00 !important;
+}
+body.a11y-high-contrast * {
+    border-color: #ffff00 !important;
+}
+body.a11y-high-contrast img, body.a11y-high-contrast video {
+    filter: grayscale(100%) contrast(120%);
+}
+body.a11y-highlight-links a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 3px !important;
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+    padding: 2px 4px !important;
+    border-radius: 4px;
+}
+body.a11y-readable-font, body.a11y-readable-font * {
+    font-family: Arial, Helvetica, sans-serif !important;
+    letter-spacing: 1px !important;
+    word-spacing: 2px !important;
+}
+/* -----------------------------------------
+   7. COLLAPSIBLE SEMESTERS & ELEMENTS
+   ----------------------------------------- */
+
+.semester-header {
+    transition: all 0.2s ease;
+    user-select: none; /* מונע סימון טקסט כשלוחצים הרבה פעמים */
+    cursor: pointer;
+}
+
+.semester-header:hover {
+    background-color: var(--gd-hover) !important;
+}
+
+/* סיבוב החץ - הקסם קורה כאן */
+/* כשהאלמנט סגור (aria-expanded="false"), נסובב את החץ */
+.semester-header[aria-expanded="false"] .collapse-arrow i {
+    transform: rotate(-90deg);
+}
+
+.transition-transform {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block;
+}
+
+/* עיצוב עדין לרשימה בתוך הקיפול */
+.collapse .list-group {
+    margin-top: 4px;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+/* Google Translate - Hidden Engine Fix */
+.translate-wrapper { display: flex; align-items: center; gap: 5px; }
+.lang-btn {
+    background: var(--gd-hover);
+    border: 1px solid var(--gd-border);
+    color: var(--gd-text) !important;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.2s;
+}
+.lang-btn:hover { background: var(--gd-primary); color: white !important; }
+
+/* חסימת כל אלמנט ויזואלי של גוגל */
+.skiptranslate, .goog-te-banner-frame, #goog-gt-tt { display: none !important; visibility: hidden !important; }
+body { top: 0px !important; position: static !important; }

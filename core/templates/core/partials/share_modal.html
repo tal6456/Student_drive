@@ -1,0 +1,49 @@
+<div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true" dir="rtl">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background-color: var(--gd-card);">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="סגור"></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-5">
+                <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; background-color: rgba(26, 115, 232, 0.1);">
+                    <i class="fas fa-gift text-primary fs-2"></i>
+                </div>
+                <h4 class="fw-bold" style="color: var(--gd-text);">הזמן חברים וקבל מטבעות!</h4>
+                <p class="text-muted small mb-4">שתף את הקישור האישי שלך. על כל חבר שיירשם דרכו, שניכם תקבלו 20 מטבעות דרייב שיעלו אתכם בדירוג.</p>
+
+                <div class="input-group mb-4 shadow-sm rounded-pill overflow-hidden border">
+                    <span class="input-group-text bg-light border-0 text-muted"><i class="fas fa-link"></i></span>
+                    <input type="text" id="global-ref-link" class="form-control bg-light border-0 text-start" dir="ltr"
+                           value="{{ request.scheme }}://{{ request.get_host }}?ref={{ user.profile.referral_code }}" readonly>
+                    <button class="btn btn-primary fw-bold px-4" onclick="copyGlobalRefLink()" id="global-copy-btn">
+                        העתק
+                    </button>
+                </div>
+
+                <a href="https://wa.me/?text=היי! מצאתי את אתר 'הדרייב הסטודנטיאלי', יש שם את כל הסיכומים והמבחנים שצריך לתואר. תירשם דרך הקישור שלי ושנינו נקבל מטבעות בונוס: {{ request.scheme }}://{{ request.get_host }}?ref={{ user.profile.referral_code }}"
+                   target="_blank" class="btn btn-success rounded-pill w-100 fw-bold py-3 shadow-sm fs-5">
+                    <i class="fab fa-whatsapp ms-2"></i> שלח לחברים בוואטסאפ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyGlobalRefLink() {
+    var copyText = document.getElementById("global-ref-link");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        const btn = document.getElementById("global-copy-btn");
+        const originalText = btn.innerHTML;
+        btn.innerHTML = 'הועתק! <i class="fas fa-check ms-1"></i>';
+        btn.classList.replace("btn-primary", "btn-success");
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.replace("btn-success", "btn-primary");
+        }, 2000);
+    });
+}
+</script>

@@ -1,0 +1,27 @@
+{# רכיב הודעת מערכת דינמי. מקבל: banner_id, alert_type, icon, message, link_url, link_text #}
+<div id="sys-banner-{{ banner_id }}" class="alert alert-{{ alert_type|default:'warning' }} alert-dismissible fade show text-center border-0 rounded-0 mb-0 shadow-sm" role="alert" style="z-index: 1050; display: none; padding-right: 3rem; padding-left: 3rem;">
+    <div class="container d-flex align-items-center justify-content-center gap-2 flex-wrap">
+        {% if icon %}<i class="fas fa-{{ icon }} fs-5"></i>{% endif %}
+        <span class="fw-bold">{{ message }}</span>
+
+        {% if link_url %}
+            <a href="{{ link_url }}" class="alert-link text-decoration-underline ms-2">{{ link_text }}</a>
+        {% endif %}
+    </div>
+
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="dismissSystemBanner('{{ banner_id }}')"></button>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // בודק בזיכרון של הדפדפן אם המשתמש כבר סגר את הבאנר הספציפי הזה
+        if (!localStorage.getItem('dismissed_banner_{{ banner_id }}')) {
+            document.getElementById('sys-banner-{{ banner_id }}').style.display = 'block';
+        }
+    });
+
+    // פונקציה ששומרת בזיכרון שהמשתמש לחץ על X
+    function dismissSystemBanner(bannerId) {
+        localStorage.setItem('dismissed_banner_' + bannerId, 'true');
+    }
+</script>

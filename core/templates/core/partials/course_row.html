@@ -1,6 +1,17 @@
 <a href="{% url 'course_detail' course.id %}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom hover-bg-light transition" style="background-color: transparent; border-color: var(--gd-border) !important;">
 
     <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+
+        {% if user.is_authenticated %}
+        <div onclick="toggleCourseFavorite(event, {{ course.id }})" class="favorite-btn p-1" style="cursor: pointer; z-index: 10;" title="הוסף/הסר ממועדפים">
+            {% if course in favorite_courses %}
+                <i class="fas fa-star fs-5 text-warning star-icon-{{ course.id }} hover-scale"></i>
+            {% else %}
+                <i class="far fa-star fs-5 opacity-50 star-icon-{{ course.id }} hover-scale" style="color: var(--gd-text-muted);"></i>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="text-center" style="width: 40px;">
             <i class="fas fa-folder" style="font-size: 1.5rem; color: var(--gd-primary);"></i>
         </div>

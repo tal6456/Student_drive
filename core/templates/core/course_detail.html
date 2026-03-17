@@ -112,18 +112,23 @@
                                 </div>
 
                                 <div class="d-flex align-items-center gap-3 text-nowrap">
-                                    {% if folder.lecturer %}
-                                        <a href="{% url 'lecturers_index' %}?university={{ course.major.university.id }}"
-                                           class="badge rounded-pill border px-3 py-2 fw-normal shadow-sm text-decoration-none hover-bg-light d-none d-sm-flex align-items-center gap-2"
-                                           onclick="event.stopPropagation();" title="לדירוג המרצה"
+                                    {% if folder.staff_member %}
+                                        <button class="badge rounded-pill border px-3 py-2 fw-normal shadow-sm text-decoration-none hover-bg-light d-none d-sm-flex align-items-center gap-2"
+                                           onclick="event.stopPropagation(); openEditFolderModal('folder_{{ folder.id }}', '{{ folder.name|escapejs }}', '{{ folder.staff_member.id }}')"
                                            style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">
-                                            {% if folder.lecturer.average_rating > 0 %}
-                                                <span style="color: #d4af37; font-weight: bold;"><i class="fas fa-star"></i> {{ folder.lecturer.average_rating }}</span>
-                                                <span class="opacity-25 mx-1">|</span>
+
+                                            {% if folder.staff_member.average_rating > 0 %}
+                                                <span style="color: #ffc107; font-weight: bold;">
+                                                    <i class="fas fa-star me-1"></i>{{ folder.staff_member.average_rating }}
+                                                </span>
+                                                <span class="opacity-25 mx-1" style="color: var(--gd-text);">|</span>
                                             {% endif %}
-                                            <span style="color: var(--gd-text);">{{ folder.lecturer.name }}</span>
-                                            <i class="fas fa-user-tie ms-1 text-info opacity-75"></i>
-                                        </a>
+
+                                            <span style="color: var(--gd-text);">
+                                                {{ folder.staff_member.name.split.0|slice:":1" }}. {{ folder.staff_member.name.split|slice:"1:"|join:" " }}
+                                            </span>
+                                            <i class="fas fa-user-check text-success"></i>
+                                        </button>
                                     {% else %}
                                         {% if user.is_authenticated %}
                                         <button class="btn btn-sm border rounded-pill hover-bg-light px-3 py-1 d-none d-sm-block"
@@ -133,7 +138,6 @@
                                         </button>
                                         {% endif %}
                                     {% endif %}
-
                                     <i class="fas fa-chevron-left opacity-50 ms-2" style="color: var(--gd-text-muted); font-size: 0.85rem;"></i>
                                 </div>
                             </div>
@@ -251,7 +255,7 @@
                             <i class="fas fa-user-tie me-1"></i> שיוך מרצה (אופציונלי)
                         </label>
 
-                        <select name="lecturer" id="create_lecturer_select" class="form-select">
+                        <select name="staff_member_id" id="create_lecturer_select" class="form-select">
                             <option value="">-- ללא שיוך מרצה --</option>
                             {% for lec in uni_lecturers %}
                                 <option value="{{ lec.id }}">{{ lec.name }} {% if lec.average_rating > 0 %}(⭐ {{ lec.average_rating }}){% endif %}</option>
@@ -299,7 +303,7 @@
                             <i class="fas fa-user-tie me-1"></i> שיוך מרצה
                         </label>
 
-                        <select name="lecturer" id="edit_lecturer_select" class="form-select">
+                        <select name="staff_member_id" id="edit_lecturer_select" class="form-select">
                             <option value="">-- ללא שיוך מרצה --</option>
                             {% for lec in uni_lecturers %}
                                 <option value="{{ lec.id }}">{{ lec.name }} {% if lec.average_rating > 0 %}(⭐ {{ lec.average_rating }}){% endif %}</option>
@@ -618,17 +622,21 @@
         }, { once: true });
     }
 
-    function openEditFolderModal(folderId, currentName, currentLecturerId) {
+    function openEditFolderModal(folderId, currentName, currentStaffId) {
+        // 1. מעדכן את השם וה-ID של התיקייה
         document.getElementById('edit_folder_id_input').value = folderId;
         document.getElementById('edit_folder_name_input').value = currentName;
 
-        const lecSelect = document.getElementById('edit_lecturer_select');
-        if(lecSelect) {
-            lecSelect.value = currentLecturerId || '';
+        // 2. מעדכן את המרצה שנבחר בתוך רשימת הבחירה
+        const staffSelect = document.getElementById('edit_lecturer_select');
+        if(staffSelect) {
+            staffSelect.value = currentStaffId || '';
         }
 
+        // 3. מאפס את האופציה של "הוסף מרצה חדש" למצב סגור
         resetLecturerToggle('edit');
 
+        // 4. פותח את החלונית
         const editModal = new bootstrap.Modal(document.getElementById('editFolderModal'));
         editModal.show();
     }
