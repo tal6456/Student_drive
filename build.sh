@@ -5,8 +5,12 @@ set -o errexit
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
-# פקודה שמנסה ליצור טבלאות חסרות (כמו core_university) בלי לקרוס על טבלאות קיימות
-python manage.py migrate --fake-initial
+# --- התיקון שלנו למיגרציות שמתנגשות (קורה פעם אחת ואז נשאר מסודר) ---
+python manage.py migrate core 0011 --fake || true
+python manage.py migrate core 0012 --fake || true
+
+# מריץ את שאר המיגרציות התקינות (כולל יצירת הקהילות!)
+python manage.py migrate
 
 # הרצת הפקודות המיוחדות שלך רק אם הן קיימות
 python manage.py load_bgu_courses || true
@@ -30,13 +34,3 @@ if not User.objects.filter(username=username).exists():
 # עדכון דומיין האתר
 Site.objects.filter(id=1).update(domain='student-drive.onrender.com', name='Student Drive')
 END
-#מה שהיה מקודם לפני הריינדר
-#!/usr/bin/env bash
-## exit on error
-#set -o errexit
-#
-#pip install -r requirements.txt
-#python manage.py collectstatic --no-input
-#python manage.py migrate
-#
-#python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='$ADMIN_USERNAME').exists() or User.objects.create_superuser('$ADMIN_USERNAME', '$ADMIN_EMAIL', '$ADMIN_PASSWORD')"
