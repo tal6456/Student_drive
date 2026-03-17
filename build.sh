@@ -5,9 +5,11 @@ set -o errexit
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
-# השארנו את ה-migrate, אבל אם הוא נכשל בגלל הבלגן הנוכחי,
-# אנחנו נתקן אותו ידנית פעם אחת מהמחשב שלך.
+# תיקון לסנכרון המיגרציות:
+# 1. פייק ל-0006 כדי לדלג על השדה lecturer שחסר
+# 2. פייק ל-0010 כדי לדלג על האינדקסים שכבר נוצרו ב-DB ומונעים את ההרצה
 python manage.py migrate --fake core 0006
+python manage.py migrate --fake core 0010
 python manage.py migrate
 
 # הרצת הפקודות המיוחדות שלך רק אם הן קיימות
