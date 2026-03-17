@@ -299,23 +299,65 @@
                     </div>
 
                     <div class="mb-4">
+                        <label class="form-label fw-bold small" style="color: var(--gd-text-muted);">🎨 צבע התיקייה</label>
+                        <div class="d-flex gap-2 justify-content-start">
+                            <input type="radio" class="btn-check" name="folder_color" id="color_yellow" value="#fbbc04" autocomplete="off" checked>
+                            <label class="btn rounded-circle shadow-sm" for="color_yellow" style="background-color: #fbbc04; width: 35px; height: 35px; border: 2px solid transparent;"></label>
+
+                            <input type="radio" class="btn-check" name="folder_color" id="color_red" value="#ea4335" autocomplete="off">
+                            <label class="btn rounded-circle shadow-sm" for="color_red" style="background-color: #ea4335; width: 35px; height: 35px; border: 2px solid transparent;"></label>
+
+                            <input type="radio" class="btn-check" name="folder_color" id="color_green" value="#34a853" autocomplete="off">
+                            <label class="btn rounded-circle shadow-sm" for="color_green" style="background-color: #34a853; width: 35px; height: 35px; border: 2px solid transparent;"></label>
+
+                            <input type="radio" class="btn-check" name="folder_color" id="color_blue" value="#4285f4" autocomplete="off">
+                            <label class="btn rounded-circle shadow-sm" for="color_blue" style="background-color: #4285f4; width: 35px; height: 35px; border: 2px solid transparent;"></label>
+
+                            <input type="radio" class="btn-check" name="folder_color" id="color_dark" value="#5f6368" autocomplete="off">
+                            <label class="btn rounded-circle shadow-sm" for="color_dark" style="background-color: #5f6368; width: 35px; height: 35px; border: 2px solid transparent;"></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
                         <label class="form-label fw-bold small" style="color: var(--gd-text-muted);">
                             <i class="fas fa-user-tie me-1"></i> שיוך מרצה
                         </label>
-
                         <select name="staff_member_id" id="edit_lecturer_select" class="form-select">
                             <option value="">-- ללא שיוך מרצה --</option>
                             {% for lec in uni_lecturers %}
                                 <option value="{{ lec.id }}">{{ lec.name }} {% if lec.average_rating > 0 %}(⭐ {{ lec.average_rating }}){% endif %}</option>
                             {% endfor %}
                         </select>
-
                         <input type="text" name="new_lecturer_name" id="edit_new_lecturer_input" class="form-control d-none mt-2" placeholder="הקלד שם מרצה חדש..." autocomplete="off">
-
                         <div class="mt-2 text-start">
                             <span class="badge border cursor-pointer py-1 px-2" style="background-color: var(--gd-bg); color: var(--gd-primary); border-color: var(--gd-border) !important;" onclick="toggleNewLecturer('edit')">
                                 <i class="fas fa-plus"></i> המרצה לא ברשימה? הוסף חדש
                             </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-sm w-100 rounded-pill fw-bold"
+                                style="background-color: rgba(66, 133, 244, 0.1); color: #4285f4; border: 1px dashed #4285f4;"
+                                onclick="document.getElementById('edit_review_section').classList.toggle('d-none');">
+                            ⭐ הוסף דירוג למרצה וקבל 2 מטבעות דרייב!
+                        </button>
+
+                        <div id="edit_review_section" class="d-none mt-3 p-3 border rounded-3 text-end" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                            <label class="form-label fw-bold small" style="color: var(--gd-text);">איך הייתה החוויה שלך?</label>
+
+                            <input type="hidden" name="rating" id="edit_rating_input" value="0">
+
+                            <div class="text-warning fs-3 mb-3 d-flex flex-row-reverse justify-content-end" id="edit_star_rating_ui" style="cursor: pointer;">
+                                <i class="far fa-star star-btn" data-val="5" onclick="setInlineRating(5)"></i>
+                                <i class="far fa-star star-btn" data-val="4" onclick="setInlineRating(4)"></i>
+                                <i class="far fa-star star-btn" data-val="3" onclick="setInlineRating(3)"></i>
+                                <i class="far fa-star star-btn" data-val="2" onclick="setInlineRating(2)"></i>
+                                <i class="far fa-star star-btn" data-val="1" onclick="setInlineRating(1)"></i>
+                            </div>
+
+                            <label class="form-label fw-bold small" style="color: var(--gd-text);">פירוט (אופציונלי):</label>
+                            <textarea name="review_text" class="form-control form-control-sm" rows="2" placeholder="איך המבחן? הוא זמין לשאלות?..." style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);"></textarea>
                         </div>
                     </div>
 
@@ -357,6 +399,22 @@
     let isAscending = true;
     let currentPath = 'root';
     let pathHistory = [{path: 'root', name: "{{ course.name|escapejs }}"}];
+
+    function setInlineRating(val) {
+        document.getElementById('edit_rating_input').value = val;
+        const stars = document.querySelectorAll('#edit_star_rating_ui .star-btn');
+        stars.forEach(star => {
+            const starVal = parseInt(star.getAttribute('data-val'));
+            // בגלל שסידרנו אותם משמאל לימין לטובת עברית, הלוגיקה פשוטה:
+            if (starVal <= val) {
+                star.classList.remove('far');
+                star.classList.add('fas');
+            } else {
+                star.classList.remove('fas');
+                star.classList.add('far');
+            }
+        });
+    }
 
     function escapeHTML(str) { return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 

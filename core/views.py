@@ -256,33 +256,56 @@ def course_detail(request, course_id):
                 messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
-
+        #  פונקציה להוספת מרצה לתקייה ועריכת שם התקייה
         elif action == 'edit_folder':
             folder_id_raw = request.POST.get('folder_id')
-            staff_id = request.POST.get('staff_member_id')
-            new_first = request.POST.get('new_first_name')
-            new_last = request.POST.get('new_last_name')
+            staff_id_select = request.POST.get('staff_member_id', '')
+            new_staff_input = request.POST.get('new_lecturer_name', '')
+            # קליטת הנתונים החדשים מהשדרוג
+            folder_color = request.POST.get('folder_color')
+            rating_val = request.POST.get('rating', '0')
+            review_text = request.POST.get('review_text', '')
 
             if folder_id_raw:
                 clean_id = folder_id_raw.replace('folder_', '')
                 folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
-
-                # יצירת מרצה חדש עם שם מפוצל
-                if new_first and new_last:
-                    full_name = f"{new_first.strip()} {new_last.strip()}"
-                    folder_to_edit.staff_member, _ = Lecturer.objects.get_or_create(
-                        name=full_name,
+                final_staff = None
+                # 1. ניהול המרצה (חדש או קיים)
+                if new_staff_input and new_staff_input.strip():
+                    new_lecturer, _ = Lecturer.objects.get_or_create(
+                        name=new_staff_input.strip(),
                         university=course.major.university
                     )
-
-                # או בחירה של מרצה קיים
-                elif staff_id:
-                    folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id)
-                else:
-                    folder_to_edit.staff_member = None
-
+                    final_staff = new_lecturer
+                elif staff_id_select and staff_id_select.strip().isdigit():
+                    final_staff = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
+                folder_to_edit.staff_member = final_staff
+                # 2. עדכון צבע התיקייה (אם המשתמש בחר)
+                if folder_color:
+                    folder_to_edit.color = folder_color
                 folder_to_edit.save()
-                messages.success(request, 'השיוך עודכן בהצלחה!')
+                # 3. מערכת הדירוג המשולבת (מחזור של לוגיקת rate_staff)
+                if final_staff and rating_val.isdigit() and int(rating_val) > 0:
+                    rating_int = int(rating_val)
+                    if 1 <= rating_int <= 5:
+                        review, created = StaffReview.objects.update_or_create(
+                            staff_member=final_staff,
+                            user=request.user,
+                            defaults={'rating': rating_int, 'review_text': review_text.strip()}
+                        )
+                        # עדכון הממוצע של המרצה
+                        avg = final_staff.reviews.aggregate(models.Avg('rating'))['rating__avg']
+                        final_staff.average_rating = round(avg, 1)
+                        final_staff.save()
+                        # הענקת מטבעות רק אם זה דירוג חדש (לא עדכון של ישן)
+                        if created:
+                            request.user.profile.drive_coins += 2
+                            request.user.profile.save()
+                            messages.success(request, 'התיקייה עודכנה, וקיבלת 2 מטבעות על הדירוג! 🪙')
+                        else:
+                            messages.success(request, 'התיקייה והדירוג שלך עודכנו בהצלחה!')
+                else:
+                    messages.success(request, 'התיקייה עודכנה בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
         elif action == 'quick_upload':
