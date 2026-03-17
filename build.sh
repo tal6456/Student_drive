@@ -10,17 +10,26 @@ python manage.py migrate core 0011 --fake || true
 python manage.py migrate core 0012 --fake || true
 python manage.py migrate
 
-# 2. יצירה ידנית של טבלת הקהילות (הפתרון לשגיאה שלנו!)
+# 2. יצירה ידנית של טבלאות חסרות (הפתרון לשגיאות שלנו!)
 python manage.py shell << END
 from django.db import connection
-from core.models import Community
+from core.models import Community, UserProfile
 
+# יצירת טבלת הקהילות
 try:
     with connection.schema_editor() as editor:
         editor.create_model(Community)
     print("✅ Community table created successfully!")
 except Exception as e:
     print("ℹ️ Community table already exists or skipped.")
+
+# יצירת הטבלה הנסתרת של הקורסים המועדפים (ManyToMany)
+try:
+    with connection.schema_editor() as editor:
+        editor.create_model(UserProfile.favorite_courses.through)
+    print("✅ Favorite courses table created successfully!")
+except Exception as e:
+    print("ℹ️ Favorite courses table already exists or skipped.")
 END
 
 # 3. הרצת הפקודות המיוחדות לקורסים
