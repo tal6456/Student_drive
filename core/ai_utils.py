@@ -45,9 +45,9 @@ def generate_smart_summary(file_path):
     """
 
     try:
-        # הקריאה החדשה והמעודכנת למודל
+        # הקריאה החדשה והמעודכנת למודל (שונה לגרסה 2.5)
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         return response.text

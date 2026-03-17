@@ -1,93 +1,84 @@
 {% extends "core/social_base.html" %}
-{% load static %}
 
-{% block title %}קהילות - {{ current_community.name }}{% endblock %}
+{% block social_sidebar %}
+    {% include "core/partials/community_sidebar.html" %}
+{% endblock %}
 
 {% block social_content %}
-<div class="row g-4" dir="rtl">
-
-    <div class="col-lg-3 order-2 order-lg-1">
-        {% include "core/partials/community_sidebar.html" %}
+<div class="d-flex align-items-center gap-3 mb-4 animate__animated animate__fadeIn">
+     <div class="rounded-circle bg-primary bg-gradient shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; color: white;">
+        <i class="fas fa-users fs-4"></i>
     </div>
+    <div>
+        <h4 class="fw-bold mb-0" style="color: var(--gd-text);">{{ current_community.name }}</h4>
+        <p class="text-muted small mb-0">{{ current_community.get_community_type_display }} • {{ posts.count }} פוסטים</p>
+    </div>
+</div>
 
-    <div class="col-lg-9 order-1 order-lg-2">
+<div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
+    <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data" id="post-form">
+            {% csrf_token %}
+            <input type="hidden" name="post_type" id="post_type" value="normal">
 
-        <div class="d-flex align-items-center gap-3 mb-4 animate__animated animate__fadeIn">
-             <div class="rounded-circle bg-primary bg-gradient shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; color: white;">
-                <i class="fas fa-users fs-4"></i>
+            <div class="mb-3 d-flex align-items-center gap-2">
+                <span class="small text-muted">מפרסם ב:</span>
+                <select name="target_community" class="form-select form-select-sm border-0 fw-bold rounded-pill shadow-sm" style="width: auto; background-color: var(--gd-bg); color: var(--gd-primary);">
+                    {% for comm in my_communities %}
+                        <option value="{{ comm.id }}" {% if comm.id == current_community.id %}selected{% endif %}>
+                            {{ comm.name }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
-            <div>
-                <h4 class="fw-bold mb-0" style="color: var(--gd-text);">{{ current_community.name }}</h4>
-                <p class="text-muted small mb-0">{{ current_community.get_community_type_display }} • {{ posts.count }} פוסטים</p>
-            </div>
-        </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
-            <div class="card-body p-4">
-                <form method="POST" enctype="multipart/form-data" id="post-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="post_type" id="post_type" value="normal">
+            <textarea name="content" class="form-control border-0 rounded-4 p-3 mb-3 fs-5" rows="3"
+                      placeholder="מה תרצה לשתף עם חברי הקהילה?" required
+                      style="resize: none; background-color: var(--gd-bg); color: var(--gd-text);"></textarea>
 
-                    <div class="mb-3 d-flex align-items-center gap-2">
-                        <span class="small text-muted">מפרסם ב:</span>
-                        <select name="target_community" class="form-select form-select-sm border-0 fw-bold rounded-pill shadow-sm" style="width: auto; background-color: var(--gd-bg); color: var(--gd-primary);">
-                            {% for comm in my_communities %}
-                                <option value="{{ comm.id }}" {% if comm.id == current_community.id %}selected{% endif %}>
-                                    {{ comm.name }}
-                                </option>
-                            {% endfor %}
+            <div id="extra-fields" class="mb-3">
+                <div id="market-fields" class="row g-2 d-none">
+                    <div class="col-md-6">
+                        <select name="category" class="form-select rounded-pill shadow-sm">
+                            <option value="sell">מכירה</option>
+                            <option value="rent">דיור/שותפים</option>
+                            <option value="giveaway">למסירה</option>
                         </select>
                     </div>
-
-                    <textarea name="content" class="form-control border-0 rounded-4 p-3 mb-3 fs-5" rows="3"
-                              placeholder="מה תרצה לשתף עם חברי הקהילה?" required
-                              style="resize: none; background-color: var(--gd-bg); color: var(--gd-text);"></textarea>
-
-                    <div id="extra-fields" class="mb-3">
-                        <div id="market-fields" class="row g-2 d-none">
-                            <div class="col-md-6">
-                                <select name="category" class="form-select rounded-pill shadow-sm">
-                                    <option value="sell">מכירה</option>
-                                    <option value="rent">דיור/שותפים</option>
-                                    <option value="giveaway">למסירה</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="number" name="price" class="form-control rounded-pill shadow-sm" placeholder="מחיר (₪)">
-                            </div>
-                        </div>
-                        <div id="image-fields">
-                            <input type="file" name="image" class="form-control rounded-pill shadow-sm" accept="image/*">
-                        </div>
+                    <div class="col-md-6">
+                        <input type="number" name="price" class="form-control rounded-pill shadow-sm" placeholder="מחיר (₪)">
                     </div>
-
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top" style="border-color: var(--gd-border) !important;">
-                        <div class="btn-group p-1 rounded-pill" style="background-color: var(--gd-bg);">
-                            <button type="button" onclick="setPostType('normal')" class="btn btn-sm rounded-pill px-4 fw-bold transition-all" id="btn-normal">
-                                פוסט רגיל
-                            </button>
-                            <button type="button" onclick="setPostType('market')" class="btn btn-sm rounded-pill px-4 fw-bold transition-all" id="btn-market">
-                                מודעה למכירה
-                            </button>
-                        </div>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">פרסם</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="feed-container">
-            {% for post in posts %}
-                {% include "core/partials/post_card.html" with post=post %}
-            {% empty %}
-                <div class="text-center py-5 rounded-4 border-2 border-dashed" style="border-color: var(--gd-border); background-color: var(--gd-card);">
-                    <i class="fas fa-feather-alt fa-3x text-muted mb-3 opacity-25"></i>
-                    <h5 class="fw-bold text-muted">הקהילה הזו עדיין שקטה...</h5>
-                    <p class="text-muted small">כתוב את הפוסט הראשון!</p>
                 </div>
-            {% endfor %}
-        </div>
+                <div id="image-fields">
+                    <input type="file" name="image" class="form-control rounded-pill shadow-sm" accept="image/*">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top" style="border-color: var(--gd-border) !important;">
+                <div class="btn-group p-1 rounded-pill" style="background-color: var(--gd-bg);">
+                    <button type="button" onclick="setPostType('normal')" class="btn btn-sm rounded-pill px-4 fw-bold transition-all" id="btn-normal">
+                        פוסט רגיל
+                    </button>
+                    <button type="button" onclick="setPostType('market')" class="btn btn-sm rounded-pill px-4 fw-bold transition-all" id="btn-market">
+                        מודעה למכירה
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">פרסם</button>
+            </div>
+        </form>
     </div>
+</div>
+
+<div id="feed-container">
+    {% for post in posts %}
+        {% include "core/partials/post_card.html" with post=post %}
+    {% empty %}
+        <div class="text-center py-5 rounded-4 border-2 border-dashed" style="border-color: var(--gd-border); background-color: var(--gd-card);">
+            <i class="fas fa-feather-alt fa-3x text-muted mb-3 opacity-25"></i>
+            <h5 class="fw-bold text-muted">הקהילה הזו עדיין שקטה...</h5>
+            <p class="text-muted small">כתוב את הפוסט הראשון!</p>
+        </div>
+    {% endfor %}
 </div>
 
 <style>
@@ -108,7 +99,7 @@ function setPostType(type) {
     // עדכון שדות בטופס
     document.getElementById('market-fields').classList.toggle('d-none', type !== 'market');
 
-    // עדכון ויזואלי של הכפתורים (החלק שחיה חסר לך)
+    // עדכון ויזואלי של הכפתורים
     const btnNormal = document.getElementById('btn-normal');
     const btnMarket = document.getElementById('btn-market');
 

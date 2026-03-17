@@ -99,7 +99,7 @@
                                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: var(--gd-primary); color: white;">
                                         <i class="fas fa-user"></i>
                                     </div>
-                                {% endif %}
+                                endif %}
                                 <span class="notranslate fw-bold" style="color: var(--gd-text);">{{ user.username }}</span>
                             </a>
                         </li>
@@ -230,7 +230,43 @@
 
     {% block extra_js %}{% endblock %}
 
-<script>
+    <script>
+        function generateAISummary(docId, btn) {
+            const container = document.getElementById(`ai-summary-container-${docId}`);
+            const textDiv = container.querySelector('.summary-text');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> חושב...';
+            btn.disabled = true;
+
+            // שימוש ב-secureFetch המותאם
+            secureFetch(`/document/${docId}/ai-summary/`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Server error");
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    textDiv.innerText = data.summary;
+                    const bsCollapse = new bootstrap.Collapse(container, { toggle: false });
+                    bsCollapse.show();
+                } else {
+                    alert("שגיאה: " + data.error);
+                }
+            })
+            .catch(err => {
+                console.error("Error generating AI summary:", err);
+                alert("אירעה שגיאה בתקשורת מול השרת.");
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+        }
+    </script>
+
+    <script>
         // טעינת הגדרות נגישות מהדפדפן
         window.addEventListener('load', function() {
             ['a11y-large-text', 'a11y-high-contrast', 'a11y-highlight-links', 'a11y-readable-font'].forEach(cls => {
@@ -258,7 +294,7 @@
         function toggleLike(event, buttonElement) {
             event.preventDefault();
             const url = buttonElement.getAttribute('data-url');
-            const csrftoken = getCookie('csrftoken');
+            const csrftoken = getCookie('csrftoken') || getCsrfToken();
 
             fetch(url, {
                 method: 'POST',
@@ -324,8 +360,14 @@
     <script>
         // תיקון CSRF גלובלי לכל בקשות ה-Fetch באתר
         function getCsrfToken() {
-            const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const tokenInput = document.querySelector('#csrf-wrapper [name=csrfmiddlewaretoken]');
             return tokenInput ? tokenInput.value : '';
+        }
+
+        async function secureFetch(resource, config = {}) {
+            if (!config.headers) config.headers = {};
+            config.headers['X-CSRFToken'] = getCsrfToken();
+            return window.fetch(resource, config);
         }
 
         const originalFetch = window.fetch;
@@ -333,7 +375,8 @@
             let [resource, config] = arguments;
             if (!config) config = {};
             if (!config.headers) config.headers = {};
-            config.headers['X-CSRFToken'] = getCsrfToken();
+            const token = getCsrfToken();
+            if (token) config.headers['X-CSRFToken'] = token;
             return originalFetch(resource, config);
         };
     </script>
