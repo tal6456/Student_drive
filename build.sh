@@ -5,47 +5,14 @@ set -o errexit
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
-# 1. מריצים מיגרציות רגילות (עם הדילוגים ששמנו קודם כדי לא לקרוס)
-python manage.py migrate core 0011 --fake || true
-python manage.py migrate core 0012 --fake || true
+# מיגרציה נקייה ורגילה לגמרי!
 python manage.py migrate
 
-# 2. יצירה ידנית של טבלאות ועמודות חסרות (הפתרון לשגיאות שלנו!)
-python manage.py shell << END
-from django.db import connection
-from core.models import Community, UserProfile, Post
-
-# יצירת טבלת הקהילות
-try:
-    with connection.schema_editor() as editor:
-        editor.create_model(Community)
-    print("✅ Community table created successfully!")
-except Exception as e:
-    print("ℹ️ Community table already exists or skipped.")
-
-# יצירת הטבלה הנסתרת של הקורסים המועדפים (ManyToMany)
-try:
-    with connection.schema_editor() as editor:
-        editor.create_model(UserProfile.favorite_courses.through)
-    print("✅ Favorite courses table created successfully!")
-except Exception as e:
-    print("ℹ️ Favorite courses table already exists or skipped.")
-
-# הוספת עמודת הקהילה לטבלת הפוסטים הקיימת
-try:
-    with connection.schema_editor() as editor:
-        field = Post._meta.get_field('community')
-        editor.add_field(Post, field)
-    print("✅ Added community_id to Post table successfully!")
-except Exception as e:
-    print("ℹ️ community_id field already exists or skipped.")
-END
-
-# 3. הרצת הפקודות המיוחדות לקורסים
+# הרצת הפקודות המיוחדות שלך
 python manage.py load_bgu_courses || true
 python manage.py seed_bgu_ee || true
 
-# 4. יצירת סופר-יוזר ודומיין
+# יצירת מנהל ודומיין
 python manage.py shell << END
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
