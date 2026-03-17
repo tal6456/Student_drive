@@ -44,11 +44,12 @@ class DocumentUploadForm(BaseStyledModelForm):
         model = Document
         # שינינו כאן מ-lecturer ל-staff_member
         fields = ['title', 'file', 'folder', 'staff_member', 'is_anonymous']
+
         labels = {
             'title': 'שם הקובץ',
             'folder': 'בחר תיקייה קיימת',
             # שינינו גם כאן את המפתח כדי שהתווית תוצמד לשדה הנכון
-            'staff_member': 'מרצה / מתרגל (לא חובה - עוזר לדירוגים!)',
+             'staff_member': 'מרצה / מתרגל (לא חובה - עוזר לדירוגים!)',
             'is_anonymous': 'העלאה אנונימית (השם שלך לא יופיע על הקובץ)',
         }
         widgets = {

@@ -4,9 +4,11 @@ from django.contrib.auth.models import User
 
 # הבאנו לכאן את המודלים החדשים מהארכיטקטורה שלנו!
 from .models import (University, Major, Course, Document, UserProfile,
-                     Report, Feedback, Folder,
-                     AcademicStaff, Lecturer, TeachingAssistant,
+                      Report, Feedback, Folder,
+                      AcademicStaff, Lecturer, TeachingAssistant,
                      StaffReview, CourseSemesterStaff)
+from .models import (University, Major, Course, Document, UserProfile,
+                     Report, Folder,)
 
 
 # ==========================================
@@ -111,16 +113,15 @@ class UserProfileAdmin(BaseAdmin):
 
 @admin.register(Lecturer)
 class LecturerAdmin(BaseAdmin):
-    list_display = ('name', 'university', 'title')
-    list_filter = ('university',)
-    search_fields = ('name',)
-
+     list_display = ('name', 'university', 'title')
+     list_filter = ('university',)
+     search_fields = ('name',)
 
 @admin.register(TeachingAssistant)
 class TeachingAssistantAdmin(BaseAdmin):
-    list_display = ('name', 'university', 'title')
-    list_filter = ('university',)
-    search_fields = ('name',)
+     list_display = ('name', 'university', 'title')
+     list_filter = ('university',)
+     search_fields = ('name',)
 
 
 @admin.register(StaffReview)
@@ -148,8 +149,8 @@ class ReportAdmin(ModerationAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(ModerationAdmin):
-    list_display = ('subject', 'user', 'is_resolved', 'created_at')
-    list_filter = ('is_resolved', 'created_at')
+     list_display = ('subject', 'user', 'is_resolved', 'created_at')
+     list_filter = ('is_resolved', 'created_at')
 
 
 # ==========================================

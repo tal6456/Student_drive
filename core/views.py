@@ -12,8 +12,9 @@ import datetime
 import os
 from django.db import models
 from .models import (University, Major, Course, Document, UserProfile,
-    Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
-    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
+     Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
+     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
+
 
 from .forms import CourseForm, UserProfileForm
 from .ai_utils import generate_smart_summary
