@@ -7,7 +7,6 @@ python manage.py collectstatic --no-input
 
 # השארנו את ה-migrate, אבל אם הוא נכשל בגלל הבלגן הנוכחי,
 # אנחנו נתקן אותו ידנית פעם אחת מהמחשב שלך.
-python -c "import os; import psycopg2; conn = psycopg2.connect(os.environ['DATABASE_URL']); conn.autocommit = True; cur = conn.cursor(); cur.execute('DROP SCHEMA public CASCADE; CREATE SCHEMA public;'); cur.close(); conn.close()"
 python manage.py migrate
 
 # הרצת הפקודות המיוחדות שלך רק אם הן קיימות
