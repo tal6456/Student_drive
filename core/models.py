@@ -281,6 +281,7 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField(verbose_name="תוכן הפוסט")
     image = models.ImageField(upload_to='posts_images/', null=True, blank=True)
+    university = models.ForeignKey('University', on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
 
     # השיוך החדש לקהילה (במקום אוניברסיטה ומקצוע). מוגדר כרגע עם null=True כדי לא לשבור פוסטים קיימים!
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', verbose_name="קהילה",
