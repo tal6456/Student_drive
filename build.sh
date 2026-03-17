@@ -7,6 +7,7 @@ python manage.py collectstatic --no-input
 
 # השארנו את ה-migrate, אבל אם הוא נכשל בגלל הבלגן הנוכחי,
 # אנחנו נתקן אותו ידנית פעם אחת מהמחשב שלך.
+python manage.py migrate --fake core 0006
 python manage.py migrate
 
 # הרצת הפקודות המיוחדות שלך רק אם הן קיימות
