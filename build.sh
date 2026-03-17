@@ -10,10 +10,10 @@ python manage.py migrate core 0011 --fake || true
 python manage.py migrate core 0012 --fake || true
 python manage.py migrate
 
-# 2. יצירה ידנית של טבלאות חסרות (הפתרון לשגיאות שלנו!)
+# 2. יצירה ידנית של טבלאות ועמודות חסרות (הפתרון לשגיאות שלנו!)
 python manage.py shell << END
 from django.db import connection
-from core.models import Community, UserProfile
+from core.models import Community, UserProfile, Post
 
 # יצירת טבלת הקהילות
 try:
@@ -30,6 +30,15 @@ try:
     print("✅ Favorite courses table created successfully!")
 except Exception as e:
     print("ℹ️ Favorite courses table already exists or skipped.")
+
+# הוספת עמודת הקהילה לטבלת הפוסטים הקיימת
+try:
+    with connection.schema_editor() as editor:
+        field = Post._meta.get_field('community')
+        editor.add_field(Post, field)
+    print("✅ Added community_id to Post table successfully!")
+except Exception as e:
+    print("ℹ️ community_id field already exists or skipped.")
 END
 
 # 3. הרצת הפקודות המיוחדות לקורסים
