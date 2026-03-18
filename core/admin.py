@@ -1,18 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
 
-# הבאנו לכאן את המודלים החדשים מהארכיטקטורה שלנו!
-from .models import (University, Major, Course, Document, UserProfile,
-                      Report, Feedback, Folder,
-                      AcademicStaff, Lecturer, TeachingAssistant,
-                     StaffReview, CourseSemesterStaff)
-from .models import (University, Major, Course, Document, UserProfile,
-                     Report, Folder,)
-
+# הבאנו לכאן את כל המודלים מהארכיטקטורה החדשה!
+from .models import (
+    CustomUser, UserProfile, Friendship,
+    University, Major, Course, Folder, Document,
+    Community, Post, MarketplacePost, VideoPost, Comment,
+    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
+    Report, Feedback
+)
 
 # ==========================================
-# 1. מחלקות אב (ירושות) - הכוח האמיתי של הקוד
+# 1. מחלקות אב (ירושות) - שומרים על הכוח שלך!
 # ==========================================
 
 class BaseAdmin(admin.ModelAdmin):
@@ -38,40 +37,52 @@ class ModerationAdmin(BaseAdmin):
 
 
 # ==========================================
-# 2. מיזוג פרופיל הסטודנט לתוך מסך המשתמש (User)
+# 2. ניהול משתמשים (CustomUser + UserProfile)
 # ==========================================
+
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
-    verbose_name_plural = 'פרטי סטודנט מורחבים'
+    verbose_name_plural = 'פרטי משתמש מורחבים'
     fk_name = 'user'
 
 
+@admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_university')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
+    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active')
 
-    def get_university(self, instance):
-        if hasattr(instance, 'profile') and instance.profile.university:
-            return instance.profile.university.name
-        return "לא הוגדר"
+    # הוספת שדה ה-role לעמוד העריכה והיצירה
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('הגדרות תפקיד במערכת (RBAC)', {'fields': ('role',)}),
+    )
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        ('הגדרות תפקיד במערכת (RBAC)', {'fields': ('role',)}),
+    )
 
-    get_university.short_description = 'מוסד לימודים'
+
+@admin.register(UserProfile)
+class UserProfileAdmin(BaseAdmin):
+    list_display = ('user', 'university', 'major', 'year', 'lifetime_coins', 'current_balance')
+    list_filter = ('university', 'year')
+    search_fields = ('user__username', 'user__email')
 
 
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+@admin.register(Friendship)
+class FriendshipAdmin(BaseAdmin):
+    list_display = ('user_from', 'user_to', 'status', 'created_at')
+    list_filter = ('status',)
 
 
 # ==========================================
-# 3. המודלים הרגילים (יורשים מ-BaseAdmin)
+# 3. מוסדות, קורסים ותיקיות
 # ==========================================
 
 @admin.register(University)
 class UniversityAdmin(BaseAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'brand_color')
     search_fields = ('name',)
-
 
 @admin.register(Major)
 class MajorAdmin(BaseAdmin):
@@ -79,66 +90,79 @@ class MajorAdmin(BaseAdmin):
     list_filter = ('university',)
     search_fields = ('name',)
 
-
 @admin.register(Course)
 class CourseAdmin(BaseAdmin):
-    list_display = ('name', 'major', 'year', 'semester', 'view_count')
-    list_filter = ('major', 'year', 'semester', 'track')
+    list_display = ('name', 'course_number', 'major', 'year', 'semester')
+    list_filter = ('year', 'semester', 'major__university')
     search_fields = ('name', 'course_number')
-
 
 @admin.register(Folder)
 class FolderAdmin(BaseAdmin):
     list_display = ('name', 'course', 'parent', 'created_at')
-    list_filter = ('course',)
-    search_fields = ('name',)
-
+    list_filter = ('course__major__university', 'created_at')
+    search_fields = ('name', 'course__name')
 
 @admin.register(Document)
 class DocumentAdmin(BaseAdmin):
-    list_display = ('title', 'course', 'folder', 'file_extension', 'uploaded_by', 'upload_date')
-    list_filter = ('course', 'file_extension', 'is_anonymous', 'upload_date')
-    search_fields = ('title', 'uploaded_by__username')
+    list_display = ('title', 'course', 'folder', 'uploaded_by', 'upload_date')
+    list_filter = ('course__major__university', 'upload_date')
+    search_fields = ('title', 'course__name', 'uploaded_by__username')
     date_hierarchy = 'upload_date'
 
 
-@admin.register(UserProfile)
-class UserProfileAdmin(BaseAdmin):
-    list_display = ('user', 'university', 'major', 'year', 'drive_coins')
-    list_filter = ('university', 'year')
-    search_fields = ('user__username', 'user__email')
+# ==========================================
+# 4. קהילות ופוסטים
+# ==========================================
+
+@admin.register(Community)
+class CommunityAdmin(BaseAdmin):
+    list_display = ('name', 'community_type', 'university')
+    list_filter = ('community_type', 'university')
+    search_fields = ('name',)
+
+@admin.register(Post)
+class PostAdmin(BaseAdmin):
+    list_display = ('user', 'community', 'university', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('content', 'user__username')
+
+admin.site.register(MarketplacePost, BaseAdmin)
+admin.site.register(VideoPost, BaseAdmin)
+admin.site.register(Comment, BaseAdmin)
 
 
-# --- מודלי הסגל החדשים שלנו ---
+# ==========================================
+# 5. סגל אקדמי ופידבקים
+# ==========================================
+
+@admin.register(AcademicStaff)
+class AcademicStaffAdmin(BaseAdmin):
+    list_display = ('name', 'university', 'average_rating')
+    list_filter = ('university',)
+    search_fields = ('name', 'email')
 
 @admin.register(Lecturer)
 class LecturerAdmin(BaseAdmin):
-     list_display = ('name', 'university', 'title')
-     list_filter = ('university',)
-     search_fields = ('name',)
+    list_display = ('name', 'university', 'title')
+    list_filter = ('university',)
+    search_fields = ('name',)
 
 @admin.register(TeachingAssistant)
 class TeachingAssistantAdmin(BaseAdmin):
-     list_display = ('name', 'university', 'title')
-     list_filter = ('university',)
-     search_fields = ('name',)
-
+    list_display = ('name', 'university', 'title')
+    list_filter = ('university',)
+    search_fields = ('name',)
 
 @admin.register(StaffReview)
 class StaffReviewAdmin(BaseAdmin):
     list_display = ('staff_member', 'user', 'rating', 'created_at')
-    list_filter = ('rating',)
-
+    list_filter = ('rating', 'created_at')
+    search_fields = ('staff_member__name', 'user__username')
 
 @admin.register(CourseSemesterStaff)
 class CourseSemesterStaffAdmin(BaseAdmin):
-    list_display = ('course', 'academic_year', 'semester', 'staff_member')
+    list_display = ('course', 'staff_member', 'academic_year', 'semester')
     list_filter = ('academic_year', 'semester')
-
-
-# ==========================================
-# 4. מודלי ניהול (יורשים מ-ModerationAdmin)
-# ==========================================
 
 @admin.register(Report)
 class ReportAdmin(ModerationAdmin):
@@ -146,15 +170,14 @@ class ReportAdmin(ModerationAdmin):
     list_filter = ('is_resolved', 'reason', 'created_at')
     search_fields = ('document__title', 'user__username')
 
-
 @admin.register(Feedback)
 class FeedbackAdmin(ModerationAdmin):
-     list_display = ('subject', 'user', 'is_resolved', 'created_at')
-     list_filter = ('is_resolved', 'created_at')
+    list_display = ('subject', 'user', 'is_resolved', 'created_at')
+    list_filter = ('is_resolved', 'created_at')
 
 
 # ==========================================
-# 5. הגדרות מיתוג לאדמין
+# 6. הגדרות מיתוג לאדמין
 # ==========================================
 admin.site.site_header = 'הדרייב הסטודנטיאלי - מערכת ניהול'
 admin.site.site_title = 'ניהול הדרייב'

@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import logout, update_session_auth_hash
+from django.contrib.auth import logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-from django.db.models import Count, Sum , Q
+from django.db.models import Count, Sum, Q
 from django.urls import reverse
 from django.http import JsonResponse
 from django.core.mail import send_mail
@@ -11,32 +11,32 @@ from django.utils import timezone
 import datetime
 import os
 from django.db import models
-from .models import (University, Major, Course, Document, UserProfile,
-     Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
-     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
 
+from .models import (University, Major, Course, Document, UserProfile,
+                     Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
+                     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
 
 from .forms import CourseForm, UserProfileForm
 from .ai_utils import generate_smart_summary
 
-from django.contrib.auth.models import User
-
-from django.http import JsonResponse
-
 from django.contrib.admin.views.decorators import staff_member_required
-
 from django.views.decorators.csrf import csrf_exempt
+
+# שימוש במודל המשתמש החדש בצורה בטוחה
+User = get_user_model()
 
 
 def home(request):
     # בדיקה האם המשתמש הגיע דרך קישור שיתוף
     ref_code = request.GET.get('ref')
     if ref_code:
-        # שומרים את הקוד ב-Session (זיכרון זמני של הדפדפן)
         request.session['referral_code'] = ref_code
+
     if request.user.is_authenticated:
         profile = request.user.profile
-        if not (profile.university and profile.major and profile.year):
+        # לוגיקת ה-UX החדשה: מציגים את טופס ההשלמה פעם אחת בלבד בעזרת Session
+        if not profile.university and not request.session.get('onboarding_complete'):
+            request.session['onboarding_complete'] = True
             return redirect('complete_profile')
 
     search_query = request.GET.get('search')
@@ -54,10 +54,11 @@ def home(request):
 
     year_names = {1: "שנה א'", 2: "שנה ב'", 3: "שנה ג'", 4: "שנה ד'", 5: "תואר שני"}
 
+    # שימוש במוניטין החדש (lifetime_coins) לטבלת אלופי הדרייב
     top_users = UserProfile.objects.filter(
-        drive_coins__gt=0,
+        lifetime_coins__gt=0,
         show_coins_publicly=True
-    ).order_by('-drive_coins')[:5]
+    ).order_by('-lifetime_coins')[:5]
 
     context = {
         'search_query': search_query,
@@ -102,10 +103,8 @@ def home(request):
         context['year'] = year_id
         context['uni_id'] = uni_id
 
-    # הוספת הקורסים המועדפים להקשר (Context) של דף הבית
     if request.user.is_authenticated:
-        context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
-            'major__university').all()
+        context['favorite_courses'] = request.user.profile.favorite_courses.select_related('major__university').all()
 
     return render(request, 'core/home.html', context)
 
@@ -134,35 +133,27 @@ def live_search(request):
 def settings_view(request):
     profile = request.user.profile
     if request.method == 'POST':
-        # --- 1. עדכון תמונת פרופיל ---
-        # אנחנו בודקים אם הקובץ קיים ב-request.FILES
         if 'profile_picture' in request.FILES:
             profile.profile_picture = request.FILES['profile_picture']
 
-        # --- 2. הגדרות תצוגה ושפה ---
         theme = request.POST.get('theme_preference')
         language = request.POST.get('language_preference')
         if theme: profile.theme_preference = theme
         if language: profile.language_preference = language
 
-        # --- 3. הגדרות פרטיות ואבטחה ---
         profile.show_coins_publicly = request.POST.get('show_coins_publicly') == 'on'
-        profile.default_anonymous_upload = request.POST.get('default_anonymous_upload') == 'on'
 
         visibility = request.POST.get('profile_visibility')
         if visibility in dict(UserProfile.VISIBILITY_CHOICES).keys():
             profile.profile_visibility = visibility
 
-        # שמירה סופית של כל השינויים למסד הנתונים
         profile.save()
-
         messages.success(request, 'הפרופיל וההגדרות שלך עודכנו בהצלחה! ✨')
         return redirect('settings')
 
     return render(request, 'core/settings.html')
 
 
-# --- פונקציות GDPR חדשות ---
 @login_required
 def request_user_data(request):
     if request.method == 'POST':
@@ -186,7 +177,6 @@ def delete_account(request):
 
 @login_required
 def change_password(request):
-    # בדיקה חכמה: האם למשתמש יש בכלל סיסמה? (אם הוא של גוגל, זה יהיה False)
     has_password = request.user.has_usable_password()
 
     if request.method == 'POST':
@@ -197,14 +187,12 @@ def change_password(request):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            # חשוב: מעדכן את ה-Session כדי שהמשתמש לא יזרק החוצה אחרי שינוי הסיסמה
             update_session_auth_hash(request, user)
             messages.success(request, 'הסיסמה שלך שונתה בהצלחה! 🔒')
             return redirect('settings')
         else:
             messages.error(request, 'יש שגיאות בטופס, אנא בדוק את הפרטים.')
     else:
-        # טוען את הטופס רק אם למשתמש יש סיסמה, אחרת מעביר None
         form = PasswordChangeForm(request.user) if has_password else None
 
     return render(request, 'core/change_password.html', {
@@ -229,7 +217,7 @@ def course_detail(request, course_id):
         if action == 'create_folder':
             folder_name = request.POST.get('folder_name')
             parent_id = request.POST.get('parent_folder')
-            staff_id = request.POST.get('staff_member_id')  # שונה מ-lecturer_id
+            staff_id = request.POST.get('staff_member_id')
             new_staff_name = request.POST.get('new_lecturer_name')
 
             parent_folder = None
@@ -250,18 +238,16 @@ def course_detail(request, course_id):
                     course=course,
                     name=folder_name.strip(),
                     parent=parent_folder,
-                    staff_member=assigned_staff,  # שונה ל-staff_member
+                    staff_member=assigned_staff,
                     created_by=request.user
                 )
                 messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
             return redirect('course_detail', course_id=course.id)
 
-        #  פונקציה להוספת מרצה לתקייה ועריכת שם התקייה
         elif action == 'edit_folder':
             folder_id_raw = request.POST.get('folder_id')
             staff_id_select = request.POST.get('staff_member_id', '')
             new_staff_input = request.POST.get('new_lecturer_name', '')
-            # קליטת הנתונים החדשים מהשדרוג
             folder_color = request.POST.get('folder_color')
             rating_val = request.POST.get('rating', '0')
             review_text = request.POST.get('review_text', '')
@@ -270,7 +256,7 @@ def course_detail(request, course_id):
                 clean_id = folder_id_raw.replace('folder_', '')
                 folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
                 final_staff = None
-                # 1. ניהול המרצה (חדש או קיים)
+
                 if new_staff_input and new_staff_input.strip():
                     new_lecturer, _ = Lecturer.objects.get_or_create(
                         name=new_staff_input.strip(),
@@ -280,11 +266,11 @@ def course_detail(request, course_id):
                 elif staff_id_select and staff_id_select.strip().isdigit():
                     final_staff = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
                 folder_to_edit.staff_member = final_staff
-                # 2. עדכון צבע התיקייה (אם המשתמש בחר)
+
                 if folder_color:
                     folder_to_edit.color = folder_color
                 folder_to_edit.save()
-                # 3. מערכת הדירוג המשולבת (מחזור של לוגיקת rate_staff)
+
                 if final_staff and rating_val.isdigit() and int(rating_val) > 0:
                     rating_int = int(rating_val)
                     if 1 <= rating_int <= 5:
@@ -293,14 +279,12 @@ def course_detail(request, course_id):
                             user=request.user,
                             defaults={'rating': rating_int, 'review_text': review_text.strip()}
                         )
-                        # עדכון הממוצע של המרצה
                         avg = final_staff.reviews.aggregate(models.Avg('rating'))['rating__avg']
                         final_staff.average_rating = round(avg, 1)
                         final_staff.save()
-                        # הענקת מטבעות רק אם זה דירוג חדש (לא עדכון של ישן)
+
                         if created:
-                            request.user.profile.drive_coins += 2
-                            request.user.profile.save()
+                            request.user.profile.earn_coins(2)
                             messages.success(request, 'התיקייה עודכנה, וקיבלת 2 מטבעות על הדירוג! 🪙')
                         else:
                             messages.success(request, 'התיקייה והדירוג שלך עודכנו בהצלחה!')
@@ -315,50 +299,40 @@ def course_detail(request, course_id):
             if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
-            is_anon = request.user.profile.default_anonymous_upload
             for uploaded_file in uploaded_files:
                 assigned_staff = parent_folder.staff_member if parent_folder else None
                 Document.objects.create(
                     course=course, folder=parent_folder,
                     title=os.path.splitext(uploaded_file.name)[0],
-                    file=uploaded_file, staff_member=assigned_staff,  # הורשת שיוך
-                    uploaded_by=request.user, is_anonymous=is_anon
+                    file=uploaded_file, staff_member=assigned_staff,
+                    uploaded_by=request.user
                 )
-                request.user.profile.drive_coins += 1
-            request.user.profile.save()
+                request.user.profile.earn_coins(1)
             return JsonResponse({'success': True})
 
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
-    university_lecturers = Lecturer.objects.filter(university=course.major.university).order_by('name')
 
     context = {
         'course': course,
         'folders': all_folders,
         'documents': all_documents,
         'uni_lecturers': AcademicStaff.objects.filter(university=course.major.university).order_by('name'),
-        # שים לב לשינוי ל-AcademicStaff
     }
-
     return render(request, 'core/course_detail.html', context)
 
 
 @login_required
 def analytics_dashboard(request):
-    # חסימת גישה למי שאינו מנהל (Staff) והפניה שקטה לדף הבית
     if not request.user.is_staff:
         return redirect('home')
 
-    # ספירת סך הקבצים (שומרים במשתנה כדי להשתמש בזה גם לחישוב הגרף)
     total_files_count = Document.objects.count()
-
-    # חישובי נתונים לגרף סוגי הקבצים
     pdf_count = Document.objects.filter(file__icontains='.pdf').count()
     word_count = Document.objects.filter(Q(file__icontains='.doc') | Q(file__icontains='.docx')).count()
     other_count = total_files_count - (pdf_count + word_count)
 
     context = {
-        # הנתונים החכמים המקוריים שלך
         'total_files': total_files_count,
         'total_downloads': Document.objects.aggregate(Sum('download_count'))['download_count__sum'] or 0,
         'total_views': Course.objects.aggregate(Sum('view_count'))['view_count__sum'] or 0,
@@ -367,8 +341,6 @@ def analytics_dashboard(request):
         'top_courses': Course.objects.order_by('-view_count')[:5],
         'top_docs': Document.objects.order_by('-download_count')[:5],
         'pending_reports': Report.objects.filter(is_resolved=False).order_by('-created_at'),
-
-        # המשתנים החדשים שהוספנו בשביל הגרפים
         'pdf_count': pdf_count,
         'word_count': word_count,
         'other_count': other_count,
@@ -395,8 +367,7 @@ def add_course(request):
         form = CourseForm(request.POST)
         if form.is_valid():
             c = form.save()
-            request.user.profile.drive_coins += 5
-            request.user.profile.save()
+            request.user.profile.earn_coins(5)
             messages.success(request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
             return redirect('course_detail', course_id=c.id)
     else:
@@ -404,16 +375,13 @@ def add_course(request):
     return render(request, 'core/add_course.html', {'form': form})
 
 
-# --- פונקציות סגל אקדמי מעודכנות ---
-
 def lecturers_index(request):
     uid = request.GET.get('university')
     staff_members = AcademicStaff.objects.filter(university_id=uid) if uid else AcademicStaff.objects.all()
     staff_members = staff_members.order_by('-average_rating')
 
-    # הוספת שם תצוגה לפרטיות
     for staff in staff_members:
-        staff.display_name = staff.privacy_name  # משתמש ב-property שיצרנו במודל
+        staff.display_name = staff.privacy_name
 
     return render(request, 'core/lecturers_index.html', {
         'staff_members': staff_members,
@@ -426,13 +394,11 @@ def staff_detail(request, staff_id):
     staff = get_object_or_404(AcademicStaff, id=staff_id)
     reviews = staff.reviews.all().order_by('-created_at')
 
-    # חישוב התפלגות
     total = reviews.count()
     ratings_dist = {i: {'count': reviews.filter(rating=i).count(),
                         'percentage': (reviews.filter(rating=i).count() / total * 100 if total > 0 else 0)}
                     for i in range(1, 6)}
 
-    # חיפוש קורסים (חכם: גם סמסטרים וגם תיקיות)
     courses = Course.objects.filter(
         Q(semester_staff__staff_member=staff) | Q(folders__staff_member=staff)
     ).distinct()
@@ -458,16 +424,15 @@ def rate_staff(request, staff_id):
                 staff_member=staff, user=request.user,
                 defaults={'rating': rating, 'review_text': text}
             )
-            # עדכון ממוצע
             avg = staff.reviews.aggregate(models.Avg('rating'))['rating__avg']
             staff.average_rating = round(avg, 1)
             staff.save()
 
             if created:
-                request.user.profile.drive_coins += 2
-                request.user.profile.save()
+                request.user.profile.earn_coins(2)
             messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
     return redirect('staff_detail', staff_id=staff.id)
+
 
 def terms_view(request): return render(request, 'core/terms.html')
 
@@ -481,32 +446,23 @@ def download_file(request, document_id):
     d.download_count += 1
     d.save()
     return redirect(d.file.url)
-# ==========================================
-    # יצירת סיכום AI
-    # ==========================================
+
 
 @login_required
 def summarize_document_ai(request, document_id):
     d, p = get_object_or_404(Document, id=document_id), request.user.profile
-
-    ## בודק אם המשתמש הוא מנהל מערכת
     is_admin = request.user.is_staff or request.user.is_superuser
 
-    # --- מערכת מטבעות (מושתקת כרגע לתקופת הרצה) ---
     # if not is_admin:
-    #     if p.drive_coins < 5:
+    #     if p.current_balance < 5:
     #         return JsonResponse({'success': False, 'error': 'אין לך מספיק מטבעות!'})
 
-    ## מייצר את הסיכום מ-Gemini
     s = generate_smart_summary(d.file.path)
 
     if "שגיאה" not in s:
-        ## --- חיוב מטבעות (מושתק כרגע) ---
         # if not is_admin:
-        #     p.drive_coins -= 5
-        #     p.save()
-
-        return JsonResponse({'success': True, 'summary': s, 'new_coins': p.drive_coins})
+        #     p.spend_coins(5)
+        return JsonResponse({'success': True, 'summary': s, 'new_coins': p.current_balance})
 
     return JsonResponse({'success': False, 'error': s})
 
@@ -549,12 +505,10 @@ def load_majors(request):
     return JsonResponse([])
 
 
-def error_404(request, exception):
-    return render(request, '404.html', status=404)
+def error_404(request, exception): return render(request, '404.html', status=404)
 
 
-def error_500(request):
-    return render(request, '500.html', status=500)
+def error_500(request): return render(request, '500.html', status=500)
 
 
 @login_required
@@ -569,8 +523,8 @@ def set_semester_lecturer(request, course_id):
         elif lid:
             lec = get_object_or_404(Lecturer, id=lid)
         if lec:
-            CourseSemesterLecturer.objects.update_or_create(course=c, academic_year=y, semester=s,
-                                                            defaults={'lecturer': lec})
+            CourseSemesterStaff.objects.update_or_create(course=c, academic_year=y, semester=s,
+                                                         defaults={'staff_member': lec})
             messages.success(request, 'המרצה שויך בהצלחה לסמסטר!')
     return redirect('course_detail', course_id=course_id)
 
@@ -579,46 +533,36 @@ def set_semester_lecturer(request, course_id):
 def community_feed(request):
     profile = request.user.profile
     if not profile.university:
-        messages.info(request, "כדי לראות את הקהילה שלך, אנא בחר מוסד לימודים.")
-        return redirect('complete_profile')
+        messages.info(request, "כדי לראות קהילות מותאמות אישית, מומלץ לבחור מוסד לימודים בפרופיל.")
 
-    # שליפת כל הקהילות שהמשתמש חבר בהן
     my_communities = request.user.joined_communities.all()
 
-    # זיהוי הקהילה הנוכחית שמוצגת (לפי query param או ברירת מחדל לאוניברסיטה)
     community_id = request.GET.get('community')
     if community_id:
         current_community = get_object_or_404(Community, id=community_id)
     else:
-        # ברירת מחדל: קהילת האוניברסיטה של המשתמש
         current_community = Community.objects.filter(
             university=profile.university,
             community_type='university'
-        ).first()
+        ).first() if profile.university else Community.objects.filter(community_type='global').first()
 
-    # שליפת הפוסטים של הקהילה הנבחרת בלבד
-    posts = Post.objects.filter(community=current_community).select_related('user', 'user__profile')
+    posts = Post.objects.filter(community=current_community).select_related('user',
+                                                                            'user__profile') if current_community else Post.objects.none()
 
-    # סינון לפי סוג (חדש!)
-    post_filter = request.GET.get('type')  # 'market' או None
+    post_filter = request.GET.get('type')
     if post_filter == 'market':
         posts = posts.filter(marketplacepost__isnull=False)
 
     posts = posts.order_by('-created_at')
 
-    # טיפול ביצירת פוסט חדש
     if request.method == 'POST':
         content = request.POST.get('content')
         post_type = request.POST.get('post_type')
 
-        # הגנה: אם אין target_community בטופס, נשתמש בקהילה הנוכחית שהמשתמש צופה בה
         target_community_id = request.POST.get('target_community')
-        if target_community_id:
-            target_community = get_object_or_404(Community, id=target_community_id)
-        else:
-            target_community = current_community
+        target_community = get_object_or_404(Community,
+                                             id=target_community_id) if target_community_id else current_community
 
-        # אם עדיין אין קהילה (למשל משתמש חדש שלא שויך לכלום)
         if not target_community:
             messages.error(request, "עליך להיות חבר בקהילה כדי לפרסם פוסט.")
             return redirect('community_feed')
@@ -626,68 +570,52 @@ def community_feed(request):
         if content:
             if post_type == 'market':
                 MarketplacePost.objects.create(
-                    user=request.user,
-                    content=content,
-                    community=target_community,
-                    university=profile.university,  # <--- התוספת שלנו
-                    category=request.POST.get('category'),
+                    user=request.user, content=content, community=target_community,
+                    university=profile.university, category=request.POST.get('category'),
                     price=request.POST.get('price') or None
                 )
             elif post_type == 'video':
                 VideoPost.objects.create(
-                    user=request.user,
-                    content=content,
-                    community=target_community,
-                    university=profile.university,  # <--- התוספת שלנו
-                    video_file=request.FILES.get('video_file')
+                    user=request.user, content=content, community=target_community,
+                    university=profile.university, video_file=request.FILES.get('video_file')
                 )
             else:
                 Post.objects.create(
-                    user=request.user,
-                    content=content,
-                    community=target_community,
-                    university=profile.university,  # <--- התוספת שלנו
-                    image=request.FILES.get('image')
+                    user=request.user, content=content, community=target_community,
+                    university=profile.university, image=request.FILES.get('image')
                 )
 
             messages.success(request, f"הפוסט פורסם ב{target_community.name}! ✨")
             return redirect(f"{reverse('community_feed')}?community={target_community.id}")
 
-    suggested_communities = Community.objects.filter(
-        university=profile.university
-    ).exclude(
-        members=request.user
-    ).order_by('?')[:3]  # שליפת 3 קהילות רנדומליות להגברת הגילוי
+    suggested_communities = Community.objects.filter(university=profile.university).exclude(
+        members=request.user).order_by('?')[:3] if profile.university else Community.objects.none()
 
     context = {
         'posts': posts,
         'my_communities': my_communities,
         'current_community': current_community,
-        'suggested_communities': suggested_communities,  # המשתנה החדש
+        'suggested_communities': suggested_communities,
         'university': profile.university,
     }
     return render(request, 'core/community_feed.html', context)
 
 
 def public_profile(request, username):
-    # חיפוש המשתמש לפי שם המשתמש שלו
     target_user = get_object_or_404(User, username=username)
     target_profile = target_user.profile
 
-    # בדיקת פרטיות: אם הפרופיל פרטי וזה לא המשתמש עצמו
     if target_profile.profile_visibility == 'private' and request.user != target_user:
         messages.warning(request, "פרופיל זה הוא פרטי.")
         return redirect('home')
 
-    # שליפת הפוסטים והמסמכים של המשתמש הזה
     user_posts = Post.objects.filter(user=target_user).order_by('-created_at')
-    user_documents = Document.objects.filter(uploaded_by=target_user, is_anonymous=False)
+    user_documents = Document.objects.filter(uploaded_by=target_user).order_by('-upload_date')
 
-    # --- תחילת בדיקת מצב החברות המורחבת ---
     friendship_status = 'none'
     friend_request_id = None
 
-    if request.user != target_user:
+    if request.user.is_authenticated and request.user != target_user:
         relation = Friendship.objects.filter(
             models.Q(user_from=request.user, user_to=target_user) |
             models.Q(user_from=target_user, user_to=request.user)
@@ -699,66 +627,42 @@ def public_profile(request, username):
                 friendship_status = 'friends'
             elif relation.status == 'pending':
                 if relation.user_from == request.user:
-                    friendship_status = 'request_sent'  # אני שלחתי
+                    friendship_status = 'request_sent'
                 else:
-                    friendship_status = 'request_received'  # הוא שלח לי
-    # --- סוף בדיקת מצב החברות ---
-
-    # מושך את הפוסטים והקבצים של המשתמש (בהנחה שכבר יש לך משהו כזה)
-    posts = target_user.posts.all().order_by('-created_at')
-    documents = target_user.document_set.all().order_by('-upload_date')
+                    friendship_status = 'request_received'
 
     context = {
         'target_user': target_user,
         'target_profile': target_profile,
-        'posts': posts,
-        'documents': documents,
+        'posts': user_posts,
+        'documents': user_documents,
         'friendship_status': friendship_status,
         'friend_request_id': friend_request_id,
     }
     return render(request, 'core/public_profile.html', context)
 
 
-# ==========================================
-# פונקציות אינטראקציה (קהילה - AJAX)
-# ==========================================
-# @csrf_exempt
 @login_required
 def like_post(request, post_id):
-    # נוודא שזו בקשת POST כדי למנוע שגיאות
     if request.method == 'POST':
         post = get_object_or_404(Post, id=post_id)
-
-        # לוגיקת הלייק: הסרה אם קיים, הוספה אם לא
         if request.user in post.likes.all():
             post.likes.remove(request.user)
             liked = False
         else:
             post.likes.add(request.user)
             liked = True
-
-        return JsonResponse({
-            'liked': liked,
-            'total_likes': post.likes.count()
-        })
-
+        return JsonResponse({'liked': liked, 'total_likes': post.likes.count()})
     return JsonResponse({'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)
 
 
-# ==========================================
-# מערכת חברים (Friendship)
-# ==========================================
 @login_required
 def send_friend_request(request, username):
-    """שליחת בקשת חברות למשתמש אחר"""
     user_to = get_object_or_404(User, username=username)
-
-    # אי אפשר לשלוח לעצמך
     if request.user == user_to:
         messages.warning(request, "אי אפשר לשלוח בקשת חברות לעצמך.")
         return redirect('public_profile', username=username)
 
-    # בדיקה אם כבר יש קשר ביניהם (חברים או ממתין)
     existing_relation = Friendship.objects.filter(
         models.Q(user_from=request.user, user_to=user_to) |
         models.Q(user_from=user_to, user_to=request.user)
@@ -771,58 +675,42 @@ def send_friend_request(request, username):
         messages.info(request, "כבר קיימת בקשת חברות בהמתנה.")
     else:
         messages.info(request, "אתם כבר חברים!")
-
     return redirect('public_profile', username=username)
 
 
 @login_required
 def accept_friend_request(request, request_id):
-    """אישור בקשת חברות"""
     friend_req = get_object_or_404(Friendship, id=request_id, user_to=request.user, status='pending')
     friend_req.status = 'accepted'
     friend_req.save()
     messages.success(request, f"איזה כיף! אתה ו-{friend_req.user_from.username} עכשיו חברים.")
-
-    # חזרה לדף שממנו המשתמש הגיע
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 
 @login_required
 def reject_friend_request(request, request_id):
-    """דחייה או מחיקה של בקשת חברות"""
     friend_req = get_object_or_404(Friendship, id=request_id, user_to=request.user, status='pending')
     friend_req.delete()
     messages.info(request, "בקשת החברות נמחקה.")
-
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 
 @login_required
 def global_search(request):
     query = request.GET.get('q', '').strip()
-
-    # רשימות ריקות כברירת מחדל
     users, documents, courses, lecturers, folders = [], [], [], [], []
 
     if query:
-        # 1. סטודנטים (לא כולל את מי שמחפש עכשיו)
         if request.user.is_authenticated:
             users = User.objects.filter(username__icontains=query).exclude(id=request.user.id)[:10]
+        else:
+            users = User.objects.filter(username__icontains=query)[:10]
 
-        # 2. קבצים (לפי שם הקובץ או הקורס)
         documents = Document.objects.filter(
-            Q(title__icontains=query) | Q(course__name__icontains=query)
-        ).select_related('course', 'uploaded_by')[:10]
-
-        # 3. קורסים
-        courses = Course.objects.filter(
-            Q(name__icontains=query) | Q(course_number__icontains=query)
-        ).select_related('major')[:10]
-
-        # 4. מרצים
+            Q(title__icontains=query) | Q(course__name__icontains=query)).select_related('course', 'uploaded_by')[:10]
+        courses = Course.objects.filter(Q(name__icontains=query) | Q(course_number__icontains=query)).select_related(
+            'major')[:10]
         lecturers = Lecturer.objects.filter(name__icontains=query)[:10]
-
-        # 5. תיקיות (פיצ'ר חדש לבקשתך!)
         folders = Folder.objects.filter(name__icontains=query).select_related('course')[:10]
 
     context = {
@@ -837,98 +725,65 @@ def global_search(request):
     return render(request, 'core/search_results.html', context)
 
 
-# @csrf_exempt
 @login_required
 def like_document(request, document_id):
-    """הוספה או הסרה של לייק לקובץ (AJAX)"""
     if request.method == 'POST':
         doc = get_object_or_404(Document, id=document_id)
-
-        # אם המשתמש כבר עשה לייק - נסיר אותו. אם לא - נוסיף אותו.
         if request.user in doc.likes.all():
             doc.likes.remove(request.user)
             liked = False
         else:
             doc.likes.add(request.user)
             liked = True
-
-        # מחזירים תשובה לדפדפן עם כמות הלייקים העדכנית
-        return JsonResponse({
-            'liked': liked,
-            'total_likes': doc.total_likes
-        })
-
+        return JsonResponse({'liked': liked, 'total_likes': doc.total_likes})
     return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
 
 
 @login_required
 def my_friends(request):
-    """הצגת דף רשימת החברים הייעודי"""
-    # אנחנו משתמשים בפרופרטי שיצרנו קודם!
     friends = request.user.profile.get_accepted_friends
-
-    context = {
-        'friends': friends,
-    }
-    return render(request, 'core/friends_list.html', context)
+    return render(request, 'core/friends_list.html', {'friends': friends})
 
 
 @login_required
 def remove_friend(request, friend_username):
-    """הסרת חבר מרשימת החברים"""
     friend_user = get_object_or_404(User, username=friend_username)
-
-    # מחפש את קשר החברות ומוחק אותו
     Friendship.objects.filter(
         (models.Q(user_from=request.user, user_to=friend_user) |
          models.Q(user_from=friend_user, user_to=request.user)),
         status='accepted'
     ).delete()
-
     messages.success(request, f"הסרת את {friend_username} מרשימת החברים שלך.")
     return redirect('my_friends')
 
 
 @login_required
 def complete_profile(request):
-    """מסך השלמת הנתונים לאחר הרשמה ראשונית - כולל לוגיקת בונוס והזמנת חברים"""
     profile = request.user.profile
 
     if request.method == 'POST':
-        # אנחנו מעבירים את ה-user לטופס כדי שיוכל למשוך שמות פרטיים ומשפחה
         form = UserProfileForm(request.POST, instance=profile, user=request.user)
-
         if form.is_valid():
             user_profile = form.save()
 
-            # --- לוגיקת הבונוס (Referral System) ---
-            # בודקים האם שמור קוד שיתוף בזיכרון של הדפדפן (מהפונקציה home)
+            # העדכון שמחלץ ממעגל החסימה!
+            request.session['onboarding_complete'] = True
+
             ref_code_session = request.session.get('referral_code')
 
-            # אם יש קוד וזו הפעם הראשונה שהפרופיל מושלם (אין עדיין referred_by)
             if ref_code_session and not user_profile.referred_by:
                 try:
-                    # מוצאים את המשתמש שהזמין
                     referrer_profile = UserProfile.objects.get(referral_code=ref_code_session)
                     referrer = referrer_profile.user
-
-                    # מונעים מצב שאדם מזמין את עצמו
                     if referrer != request.user:
                         user_profile.referred_by = referrer
-                        user_profile.drive_coins += 20  # בונוס לסטודנט החדש
-                        referrer_profile.drive_coins += 50  # בונוס למי שהזמין
-
-                        user_profile.save()
-                        referrer_profile.save()
-
-                        # מנקים את הקוד מה-session כדי שלא יופעל שוב
+                        user_profile.earn_coins(20)
+                        referrer_profile.earn_coins(50)
                         del request.session['referral_code']
-
                         messages.success(request,
                                          f"איזה כיף! קיבלת 20 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
                 except UserProfile.DoesNotExist:
                     pass
-            # ---------------------------------------
 
             messages.success(request, "הפרופיל הושלם בהצלחה! ברוך הבא לקהילה. ✨")
             return redirect('home')
@@ -940,25 +795,21 @@ def complete_profile(request):
 
 @login_required
 def toggle_favorite_course(request, course_id):
-    """ הוספה או הסרה של קורס מהמועדפים (AJAX) """
     if request.method == 'POST':
         course = get_object_or_404(Course, id=course_id)
         profile = request.user.profile
-
-        # אם הקורס כבר במועדפים - נסיר אותו. אם לא - נוסיף.
         if course in profile.favorite_courses.all():
             profile.favorite_courses.remove(course)
             is_favorite = False
         else:
             profile.favorite_courses.add(course)
             is_favorite = True
-
         return JsonResponse({'is_favorite': is_favorite})
     return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
 
+
 @login_required
 def join_community(request, community_id):
-    """ הצטרפות לקהילה קיימת """
     community = get_object_or_404(Community, id=community_id)
     community.members.add(request.user)
     messages.success(request, f"ברוך הבא ל{community.name}! הקהילה נוספה לפיד שלך.")
@@ -968,15 +819,11 @@ def join_community(request, community_id):
 @login_required
 def discover_communities(request):
     query = request.GET.get('q', '')
-
-    # חיפוש קהילות לפי שם או תיאור
     all_communities = Community.objects.all()
     if query:
         all_communities = all_communities.filter(
             Q(name__icontains=query) | Q(description__icontains=query)
         )
-
-    # חלוקה לקטגוריות לתצוגה נוחה (ירושות לוגיות)
     context = {
         'global_comm': all_communities.filter(community_type='global'),
         'uni_comm': all_communities.filter(community_type='university'),
@@ -984,27 +831,19 @@ def discover_communities(request):
         'query': query,
         'my_community_ids': request.user.joined_communities.values_list('id', flat=True)
     }
-
     return render(request, 'core/discover_communities.html', context)
 
 
 @login_required
 def add_comment(request, post_id):
-    # הורדנו את הבדיקה הנוקשה של ה-headers כדי למנוע חסימות מיותרות
     if request.method == 'POST':
         post = get_object_or_404(Post, id=post_id)
-
-        # תמיכה בשאיבת הטקסט מה-FormData של ה-JS
         text = request.POST.get('text', '').strip()
-
         if text:
             comment = Comment.objects.create(post=post, user=request.user, text=text)
-
-            # בדיקה בטוחה לתמונת הפרופיל
             user_img = None
             if hasattr(request.user, 'profile') and request.user.profile.profile_picture:
                 user_img = request.user.profile.profile_picture.url
-
             return JsonResponse({
                 'success': True,
                 'username': comment.user.username,
@@ -1012,7 +851,5 @@ def add_comment(request, post_id):
                 'created_at': 'עכשיו',
                 'user_img': user_img
             })
-
         return JsonResponse({'success': False, 'error': 'לא ניתן לפרסם תגובה ריקה.'}, status=400)
-
     return JsonResponse({'success': False, 'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)

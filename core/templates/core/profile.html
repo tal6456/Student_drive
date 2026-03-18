@@ -3,65 +3,128 @@
 {% block title %}הפרופיל שלי - הדרייב הסטודנטיאלי{% endblock %}
 
 {% block content %}
-<div class="container mt-5" dir="rtl">
+<div class="container mt-5 mb-5" dir="rtl">
 
     <div class="row mb-5 animate__animated animate__fadeIn">
         <div class="col-12">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background-color: var(--gd-card);">
                 <div class="card-body p-0">
                     <div class="row g-0">
-                        <div class="col-md-4 bg-primary text-white p-5 text-center d-flex flex-column justify-content-center align-items-center">
-                            <div class="mb-3">
-                                <i class="fas fa-user-circle display-1 shadow-sm"></i>
+                        {# הצד של הפרופיל והאוניברסיטה #}
+                        <div class="col-md-4 p-5 text-center d-flex flex-column justify-content-center align-items-center" style="background: linear-gradient(135deg, var(--gd-primary) 0%, #0a58ca 100%); color: white;">
+                            <div class="position-relative mb-3">
+                                {% if user.profile.profile_picture %}
+                                    <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle shadow-lg border border-3 border-white" style="width: 120px; height: 120px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow-lg mx-auto" style="width: 120px; height: 120px;">
+                                        <i class="fas fa-user display-3"></i>
+                                    </div>
+                                {% endif %}
+
+                                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3">
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm border border-2 border-white fw-bold fs-6" style="white-space: nowrap;">
+                                        {{ user.profile.rank_name }}
+                                    </span>
+                                </div>
                             </div>
-                            <h2 class="fw-bold mb-1">{{ user.username }}</h2>
-                            <p class="badge bg-light text-primary rounded-pill px-3 py-2 fw-bold mb-3 shadow-sm fs-6">{{ user.profile.rank_name }}</p>
 
-                            <p class="mb-0 opacity-75">
+                            <h2 class="fw-bold mb-1 mt-3">{{ user.username }}</h2>
+                            <p class="mb-3 opacity-75 small">הצטרף/ה ב-{{ user.date_joined|date:"M Y" }}</p>
+
+                            <div class="w-100 p-3 rounded-3 mb-4" style="background-color: rgba(255,255,255,0.1);">
                                 {% if user.profile.university %}
-                                    <i class="fas fa-university ms-1"></i> {{ user.profile.university.name }}<br>
+                                    <div class="mb-1"><i class="fas fa-university ms-2 text-warning"></i> {{ user.profile.university.name }}</div>
+                                    {% if user.profile.major %}
+                                        <div class="mb-1"><i class="fas fa-graduation-cap ms-2 text-warning"></i> {{ user.profile.major.name }}</div>
+                                    {% endif %}
+                                    {% if user.profile.year %}
+                                        <div class="small opacity-75">שנה {{ user.profile.get_year_display }}</div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="mb-1"><i class="fas fa-globe ms-2 text-warning"></i> ללא שיוך אקדמי</div>
+                                    <div class="small opacity-75">לומד/ת באופן עצמאי</div>
                                 {% endif %}
-                                {% if user.profile.major %}
-                                    <i class="fas fa-graduation-cap ms-1"></i> {{ user.profile.major.name }}
-                                {% endif %}
-                            </p>
-                            <a href="{% url 'complete_profile' %}" class="btn btn-sm btn-outline-light rounded-pill mt-4 px-4">
-                                <i class="fas fa-edit ms-1"></i> עריכת פרטי לימוד
-                            </a>
+                            </div>
 
+                            <a href="{% url 'complete_profile' %}" class="btn btn-outline-light rounded-pill px-4 fw-bold w-100 transition hover-scale">
+                                <i class="fas fa-edit ms-1"></i> עריכת הפרופיל
+                            </a>
                         </div>
 
-                        <div class="col-md-8 p-5">
-                            <h4 class="fw-bold mb-4 border-bottom pb-2 text-md-start text-center" style="color: var(--text-main);">השפעה על הקהילה 🚀</h4>
-                            <div class="row g-4 text-center">
-                                <div class="col-6 col-lg-3">
-                                    <div class="p-3 border border-secondary border-opacity-25 rounded-4 hover-shadow transition h-100 d-flex flex-column justify-content-center">
-                                        <div class="display-6 fw-bold text-primary">{{ total_downloads }}</div>
-                                        <div class="small text-muted fw-bold">הורדות לקבצים שלי</div>
-                                    </div>
-                                    <a href="{% url 'my_friends' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm transition hover-scale">
-                                        <i class="fas fa-user-friends ms-1"></i> החברים שלי
-                                    </a>
-                                </div>
-                                <div class="col-6 col-lg-3">
-                                    <div class="p-3 border border-secondary border-opacity-25 rounded-4 hover-shadow transition h-100 d-flex flex-column justify-content-center">
-                                        <div class="display-6 fw-bold text-danger">{{ total_likes_received }}</div>
-                                        <div class="small text-muted fw-bold">לייקים שקיבלתי</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-lg-3">
-                                    <div class="p-3 border border-secondary border-opacity-25 rounded-4 hover-shadow transition h-100 d-flex flex-column justify-content-center bg-warning bg-opacity-10">
-                                        <div class="display-6 fw-bold text-warning">{{ user.profile.drive_coins }}</div>
-                                        <div class="small text-muted fw-bold">מטבעות דרייב</div>
+                        {# הצד של הסטטיסטיקות והכלכלה #}
+                        <div class="col-md-8 p-4 p-lg-5">
+
+                            <div class="row g-4 mb-5">
+                                <div class="col-md-6">
+                                    <div class="p-4 rounded-4 shadow-sm h-100 position-relative overflow-hidden" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                        <i class="fas fa-coins position-absolute" style="font-size: 140px; opacity: 0.05; bottom: -20px; left: -20px; color: #FFD700; z-index: 0;"></i>
+
+                                        <div class="position-relative" style="z-index: 1;">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h5 class="fw-bold mb-0" style="color: var(--gd-text);">ארנק דיגיטלי</h5>
+                                                <i class="fas fa-wallet fs-3 text-warning"></i>
+                                            </div>
+                                            <div class="display-4 fw-bold text-warning mb-1">{{ user.profile.current_balance }} <span class="fs-5 text-muted fw-normal">מטבעות לשימוש</span></div>
+                                            <p class="small text-muted mb-0">הרווחת אותם ביושר! השתמש בהם לפיצ'רים מתקדמים.</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-6 col-lg-3">
-                                    <div class="p-3 border border-secondary border-opacity-25 rounded-4 hover-shadow transition h-100 d-flex flex-column justify-content-center">
-                                        <div class="display-6 fw-bold text-success">{{ user_documents.count }}</div>
-                                        <div class="small text-muted fw-bold">קבצים שהעליתי</div>
+
+                                <div class="col-md-6">
+                                    <div class="p-4 rounded-4 shadow-sm h-100 position-relative overflow-hidden" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                        <i class="fas fa-star position-absolute" style="font-size: 140px; opacity: 0.05; bottom: -20px; left: -20px; color: #0d6efd; z-index: 0;"></i>
+
+                                        <div class="position-relative" style="z-index: 1;">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h5 class="fw-bold mb-0" style="color: var(--gd-text);">מדד מוניטין</h5>
+                                                <i class="fas fa-star fs-3 text-primary"></i>
+                                            </div>
+                                            <div class="display-4 fw-bold text-primary mb-1">{{ user.profile.lifetime_coins }} <span class="fs-5 text-muted fw-normal">נקודות השפעה</span></div>
+
+                                            <div class="progress mt-3" style="height: 8px; background-color: var(--gd-hover);">
+                                                {% if user.profile.lifetime_coins < 50 %}
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ user.profile.lifetime_coins|add:'0'|floatformat:0 }}%; max-width: 100%;"></div>
+                                                {% elif user.profile.lifetime_coins < 200 %}
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ user.profile.lifetime_coins|add:'0'|floatformat:0 }}%; max-width: 100%;"></div>
+                                                {% elif user.profile.lifetime_coins < 500 %}
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ user.profile.lifetime_coins|add:'0'|floatformat:0 }}%; max-width: 100%;"></div>
+                                                {% else %}
+                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 100%;"></div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <h5 class="fw-bold mb-4 border-bottom pb-2" style="color: var(--gd-text);">השפעה על הקהילה 🚀</h5>
+                            <div class="row g-3 text-center">
+                                <div class="col-4">
+                                    <div class="p-3 rounded-4 transition hover-scale h-100 d-flex flex-column justify-content-center" style="background-color: var(--gd-hover);">
+                                        <div class="fs-3 fw-bold text-primary mb-1">{{ total_downloads }}</div>
+                                        <div class="small fw-bold" style="color: var(--gd-text-muted);">הורדות לחומרים שלי</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 rounded-4 transition hover-scale h-100 d-flex flex-column justify-content-center" style="background-color: var(--gd-hover);">
+                                        <div class="fs-3 fw-bold text-danger mb-1">{{ total_likes_received }}</div>
+                                        <div class="small fw-bold" style="color: var(--gd-text-muted);">לייקים שקיבלתי</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 rounded-4 transition hover-scale h-100 d-flex flex-column justify-content-center" style="background-color: var(--gd-hover);">
+                                        <div class="fs-3 fw-bold text-success mb-1">{{ user_documents.count }}</div>
+                                        <div class="small fw-bold" style="color: var(--gd-text-muted);">קבצים שהעליתי</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 text-start">
+                                <a href="{% url 'my_friends' %}" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" style="border: 1px solid var(--gd-border); color: var(--gd-text);">
+                                    <i class="fas fa-user-friends ms-1 text-primary"></i> ניהול רשימת החברים
+                                </a>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -86,16 +149,16 @@
 
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="my-docs">
-                    <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--card-bg);">
+                    <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--gd-card);">
                         <div class="list-group list-group-flush rounded-4 overflow-hidden">
                             {% for doc in user_documents %}
                                 {% include "core/partials/doc_row.html" %}
                             {% empty %}
                                 <div class="text-center p-5">
-                                    <i class="fas fa-cloud-upload-alt fa-4x text-muted opacity-50 mb-3"></i>
-                                    <h5 class="fw-bold" style="color: var(--text-main);">עוד לא העלית קבצים</h5>
-                                    <p class="text-muted">זה הזמן להתחיל לשתף ולזכות במטבעות דרייב!</p>
-                                    <a href="{% url 'home' %}?browse=true" class="btn btn-primary rounded-pill px-4">חפש קורס להעלאה</a>
+                                    <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: var(--gd-border);"></i>
+                                    <h5 class="fw-bold" style="color: var(--gd-text);">עוד לא העלית קבצים</h5>
+                                    <p style="color: var(--gd-text-muted);">זה הזמן להתחיל לשתף ולצבור מוניטין ומטבעות!</p>
+                                    <a href="{% url 'home' %}?browse=true" class="btn btn-primary rounded-pill px-4 mt-2">חפש קורס להעלאה</a>
                                 </div>
                             {% endfor %}
                         </div>
@@ -103,15 +166,15 @@
                 </div>
 
                 <div class="tab-pane fade" id="liked-docs">
-                    <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--card-bg);">
+                    <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--gd-card);">
                         <div class="list-group list-group-flush rounded-4 overflow-hidden">
                             {% for doc in liked_documents %}
                                 {% include "core/partials/doc_row.html" %}
                             {% empty %}
                                 <div class="text-center p-5">
-                                    <i class="fas fa-heart-broken fa-4x text-muted opacity-50 mb-3"></i>
-                                    <h5 class="fw-bold" style="color: var(--text-main);">עדיין לא סימנת לייק על אף קובץ</h5>
-                                    <p class="text-muted">קבצים שתסמן בלייק יישמרו כאן לגישה מהירה.</p>
+                                    <i class="fas fa-heart-broken fa-4x mb-3" style="color: var(--gd-border);"></i>
+                                    <h5 class="fw-bold" style="color: var(--gd-text);">עדיין לא סימנת לייק על אף קובץ</h5>
+                                    <p style="color: var(--gd-text-muted);">קבצים שתסמן בלייק יישמרו כאן לגישה מהירה.</p>
                                 </div>
                             {% endfor %}
                         </div>
@@ -124,13 +187,8 @@
 
 <style>
     .transition { transition: all 0.3s ease; }
-    .hover-shadow:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        border-color: #0d6efd !important;
-    }
-    .nav-pills .nav-link { color: var(--text-main); background-color: var(--card-bg); border: 1px solid rgba(0,0,0,0.1); }
-    .nav-pills .nav-link.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
-    [data-theme='dark'] .nav-pills .nav-link { border-color: #444; }
+    .hover-scale:hover { transform: scale(1.02); }
+    .nav-pills .nav-link { color: var(--gd-text); background-color: var(--gd-bg); border: 1px solid var(--gd-border); transition: all 0.2s ease; }
+    .nav-pills .nav-link.active { background-color: var(--gd-primary); color: white; border-color: var(--gd-primary); transform: translateY(-2px); }
 </style>
 {% endblock %}

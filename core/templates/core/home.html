@@ -5,16 +5,22 @@
 {% block content %}
 <div class="container mt-4 mb-5" dir="rtl">
 
+    {# --- ראש העמוד: ברכה וחיפוש --- #}
     <div class="row justify-content-center mb-5 animate__animated animate__fadeIn">
         <div class="col-md-9 text-center">
             {% if user.is_authenticated %}
-                <h2 class="fw-bold mb-1" style="color: var(--gd-text);">היי {{ user.username }}, איזה קורס מחפשים היום?</h2>
+                <h2 class="fw-bold mb-1" style="color: var(--gd-text);">היי {{ user.username }}, איזה ידע מחפשים היום?</h2>
                 <p class="mb-4 small" style="color: var(--gd-text-muted);">
-                    <i class="fas fa-university ms-1"></i> {{ user.profile.university.name }} | {{ user.profile.major.name }}
+                    {% if user.profile.university %}
+                        <i class="fas fa-university ms-1 text-primary"></i> {{ user.profile.university.name }}
+                        {% if user.profile.major %}| {{ user.profile.major.name }}{% endif %}
+                    {% else %}
+                        <i class="fas fa-globe-americas ms-1 text-success"></i> הידע של המוסדות המובילים מחכה לך. בחר מוסד והתחל ללמוד.
+                    {% endif %}
                 </p>
             {% else %}
-                <h1 class="display-5 fw-bold mb-3" style="color: var(--gd-primary);">הדרייב הסטודנטיאלייי</h1>
-                <p class="fs-5 mb-4" style="color: var(--gd-text-muted);">כל חומרי הלימוד של הסטודנטים בישראל, במקום אחד.</p>
+                <h1 class="display-5 fw-bold mb-3" style="color: var(--gd-primary);">הדרייב הסטודנטיאלי</h1>
+                <p class="fs-5 mb-4" style="color: var(--gd-text-muted);">מאגר חומרי הלימוד הגדול והחופשי של הסטודנטים בישראל.</p>
             {% endif %}
 
             <div class="search-wrapper position-relative mx-auto" style="max-width: 650px;">
@@ -32,7 +38,7 @@
         </div>
     </div>
 
-    {#עיצוב פיצר מרצים בדף הבית#}
+    {# --- באנר מרצים --- #}
     <div class="card border-0 shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(26, 115, 232, 0.05)); border: 1px solid var(--gd-border) !important;">
         <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 text-center text-md-start">
             <div class="d-flex flex-column flex-md-row align-items-center gap-3">
@@ -40,12 +46,11 @@
                     <i class="fas fa-star text-warning fs-3"></i>
                 </div>
                 <div>
-                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);">מי המרצה הכי טוב באוניברסטה? 🎓</h5>
-                    <p class="text-muted mb-0 small">שתף את הניסיון שלך או בדוק מה סטודנטים אחרים חושבים לפני הרישום לקורסים.</p>
+                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);">איך המרצה שלכם? 🎓</h5>
+                    <p class="text-muted mb-0 small">שתפו את החוויה שלכם כדי לעזור לאחרים לבחור את הקורסים הכי טובים.</p>
                 </div>
             </div>
-
-            <a href="{% url 'lecturers_index' %}" class="btn btn-warning rounded-pill fw-bold px-4 py-2 shadow-sm text-dark flex-shrink-0" style="transition: transform 0.2s;">
+            <a href="{% url 'lecturers_index' %}" class="btn btn-warning rounded-pill fw-bold px-4 py-2 shadow-sm text-dark flex-shrink-0 transition hover-scale">
                 <i class="fas fa-search ms-1"></i> חפש ודרג מרצים
             </a>
         </div>
@@ -53,12 +58,11 @@
 
     <div class="row g-4">
         <div class="col-lg-8 order-2 order-lg-1">
-            <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5" style="min-height: 500px;">
+            <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5" style="min-height: 600px; background-color: var(--gd-card);">
 
-                {# ================= אזור הגישה המהירה / מועדפים ================= #}
                 {% if user.is_authenticated and not search_query and step != 'select_uni' %}
                 <div class="mb-5" id="favorites-section-wrapper">
-                    <h5 class="fw-bold mb-3" style="color: var(--gd-text);"><i class="fas fa-star text-warning ms-2"></i> מועדפים (גישה מהירה)</h5>
+                    <h5 class="fw-bold mb-3" style="color: var(--gd-text);"><i class="fas fa-bookmark text-primary ms-2"></i> קורסים במעקב מהיר</h5>
                     {% if favorite_courses %}
                         <div class="list-group list-group-flush border rounded-4 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
                             {% for course in favorite_courses %}
@@ -68,32 +72,30 @@
                     {% else %}
                         <div class="text-center p-4 rounded-4" style="border: 2px dashed var(--gd-border); background-color: var(--gd-bg);">
                             <i class="far fa-star fa-2x mb-2 opacity-25" style="color: var(--gd-text-muted);"></i>
-                            <p class="mb-0 small" style="color: var(--gd-text-muted);">הדלק את ה- <i class="fas fa-star text-warning"></i> ליד הקורסים שלך, והם יופיעו כאן.</p>
+                            <p class="mb-0 small" style="color: var(--gd-text-muted);">הוסיפו קורסים למועדפים כדי שיופיעו כאן תמיד.</p>
                         </div>
                     {% endif %}
                 </div>
                 {% endif %}
-                {# ================= סוף אזור מועדפים ================= #}
 
                 {% if step != 'select_uni' and not search_query %}
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3" style="border-color: var(--gd-border) !important;">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 fw-bold">
-                            <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none" style="color: var(--gd-text-muted);">מוסדות</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none" style="color: var(--gd-primary);">מוסדות</a></li>
                             {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}" class="text-decoration-none" style="color: var(--gd-text-muted);">{{ selected_uni.name }}</a></li>{% endif %}
                             {% if selected_major %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}&major={{ selected_major.id }}" class="text-decoration-none" style="color: var(--gd-text-muted);">{{ selected_major.name }}</a></li>{% endif %}
                             {% if selected_year_name %}<li class="breadcrumb-item active" style="color: var(--gd-primary);">{{ selected_year_name }}</li>{% endif %}
                         </ol>
                     </nav>
                     <a href="{% url 'home' %}?browse=true" class="btn btn-sm rounded-pill fw-bold btn-outline-dynamic">
-                        <i class="fas fa-sync-alt ms-1"></i> החלף מסלול
+                        <i class="fas fa-exchange-alt ms-1"></i> שנה מוסד / מסלול
                     </a>
                 </div>
                 {% endif %}
 
-                {# ================= שלב 1: בחירת אוניברסיטה ================= #}
                 {% if step == 'select_uni' %}
-                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-graduation-cap ms-2" style="color: var(--gd-primary);"></i> בחר מוסד לימודים:</h4>
+                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-university ms-2 text-primary"></i> בחר מוסד לימודים לחקירה:</h4>
                     <div class="row g-3">
                         {% for uni in universities %}
                         <div class="col-md-6">
@@ -101,33 +103,29 @@
                                 {% if uni.logo %}
                                     <img src="{{ uni.logo.url }}" alt="{{ uni.name }}" class="uni-logo shadow-sm ms-3">
                                 {% else %}
-                                    <div class="icon-circle text-white shadow-sm ms-3" style="background-color: var(--brand-color);"><i class="fas fa-university"></i></div>
+                                    <div class="icon-circle text-white shadow-sm ms-3" style="background-color: var(--brand-color);"><i class="fas fa-school"></i></div>
                                 {% endif %}
                                 <span class="fw-bold fs-5" style="color: var(--gd-text);">{{ uni.name }}</span>
-                                <i class="fas fa-chevron-left ms-auto opacity-50" style="color: var(--gd-text-muted);"></i>
+                                <i class="fas fa-chevron-left ms-auto opacity-50"></i>
                             </a>
                         </div>
                         {% endfor %}
                     </div>
-
-                {# ================= שלב 2: בחירת מקצוע ================= #}
                 {% elif step == 'select_major' %}
-                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);">מה לומדים ב{{ selected_uni.name }}?</h4>
+                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);">איזה תחום ידע מעניין אותך ב{{ selected_uni.name }}?</h4>
                     <div class="row g-3">
                         {% for major in majors %}
                         <div class="col-md-6">
                             <a href="?university={{ uni_id }}&major={{ major.id }}" class="nav-item-card major-card">
-                                <div class="icon-circle bg-success bg-opacity-10 text-success ms-3"><i class="fas fa-book"></i></div>
+                                <div class="icon-circle bg-success bg-opacity-10 text-success ms-3"><i class="fas fa-book-open"></i></div>
                                 <span class="fw-bold fs-5" style="color: var(--gd-text);">{{ major.name }}</span>
-                                <i class="fas fa-chevron-left ms-auto opacity-50" style="color: var(--gd-text-muted);"></i>
+                                <i class="fas fa-chevron-left ms-auto opacity-50"></i>
                             </a>
                         </div>
                         {% endfor %}
                     </div>
-
-                {# ================= שלב 3: איזו שנה ================= #}
                 {% elif step == 'select_year' %}
-                    <h4 class="fw-bold mb-4 text-center" style="color: var(--gd-text);">איזו שנה אתם?</h4>
+                    <h4 class="fw-bold mb-4 text-center" style="color: var(--gd-text);">לאיזו שנת לימוד תרצה לגשת?</h4>
                     <div class="row g-4 justify-content-center">
                         {% for y_val, y_name in years.items %}
                         <div class="col-6 col-md-4">
@@ -138,14 +136,10 @@
                         </div>
                         {% endfor %}
                     </div>
-
-                {# ================= שלב 4: רשימת קורסים ================= #}
                 {% elif step == 'show_courses' %}
                     <h4 class="fw-bold mb-4" style="color: var(--gd-text);">
-                        {% if search_query %}<i class="fas fa-search ms-2" style="color: var(--gd-primary);"></i> תוצאות חיפוש{% else %}<i class="fas fa-th-list ms-2" style="color: var(--gd-primary);"></i> כל הקורסים במסלול{% endif %}
+                        {% if search_query %}<i class="fas fa-search ms-2 text-primary"></i> תוצאות חיפוש{% else %}<i class="fas fa-list-ul ms-2 text-primary"></i> רשימת הקורסים{% endif %}
                     </h4>
-
-                    {# ================= הצגת הקורסים (חיפוש או סמסטרים) ================= #}
                     {% if search_query %}
                         <div class="list-group list-group-flush border rounded-4 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
                             {% for course in courses %}
@@ -153,40 +147,27 @@
                             {% empty %}
                                 <div class="p-5 text-center" style="color: var(--gd-text-muted);">
                                     <i class="fas fa-search-minus fa-3x mb-3 opacity-25"></i><br>
-                                    לא נמצאו קורסים העונים לחיפוש...
+                                    לא מצאנו קורס שתואם לחיפוש שלך...
                                 </div>
                             {% endfor %}
                         </div>
                     {% else %}
                         <div class="semesters-wrapper d-flex flex-column gap-2">
                             {% if sem_a %}
-                                {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="leaf" color="success" %}
+                                {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="bolt" color="primary" %}
                             {% endif %}
-
                             {% if sem_b %}
                                 {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
                             {% endif %}
-
-                            {% if specializations %}
-                                {% include "core/partials/collapsible_semester.html" with title="קורסי בחירה ומסלולים" semester_id="special" courses=specializations icon="star" color="info" %}
-                            {% endif %}
                         </div>
                     {% endif %}
-
-                    <div class="text-center mt-5">
-                        <p class="small" style="color: var(--gd-text-muted);">לא מצאת את הקורס שחיפשת?</p>
-                        <a href="{% url 'add_course' %}?major_id={{ major_id|default:'' }}&year={{ year|default:'' }}" class="btn rounded-pill px-4 fw-bold shadow-sm hover-up btn-outline-dynamic">
-                            <i class="fas fa-plus-circle ms-1" style="color: var(--gd-primary);"></i> הוסף קורס חדש למערכת
-                        </a>
-                    </div>
                 {% endif %}
-
             </div>
         </div>
 
         <div class="col-lg-4 order-1 order-lg-2">
-            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-                <div class="card-header border-0 pt-4 text-center" style="background-color: var(--gd-card);">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background-color: var(--gd-card);">
+                <div class="card-header border-0 pt-4 text-center" style="background-color: transparent;">
                     <h5 class="fw-bold mb-1" style="color: var(--gd-text);"><i class="fas fa-trophy text-warning ms-2"></i> אלופי הדרייב</h5>
                 </div>
                 <div class="card-body p-0">
@@ -196,11 +177,13 @@
                             <div class="d-flex align-items-center gap-3">
                                 <span class="fs-4">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}</span>
                                 <div>
-                                    <div class="fw-bold small" style="color: var(--gd-text);">{{ profile.user.username }}</div>
+                                    <a href="{% url 'public_profile' profile.user.username %}" class="fw-bold small text-decoration-none" style="color: var(--gd-text);">{{ profile.user.username }}</a>
                                     <div style="font-size: 0.7rem; color: var(--gd-text-muted);">{{ profile.rank_name }}</div>
                                 </div>
                             </div>
-                            <span class="badge rounded-pill px-3" style="background-color: rgba(26, 115, 232, 0.1); color: var(--gd-primary);">{{ profile.drive_coins }} 🪙</span>
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: rgba(13, 110, 253, 0.08); color: var(--gd-primary);">
+                                {{ profile.lifetime_coins }} <i class="fas fa-star ms-1 small"></i>
+                            </span>
                         </div>
                         {% endfor %}
                     </div>
@@ -211,163 +194,13 @@
 </div>
 
 <style>
-    /* כפתורי מסגרת מותאמים לנושא גוגל */
-    .btn-outline-dynamic { border: 1px solid var(--gd-border); color: var(--gd-text); background: transparent; }
-    .btn-outline-dynamic:hover { background-color: var(--gd-hover); color: var(--gd-primary); }
-
-    /* כרטיסיות ניווט כלליות */
-    .nav-item-card { display: flex; align-items: center; padding: 1.2rem; background: var(--gd-bg); border-radius: 15px; text-decoration: none; border: 1px solid var(--gd-border); transition: 0.3s; }
-    .nav-item-card:hover { background: var(--gd-hover); transform: translateX(-5px); box-shadow: var(--gd-shadow); }
-
-    /* כרטיסיית אוניברסיטה משתמשת בצבע המותג */
-    .uni-card:hover { border-color: var(--brand-color); }
-    .uni-logo { width: 45px; height: 45px; object-fit: contain; border-radius: 50%; background-color: #fff; padding: 5px; }
-    .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-
-    .major-card:hover { border-color: #198754; }
-
-    /* בחירת שנה */
-    .year-selector-card { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; background: var(--gd-bg); border: 2px solid var(--gd-border); border-radius: 20px; text-decoration: none; transition: 0.3s; }
+    .btn-outline-dynamic { border: 1px solid var(--gd-border); color: var(--gd-text); background: transparent; transition: 0.2s; }
+    .btn-outline-dynamic:hover { background-color: var(--gd-hover); color: var(--gd-primary); border-color: var(--gd-primary); }
+    .nav-item-card { display: flex; align-items: center; padding: 1.25rem; background: var(--gd-bg); border-radius: 18px; text-decoration: none; border: 1px solid var(--gd-border); transition: 0.3s; }
+    .nav-item-card:hover { background: var(--gd-hover); transform: translateX(-5px); box-shadow: var(--gd-shadow); border-color: var(--gd-primary); }
+    .year-selector-card { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; background: var(--gd-bg); border: 1px solid var(--gd-border); border-radius: 20px; text-decoration: none; transition: 0.3s; }
     .year-selector-card:hover { border-color: var(--gd-primary); background: var(--gd-hover); transform: translateY(-5px); box-shadow: var(--gd-shadow); }
-    .year-number { font-size: 2.5rem; font-weight: 800; }
-
-    .hover-up { transition: 0.2s; display: inline-block; }
-    .hover-up:hover { transform: translateY(-3px); }
-
-    /* תיבת חיפוש חי */
-    .live-search-box { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: var(--gd-card); border-radius: 15px; margin-top: 10px; max-height: 400px; overflow-y: auto; border: 1px solid var(--gd-border); }
-    .search-result-item { transition: 0.2s; border-right: 4px solid transparent !important; color: var(--gd-text) !important; background-color: transparent; }
-    .search-result-item:hover { background-color: var(--gd-hover); border-right-color: var(--gd-primary) !important; }
-
-    /* אנימציה לכוכב */
-    .hover-scale { transition: transform 0.2s; }
+    .year-number { font-size: 2.8rem; font-weight: 800; line-height: 1; margin-bottom: 5px; }
 </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('search-input');
-        const resultsBox = document.getElementById('live-search-results');
-        let timeout = null;
-
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                clearTimeout(timeout);
-                const query = this.value.trim();
-
-                if (query.length < 2) {
-                    resultsBox.classList.add('d-none');
-                    return;
-                }
-
-                timeout = setTimeout(() => {
-                    fetch(`/search/live/?q=${encodeURIComponent(query)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            resultsBox.innerHTML = '';
-                            if (data.results.length > 0) {
-                                data.results.forEach(course => {
-                                    const a = document.createElement('a');
-                                    a.href = course.url;
-                                    a.className = 'list-group-item list-group-item-action border-0 border-bottom p-3 d-flex align-items-center gap-3 search-result-item';
-                                    a.style.borderColor = 'var(--gd-border) !important';
-
-                                    let iconHTML = '';
-                                    if (course.logo_url) {
-                                        iconHTML = `<img src="${course.logo_url}" alt="${course.university}" style="width: 45px; height: 45px; object-fit: contain; border-radius: 50%; background: #fff; padding: 2px;">`;
-                                    } else {
-                                        const color = course.brand_color || '#0d6efd';
-                                        iconHTML = `<div class="icon-circle text-white shadow-sm" style="width:45px; height:45px; background-color: ${color};"><i class="fas fa-university"></i></div>`;
-                                    }
-
-                                    a.innerHTML = `
-                                        ${iconHTML}
-                                        <div class="flex-grow-1 text-end">
-                                            <div class="fw-bold fs-6" style="color: var(--gd-text);">${course.name}</div>
-                                            <div class="small mt-1" style="color: var(--gd-text-muted);">
-                                                <i class="fas fa-map-marker-alt ms-1 text-danger opacity-75"></i> ${course.university}
-                                                <span class="mx-1 opacity-50">|</span>
-                                                <i class="fas fa-graduation-cap ms-1 text-success opacity-75"></i> ${course.major}
-                                            </div>
-                                        </div>
-                                        <i class="fas fa-chevron-left ms-2 opacity-50" style="color: var(--gd-text-muted);"></i>
-                                    `;
-                                    resultsBox.appendChild(a);
-                                });
-                                resultsBox.classList.remove('d-none');
-                            } else {
-                                resultsBox.innerHTML = `
-                                    <div class="p-5 text-center" style="color: var(--gd-text-muted);">
-                                        <i class="fas fa-search-minus fa-3x mb-3 opacity-25"></i><br>
-                                        <h6 class="fw-bold">לא מצאנו קורס בשם הזה...</h6>
-                                    </div>`;
-                                resultsBox.classList.remove('d-none');
-                            }
-                        })
-                        .catch(err => console.error("Search error:", err));
-                }, 300);
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
-                    resultsBox.classList.add('d-none');
-                }
-            });
-        }
-    });
-
-    // פונקציית הוספה/הסרה של מועדפים עם אנימציה
-    function toggleCourseFavorite(event, courseId) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const icons = document.querySelectorAll(`.star-icon-${courseId}`);
-        if (icons.length === 0) return;
-
-        // אנימציית לחיצה
-        icons.forEach(icon => {
-            icon.style.transform = 'scale(1.4)';
-            setTimeout(() => icon.style.transform = 'scale(1)', 200);
-        });
-
-        fetch(`/course/${courseId}/toggle_favorite/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // 1. עדכון הכוכבים בכל מקום בעמוד
-            icons.forEach(icon => {
-                if (data.is_favorite) {
-                    icon.classList.remove('far', 'opacity-50');
-                    icon.classList.add('fas', 'text-warning');
-                    icon.style.color = '';
-                } else {
-                    icon.classList.remove('fas', 'text-warning');
-                    icon.classList.add('far', 'opacity-50');
-                    icon.style.color = 'var(--gd-text-muted)';
-                }
-            });
-
-            // 2. עדכון רשימת המועדפים למעלה (הקסם קורה כאן)
-            const wrapper = document.getElementById('favorites-section-wrapper');
-            if (wrapper) {
-                // אנחנו טוענים את ה-HTML של דף הבית הנוכחי ושולפים ממנו רק את אזור המועדפים המעודכן
-                fetch(window.location.href)
-                    .then(res => res.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newContent = doc.getElementById('favorites-section-wrapper');
-                        if (newContent) {
-                            wrapper.innerHTML = newContent.innerHTML;
-                        }
-                    });
-            }
-        })
-        .catch(err => console.error('Error toggling favorite:', err));
-    }
-</script>
 {% endblock %}

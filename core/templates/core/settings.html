@@ -51,7 +51,7 @@
                         <div class="flex-grow-1" style="min-width: 250px;">
                             <label class="form-label fw-bold text-muted small">העלאת תמונה</label>
                             <input type="file" name="profile_picture" class="form-control rounded-pill border-secondary border-opacity-25 bg-light dark-input" accept="image/*">
-                            <div class="form-text mt-2 text-muted small">התמונה תופיע לצד הקבצים שתעלה.</div>
+                            <div class="form-text mt-2 text-muted small">התמונה תופיע לצד הקבצים והפוסטים שלך.</div>
                         </div>
                     </div>
                 </div>
@@ -123,17 +123,7 @@
                             <div class="form-check form-switch m-0 p-0">
                                 <input class="form-check-input mx-3 mt-1" type="checkbox" role="switch" name="show_coins_publicly" {% if user.profile.show_coins_publicly %}checked{% endif %} style="transform: scale(1.3);">
                             </div>
-                            <span class="text-muted small">הצג את הניקוד שלי בטבלת המובילים.</span>
-                        </div>
-                    </div>
-
-                    <div class="row align-items-start mb-4">
-                        <div class="col-sm-4"><label class="fw-bold text-muted small">אנונימיות אוטומטית</label></div>
-                        <div class="col-sm-8 d-flex align-items-start gap-3">
-                            <div class="form-check form-switch m-0 p-0">
-                                <input class="form-check-input mx-3 mt-1" type="checkbox" role="switch" name="default_anonymous_upload" {% if user.profile.default_anonymous_upload %}checked{% endif %} style="transform: scale(1.3);">
-                            </div>
-                            <span class="text-muted small">סמן וי אוטומטית על "העלאה אנונימית" בכל קובץ חדש.</span>
+                            <span class="text-muted small">הצג את המוניטין שלי לציבור (מומלץ כדי לקבל הכרה).</span>
                         </div>
                     </div>
                 </div>

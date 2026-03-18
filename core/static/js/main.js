@@ -1,18 +1,71 @@
 /* =====================================================================
-   MAIN JAVASCRIPT ENGINE - Student Drive
+   CORE JAVASCRIPT ENGINE - Student Drive (Upgraded)
    ===================================================================== */
 
-// 1. Loading Bar & Toasts & A11y Menu
-window.addEventListener('beforeunload', () => {
-    const loader = document.getElementById('loading-bar');
-    if (loader) loader.style.width = '100%';
+// --- 1. PWA & Service Worker Registration ---
+let deferredPrompt; // משתנה שישמור את אירוע ההתקנה
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => {
+                console.log('✅ Service Worker רשום בהצלחה!', reg);
+            })
+            .catch(err => {
+                console.error('❌ רישום ה-SW נכשל:', err);
+            });
+    });
+}
+
+// האזנה לאירוע שבו הדפדפן מזהה שהאתר כשיר להתקנה
+window.addEventListener('beforeinstallprompt', (e) => {
+    // מונע מהדפדפן להקפיץ את הבאנר המובנה מיד
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('🚀 האתר מוכן להתקנה כ-PWA!');
 });
 
+// --- 2. Loading Bar & Page Transitions ---
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loading-bar');
+    if (loader) {
+        loader.style.width = '100%';
+        setTimeout(() => { loader.style.opacity = '0'; }, 300);
+    }
+});
+
+// התחלת פס טעינה בלחיצה על קישורים (חוויית SPA)
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link && link.href && !link.target && !link.href.includes('#') && !link.href.startsWith('javascript:')) {
+        const loader = document.getElementById('loading-bar');
+        if (loader) {
+            loader.style.opacity = '1';
+            loader.style.width = '30%';
+        }
+    }
+});
+
+// --- 3. Advanced Theme Management ---
+function setTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme_preference', theme);
+}
+
+// סנכרון עם המערכת במידה והוגדר 'auto'
+const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+function handleThemeChange(e) {
+    if (localStorage.getItem('theme_preference') === 'auto') {
+        setTheme('auto');
+    }
+}
+themeQuery.addListener(handleThemeChange);
+
+// --- 4. Accessibility & UI Init ---
 document.addEventListener('DOMContentLoaded', function() {
-    // אתחול Toast של Bootstrap
+    // אתחול Toasts
     const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-    const toastList = toastElList.map(function(toastEl) { return new bootstrap.Toast(toastEl); });
-    toastList.forEach(toast => toast.show());
+    toastElList.map(toastEl => new bootstrap.Toast(toastEl).show());
 
     // תפריט נגישות
     const a11yToggle = document.getElementById('a11y-toggle');
@@ -20,15 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const a11yClose = document.getElementById('a11y-close');
 
     if (a11yToggle && a11yMenu) {
-        a11yToggle.addEventListener('click', () => {
-            a11yMenu.classList.toggle('d-none');
-        });
+        a11yToggle.addEventListener('click', () => a11yMenu.classList.toggle('d-none'));
     }
     if (a11yClose && a11yMenu) {
-        a11yClose.addEventListener('click', () => {
-            a11yMenu.classList.add('d-none');
-        });
+        a11yClose.addEventListener('click', () => a11yMenu.classList.add('d-none'));
     }
+
+    // טעינת הגדרות נגישות
+    ['a11y-large-text', 'a11y-high-contrast', 'a11y-highlight-links', 'a11y-readable-font'].forEach(cls => {
+        if(localStorage.getItem(cls) === 'true') document.body.classList.add(cls);
+    });
 });
 
 function toggleA11y(className) {
@@ -36,25 +90,13 @@ function toggleA11y(className) {
     localStorage.setItem(className, document.body.classList.contains(className));
 }
 
-window.addEventListener('load', function() {
-    ['a11y-large-text', 'a11y-high-contrast', 'a11y-highlight-links', 'a11y-readable-font'].forEach(cls => {
-        if(localStorage.getItem(cls) === 'true') document.body.classList.add(cls);
-    });
-});
-
-// 2. CSRF Token Helper
-// 2. Universal CSRF & Cookie Helper
+// --- 5. Security & AJAX Helpers ---
 function getCookie(name) {
-    let cookieValue = null;
-
-    // קסם ה-CSRF: שאיבה ישירה מה-HTML!
     if (name === 'csrftoken') {
         const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (tokenElement) {
-            return tokenElement.value;
-        }
+        if (tokenElement) return tokenElement.value;
     }
-
+    let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
@@ -67,147 +109,59 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-// 2.5 Global Secure Fetch (Auto-injects CSRF token)
-function secureFetch(url, options = {}) {
-    const csrfToken = getCookie('csrftoken');
 
+function secureFetch(url, options = {}) {
     options.headers = {
         ...options.headers,
-        'X-CSRFToken': csrfToken,
+        'X-CSRFToken': getCookie('csrftoken'),
         'X-Requested-With': 'XMLHttpRequest'
     };
-
     return fetch(url, options);
 }
 
-// 3. Document Like Toggle
+// --- 6. Interaction Logic (Likes, Comments, Folders) ---
+
+// לייק לקובץ
 function toggleLike(event, buttonElement) {
     event.preventDefault();
     const url = buttonElement.getAttribute('data-url');
-    const csrftoken = getCookie('csrftoken');
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrftoken,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
+    secureFetch(url, { method: 'POST' })
+    .then(res => res.json())
     .then(data => {
-        if (data.error) {
-            console.error(data.error);
-            return;
-        }
-
+        if (data.error) return;
         const countSpan = buttonElement.querySelector('.like-count');
         if(countSpan) countSpan.textContent = data.total_likes;
-
-        if (data.liked) {
-            buttonElement.classList.remove('btn-outline-primary');
-            buttonElement.classList.add('btn-primary', 'text-white');
-        } else {
-            buttonElement.classList.remove('btn-primary', 'text-white');
-            buttonElement.classList.add('btn-outline-primary');
-        }
-    })
-    .catch(error => console.error('Error:', error));
+        buttonElement.classList.toggle('btn-primary', data.liked);
+        buttonElement.classList.toggle('text-white', data.liked);
+        buttonElement.classList.toggle('btn-outline-primary', !data.liked);
+    });
 }
 
-// 4. Google Translate Engine
-function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-        pageLanguage: 'he',
-        autoDisplay: false
-    }, 'google_translate_element');
+// לייק לפוסט בקהילה
+function handlePostLike(postId, btn) {
+    secureFetch(`/post/${postId}/like/`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+        const countSpan = btn.querySelector('.like-count');
+        const icon = btn.querySelector('i');
+        countSpan.innerText = data.total_likes;
+        btn.classList.toggle('text-primary', data.liked);
+        btn.classList.toggle('fw-bold', data.liked);
+        icon.className = data.liked ? 'fas fa-thumbs-up fs-5' : 'far fa-thumbs-up fs-5';
+    });
 }
 
-function doGTranslate(lang_pair) {
-    const lang = lang_pair.split('|')[1];
-    const teCombo = document.querySelector('.goog-te-combo');
-
-    const domain = window.location.hostname;
-    document.cookie = "googtrans=/he/" + lang + "; path=/";
-    document.cookie = "googtrans=/he/" + lang + "; domain=" + domain + "; path=/";
-
-    if (teCombo) {
-        teCombo.value = lang;
-        teCombo.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    if (lang === 'he') {
-        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        location.reload();
-    }
-}
-
-(function() {
-    const checkInterval = setInterval(() => {
-        const teCombo = document.querySelector('.goog-te-combo');
-        const cookieValue = document.cookie.split('; ').find(row => row.startsWith('googtrans='));
-
-        if (teCombo && cookieValue) {
-            const savedLang = cookieValue.split('/')[2];
-            if (teCombo.value !== savedLang) {
-                teCombo.value = savedLang;
-                teCombo.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        }
-    }, 1000);
-})();
-
-setInterval(function() {
-    const frame = document.querySelector('.goog-te-banner-frame');
-    if (frame) frame.remove();
-    document.body.style.top = "0px";
-}, 500);
-
-
-// הצגה/הסתרה של אזור התגובות
+// תגובות
 function toggleComments(postId) {
     const section = document.getElementById(`comments-section-${postId}`);
     if (section) {
         section.classList.toggle('d-none');
-        // גלילה לסוף התגובות באופן אוטומטי כשפותחים
         const list = document.getElementById(`comments-list-${postId}`);
         list.scrollTop = list.scrollHeight;
     }
 }
 
-/* =====================================================================
-   COMMUNITY AJAX - Likes & Comments (Using secureFetch)
-   ===================================================================== */
-
-// פונקציית הלייק לפוסטים בקהילה
-function handlePostLike(postId, btn) {
-    secureFetch(`/post/${postId}/like/`, {
-        method: 'POST'
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("Server error or CSRF failed.");
-        return response.json();
-    })
-    .then(data => {
-        if (data.total_likes !== undefined) {
-            const countSpan = btn.querySelector('.like-count');
-            const icon = btn.querySelector('i');
-            countSpan.innerText = data.total_likes;
-
-            if (data.liked) {
-                btn.classList.add('text-primary', 'fw-bold');
-                btn.classList.remove('text-muted');
-                icon.className = 'fas fa-thumbs-up fs-5';
-            } else {
-                btn.classList.remove('text-primary', 'fw-bold');
-                btn.classList.add('text-muted');
-                icon.className = 'far fa-thumbs-up fs-5';
-            }
-        }
-    })
-    .catch(err => console.error("Error liking post:", err));
-}
-
-// שליחת תגובה ב-AJAX
 function submitComment(postId) {
     const input = document.getElementById(`comment-input-${postId}`);
     const text = input.value.trim();
@@ -219,87 +173,76 @@ function submitComment(postId) {
     const formData = new FormData();
     formData.append('text', text);
 
-    secureFetch(`/post/${postId}/comment/`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("Server error or CSRF failed.");
-        return response.json();
-    })
+    secureFetch(`/post/${postId}/comment/`, { method: 'POST', body: formData })
+    .then(res => res.json())
     .then(data => {
         if (data.success) {
             const list = document.getElementById(`comments-list-${postId}`);
-            const commentHTML = `
+            const html = `
                 <div class="d-flex gap-2 mb-2 animate__animated animate__fadeInUp">
                     <div class="flex-shrink-0">
-                        ${data.user_img ? `<img src="${data.user_img}" class="rounded-circle shadow-sm" style="width:32px; height:32px; object-fit:cover;">` : 
-                        `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center border shadow-sm" style="width:32px; height:32px;"><i class="fas fa-user text-muted small"></i></div>`}
+                        ${data.user_img ? `<img src="${data.user_img}" class="rounded-circle" style="width:32px; height:32px; object-fit:cover;">` : `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width:32px; height:32px;"><i class="fas fa-user text-muted small"></i></div>`}
                     </div>
-                    <div class="p-2 rounded-4 px-3 flex-grow-1 shadow-sm" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                    <div class="p-2 rounded-4 px-3 flex-grow-1" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold small text-primary">${data.username}</span>
                             <span class="text-muted" style="font-size:0.65rem;">${data.created_at}</span>
                         </div>
-                        <p class="small mb-0" style="color:var(--gd-text);">${data.text}</p>
+                        <p class="small mb-0">${data.text}</p>
                     </div>
                 </div>`;
-            list.insertAdjacentHTML('beforeend', commentHTML);
+            list.insertAdjacentHTML('beforeend', html);
             list.scrollTop = list.scrollHeight;
             input.value = '';
             const countLabel = document.getElementById(`comment-count-${postId}`);
             countLabel.innerText = parseInt(countLabel.innerText) + 1;
         }
-    })
-    .catch(err => console.error("Error submitting comment:", err))
-    .finally(() => btn.disabled = false);
+    }).finally(() => btn.disabled = false);
 }
-//
-// /* =====================================================================
-//    AI FEATURES - Document Summarization
-//    ===================================================================== */
-//
-// function generateAISummary(docId, btn) {
-//     // 1. מציאת אלמנטים במסך
-//     const container = document.getElementById(`ai-summary-container-${docId}`);
-//     const textDiv = container.querySelector('.summary-text');
-//
-//     // 2. שמירת המצב המקורי של הכפתור ושינוי למצב "טעינה"
-//     const originalHtml = btn.innerHTML;
-//     btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> חושב...';
-//     btn.disabled = true;
-//
-//     // 3. קריאה לשרת עם הנתיב המדויק מתוך urls.py שלך!
-//     secureFetch(`/document/${docId}/ai-summary/`, {
-//         method: 'POST'
-//     })
-//     .then(response => {
-//         if (!response.ok) throw new Error("Server error");
-//         return response.json();
-//     })
-//     .then(data => {
-//         if (data.success) {
-//             // הכל עבד! נציג את הסיכום
-//             textDiv.innerText = data.summary;
-//
-//             // פתיחת חלונית הסיכום
-//             const bsCollapse = new bootstrap.Collapse(container, {
-//                 toggle: false
-//             });
-//             bsCollapse.show();
-//
-//         } else {
-//             // השרת החזיר שגיאה (למשל: אין מספיק מטבעות)
-//             alert("שגיאה: " + data.error);
-//         }
-//     })
-//     .catch(err => {
-//         console.error("Error generating AI summary:", err);
-//         alert("אירעה שגיאה בתקשורת מול השרת. אנא נסה שוב.");
-//     })
-//     .finally(() => {
-//         // 4. החזרת הכפתור למצב הרגיל
-//         btn.innerHTML = originalHtml;
-//         btn.disabled = false;
-//     });
-// }
+
+// --- 7. AI Summary (Integrated with Wallet) ---
+function generateAISummary(docId, btn) {
+    const container = document.getElementById(`ai-summary-container-${docId}`);
+    const textDiv = container.querySelector('.summary-text');
+    const originalHtml = btn.innerHTML;
+
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> חושב...';
+    btn.disabled = true;
+
+    secureFetch(`/document/${docId}/ai-summary/`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            textDiv.innerText = data.summary;
+            new bootstrap.Collapse(container, { toggle: false }).show();
+            // עדכון הארנק ב-Navbar בזמן אמת אם חזר ערך מטבעות חדש
+            const walletSpan = document.querySelector('.fa-coins + span');
+            if (walletSpan && data.new_coins !== undefined) {
+                walletSpan.innerText = data.new_coins;
+            }
+        } else {
+            alert("שגיאה: " + data.error);
+        }
+    })
+    .catch(() => alert("שגיאה בתקשורת מול השרת."))
+    .finally(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    });
+}
+
+// --- 8. Google Translate & Cleanup ---
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({ pageLanguage: 'he', autoDisplay: false }, 'google_translate_element');
+}
+
+function doGTranslate(lang_pair) {
+    const lang = lang_pair.split('|')[1];
+    document.cookie = `googtrans=/he/${lang}; path=/; domain=${window.location.hostname}`;
+    if (lang === 'he') {
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        location.reload();
+    } else {
+        location.reload();
+    }
+}

@@ -1,7 +1,9 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import Document, Course, UserProfile, Folder
 
+# משיכת מודל המשתמש החדש שלנו (CustomUser) בצורה בטוחה
+User = get_user_model()
 
 # ==========================================
 # 1. טופס האב: מכונת העיצוב האוטומטית
@@ -16,17 +18,15 @@ class BaseStyledModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            if isinstance(field.widget, (
-            forms.TextInput, forms.EmailInput, forms.NumberInput, forms.Select, forms.Textarea, forms.FileInput)):
-                base_class = 'form-select form-select-lg' if isinstance(field.widget,
-                                                                        forms.Select) else 'form-control form-control-lg'
+            if isinstance(field.widget, (forms.TextInput, forms.EmailInput, forms.NumberInput, forms.Select, forms.Textarea, forms.FileInput)):
+                base_class = 'form-select form-select-lg' if isinstance(field.widget, forms.Select) else 'form-control form-control-lg'
                 field.widget.attrs.update({
                     'class': f'{base_class} border-0 shadow-sm mb-3',
                     'style': 'background-color: var(--gd-bg) !important; color: var(--gd-text) !important;'
                 })
 
 
-# --- טופס להעלאת קבצים (מותאם למבנה התיקיות החדש) ---
+# --- טופס להעלאת קבצים (מותאם למבנה התיקיות החדש וללא אנונימיות) ---
 class DocumentUploadForm(BaseStyledModelForm):
     new_folder_name = forms.CharField(
         required=False,
@@ -42,18 +42,13 @@ class DocumentUploadForm(BaseStyledModelForm):
 
     class Meta:
         model = Document
-        # שינינו כאן מ-lecturer ל-staff_member
-        fields = ['title', 'file', 'folder', 'staff_member', 'is_anonymous']
+        # הוסר השדה is_anonymous לפי ההחלטה החדשה
+        fields = ['title', 'file', 'folder', 'staff_member']
 
         labels = {
             'title': 'שם הקובץ',
             'folder': 'בחר תיקייה קיימת',
-            # שינינו גם כאן את המפתח כדי שהתווית תוצמד לשדה הנכון
-             'staff_member': 'מרצה / מתרגל (לא חובה - עוזר לדירוגים!)',
-            'is_anonymous': 'העלאה אנונימית (השם שלך לא יופיע על הקובץ)',
-        }
-        widgets = {
-            'is_anonymous': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'staff_member': 'מרצה / מתרגל (לא חובה - עוזר לדירוגים!)',
         }
 
 
@@ -102,7 +97,7 @@ class CustomSignupForm(forms.Form):
         pass
 
 
-# --- טופס להשלמת פרטי פרופיל סטודנט (הפרופיל המדורג) ---
+# --- טופס להשלמת פרטי פרופיל (מותאם לכולם - סטודנטים וקהל רחב) ---
 class UserProfileForm(BaseStyledModelForm):
     first_name = forms.CharField(max_length=30, required=True, label="שם פרטי (אפשר גם כינוי)")
     last_name = forms.CharField(max_length=30, required=True, label="שם משפחה")
@@ -119,15 +114,34 @@ class UserProfileForm(BaseStyledModelForm):
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
 
-        self.fields['university'].required = True
-        self.fields['university'].empty_label = "--- בחרו מוסד לימודים ---"
-        self.fields['major'].required = True
-        self.fields['major'].empty_label = "--- בחרו פקולטה / מסלול ---"
-        self.fields['year'].required = True
-        self.fields['year'].empty_label = "--- בחרו שנת לימוד ---"
+        # הפכנו את השדות לרשות והתאמנו את הטקסט למשתמשים שהם לא סטודנטים
+        self.fields['university'].required = False
+        self.fields['university'].empty_label = "--- לא סטודנט / ללא שיוך ---"
 
-        self.fields['phone_number'].required = True
-        self.fields['phone_number'].widget.attrs.update({'placeholder': 'לדוגמה: 0501234567'})
+        self.fields['major'].required = False
+        self.fields['major'].empty_label = "--- ללא מסלול ---"
+
+        self.fields['year'].required = False
+        self.fields['year'].empty_label = "--- לא רלוונטי ---"
+
+        # גם טלפון לא חייב להיות חוסם הרשמה
+        self.fields['phone_number'].required = False
+        self.fields['phone_number'].widget.attrs.update({'placeholder': 'לדוגמה: 0501234567 (לא חובה)'})
+
+    def clean(self):
+        """
+        לוגיקה חכמה לאימות הנתונים:
+        מוודא שמשתמש לא עשה חצי-עבודה (למשל, בחר תואר בלי לבחור אוניברסיטה)
+        """
+        cleaned_data = super().clean()
+        uni = cleaned_data.get('university')
+        major = cleaned_data.get('major')
+
+        # אם בחר מסלול לימודים, הוא חייב לציין באיזה מוסד
+        if major and not uni:
+            self.add_error('university', "חובה לבחור מוסד לימודים אם בחרת מסלול.")
+
+        return cleaned_data
 
     def save(self, commit=True):
         profile = super().save(commit=False)

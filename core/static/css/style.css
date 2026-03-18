@@ -334,3 +334,41 @@ body.a11y-readable-font, body.a11y-readable-font * {
 /* חסימת כל אלמנט ויזואלי של גוגל */
 .skiptranslate, .goog-te-banner-frame, #goog-gt-tt { display: none !important; visibility: hidden !important; }
 body { top: 0px !important; position: static !important; }
+
+/* =====================================================================
+   PWA ICON PLACEHOLDERS
+   ===================================================================== */
+
+/* יצירת אייקוןPlaceholder של 192 פיקסלים בצורה וירטואלית */
+.pwa-icon-192 {
+    display: none;
+    width: 192px;
+    height: 192px;
+    background-color: var(--gd-primary);
+    border-radius: 50%;
+    color: white;
+    font-size: 80px;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+}
+.pwa-icon-192::after {
+    content: "ה"; /* האות הראשונה של "הדרייב" */
+}
+
+/* יצירת אייקוןPlaceholder של 512 פיקסלים בצורה וירטואלית */
+.pwa-icon-512 {
+    display: none;
+    width: 512px;
+    height: 512px;
+    background-color: var(--gd-primary);
+    border-radius: 50%;
+    color: white;
+    font-size: 200px;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+}
+.pwa-icon-512::after {
+    content: "ה";
+}

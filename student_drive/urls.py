@@ -3,10 +3,14 @@ from django.urls import path, include
 from core import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 urlpatterns = [
     # ממשק ניהול
     path('admin/', admin.site.urls),
+
+# השורה שמוסיפה את ה-Service Worker לכתובת הראשית:
+    path('sw.js', TemplateView.as_view(template_name="sw.js", content_type='application/javascript'), name='sw.js'),
 
     # מערכת ההרשמה והתחברות (Allauth)
     path('accounts/', include('allauth.urls')),
