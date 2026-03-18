@@ -74,6 +74,9 @@ urlpatterns = [
 
     path('my-friends/', views.my_friends, name='my_friends'),
     path('friend/remove/<str:friend_username>/', views.remove_friend, name='remove_friend'),
+
+    # לוח הבקרה הסודי של סוכן התיעוד
+    path('system-architecture-mirror/', views.agent_report, name='agent_report'),
 ]
 
 if settings.DEBUG:

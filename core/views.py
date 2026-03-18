@@ -22,6 +22,10 @@ from .ai_utils import generate_smart_summary
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 
+from django.conf import settings
+from django.shortcuts import render
+
+
 # שימוש במודל המשתמש החדש בצורה בטוחה
 User = get_user_model()
 
@@ -908,3 +912,20 @@ def add_comment(request, post_id):
             })
         return JsonResponse({'success': False, 'error': 'לא ניתן לפרסם תגובה ריקה.'}, status=400)
     return JsonResponse({'success': False, 'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)
+
+
+@staff_member_required
+def agent_report(request):
+    """
+    מציג את דו"ח ה-AI הסודי רק למנהלי המערכת.
+    קורא את הקובץ שנוצר על ידי ה-run_agent בתהליך ה-Build.
+    """
+    file_path = os.path.join(settings.BASE_DIR, 'PROJECT_MIRROR.md')
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except FileNotFoundError:
+        content = "# ❌ שגיאה\nקובץ התיעוד עדיין לא נוצר. המתן לסיום ה-Build ב-Render."
+
+    return render(request, 'core/agent_report.html', {'report_content': content})

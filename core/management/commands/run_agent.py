@@ -186,7 +186,10 @@ class Command(BaseCommand):
             Give a brief overview of the project state. Give a 'Health Score' out of 100 based on code cleanliness, security, and structure.
 
             ## 🗺️ 3. מפת ארכיטקטורה (Visual Flowchart)
-            Create a Mermaid.js diagram (`mermaid` block) showing the core architecture. Use an `erDiagram` or `classDiagram`.
+            Create a Mermaid.js diagram (`mermaid` block) showing the core architecture. 
+            CRITICAL INSTRUCTION FOR MERMAID: You MUST use a very simple `classDiagram`. 
+            Do NOT use `erDiagram` or complex relationship syntax that might cause syntax errors. 
+            Just show the main models (CustomUser, Course, Document, Post, etc.) and basic arrows (-->) for their relationships. Keep it safe and simple.
 
             ## 💡 4. ביקורת קוד אדריכלית (Code Review)
             Provide 3-5 actionable recommendations strictly divided by urgency using these exact emojis and categories:

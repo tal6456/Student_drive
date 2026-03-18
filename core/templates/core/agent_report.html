@@ -11,6 +11,31 @@
             padding: 40px 20px;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
+        .actions-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .action-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        .btn-back { background: #238636; }
+        .btn-back:hover { background: #2ea043; }
+        .btn-pdf { background: #1f6feb; }
+        .btn-pdf:hover { background: #388bfd; }
+
         .markdown-body {
             box-sizing: border-box;
             max-width: 900px;
@@ -20,8 +45,10 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.8);
             color: #e6edf3 !important;
+            direction: rtl;
+            text-align: right;
         }
-        /* תיקוני כיווניות (RTL) לציטוטים וכותרות */
+
         .markdown-body blockquote {
             border-left: none !important;
             border-right: 4px solid #30363d !important;
@@ -33,47 +60,57 @@
             color: #ffffff !important;
             border-bottom: 1px solid #21262d !important;
         }
-        .markdown-body a { color: #58a6ff !important; }
 
-        /* עיצוב כפתורי הפעולה למעלה */
-        .actions-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
+        /* ==========================================
+           הקסם האמיתי: הגדרות מיוחדות רק לייצור ה-PDF
+           ========================================== */
+        @media print {
+            /* מכריח את הדפדפן להדפיס גם את רקע הלילה המגניב */
+            body, .markdown-body {
+                background-color: #0d1117 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* מעלים את הכפתורים למעלה כדי שלא יופיעו במסמך */
+            .actions-container {
+                display: none !important;
+            }
+
+            /* מבטל את הצלליות והשוליים כדי שזה יישב מושלם על הדף */
+            .markdown-body {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                padding: 0 20px !important;
+            }
+
+            /* מונע במפורש חיתוך של פסקאות, רשימות ובלוקים של קוד באמצע הדף */
+            pre, blockquote, tr, img, li, p {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* דואג שכותרות לא יישארו יתומות בתחתית הדף */
+            h1, h2, h3 {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
         }
-        .action-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.2s;
-            cursor: pointer;
-            border: none;
-            font-size: 16px;
-        }
-        .btn-back { background: #238636; }
-        .btn-back:hover { background: #2ea043; }
-        .btn-pdf { background: #1f6feb; }
-        .btn-pdf:hover { background: #388bfd; }
     </style>
 </head>
 <body>
 
-    <div class="markdown-body">
-        <div class="actions-container">
-            <a href="{% url 'home' %}" class="action-btn btn-back">⬅️ חזרה לאתר</a>
-            <button id="download-pdf" class="action-btn btn-pdf">📄 הורד כ-PDF</button>
-        </div>
+    <div class="actions-container">
+        <a href="{% url 'home' %}" class="action-btn btn-back">⬅️ חזרה לאתר</a>
+        <button onclick="window.print()" class="action-btn btn-pdf">📄 שמור כ-PDF</button>
+    </div>
 
+    <div id="pdf-wrapper" class="markdown-body">
         <textarea id="raw-markdown" style="display: none;">{{ report_content|safe }}</textarea>
-
-        <div id="content">טוען נתונים מהסוכן... 🤖</div>
+        <div id="content" dir="rtl">טוען נתונים מהסוכן... 🤖</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 
@@ -83,31 +120,8 @@
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = marked.parse(rawMd);
 
-        // ציור התרשים והגדרת כפתור ה-PDF
         setTimeout(() => {
-            mermaid.run({ querySelector: '.language-mermaid' }).then(() => {
-
-                // ברגע שהתרשימים מוכנים, נפעיל את כפתור ההורדה
-                document.getElementById('download-pdf').addEventListener('click', () => {
-                    const opt = {
-                        margin:       [10, 10, 10, 10], // שוליים
-                        filename:     'Student_Drive_AI_Report.pdf',
-                        image:        { type: 'jpeg', quality: 0.98 },
-                        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0d1117' }, // שומר על צבע הרקע השחור
-                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    };
-
-                    // משנה קצת את הכפתור כדי להראות שזה עובד
-                    const btn = document.getElementById('download-pdf');
-                    const originalText = btn.innerText;
-                    btn.innerText = "⏳ מכין PDF...";
-
-                    html2pdf().set(opt).from(contentDiv).save().then(() => {
-                        btn.innerText = originalText;
-                    });
-                });
-
-            });
+            mermaid.run({ querySelector: '.language-mermaid' });
         }, 100);
     </script>
 </body>
