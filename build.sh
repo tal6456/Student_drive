@@ -54,4 +54,10 @@ except Exception as e:
 print("🎉 Setup script completed!")
 END
 
+# ==========================================
+# הפעלת סוכן התיעוד והאינטליגנציה שלנו!
+# ==========================================
+echo "🤖 Running AI Documentation Agent..."
+python manage.py run_agent
+
 echo "🚀 Build script finished successfully!"
