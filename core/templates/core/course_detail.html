@@ -606,7 +606,18 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        if (window.location.hash && window.location.hash.startsWith('#folder_')) {
+        // בודק אם השרת שלח "פקודה" לפתוח תיקייה ספציפית (למשל אחרי שמירה/עריכה)
+        const urlParams = new URLSearchParams(window.location.search);
+        const folderIdToOpen = urlParams.get('open_folder');
+
+        if (folderIdToOpen) {
+            // אם יש פקודה מהשרת, בונה את הנתיב לתיקייה הזו
+            rebuildHistoryFromPath('folder_' + folderIdToOpen);
+            // מנקה את ה-URL כדי שזה ייראה נקי (אופציונלי אבל מומלץ)
+            window.history.replaceState({}, document.title, window.location.pathname + '#folder_' + folderIdToOpen);
+
+        } else if (window.location.hash && window.location.hash.startsWith('#folder_')) {
+            // אם אין פקודה מהשרת, אבל המשתמש נכנס לקישור ישיר עם #
             rebuildHistoryFromPath(window.location.hash.substring(1));
         }
 

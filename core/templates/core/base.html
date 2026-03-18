@@ -330,6 +330,31 @@
             })
             .catch(error => console.error('Error:', error));
         }
+
+        // פונקציית הוספה/הסרה של קורס מהמועדפים (AJAX)
+        function toggleFavorite(event, buttonElement) {
+            event.preventDefault();
+            event.stopPropagation(); // מונע מהלחיצה לפתוח את הקורס
+
+            const url = buttonElement.getAttribute('data-url');
+            if (!url) return;
+
+            secureFetch(url, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("שגיאה:", data.error);
+                    return;
+                }
+
+                // הנה הקסם: ברגע שהשרת מאשר שזה נשמר, אנחנו מרעננים את הדף אוטומטית.
+                // ככה הקורס מיד "קופץ" למעלה לרשימת המועדפים (או נעלם ממנה אם הסרת אותו).
+                window.location.reload();
+            })
+            .catch(error => console.error('Error toggling favorite:', error));
+        }
     </script>
 
     <script type="text/javascript">

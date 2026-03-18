@@ -3,7 +3,12 @@
     <div class="d-flex align-items-center gap-3" style="min-width: 0;">
 
         {% if user.is_authenticated %}
-        <div onclick="toggleCourseFavorite(event, {{ course.id }})" class="favorite-btn p-1" style="cursor: pointer; z-index: 10;" title="הוסף/הסר ממועדפים">
+        <div onclick="toggleFavorite(event, this)"
+             data-url="{% url 'toggle_favorite_course' course.id %}"
+             class="favorite-btn p-1"
+             style="cursor: pointer; z-index: 10;"
+             title="הוסף/הסר ממועדפים">
+
             {% if course in favorite_courses %}
                 <i class="fas fa-star fs-5 text-warning star-icon-{{ course.id }} hover-scale"></i>
             {% else %}

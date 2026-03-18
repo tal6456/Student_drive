@@ -245,7 +245,12 @@ def course_detail(request, course_id):
                     created_by=request.user
                 )
                 messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
-            return redirect('course_detail', course_id=course.id)
+
+                # --- הקוד החדש ---
+            redirect_url = reverse('course_detail', args=[course.id])
+            if parent_id and parent_id != 'root':
+                redirect_url += f"?open_folder={parent_id}"
+            return redirect(redirect_url)
 
         elif action == 'edit_folder':
             folder_id_raw = request.POST.get('folder_id')
@@ -293,7 +298,14 @@ def course_detail(request, course_id):
                             messages.success(request, 'התיקייה והדירוג שלך עודכנו בהצלחה!')
                 else:
                     messages.success(request, 'התיקייה עודכנה בהצלחה!')
-            return redirect('course_detail', course_id=course.id)
+            # --- הקוד החדש והמתוקן ---
+            redirect_url = reverse('course_detail', args=[course.id])
+
+            # אנחנו אומרים לשרת: תחזור ל"אבא" של התיקייה שערכנו (כדי שנישאר באותו מסך ונראה את השינוי)
+            if folder_to_edit.parent:
+                redirect_url += f"?open_folder={folder_to_edit.parent.id}"
+
+            return redirect(redirect_url)
 
         elif action == 'quick_upload':
             uploaded_files = request.FILES.getlist('file')
@@ -560,10 +572,28 @@ def community_feed(request):
     if community_id:
         current_community = get_object_or_404(Community, id=community_id)
     else:
-        current_community = Community.objects.filter(
-            university=profile.university,
-            community_type='university'
-        ).first() if profile.university else Community.objects.filter(community_type='global').first()
+        # --- יצירת קהילה חכמה אם היא חסרה ---
+        if profile.university:
+            current_community, created = Community.objects.get_or_create(
+                university=profile.university,
+                community_type='university',
+                defaults={
+                    'name': f'קהילת {profile.university.name}',
+                    'description': 'הקהילה הרשמית לסטודנטים במוסד זה.'
+                }
+            )
+        else:
+            current_community, created = Community.objects.get_or_create(
+                community_type='global',
+                defaults={
+                    'name': 'הקהילה הגלובלית',
+                    'description': 'קהילת כלל הסטודנטים בישראל.'
+                }
+            )
+
+        # מוודאים שהמשתמש חבר בקהילה שמצאנו/יצרנו
+        if current_community not in my_communities:
+            current_community.members.add(request.user)
 
     posts = Post.objects.filter(community=current_community).select_related('user',
                                                                             'user__profile') if current_community else Post.objects.none()
