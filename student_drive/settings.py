@@ -11,7 +11,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 # --- אבטחה: מפתח סודי ---
-# מומלץ להעביר את זה לקובץ .env בעתיד
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט
 
@@ -21,10 +20,18 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 
 #TODO
-ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost'] # the * here is risky ...
+# מאפשר גישה מקומית תמיד, ובפרודקשן מוסיף את הדומיין של Render
+# הגדרה בסיסית - תמיד ריק או עם localhost בסיסי
+ALLOWED_HOSTS = ['student-drive.onrender.com']
 
+# Render מוסיף אוטומטית את שם המארח החיצוני למשתני הסביבה
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# אם אנחנו במצב פיתוח, נאפשר עבודה מקומית
 if DEBUG:
-    ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
+    ALLOWED_HOSTS += ['127.0.0.1', 'localhost', 'testserver']
 
 # Application definition
 INSTALLED_APPS = [
@@ -83,9 +90,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'student_drive.wsgi.application'
 
+# נסיון לקרוא DATABASE_URL מהסביבה (Render) או מה-.env (מקומי)
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
+        default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600
     )
 }
