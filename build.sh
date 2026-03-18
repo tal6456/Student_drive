@@ -8,8 +8,12 @@ pip install -r requirements.txt
 echo "🖼️ Collecting static files..."
 python manage.py collectstatic --no-input
 
+# --- הוספנו את השורה הזו כדי לפתור את השגיאה ---
+echo "🔨 Generating migration files..."
+python manage.py makemigrations core --no-input
+
 echo "🗄️ Running migrations..."
-python manage.py migrate
+python manage.py migrate --no-input
 
 echo "⚙️ Running post-deploy setup (Superuser, Site config, etc.)..."
 python manage.py shell << 'END'
@@ -38,10 +42,6 @@ site, created = Site.objects.update_or_create(
     }
 )
 print(f"✅ Site configured: {site.domain}")
-
-# --- 3. [FUTURE ADDITIONS GO HERE] ---
-# אם נרצה להוסיף בעתיד עוד דברים (כמו ליצור את האוניברסיטאות או הקורסים אוטומטית בשרת),
-# פשוט נוסיף את הקוד שלהם כאן!
 
 print("🎉 Setup script completed successfully!")
 END
