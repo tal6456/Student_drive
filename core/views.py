@@ -34,8 +34,11 @@ def home(request):
 
     if request.user.is_authenticated:
         profile = request.user.profile
-        # לוגיקת ה-UX החדשה: מציגים את טופס ההשלמה פעם אחת בלבד בעזרת Session
-        if not profile.university and not request.session.get('onboarding_complete'):
+
+        # הלוגיקה המתוקנת: בודקים אם יש שם פרטי (או אוניברסיטה) כדי לדעת בוודאות שהפרופיל הושלם
+        has_completed_profile = bool(request.user.first_name or profile.university)
+
+        if not has_completed_profile and not request.session.get('onboarding_complete'):
             request.session['onboarding_complete'] = True
             return redirect('complete_profile')
 
@@ -296,19 +299,35 @@ def course_detail(request, course_id):
             uploaded_files = request.FILES.getlist('file')
             folder_id = request.POST.get('folder_id')
             parent_folder = None
+
             if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
+            # רק מסמכים אמיתיים יתקבלו
+            allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+            uploaded_count = 0
+
             for uploaded_file in uploaded_files:
-                assigned_staff = parent_folder.staff_member if parent_folder else None
-                Document.objects.create(
-                    course=course, folder=parent_folder,
-                    title=os.path.splitext(uploaded_file.name)[0],
-                    file=uploaded_file, staff_member=assigned_staff,
-                    uploaded_by=request.user
-                )
-                request.user.profile.earn_coins(1)
-            return JsonResponse({'success': True})
+                ext = os.path.splitext(uploaded_file.name)[1].lower()
+
+                # הגנה מספאם: גם סיומת נכונה וגם קובץ ששוקל יותר מ-10KB (שלא יעלו מסמך ריק)
+                if ext in allowed_extensions and uploaded_file.size > 10240:
+                    assigned_staff = parent_folder.staff_member if parent_folder else None
+                    Document.objects.create(
+                        course=course, folder=parent_folder,
+                        title=os.path.splitext(uploaded_file.name)[0],
+                        file=uploaded_file, staff_member=assigned_staff,
+                        uploaded_by=request.user
+                    )
+                    # תגמול סמלי בלבד על ההעלאה (כדי לא לעודד ספאם)
+                    request.user.profile.earn_coins(1)
+                    uploaded_count += 1
+
+            if uploaded_count > 0:
+                return JsonResponse({'success': True, 'message': f'הועלו {uploaded_count} קבצים בהצלחה.'})
+            else:
+                return JsonResponse(
+                    {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק מסמכי PDF/Word תקינים (מעל 10KB).'})
 
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
@@ -735,6 +754,12 @@ def like_document(request, document_id):
         else:
             doc.likes.add(request.user)
             liked = True
+
+            # מערכת התגמולים האמיתית: מי שמעלה תוכן איכותי מקבל מטבעות!
+            # מוודאים שהמשתמש לא עושה לייק לעצמו כדי לרמות את המערכת
+            if doc.uploaded_by and doc.uploaded_by != request.user:
+                doc.uploaded_by.profile.earn_coins(1)
+
         return JsonResponse({'liked': liked, 'total_likes': doc.total_likes})
     return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
 
