@@ -3,18 +3,25 @@ from core.models import University, Major, Course
 
 
 class Command(BaseCommand):
-    help = 'טוען ומעדכן נתוני קורסים של בן-גוריון (חשמל ואזרחית)'
+    help = 'טוען ומעדכן נתוני קורסים של בן-גוריון (חשמל ואזרחית-סביבתית)'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--clear', action='store_true', help='מחק קורסים קיימים לפני הטעינה')
 
     def handle(self, *args, **kwargs):
-        self.stdout.write("🚀 מתחיל בטעינה ועדכון נתונים גלובלי...")
+        clear_data = kwargs['clear']
+        self.stdout.write("🚀 מתחיל בתהליך ארגון הנתונים...")
 
-        # איתור המוסד (משותף לכולם)
         uni_name = "אוניברסיטת בן-גוריון בנגב"
         bgu, _ = University.objects.get_or_create(name=uni_name)
 
-        # --- מגזר 1: הנדסת חשמל ומחשבים ---
-        self.stdout.write("⚡ מעבד קורסים של הנדסת חשמל...")
+        # ניקוי המחלקה הכפולה (הנדסה אזרחית) אם היא קיימת
+        Major.objects.filter(name="הנדסה אזרחית", university=bgu).delete()
+
+        # --- 1. הנדסת חשמל ומחשבים ---
         ee_major, _ = Major.objects.get_or_create(name="הנדסת חשמל ומחשבים", university=bgu)
+        if clear_data:
+            Course.objects.filter(major=ee_major).delete()
 
         ee_courses = [
             {'name': 'חשבון דיפרנציאלי להנדסת חשמל', 'num': '21219671', 'y': 1, 's': 'A'},
@@ -30,12 +37,13 @@ class Command(BaseCommand):
         ]
         self.save_courses(ee_major, ee_courses)
 
-        # --- מגזר 2: הנדסה אזרחית ---
-        self.stdout.write("🏗️ מעבד קורסים של הנדסה אזרחית...")
-        civil_major, _ = Major.objects.get_or_create(name="הנדסה אזרחית", university=bgu)
+        # --- 2. הנדסה אזרחית וסביבתית ---
+        civil_env_major, _ = Major.objects.get_or_create(name="הנדסה אזרחית וסביבתית", university=bgu)
+        if clear_data:
+            Course.objects.filter(major=civil_env_major).delete()
 
-        civil_courses = [
-            # שנה א' [cite: 124, 127, 130]
+        civil_env_courses = [
+            # שנה א' [cite: 127, 130]
             {'name': 'אלגברה ליניארית להנדסה', 'num': '220119321', 'y': 1, 's': 'A'},
             {'name': 'חדו"א 1 להנדסה', 'num': '20119711', 'y': 1, 's': 'A'},
             {'name': 'גרפיקה הנדסית להנדסת בניין', 'num': '37411011', 'y': 1, 's': 'A'},
@@ -47,19 +55,21 @@ class Command(BaseCommand):
             {'name': 'כימיה להנדסה אזרחית וסביבתית', 'num': '37411103', 'y': 1, 's': 'B'},
             {'name': 'מבוא לתכנות למהנדסים בפיתון', 'num': '37411681', 'y': 1, 's': 'B'},
 
-            # שנה ב' [cite: 137, 140, 143]
+            # שנה ב' [cite: 140, 143]
             {'name': 'משוואות דיפרנציאליות רגילות להנדסת בניין', 'num': '37412231', 'y': 2, 's': 'A'},
             {'name': 'כלכלה למהנדסי בניין', 'num': '37412311', 'y': 2, 's': 'A'},
             {'name': 'תכונות מכניות של חומרים', 'num': '37414117', 'y': 2, 's': 'A'},
             {'name': 'חוזק 2 למהנדסי בניין', 'num': '37412010', 'y': 2, 's': 'A'},
             {'name': 'סטטיקת מבנים 1', 'num': '37411081', 'y': 2, 's': 'A'},
             {'name': 'מבני בטון 1', 'num': '37412030', 'y': 2, 's': 'A'},
+            {'name': 'מבוא להנדסה סביבתית', 'num': '37412032', 'y': 2, 's': 'A'},
             {'name': 'מבני בטון 2', 'num': '37412060', 'y': 2, 's': 'B'},
             {'name': 'גיאולוגיה למהנדסי בניין', 'num': '37412070', 'y': 2, 's': 'B'},
             {'name': 'חומרי בנייה', 'num': '37411061', 'y': 2, 's': 'B'},
             {'name': 'שיטות ביצוע בבנייה', 'num': '37412071', 'y': 2, 's': 'B'},
+            {'name': 'סטטיקת מבנים 2', 'num': '37412020', 'y': 2, 's': 'B'},
 
-            # שנה ג' [cite: 145, 148, 156, 159]
+            # שנה ג' [cite: 148, 159]
             {'name': 'פיזיקה ב2', 'num': '20311491', 'y': 3, 's': 'A'},
             {'name': 'מבוא לגיאומכניקה להנדסת בניין', 'num': '20617171', 'y': 3, 's': 'A'},
             {'name': 'סטטיסטיקה למהנדסי בניין', 'num': '37412101', 'y': 3, 's': 'A'},
@@ -68,24 +78,18 @@ class Command(BaseCommand):
             {'name': 'מבני פלדה', 'num': '37412090', 'y': 3, 's': 'B'},
             {'name': 'אירועים חריגים 2: מבוא למיגון מבנים', 'num': '37414104', 'y': 3, 's': 'B'},
             {'name': 'הנדסת ביסוס', 'num': '37413041', 'y': 3, 's': 'B'},
+            {'name': 'BIM ויישומים דיגיטליים בהנדסת מבנים', 'num': '37414035', 'y': 3, 's': 'B'},
         ]
-        self.save_courses(civil_major, civil_courses)
+        self.save_courses(civil_env_major, civil_env_courses)
 
-        self.stdout.write(self.style.SUCCESS('🎉 כל הנתונים עודכנו בהצלחה!'))
+        self.stdout.write(self.style.SUCCESS('🎉 הניקוי והעדכון הושלמו!'))
 
     def save_courses(self, major, data_list):
-        """פונקציית עזר ליצירת קורסים ותיקיות כדי לא לחזור על קוד"""
         for data in data_list:
-            course, created = Course.objects.update_or_create(
+            course, _ = Course.objects.update_or_create(
                 major=major,
                 name=data['name'],
-                defaults={
-                    'course_number': data['num'],
-                    'year': data['y'],
-                    'semester': data['s'],
-                    'track': 'general'
-                }
+                defaults={'course_number': data['num'], 'year': data['y'], 'semester': data['s'], 'track': 'general'}
             )
             course.create_default_folder_tree()
-            status = "נוצר" if created else "עודכן"
-            self.stdout.write(f"  - הקורס '{course.name}' {status}.")
+            self.stdout.write(f"  - [{major.name}] {course.name} מוכן.")
