@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, IntegrityError, transaction
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 import os
 import random
 import string
+import uuid
 
 # ==========================================
 # 0. מערכת המשתמשים (RBAC - Role Based Access Control)
@@ -16,6 +17,9 @@ custom_username_validator = RegexValidator(
     message='שם משתמש יכול להכיל אותיות, מספרים, רווחים, ותווים מיוחדים (@/./+/-/_).'
 )
 
+def generate_referral_code():
+    """מייצר קוד אקראי של אותיות ומספרים"""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
 class CustomUser(AbstractUser):
     """
@@ -36,17 +40,23 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=15, choices=ROLE_CHOICES, default='member', verbose_name="תפקיד המשתמש")
 
     def save(self, *args, **kwargs):
-        # Master Admin (Superuser) מקבל אוטומטית תפקיד אדמין
-        if self.is_superuser:
-            self.role = 'admin'
-        super().save(*args, **kwargs)
+        if not self.referral_code:
+            is_unique = False
+            attempts = 0
+            while not is_unique and attempts < 10:
+                new_code = generate_referral_code()
+                if not UserProfile.objects.filter(referral_code=new_code).exists():
+                    self.referral_code = new_code
+                    is_unique = True
+                attempts += 1
+
+            if not is_unique:
+                self.referral_code = str(uuid.uuid4())[:8].upper()
+
+        super().save(*args, **kwargs) # עדיף להשתמש ב-()super הריק והמודרני של פייתון 3
 
     def __str__(self):
-        return f"{self.username} ({self.get_role_display()})"
-
-
-def generate_referral_code():
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        return f"{self.user.username} ({self.user.get_role_display()})"
 
 
 class UserProfile(models.Model):
