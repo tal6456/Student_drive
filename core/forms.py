@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Document, Course, UserProfile, Folder
+from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
 
 # משיכת מודל המשתמש החדש שלנו (CustomUser) בצורה בטוחה
 User = get_user_model()
@@ -102,6 +104,15 @@ class UserProfileForm(BaseStyledModelForm):
     first_name = forms.CharField(max_length=30, required=True, label="שם פרטי (אפשר גם כינוי)")
     last_name = forms.CharField(max_length=30, required=True, label="שם משפחה")
 
+    #  שדה אישור התנאים עם קישורים חיים
+    terms_accepted = forms.BooleanField(
+        required=True,
+        label=mark_safe(
+            f'אני קראתי ומאשר/ת את <a href="{reverse_lazy("terms")}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{reverse_lazy("privacy")}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>'),
+        error_messages={'required': 'חובה לאשר את התנאים כדי להמשיך למערכת.'},
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input ms-2', 'style': 'cursor: pointer;'})
+    )
+
     class Meta:
         model = UserProfile
         fields = ['phone_number', 'university', 'major', 'year']
@@ -126,7 +137,7 @@ class UserProfileForm(BaseStyledModelForm):
 
         # גם טלפון לא חייב להיות חוסם הרשמה
         self.fields['phone_number'].required = False
-        self.fields['phone_number'].widget.attrs.update({'placeholder': 'לדוגמה: 0501234567 (לא חובה)'})
+        self.fields['phone_number'].widget.attrs.update({'placeholder': 'לדוגמה: 0501234567'})
 
     def clean(self):
         """

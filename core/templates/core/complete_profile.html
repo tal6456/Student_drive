@@ -62,7 +62,20 @@
                                 </div>
                             </div>
                         </div>
-
+                        {# === חלק 4: אישור תנאי שימוש === #}
+                        <div class="mb-4 mt-3 p-3 rounded-3" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                            <div class="form-check d-flex align-items-center gap-2 m-0 text-end">
+                                {{ form.terms_accepted }}
+                                <label class="form-check-label small mb-0" for="{{ form.terms_accepted.id_for_label }}" style="color: var(--gd-text);">
+                                    {{ form.terms_accepted.label|safe }}
+                                </label>
+                            </div>
+                            {% if form.terms_accepted.errors %}
+                                <div class="text-danger small mt-2 fw-bold text-end">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form.terms_accepted.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
                         <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow mt-2" style="background-color: var(--gd-primary); border: none;">
                             שמור והתחל לחקור <i class="fas fa-arrow-left ms-1"></i>
                         </button>
