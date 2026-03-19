@@ -8,7 +8,7 @@
 
 /* LIGHT MODE (Google Drive Default) */
 :root, [data-theme='light'] {
-    --gd-bg: #f8f9fa;
+    --gd-bg: #ffffff;
     --gd-card: #ffffff;
     --gd-text: #202124;
     --gd-text-muted: #5f6368;
@@ -49,19 +49,26 @@
    ----------------------------------------- */
 
 body {
-    background-color: var(--gd-bg) !important;
+    background-color: transparent !important;
+    background-image: url("../background.jpeg") !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+
     color: var(--gd-text) !important;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    margin: 0;
+    padding: 0;
 }
 
 main {
     flex: 1;
 }
 
-/* Text & Background Utility Overrides */
 .text-dark, a.text-dark { color: var(--gd-text) !important; }
 .text-muted { color: var(--gd-text-muted) !important; }
 .bg-light, .bg-white { background-color: var(--gd-card) !important; }
@@ -71,7 +78,6 @@ main {
    3. BOOTSTRAP COMPONENTS OVERRIDES
    ----------------------------------------- */
 
-/* Cards & Modals */
 .card, .modal-content {
     background-color: var(--gd-card) !important;
     border: 1px solid var(--gd-border) !important;
@@ -79,7 +85,6 @@ main {
     color: var(--gd-text) !important;
 }
 
-/* Forms, Inputs & Selects */
 input, select, textarea, .form-control, .form-select {
     background-color: var(--gd-bg) !important;
     color: var(--gd-text) !important;
@@ -90,7 +95,6 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25) !important;
 }
 
-/* Lists (Courses, Files) */
 .list-group-item {
     background-color: var(--gd-card) !important;
     border-color: var(--gd-border) !important;
@@ -104,13 +108,11 @@ a.list-group-item:hover, .list-group-item a:hover {
     color: var(--gd-primary) !important;
     background-color: var(--gd-hover) !important;
 }
-/* תיקון נראות טקסט רקע (Placeholder) בשורות חיפוש וטפסים */
 input::placeholder, select::placeholder, textarea::placeholder, .form-control::placeholder {
     color: var(--gd-text-muted) !important;
-    opacity: 0.8 !important; /* מוודא שהטקסט לא יהיה שקוף מדי */
+    opacity: 0.8 !important;
 }
 
-/* מוודא שהטקסט שמוקלד בפועל יהיה תמיד בצבע הנכון למצב הקיים */
 input, .form-control {
     color: var(--gd-text) !important;
 }
@@ -119,34 +121,63 @@ input, .form-control {
    4. CUSTOM UI COMPONENTS
    ----------------------------------------- */
 
-/* Navbar */
-.navbar {
-    background-color: var(--gd-card) !important;
-    border-bottom: 1px solid var(--gd-border);
-    padding: 0.5rem 0;
-}
-.navbar-brand {
-    color: var(--gd-text) !important;
-}
-.nav-link {
-    color: var(--gd-text-muted) !important;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    transition: background-color 0.2s, color 0.2s;
-}
-.nav-link:hover {
-    background-color: var(--gd-hover);
-    color: var(--gd-text) !important;
-}
-.nav-profile-img {
-    width: 36px;
-    height: 36px;
-    object-fit: cover;
-    border: 1px solid var(--gd-border);
+/* תיקון Navbar אגרסיבי - דורס כל הגדרת Bootstrap */
+nav.navbar, .navbar {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px) saturate(160%) !important;
+    border-bottom: none !important;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-/* Buttons & Badges */
+.navbar .container, .navbar .container-fluid {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.navbar-brand {
+    height: 32px !important;
+    padding: 0 !important;
+    margin: 0 10px 0 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 0.8rem !important;
+}
+
+.navbar-brand img {
+    height: 18px !important;
+    width: auto !important;
+}
+
+.navbar-nav .nav-link, .nav-item .nav-link {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 10px !important;
+    font-size: 0.7rem !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-profile-img {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 !important;
+}
+
 .btn-support {
     background: transparent;
     border: 1px solid var(--gd-border);
@@ -159,9 +190,10 @@ input, .form-control {
     background: var(--gd-hover);
     color: var(--gd-text) !important;
     border: 1px solid var(--gd-border);
+    padding: 1px 6px !important;
+    font-size: 0.7rem !important;
 }
 
-/* Interactive Hovers */
 .report-btn-hover {
     transition: 0.2s;
     opacity: 0.6;
@@ -175,10 +207,9 @@ input, .form-control {
     background-color: rgba(13, 110, 253, 0.05) !important;
 }
 
-/* Layout Extras */
 .footer {
-    background-color: var(--gd-bg) !important;
-    border-top: 1px solid var(--gd-border);
+    background-color: transparent !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 #loading-bar {
     position: fixed;
@@ -196,10 +227,9 @@ input, .form-control {
    5. DARK MODE SPECIFIC FIXES (Anti-Glare)
    ----------------------------------------- */
 
-/* מצב לילה - בחירה ידנית */
 [data-theme='dark'] .btn-warning,
 [data-theme='dark'] .bg-warning {
-    background-color: #d4af37 !important; /* צהוב זהוב עדין */
+    background-color: #d4af37 !important;
     border-color: #d4af37 !important;
     color: #121212 !important;
 }
@@ -211,7 +241,6 @@ input, .form-control {
     color: #e6c243 !important;
 }
 
-/* מצב לילה - אוטומטי מהמערכת */
 @media (prefers-color-scheme: dark) {
     body:not([data-theme='light']) .btn-warning,
     body:not([data-theme='light']) .bg-warning {
@@ -226,12 +255,15 @@ input, .form-control {
     body:not([data-theme='light']) .text-warning {
         color: #e6c243 !important;
     }
+    .navbar {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+    }
 }
+
 /* -----------------------------------------
    6. ACCESSIBILITY (A11Y) ENGINE
    ----------------------------------------- */
 
-/* Floating Menu Controls */
 #a11y-toggle {
     position: fixed;
     bottom: 20px;
@@ -252,7 +284,6 @@ input, .form-control {
     box-shadow: var(--gd-shadow);
 }
 
-/* A11Y Modifiers */
 body.a11y-large-text, body.a11y-large-text * {
     font-size: 104% !important;
     line-height: 1.1 !important;
@@ -268,9 +299,6 @@ body.a11y-high-contrast {
 body.a11y-high-contrast * {
     border-color: #ffff00 !important;
 }
-body.a11y-high-contrast img, body.a11y-high-contrast video {
-    filter: grayscale(100%) contrast(120%);
-}
 body.a11y-highlight-links a {
     text-decoration: underline !important;
     text-decoration-thickness: 3px !important;
@@ -285,53 +313,33 @@ body.a11y-readable-font, body.a11y-readable-font * {
     letter-spacing: 1px !important;
     word-spacing: 2px !important;
 }
+
 /* -----------------------------------------
    7. COLLAPSIBLE SEMESTERS & ELEMENTS
    ----------------------------------------- */
 
 .semester-header {
     transition: all 0.2s ease;
-    user-select: none; /* מונע סימון טקסט כשלוחצים הרבה פעמים */
+    user-select: none;
     cursor: pointer;
 }
-
 .semester-header:hover {
     background-color: var(--gd-hover) !important;
 }
-
-/* סיבוב החץ - הקסם קורה כאן */
-/* כשהאלמנט סגור (aria-expanded="false"), נסובב את החץ */
 .semester-header[aria-expanded="false"] .collapse-arrow i {
     transform: rotate(-90deg);
 }
-
 .transition-transform {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-block;
 }
-
-/* עיצוב עדין לרשימה בתוך הקיפול */
 .collapse .list-group {
     margin-top: 4px;
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
 }
-/* Google Translate - Hidden Engine Fix */
-.translate-wrapper { display: flex; align-items: center; gap: 5px; }
-.lang-btn {
-    background: var(--gd-hover);
-    border: 1px solid var(--gd-border);
-    color: var(--gd-text) !important;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-decoration: none;
-    transition: 0.2s;
-}
-.lang-btn:hover { background: var(--gd-primary); color: white !important; }
 
-/* חסימת כל אלמנט ויזואלי של גוגל */
+/* Google Translate Fixes */
 .skiptranslate, .goog-te-banner-frame, #goog-gt-tt { display: none !important; visibility: hidden !important; }
 body { top: 0px !important; position: static !important; }
 
@@ -339,7 +347,6 @@ body { top: 0px !important; position: static !important; }
    PWA ICON PLACEHOLDERS
    ===================================================================== */
 
-/* יצירת אייקוןPlaceholder של 192 פיקסלים בצורה וירטואלית */
 .pwa-icon-192 {
     display: none;
     width: 192px;
@@ -352,11 +359,8 @@ body { top: 0px !important; position: static !important; }
     align-items: center;
     justify-content: center;
 }
-.pwa-icon-192::after {
-    content: "ה"; /* האות הראשונה של "הדרייב" */
-}
+.pwa-icon-192::after { content: "ה"; }
 
-/* יצירת אייקוןPlaceholder של 512 פיקסלים בצורה וירטואלית */
 .pwa-icon-512 {
     display: none;
     width: 512px;
@@ -369,6 +373,4 @@ body { top: 0px !important; position: static !important; }
     align-items: center;
     justify-content: center;
 }
-.pwa-icon-512::after {
-    content: "ה";
-}
+.pwa-icon-512::after { content: "ה"; }

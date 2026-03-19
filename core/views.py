@@ -42,30 +42,23 @@ def home(request):
 
     if request.user.is_authenticated:
         profile = request.user.profile
-
-        # הלוגיקה המתוקנת: בודקים אם יש שם פרטי (או אוניברסיטה) כדי לדעת בוודאות שהפרופיל הושלם
+        # בודקים אם הפרופיל הושלם
         has_completed_profile = bool(request.user.first_name or profile.university)
-
         if not has_completed_profile and not request.session.get('onboarding_complete'):
             request.session['onboarding_complete'] = True
             return redirect('complete_profile')
 
-    search_query = request.GET.get('search')
+    # שליפת פרמטרים מה-URL
+    search_query = request.GET.get('search', '').strip()
     uni_id = request.GET.get('university')
     major_id = request.GET.get('major')
     year_id = request.GET.get('year')
     browse_all = request.GET.get('browse')
 
-    if request.user.is_authenticated and not any([search_query, uni_id, major_id, year_id, browse_all]):
-        profile = request.user.profile
-        if profile.university and profile.major and profile.year:
-            uni_id = profile.university.id
-            major_id = profile.major.id
-            year_id = profile.year
-
+    # הגדרות בסיסיות
     year_names = {1: "שנה א'", 2: "שנה ב'", 3: "שנה ג'", 4: "שנה ד'", 5: "תואר שני"}
 
-    # שימוש במוניטין החדש (lifetime_coins) לטבלת אלופי הדרייב
+    # אלופי הדרייב לצד שמאל
     top_users = UserProfile.objects.filter(
         lifetime_coins__gt=0,
         show_coins_publicly=True
@@ -74,23 +67,31 @@ def home(request):
     context = {
         'search_query': search_query,
         'top_users': top_users,
-        'courses': Course.objects.all()
+        'year_names': year_names,
     }
+
+    # לוגיקת חיפוש (כאן השינוי המרכזי)
+    if search_query:
+        # מחפש קורסים לפי שם או מספר קורס
+        courses_results = Course.objects.filter(
+            Q(name__icontains=search_query) | Q(course_number__icontains=search_query)
+        ).select_related('major__university')
+
+        context['courses_results'] = courses_results
+        context['step'] = 'search_results'  # מגדיר סטפ מיוחד לחיפוש
+        return render(request, 'core/home.html', context)
+
+    # לוגיקת ניווט רגילה (Steps)
+    if request.user.is_authenticated and not any([uni_id, major_id, year_id, browse_all]):
+        profile = request.user.profile
+        if profile.university and profile.major and profile.year:
+            uni_id = profile.university.id
+            major_id = profile.major.id
+            year_id = profile.year
 
     if uni_id:
         context['selected_uni'] = get_object_or_404(University, id=uni_id)
-    if major_id:
-        context['selected_major'] = get_object_or_404(Major, id=major_id)
-    if year_id:
-        try:
-            context['selected_year_name'] = year_names[int(year_id)]
-        except (ValueError, KeyError):
-            context['selected_year_name'] = ""
-
-    if search_query:
-        context['courses'] = Course.objects.filter(name__icontains=search_query)
-        context['step'] = 'show_courses'
-        return render(request, 'core/home.html', context)
+        context['uni_id'] = uni_id
 
     if not uni_id:
         context['universities'] = University.objects.all()
@@ -98,28 +99,26 @@ def home(request):
     elif uni_id and not major_id:
         context['majors'] = Major.objects.filter(university_id=uni_id)
         context['step'] = 'select_major'
-        context['uni_id'] = uni_id
     elif major_id and not year_id:
+        context['selected_major'] = get_object_or_404(Major, id=major_id)
         context['years'] = year_names
         context['step'] = 'select_year'
         context['major_id'] = major_id
-        context['uni_id'] = uni_id
     else:
+        # הצגת קורסים לפי סינון מובנה
         courses = Course.objects.filter(major_id=major_id, year=year_id)
+        context['selected_major'] = get_object_or_404(Major, id=major_id)
         context['sem_a'] = courses.filter(semester='A', track='general')
         context['sem_b'] = courses.filter(semester='B', track='general')
         context['specializations'] = courses.exclude(track='general').order_by('track')
         context['step'] = 'show_courses'
         context['major_id'] = major_id
         context['year'] = year_id
-        context['uni_id'] = uni_id
 
     if request.user.is_authenticated:
         context['favorite_courses'] = request.user.profile.favorite_courses.select_related('major__university').all()
 
     return render(request, 'core/home.html', context)
-
-
 def live_search(request):
     query = request.GET.get('q', '')
     if len(query) >= 2:

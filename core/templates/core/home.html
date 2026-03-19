@@ -3,204 +3,415 @@
 {% block title %}הדרייב הסטודנטיאלי - הבית שלך לתואר{% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5" dir="rtl">
 
-    {# --- ראש העמוד: ברכה וחיפוש --- #}
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    /* הגדרות עיצוב חדשות ל-Header */
+    .home-container { font-family: 'Assistant', sans-serif !important; }
+    
+    .welcome-title {
+        font-weight: 800;
+        color: #202124;
+        font-size: 2.8rem;
+        letter-spacing: -1px;
+    }
+
+    .highlight-you {
+        position: relative;
+        font-weight: 800;
+        color: #1a73e8;
+        padding: 0 8px;
+        display: inline-block;
+        z-index: 1;
+    }
+    .highlight-you::after {
+        content: "";
+        position: absolute;
+        bottom: 6px;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background: rgba(26, 115, 232, 0.1);
+        z-index: -1;
+        border-radius: 3px;
+    }
+
+    .creative-search-form {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        padding: 8px 8px 8px 18px;
+        border-radius: 100px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        transition: 0.4s;
+        border: 1px solid #eee;
+    }
+    .creative-search-form:focus-within {
+        box-shadow: 0 15px 40px rgba(26, 115, 232, 0.12);
+        transform: translateY(-2px);
+    }
+    .input-wrapper { display: flex; align-items: center; flex-grow: 1; }
+    .search-icon { color: #bbb; margin-left: 15px; font-size: 1.1rem; }
+    .search-input { border: none; outline: none; width: 100%; font-size: 1.1rem; background: transparent; }
+    
+    .creative-search-btn {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        color: #1a73e8;
+        padding: 10px 25px;
+        border-radius: 100px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        transition: 0.3s;
+    }
+    .creative-search-btn:hover { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+
+    /* סטייל מקורי שנשמר */
+    .transition { transition: all 0.3s ease; }
+    .hover-scale:hover { transform: translateY(-4px) scale(1.025); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
+    .action-card-style { background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; }
+    .nav-item-card:hover { border-color: var(--gd-primary) !important; background: var(--gd-bg) !important; }
+    .day-cell { width: 14.28%; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.8rem; position: relative; }
+    .day-cell:hover { background: #f0f4ff; color: #0d6efd; }
+    .day-cell.today { background: #0d6efd; color: white; font-weight: bold; }
+    .day-cell.has-event::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: #ff4757; border-radius: 50%; }
+    .tiny-icon { font-size: 0.65rem; }
+    .tiny-text { font-size: 0.7rem; color: #666; display: block; }
+    .side-leaderboard { position: fixed; left: -250px; top: 35%; width: 290px; z-index: 1050; display: flex; transition: 0.4s; }
+    .side-leaderboard:hover { left: 0; }
+    .side-handle { width: 40px; height: 80px; background: linear-gradient(135deg, #ffd700, #ffa500); color: white; display: flex; align-items: center; justify-content: center; border-radius: 0 20px 20px 0; cursor: pointer; }
+    .side-panel { flex: 1; background: white; border-radius: 0 15px 15px 0; border: 1px solid #eee; }
+</style>
+
+<div class="container mt-4 mb-5 home-container" dir="rtl">
+
+    {# --- ראש העמוד המעודכן --- #}
     <div class="row justify-content-center mb-5 animate__animated animate__fadeIn">
-        <div class="col-md-9 text-center">
+        <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
-                <h2 class="fw-bold mb-1" style="color: var(--gd-text);">היי {{ user.username }}, איזה ידע מחפשים היום?</h2>
-                <p class="mb-4 small" style="color: var(--gd-text-muted);">
-                    {% if user.profile.university %}
-                        <i class="fas fa-university ms-1 text-primary"></i> {{ user.profile.university.name }}
-                        {% if user.profile.major %}| {{ user.profile.major.name }}{% endif %}
-                    {% else %}
-                        <i class="fas fa-globe-americas ms-1 text-success"></i> הידע של המוסדות המובילים מחכה לך. בחר מוסד והתחל ללמוד.
-                    {% endif %}
-                </p>
-            {% else %}
-                <h1 class="display-5 fw-bold mb-3" style="color: var(--gd-primary);">הדרייב הסטודנטיאלי</h1>
-                <p class="fs-5 mb-4" style="color: var(--gd-text-muted);">מאגר חומרי הלימוד הגדול והחופשי של הסטודנטים בישראל.</p>
+                <div class="welcome-section mb-3">
+                    <h1 class="welcome-title mb-2">ברוך הבא, שמחים שאתה איתנו</h1>
+                    <p class="fs-5 text-muted mb-1">
+                        האתר הזה נבנה במטרה אחת והיא <span class="highlight-you">אתה</span>
+                    </p>
+                </div>
+                <p id="motivationQuote" class="mb-4 small" style="color: #888; font-style: italic; min-height: 20px;"></p>
             {% endif %}
 
-            <div class="search-wrapper position-relative mx-auto" style="max-width: 650px;">
-                <form method="GET" action="{% url 'home' %}" class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden" style="border: 2px solid var(--gd-primary);">
-                    <span class="input-group-text border-0 ps-4" style="background-color: var(--gd-card);">
-                        <i class="fas fa-search" style="color: var(--gd-primary);"></i>
-                    </span>
-                    <input type="text" name="search" id="search-input" class="form-control border-0 py-3 fs-5"
-                           placeholder="חפש קורס, אוניברסיטה או נושא..." value="{{ search_query|default:'' }}" autocomplete="off"
-                           style="background-color: var(--gd-card) !important; color: var(--gd-text) !important;">
-                    <button type="submit" class="btn px-5 fw-bold" style="background-color: var(--gd-primary); color: #fff;">חיפוש</button>
+            <div class="search-container mx-auto" style="max-width: 700px;">
+                <form method="GET" action="{% url 'home' %}" class="creative-search-form">
+                    <div class="input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" name="search" class="search-input" 
+                               placeholder="מה בא לך ללמוד היום?..." 
+                               value="{{ search_query|default:'' }}">
+                    </div>
+                    <button type="submit" class="creative-search-btn">
+                        <span>חיפוש</span>
+                        <i class="fas fa-arrow-left ms-2 small"></i>
+                    </button>
                 </form>
-                <div id="live-search-results" class="live-search-box shadow-lg d-none"></div>
             </div>
         </div>
     </div>
 
-    {# --- באנר מרצים --- #}
-    <div class="card border-0 shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(26, 115, 232, 0.05)); border: 1px solid var(--gd-border) !important;">
-        <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 text-center text-md-start">
-            <div class="d-flex flex-column flex-md-row align-items-center gap-3">
-                <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 60px;">
-                    <i class="fas fa-star text-warning fs-3"></i>
+    {# --- שלוש קוביות הפעולה --- #}
+    <div class="row g-3 mb-5 justify-content-center">
+        <div class="col-md-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
+                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
+                        <i class="fas fa-folder-open text-primary fs-3"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">הקבצים שלי</h6>
                 </div>
-                <div>
-                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);">איך המרצה שלכם? 🎓</h5>
-                    <p class="text-muted mb-0 small">שתפו את החוויה שלכם כדי לעזור לאחרים לבחור את הקורסים הכי טובים.</p>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="?browse=true" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
+                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
+                        <i class="fas fa-university text-primary fs-3"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">חיפוש מוסד</h6>
                 </div>
-            </div>
-            <a href="{% url 'lecturers_index' %}" class="btn btn-warning rounded-pill fw-bold px-4 py-2 shadow-sm text-dark flex-shrink-0 transition hover-scale">
-                <i class="fas fa-search ms-1"></i> חפש ודרג מרצים
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'community_feed' %}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
+                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(40, 167, 69, 0.1);">
+                        <i class="fas fa-users text-success fs-3"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">הקהילה שלי</h6>
+                </div>
             </a>
         </div>
     </div>
 
     <div class="row g-4">
+        {# --- תוכן מרכזי --- #}
         <div class="col-lg-8 order-2 order-lg-1">
-            <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5" style="min-height: 600px; background-color: var(--gd-card);">
+            <div class="card shadow-sm border-0 rounded-4 p-4" style="min-height: 600px; background-color: var(--gd-card);">
+                
+                {% if step == 'search_results' %}
+                    <div class="mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
+                        <div>
+                            <h4 class="fw-bold mb-0">תוצאות חיפוש עבור: <span class="text-primary">"{{ search_query }}"</span></h4>
+                            <small class="text-muted">מצאנו {{ courses_results|length }} קורסים רלוונטיים</small>
+                        </div>
+                        <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">נקה חיפוש</a>
+                    </div>
 
-                {% if user.is_authenticated and not search_query and step != 'select_uni' %}
-                <div class="mb-5" id="favorites-section-wrapper">
-                    <h5 class="fw-bold mb-3" style="color: var(--gd-text);"><i class="fas fa-bookmark text-primary ms-2"></i> קורסים במעקב מהיר</h5>
-                    {% if favorite_courses %}
-                        <div class="list-group list-group-flush border rounded-4 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
-                            {% for course in favorite_courses %}
-                                {% include "core/partials/course_row.html" %}
+                    {% if courses_results %}
+                        <div class="row g-3">
+                            {% for course in courses_results %}
+                            <div class="col-12">
+                                <a href="{% url 'course_detail' course.id %}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale shadow-sm" style="border-right: 5px solid {{ course.major.university.brand_color|default:'#1a73e8' }} !important;">
+                                    <div class="flex-shrink-0 ms-3 d-none d-sm-block">
+                                        {% if course.major.university.logo %}
+                                            <img src="{{ course.major.university.logo.url }}" alt="לוגו" class="rounded-circle border p-1" style="width: 50px; height: 50px; object-fit: contain; background: white;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
+                                                <i class="fas fa-university text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1 text-end">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge rounded-pill bg-light text-dark border small fw-normal">{{ course.course_number }}</span>
+                                            <span class="fw-bold text-dark fs-5">{{ course.name }}</span>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="fas fa-graduation-cap ms-1"></i> {{ course.major.university.name }} 
+                                            <span class="mx-1">•</span> 
+                                            <i class="fas fa-book-open ms-1"></i> {{ course.major.name }}
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto">
+                                        <i class="fas fa-chevron-left text-muted opacity-50"></i>
+                                    </div>
+                                </a>
+                            </div>
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="text-center p-4 rounded-4" style="border: 2px dashed var(--gd-border); background-color: var(--gd-bg);">
-                            <i class="far fa-star fa-2x mb-2 opacity-25" style="color: var(--gd-text-muted);"></i>
-                            <p class="mb-0 small" style="color: var(--gd-text-muted);">הוסיפו קורסים למועדפים כדי שיופיעו כאן תמיד.</p>
+                        <div class="text-center py-5">
+                            <i class="fas fa-search-minus text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
+                            <h5 class="fw-bold text-muted">אופס! לא מצאנו קורס כזה...</h5>
+                            <p class="text-muted small">נסה לחפש לפי שם הקורס או מספר הקורס (למשל: "חדווא")</p>
+                            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 mt-2">חזרה לדף הבית</a>
                         </div>
                     {% endif %}
-                </div>
-                {% endif %}
 
-                {% if step != 'select_uni' and not search_query %}
-                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3" style="border-color: var(--gd-border) !important;">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 fw-bold">
-                            <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none" style="color: var(--gd-primary);">מוסדות</a></li>
-                            {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}" class="text-decoration-none" style="color: var(--gd-text-muted);">{{ selected_uni.name }}</a></li>{% endif %}
-                            {% if selected_major %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}&major={{ selected_major.id }}" class="text-decoration-none" style="color: var(--gd-text-muted);">{{ selected_major.name }}</a></li>{% endif %}
-                            {% if selected_year_name %}<li class="breadcrumb-item active" style="color: var(--gd-primary);">{{ selected_year_name }}</li>{% endif %}
-                        </ol>
-                    </nav>
-                    <a href="{% url 'home' %}?browse=true" class="btn btn-sm rounded-pill fw-bold btn-outline-dynamic">
-                        <i class="fas fa-exchange-alt ms-1"></i> שנה מוסד / מסלול
-                    </a>
-                </div>
-                {% endif %}
+                {% elif user.is_authenticated and not search_query and not request.GET.browse and step == 'select_uni' %}
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary ms-2"></i> הסמסטר שלי</h4>
+                        <a href="{% url 'lecturers_index' %}" class="btn btn-sm rounded-pill px-3 fw-bold transition hover-scale" style="background: rgba(255, 193, 7, 0.15); color: #d39e00; border: 1px solid rgba(255, 193, 7, 0.3);">
+                            <i class="fas fa-star ms-1 small"></i> דירוג מרצים
+                        </a>
+                    </div>
+                    <div class="text-center py-5 opacity-25">
+                        <p>הוסיפו קורסים למועדפים כדי שיופיעו כאן.</p>
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0 fw-bold">
+                                <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none text-primary">מוסדות</a></li>
+                                {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}" class="text-decoration-none text-muted">{{ selected_uni.name }}</a></li>{% endif %}
+                                {% if selected_major %}<li class="breadcrumb-item active">{{ selected_major.name }}</li>{% endif %}
+                            </ol>
+                        </nav>
+                        <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">חזרה</a>
+                    </div>
 
-                {% if step == 'select_uni' %}
-                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-university ms-2 text-primary"></i> בחר מוסד לימודים לחקירה:</h4>
-                    <div class="row g-3">
-                        {% for uni in universities %}
-                        <div class="col-md-6">
-                            <a href="?university={{ uni.id }}" class="nav-item-card uni-card" style="--brand-color: {{ uni.brand_color|default:'var(--gd-primary)' }};">
-                                {% if uni.logo %}
-                                    <img src="{{ uni.logo.url }}" alt="{{ uni.name }}" class="uni-logo shadow-sm ms-3">
-                                {% else %}
-                                    <div class="icon-circle text-white shadow-sm ms-3" style="background-color: var(--brand-color);"><i class="fas fa-school"></i></div>
-                                {% endif %}
-                                <span class="fw-bold fs-5" style="color: var(--gd-text);">{{ uni.name }}</span>
-                                <i class="fas fa-chevron-left ms-auto opacity-50"></i>
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% elif step == 'select_major' %}
-                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);">איזה תחום ידע מעניין אותך ב{{ selected_uni.name }}?</h4>
-                    <div class="row g-3">
-                        {% for major in majors %}
-                        <div class="col-md-6">
-                            <a href="?university={{ uni_id }}&major={{ major.id }}" class="nav-item-card major-card">
-                                <div class="icon-circle bg-success bg-opacity-10 text-success ms-3"><i class="fas fa-book-open"></i></div>
-                                <span class="fw-bold fs-5" style="color: var(--gd-text);">{{ major.name }}</span>
-                                <i class="fas fa-chevron-left ms-auto opacity-50"></i>
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% elif step == 'select_year' %}
-                    <h4 class="fw-bold mb-4 text-center" style="color: var(--gd-text);">לאיזו שנת לימוד תרצה לגשת?</h4>
-                    <div class="row g-4 justify-content-center">
-                        {% for y_val, y_name in years.items %}
-                        <div class="col-6 col-md-4">
-                            <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}" class="year-selector-card">
-                                <div class="year-number" style="color: var(--gd-primary);">{{ y_val }}</div>
-                                <div class="year-label" style="color: var(--gd-text);">{{ y_name }}</div>
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% elif step == 'show_courses' %}
-                    <h4 class="fw-bold mb-4" style="color: var(--gd-text);">
-                        {% if search_query %}<i class="fas fa-search ms-2 text-primary"></i> תוצאות חיפוש{% else %}<i class="fas fa-list-ul ms-2 text-primary"></i> רשימת הקורסים{% endif %}
-                    </h4>
-                    {% if search_query %}
-                        <div class="list-group list-group-flush border rounded-4 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
-                            {% for course in courses %}
-                                {% include "core/partials/course_row.html" %}
-                            {% empty %}
-                                <div class="p-5 text-center" style="color: var(--gd-text-muted);">
-                                    <i class="fas fa-search-minus fa-3x mb-3 opacity-25"></i><br>
-                                    לא מצאנו קורס שתואם לחיפוש שלך...
-                                </div>
+                    {% if step == 'select_uni' %}
+                        <div class="row g-3">
+                            {% for uni in universities %}
+                            <div class="col-md-6">
+                                <a href="?university={{ uni.id }}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
+                                    <span class="fw-bold text-dark">{{ uni.name }}</span>
+                                    <i class="fas fa-chevron-left ms-auto text-muted"></i>
+                                </a>
+                            </div>
                             {% endfor %}
                         </div>
-                    {% else %}
-                        <div class="semesters-wrapper d-flex flex-column gap-2">
-                            {% if sem_a %}
-                                {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="bolt" color="primary" %}
-                            {% endif %}
-                            {% if sem_b %}
-                                {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
-                            {% endif %}
+                    {% elif step == 'select_major' %}
+                        <div class="row g-3">
+                            {% for major in majors %}
+                            <div class="col-md-6">
+                                <a href="?university={{ uni_id }}&major={{ major.id }}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
+                                    <span class="fw-bold text-dark">{{ major.name }}</span>
+                                </a>
+                            </div>
+                            {% endfor %}
                         </div>
+                    {% elif step == 'select_year' %}
+                        <div class="row g-4">
+                            {% for y_val, y_name in years.items %}
+                            <div class="col-md-4 text-center">
+                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white">
+                                    <div class="display-6 fw-bold text-primary">{{ y_val }}</div>
+                                    <div class="fw-bold text-dark">{{ y_name }}</div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% elif step == 'show_courses' %}
+                        {% if sem_a %}
+                            {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="bolt" color="primary" %}
+                        {% endif %}
+                        {% if sem_b %}
+                            {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
+                        {% endif %}
                     {% endif %}
                 {% endif %}
             </div>
         </div>
 
+        {# --- צד שמאל: לוח שנה --- #}
         <div class="col-lg-4 order-1 order-lg-2">
-            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background-color: var(--gd-card);">
-                <div class="card-header border-0 pt-4 text-center" style="background-color: transparent;">
-                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);"><i class="fas fa-trophy text-warning ms-2"></i> אלופי הדרייב</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for profile in top_users %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom px-4" style="background-color: transparent; border-color: var(--gd-border) !important;">
-                            <div class="d-flex align-items-center gap-3">
-                                <span class="fs-4">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}</span>
-                                <div>
-                                    <a href="{% url 'public_profile' profile.user.username %}" class="fw-bold small text-decoration-none" style="color: var(--gd-text);">{{ profile.user.username }}</a>
-                                    <div style="font-size: 0.7rem; color: var(--gd-text-muted);">{{ profile.rank_name }}</div>
-                                </div>
-                            </div>
-                            <span class="badge rounded-pill px-3 py-2" style="background-color: rgba(13, 110, 253, 0.08); color: var(--gd-primary);">
-                                {{ profile.lifetime_coins }} <i class="fas fa-star ms-1 small"></i>
-                            </span>
-                        </div>
-                        {% endfor %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background-color: var(--gd-card);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">לו"ז אישי</h6>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-light border rounded-circle shadow-sm" id="prevMonth"><i class="fas fa-chevron-right tiny-icon"></i></button>
+                        <button class="btn btn-sm btn-light border rounded-circle shadow-sm" id="nextMonth"><i class="fas fa-chevron-left tiny-icon"></i></button>
                     </div>
+                </div>
+                <div id="monthDisplay" class="text-center fw-bold text-primary mb-3"></div>
+                <div id="calendarDays" class="d-flex flex-wrap text-center mb-3"></div>
+                
+                <div id="eventContainer" class="mt-2 border-top pt-3">
+                    <div id="selectedDateHeader" class="small fw-bold text-muted mb-2">בחר יום...</div>
+                    <div id="eventList" class="d-flex flex-column gap-2"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .btn-outline-dynamic { border: 1px solid var(--gd-border); color: var(--gd-text); background: transparent; transition: 0.2s; }
-    .btn-outline-dynamic:hover { background-color: var(--gd-hover); color: var(--gd-primary); border-color: var(--gd-primary); }
-    .nav-item-card { display: flex; align-items: center; padding: 1.25rem; background: var(--gd-bg); border-radius: 18px; text-decoration: none; border: 1px solid var(--gd-border); transition: 0.3s; }
-    .nav-item-card:hover { background: var(--gd-hover); transform: translateX(-5px); box-shadow: var(--gd-shadow); border-color: var(--gd-primary); }
-    .year-selector-card { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; background: var(--gd-bg); border: 1px solid var(--gd-border); border-radius: 20px; text-decoration: none; transition: 0.3s; }
-    .year-selector-card:hover { border-color: var(--gd-primary); background: var(--gd-hover); transform: translateY(-5px); box-shadow: var(--gd-shadow); }
-    .year-number { font-size: 2.8rem; font-weight: 800; line-height: 1; margin-bottom: 5px; }
-</style>
+{# --- Modal --- #}
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true" dir="rtl">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="fw-bold mb-0">אירוע ליום <span id="modalDate"></span></h6>
+                <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="evTitle" class="form-control form-control-sm mb-2" placeholder="מה המשימה?">
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="tiny-text">התחלה:</label>
+                        <input type="time" id="evStart" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-6">
+                        <label class="tiny-text">סיום:</label>
+                        <input type="time" id="evEnd" class="form-control form-control-sm">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm w-100 rounded-pill fw-bold" id="saveEvBtn">שמור בלו"ז</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# --- אלופי הדרייב --- #}
+<div class="side-leaderboard shadow-lg">
+    <div class="side-handle"><i class="fas fa-crown"></i></div>
+    <div class="side-panel">
+        <div class="p-3 border-bottom text-center fw-bold small">אלופי הדרייב</div>
+        <div class="p-2" style="max-height: 300px; overflow-y: auto;">
+            {% for profile in top_users %}
+            <div class="d-flex justify-content-between p-2 border-bottom small px-3">
+                <span>{{ profile.user.username }}</span>
+                <span class="text-primary fw-bold">{{ profile.lifetime_coins }} <i class="fas fa-star small"></i></span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function renderMotivation() {
+        const quotes = ["הדרך לתואר מתחילה בסיכום אחד טוב.", "היום הוא הזדמנות נוספת להיות טוב יותר מאתמול.", "אל תפסיק עד שתהיה גאה בעצמך.", "השקעה בלימודים היא ההשקעה עם הריבית הכי גבוהה.", "סיכום טוב חוסך לילה לבן.", "אתה הרבה יותר קרוב לסוף ממה שהיית אתמול."];
+        const day = new Date().getDate();
+        const q = document.getElementById('motivationQuote');
+        if (q) q.innerText = `"${quotes[day % quotes.length]}"`;
+    }
+    renderMotivation();
+
+    let d = new Date(2026, 2, 1);
+    let evs = JSON.parse(localStorage.getItem('stu_events')) || {};
+
+    function renderCal() {
+        const m = d.getMonth(), y = d.getFullYear();
+        const monthNames = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+        document.getElementById('monthDisplay').innerText = monthNames[m] + " " + y;
+        const grid = document.getElementById('calendarDays');
+        grid.innerHTML = '';
+        const first = new Date(y, m, 1).getDay();
+        const days = new Date(y, m + 1, 0).getDate();
+        for(let i=0; i<first; i++) grid.innerHTML += '<div class="day-cell opacity-0"></div>';
+        for(let i=1; i<=days; i++) {
+            const dateKey = `${y}-${m+1}-${i}`;
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            if(evs[dateKey]) cell.classList.add('has-event');
+            const today = new Date();
+            if(i === today.getDate() && m === today.getMonth() && y === today.getFullYear()) cell.classList.add('today');
+            cell.innerText = i;
+            cell.onclick = () => openModal(i, m+1, y);
+            grid.appendChild(cell);
+        }
+    }
+
+    function openModal(day, month, year) {
+        const key = `${year}-${month}-${day}`;
+        document.getElementById('modalDate').innerText = `${day}/${month}`;
+        const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+        modal.show();
+        document.getElementById('saveEvBtn').onclick = () => {
+            const title = document.getElementById('evTitle').value;
+            const start = document.getElementById('evStart').value;
+            const end = document.getElementById('evEnd').value;
+            if(title && start && end) {
+                if(!evs[key]) evs[key] = [];
+                evs[key].push({ title, start, end });
+                localStorage.setItem('stu_events', JSON.stringify(evs));
+                document.getElementById('evTitle').value = '';
+                modal.hide();
+                renderCal();
+                updateEventList(key);
+            }
+        };
+        updateEventList(key);
+    }
+
+    function updateEventList(key) {
+        const list = document.getElementById('eventList');
+        const header = document.getElementById('selectedDateHeader');
+        const [y, m, d] = key.split('-');
+        header.innerText = `אירועים ל-${d}/${m}:`;
+        if(evs[key]) {
+            list.innerHTML = evs[key].map(ev => `
+                <div class="p-2 bg-light rounded-3 border-start border-primary border-3 shadow-sm mb-2 text-end">
+                    <div class="fw-bold small">${ev.title}</div>
+                    <div class="tiny-text"><i class="far fa-clock"></i> ${ev.start} - ${ev.end}</div>
+                </div>
+            `).join('');
+        } else {
+            list.innerHTML = '<div class="text-muted small italic text-center py-2">אין אירועים ליום זה</div>';
+        }
+    }
+
+    document.getElementById('prevMonth').onclick = () => { d.setMonth(d.getMonth()-1); renderCal(); };
+    document.getElementById('nextMonth').onclick = () => { d.setMonth(d.getMonth()+1); renderCal(); };
+    renderCal();
+</script>
 
 {% endblock %}
