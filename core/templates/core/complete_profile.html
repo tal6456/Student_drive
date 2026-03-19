@@ -50,6 +50,28 @@
                                         <div class="mb-3 text-end">
                                             <label class="form-label fw-bold" style="color: var(--gd-text-muted);">{{ field.label }}</label>
                                             {{ field }}
+                                            
+                                            {# תיבות נסתרות להוספת מוסד ומסלול שמופיעות רק בלחיצה #}
+                                            {% if field.name == 'university' %}
+                                            <div id="add-uni-wrapper" class="mt-2 animate__animated animate__fadeIn" style="display: none;">
+                                                <div class="d-flex gap-2">
+                                                    <input type="text" id="new-uni-input" class="form-control flex-grow-1 border-primary" placeholder="הקלד את שם המוסד המדויק...">
+                                                    <button type="button" id="save-uni-btn" class="btn btn-success fw-bold px-3 shadow-sm">הוסף</button>
+                                                    <button type="button" id="cancel-uni-btn" class="btn btn-light border shadow-sm">ביטול</button>
+                                                </div>
+                                                <div id="uni-error-msg" class="text-danger small mt-1 fw-bold" style="display: none;"></div>
+                                            </div>
+                                            {% elif field.name == 'major' %}
+                                            <div id="add-major-wrapper" class="mt-2 animate__animated animate__fadeIn" style="display: none;">
+                                                <div class="d-flex gap-2">
+                                                    <input type="text" id="new-major-input" class="form-control flex-grow-1 border-primary" placeholder="הקלד את שם המסלול / פקולטה...">
+                                                    <button type="button" id="save-major-btn" class="btn btn-success fw-bold px-3 shadow-sm">הוסף</button>
+                                                    <button type="button" id="cancel-major-btn" class="btn btn-light border shadow-sm">ביטול</button>
+                                                </div>
+                                                <div id="major-error-msg" class="text-danger small mt-1 fw-bold" style="display: none;"></div>
+                                            </div>
+                                            {% endif %}
+
                                             {% for error in field.errors %}
                                                 <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
                                             {% endfor %}
@@ -110,56 +132,106 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- 1. לוגיקת מתג הסטודנט ---
         const studentToggle = document.getElementById('isStudentToggle');
         const academicSection = document.getElementById('academicSection');
-        const uniInput = document.getElementById('id_university');
-        const majorInput = document.getElementById('id_major');
+        const uniSelect = document.getElementById('id_university');
+        const majorSelect = document.getElementById('id_major');
         const yearInput = document.getElementById('id_year');
 
-        function updateAcademicVisibility() {
-            if (studentToggle.checked) {
-                academicSection.style.display = 'block';
-                academicSection.classList.add('animate__fadeIn');
-            } else {
-                academicSection.style.display = 'none';
-                academicSection.classList.remove('animate__fadeIn');
-                // איפוס שדות כדי שלא נשלח "זבל" לשרת אם המשתמש התחרט
-                if(uniInput) uniInput.value = '';
-                if(majorInput) {
-                    majorInput.innerHTML = '<option value="">--- ללא מסלול ---</option>';
-                    majorInput.value = '';
+        // רכיבי ה-UI החדשים להוספה
+        const addUniWrapper = document.getElementById('add-uni-wrapper');
+        const newUniInput = document.getElementById('new-uni-input');
+        const uniErrorMsg = document.getElementById('uni-error-msg');
+        
+        const addMajorWrapper = document.getElementById('add-major-wrapper');
+        const newMajorInput = document.getElementById('new-major-input');
+        const majorErrorMsg = document.getElementById('major-error-msg');
+
+        // --- 1. מוסד לימודים ---
+        if (uniSelect) {
+            // הוספת אופציית יצירה בסוף הרשימה הקיימת
+            const addNewOption = new Option("➕ הוסף מוסד לימודים אחר...", "ADD_NEW");
+            addNewOption.style.fontWeight = "bold";
+            addNewOption.style.color = "var(--gd-primary)";
+            uniSelect.add(addNewOption);
+            
+            uniSelect.addEventListener('change', function() {
+                if (this.value === 'ADD_NEW') {
+                    uniSelect.style.display = 'none';
+                    addUniWrapper.style.display = 'block';
+                    newUniInput.focus();
+                } else {
+                    fetchMajors(this.value);
                 }
-                if(yearInput) yearInput.value = '';
-            }
+            });
         }
 
-        // בדיקה בהפעלה ראשונית: האם יש כבר נתונים או שגיאות שמחייבים להציג את האזור?
-        const hasAcademicData = (uniInput && uniInput.value) || document.querySelector('#academicSection .text-danger');
-        studentToggle.checked = !!hasAcademicData;
-        updateAcademicVisibility();
+        document.getElementById('cancel-uni-btn').addEventListener('click', () => {
+            addUniWrapper.style.display = 'none';
+            uniSelect.style.display = 'block';
+            uniSelect.value = ''; // איפוס
+            uniErrorMsg.style.display = 'none';
+            newUniInput.value = '';
+            fetchMajors(''); // ניקוי מסלולים
+        });
 
-        // האזנה לשינוי במתג
-        studentToggle.addEventListener('change', updateAcademicVisibility);
+        document.getElementById('save-uni-btn').addEventListener('click', async () => {
+            const name = newUniInput.value.trim();
+            if(!name) return;
+            
+            uniErrorMsg.style.display = 'none';
+            const btn = document.getElementById('save-uni-btn');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            
+            try {
+                // משתמש בפונקציית ה-Fetch המאובטחת של ג'אנגו
+                const response = await secureFetch('/ajax/add-university/', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: name })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // הצלחה! מוסיף את המוסד החדש לפני אופציית "הוסף חדש"
+                    const newOption = new Option(data.name, data.id, true, true);
+                    uniSelect.add(newOption, uniSelect.options.length - 1);
+                    
+                    addUniWrapper.style.display = 'none';
+                    uniSelect.style.display = 'block';
+                    newUniInput.value = '';
+                    
+                    // טעינת הפקולטות למוסד החדש (שיהיה ריק כמובן)
+                    fetchMajors(data.id);
+                } else {
+                    uniErrorMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error}`;
+                    uniErrorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                uniErrorMsg.innerText = "שגיאת תקשורת עם השרת.";
+                uniErrorMsg.style.display = 'block';
+            } finally {
+                btn.innerHTML = 'הוסף';
+            }
+        });
 
-
-        // --- 2. לוגיקת AJAX לשליפת תארים (תוקן!) ---
+        // --- 2. מסלולי לימוד ---
         function fetchMajors(uniId, selectedMajorId = null) {
-            if (!uniId) {
+            if (!majorSelect) return;
+            
+            if (!uniId || uniId === 'ADD_NEW') {
                 majorSelect.innerHTML = '<option value="">--- ללא מסלול ---</option>';
                 majorSelect.disabled = true;
                 return;
             }
 
             majorSelect.disabled = true;
-            majorSelect.innerHTML = '<option value="">טוען פקולטות...</option>';
+            majorSelect.innerHTML = '<option value="">טוען מסלולים...</option>';
 
             fetch(`/ajax/load-majors/?university=${uniId}`)
                 .then(response => response.json())
                 .then(data => {
                     majorSelect.innerHTML = '<option value="">--- בחרו פקולטה / מסלול ---</option>';
 
-                    // תיקון קריטי: לולאה שעוברת על כל המסלולים מהשרת
                     data.forEach(major => {
                         const option = document.createElement('option');
                         option.value = major.id;
@@ -169,6 +241,12 @@
                         }
                         majorSelect.appendChild(option);
                     });
+                    
+                    // הזרקת כפתור ההוספה תמיד בסוף הרשימה
+                    const addNewOption = new Option("➕ הוסף מסלול לימודים אחר...", "ADD_NEW");
+                    addNewOption.style.fontWeight = "bold";
+                    addNewOption.style.color = "var(--gd-primary)";
+                    majorSelect.appendChild(addNewOption);
 
                     majorSelect.disabled = false;
                 })
@@ -178,11 +256,86 @@
                 });
         }
 
-        if (uniInput && majorInput) {
-            fetchMajors(uniInput.value, majorInput.value);
-            uniInput.addEventListener('change', function() {
-                fetchMajors(this.value);
+        if (uniSelect && majorSelect) {
+            if(uniSelect.value && uniSelect.value !== 'ADD_NEW') {
+                fetchMajors(uniSelect.value, majorSelect.value);
+            }
+            
+            majorSelect.addEventListener('change', function() {
+                if (this.value === 'ADD_NEW') {
+                    majorSelect.style.display = 'none';
+                    addMajorWrapper.style.display = 'block';
+                    newMajorInput.focus();
+                }
             });
+        }
+
+        document.getElementById('cancel-major-btn').addEventListener('click', () => {
+            addMajorWrapper.style.display = 'none';
+            majorSelect.style.display = 'block';
+            majorSelect.value = ''; 
+            majorErrorMsg.style.display = 'none';
+            newMajorInput.value = '';
+        });
+
+        document.getElementById('save-major-btn').addEventListener('click', async () => {
+            const name = newMajorInput.value.trim();
+            const uniId = uniSelect.value;
+            if(!name || !uniId || uniId === 'ADD_NEW') return;
+            
+            majorErrorMsg.style.display = 'none';
+            const btn = document.getElementById('save-major-btn');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            
+            try {
+                const response = await secureFetch('/ajax/add-major/', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: name, university_id: uniId })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const newOption = new Option(data.name, data.id, true, true);
+                    majorSelect.add(newOption, majorSelect.options.length - 1);
+                    
+                    addMajorWrapper.style.display = 'none';
+                    majorSelect.style.display = 'block';
+                    newMajorInput.value = '';
+                } else {
+                    majorErrorMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error}`;
+                    majorErrorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                majorErrorMsg.innerText = "שגיאת תקשורת.";
+                majorErrorMsg.style.display = 'block';
+            } finally {
+                btn.innerHTML = 'הוסף';
+            }
+        });
+
+        // --- 3. לוגיקת מתג הסטודנט החכמה ---
+        function updateAcademicVisibility() {
+            if (studentToggle.checked) {
+                academicSection.style.display = 'block';
+                academicSection.classList.add('animate__fadeIn');
+            } else {
+                academicSection.style.display = 'none';
+                academicSection.classList.remove('animate__fadeIn');
+                
+                // איפוס והסתרה של כל רכיבי ה-Inline במקרה של כיבוי
+                if(uniSelect) { uniSelect.value = ''; uniSelect.style.display = 'block'; }
+                if(majorSelect) { majorSelect.innerHTML = '<option value="">--- ללא מסלול ---</option>'; majorSelect.style.display = 'block'; }
+                if(yearInput) yearInput.value = '';
+                if(addUniWrapper) addUniWrapper.style.display = 'none';
+                if(addMajorWrapper) addMajorWrapper.style.display = 'none';
+            }
+        }
+
+        const hasAcademicData = (uniSelect && uniSelect.value && uniSelect.value !== 'ADD_NEW') || document.querySelector('#academicSection .text-danger');
+        if(studentToggle) {
+            studentToggle.checked = !!hasAcademicData;
+            updateAcademicVisibility();
+            studentToggle.addEventListener('change', updateAcademicVisibility);
         }
     });
 </script>

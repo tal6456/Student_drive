@@ -25,6 +25,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import render
 
+import json
+import re
+from django.views.decorators.http import require_POST
+
 
 # שימוש במודל המשתמש החדש בצורה בטוחה
 User = get_user_model()
@@ -929,3 +933,88 @@ def agent_report(request):
         content = "# ❌ שגיאה\nקובץ התיעוד עדיין לא נוצר. המתן לסיום ה-Build ב-Render."
 
     return render(request, 'core/agent_report.html', {'report_content': content})
+
+
+def normalize_string_for_comparison(text):
+    """
+    פונקציית עזר לניקוי מחרוזות למניעת כפילויות.
+    הופכת ' Ben-Gurion ' ל-'ben gurion'.
+    """
+    if not text:
+        return ""
+    # הורדת רווחים מהצדדים ואותיות קטנות
+    text = text.strip().lower()
+    # החלפת מקפים וקווים תחתונים ברווח
+    text = re.sub(r'[-_]+', ' ', text)
+    # צמצום מספר רווחים עוקבים לרווח אחד
+    text = re.sub(r'\s+', ' ', text)
+    return text
+
+
+@require_POST
+def add_university_ajax(request):
+    """
+    נקודת קצה (Endpoint) להוספת מוסד חדש דינמית.
+    """
+    try:
+        data = json.loads(request.body)
+        new_name = data.get('name', '').strip()
+
+        if not new_name:
+            return JsonResponse({'success': False, 'error': 'שם המוסד לא יכול להיות ריק.'})
+
+        normalized_new_name = normalize_string_for_comparison(new_name)
+
+        # בדיקת כפילויות חכמה מול כל המוסדות
+        for uni in University.objects.all():
+            if normalize_string_for_comparison(uni.name) == normalized_new_name:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'מוסד זה כבר קיים במערכת בשם "{uni.name}". אנא בחר אותו מהרשימה.'
+                })
+
+        # אם עברנו את כל הבדיקות - נייצר מוסד חדש!
+        # שים לב: אנחנו שומרים את השם המקורי שהמשתמש הזין (new_name), לא את המנורמל
+        new_uni = University.objects.create(name=new_name)
+
+        return JsonResponse({'success': True, 'id': new_uni.id, 'name': new_uni.name})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': 'אירעה שגיאה בשרת. נסה שוב.'})
+
+
+@require_POST
+def add_major_ajax(request):
+    """
+    נקודת קצה (Endpoint) להוספת מסלול חדש דינמית, משויך למוסד ספציפי.
+    """
+    try:
+        data = json.loads(request.body)
+        new_name = data.get('name', '').strip()
+        uni_id = data.get('university_id')
+
+        if not new_name or not uni_id:
+            return JsonResponse({'success': False, 'error': 'חסרים נתונים ליצירת המסלול.'})
+
+        try:
+            university = University.objects.get(id=uni_id)
+        except University.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'המוסד שנבחר אינו תקין.'})
+
+        normalized_new_name = normalize_string_for_comparison(new_name)
+
+        # בדיקת כפילויות חכמה - רק בתוך המוסד הספציפי שנבחר
+        for major in Major.objects.filter(university=university):
+            if normalize_string_for_comparison(major.name) == normalized_new_name:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'המסלול כבר קיים במוסד זה בשם "{major.name}".'
+                })
+
+        # יצירת המסלול החדש
+        new_major = Major.objects.create(name=new_name, university=university)
+
+        return JsonResponse({'success': True, 'id': new_major.id, 'name': new_major.name})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': 'אירעה שגיאה בשרת. נסה שוב.'})
