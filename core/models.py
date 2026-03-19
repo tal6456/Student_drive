@@ -39,24 +39,8 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(max_length=15, choices=ROLE_CHOICES, default='member', verbose_name="תפקיד המשתמש")
 
-    def save(self, *args, **kwargs):
-        if not self.referral_code:
-            is_unique = False
-            attempts = 0
-            while not is_unique and attempts < 10:
-                new_code = generate_referral_code()
-                if not UserProfile.objects.filter(referral_code=new_code).exists():
-                    self.referral_code = new_code
-                    is_unique = True
-                attempts += 1
-
-            if not is_unique:
-                self.referral_code = str(uuid.uuid4())[:8].upper()
-
-        super().save(*args, **kwargs) # עדיף להשתמש ב-()super הריק והמודרני של פייתון 3
-
     def __str__(self):
-        return f"{self.user.username} ({self.user.get_role_display()})"
+        return f"{self.username} ({self.get_role_display()})"
 
 
 class UserProfile(models.Model):
