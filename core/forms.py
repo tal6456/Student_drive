@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Document, Course, UserProfile, Folder
-from django.urls import reverse_lazy
-from django.utils.html import format_html
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 # משיכת מודל המשתמש החדש שלנו (CustomUser) בצורה בטוחה
 User = get_user_model()
+
 
 # ==========================================
 # 1. טופס האב: מכונת העיצוב האוטומטית
@@ -20,8 +21,10 @@ class BaseStyledModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            if isinstance(field.widget, (forms.TextInput, forms.EmailInput, forms.NumberInput, forms.Select, forms.Textarea, forms.FileInput)):
-                base_class = 'form-select form-select-lg' if isinstance(field.widget, forms.Select) else 'form-control form-control-lg'
+            if isinstance(field.widget, (
+            forms.TextInput, forms.EmailInput, forms.NumberInput, forms.Select, forms.Textarea, forms.FileInput)):
+                base_class = 'form-select form-select-lg' if isinstance(field.widget,
+                                                                        forms.Select) else 'form-control form-control-lg'
                 field.widget.attrs.update({
                     'class': f'{base_class} border-0 shadow-sm mb-3',
                     'style': 'background-color: var(--gd-bg) !important; color: var(--gd-text) !important;'
@@ -44,7 +47,6 @@ class DocumentUploadForm(BaseStyledModelForm):
 
     class Meta:
         model = Document
-        # הוסר השדה is_anonymous לפי ההחלטה החדשה
         fields = ['title', 'file', 'folder', 'staff_member']
 
         labels = {
@@ -91,14 +93,16 @@ class CourseForm(BaseStyledModelForm):
 class CustomSignupForm(forms.Form):
     terms_accepted = forms.BooleanField(
         required=True,
-        label=format_html(
-            'אני קראתי ומאשר/ת את <a href="{}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>',
-            reverse_lazy('terms'),
-            reverse_lazy('privacy')
-        ),
         error_messages={'required': 'חובה לאשר את התנאים כדי להמשיך למערכת.'},
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input ms-2', 'style': 'cursor: pointer;'})
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # הזרקת הלינקים מתבצעת רק לאחר שהטופס נטען
+        self.fields['terms_accepted'].label = mark_safe(
+            f'אני קראתי ומאשר/ת את <a href="{reverse("terms")}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{reverse("privacy")}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>'
+        )
 
     def signup(self, request, user):
         pass
@@ -109,11 +113,8 @@ class UserProfileForm(BaseStyledModelForm):
     first_name = forms.CharField(max_length=30, required=True, label="שם פרטי (אפשר גם כינוי)")
     last_name = forms.CharField(max_length=30, required=True, label="שם משפחה")
 
-    #  שדה אישור התנאים עם קישורים חיים
     terms_accepted = forms.BooleanField(
         required=True,
-        label=mark_safe(
-            f'אני קראתי ומאשר/ת את <a href="{reverse_lazy("terms")}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{reverse_lazy("privacy")}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>'),
         error_messages={'required': 'חובה לאשר את התנאים כדי להמשיך למערכת.'},
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input ms-2', 'style': 'cursor: pointer;'})
     )
@@ -126,34 +127,29 @@ class UserProfileForm(BaseStyledModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
+        # הזרקת הלינקים מתבצעת רק לאחר שהטופס נטען
+        self.fields['terms_accepted'].label = mark_safe(
+            f'אני קראתי ומאשר/ת את <a href="{reverse("terms")}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{reverse("privacy")}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>'
+        )
+
         if user:
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
 
-        # הפכנו את השדות לרשות והתאמנו את הטקסט למשתמשים שהם לא סטודנטים
         self.fields['university'].required = False
         self.fields['university'].empty_label = "--- לא סטודנט / ללא שיוך ---"
-
         self.fields['major'].required = False
         self.fields['major'].empty_label = "--- ללא מסלול ---"
-
         self.fields['year'].required = False
         self.fields['year'].empty_label = "--- לא רלוונטי ---"
-
-        # גם טלפון לא חייב להיות חוסם הרשמה
         self.fields['phone_number'].required = False
         self.fields['phone_number'].widget.attrs.update({'placeholder': 'לדוגמה: 0501234567'})
 
     def clean(self):
-        """
-        לוגיקה חכמה לאימות הנתונים:
-        מוודא שמשתמש לא עשה חצי-עבודה (למשל, בחר תואר בלי לבחור אוניברסיטה)
-        """
         cleaned_data = super().clean()
         uni = cleaned_data.get('university')
         major = cleaned_data.get('major')
 
-        # אם בחר מסלול לימודים, הוא חייב לציין באיזה מוסד
         if major and not uni:
             self.add_error('university', "חובה לבחור מוסד לימודים אם בחרת מסלול.")
 
