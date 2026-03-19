@@ -167,9 +167,12 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link text-danger" href="{% url 'account_logout' %}" title="התנתק">
-                                <i class="fas fa-sign-out-alt fs-5"></i>
-                            </a>
+                            <form method="post" action="{% url 'account_logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link text-danger" title="התנתק" style="border: none; background: none; padding: 0; cursor: pointer;">
+                                    <i class="fas fa-sign-out-alt fs-5"></i>
+                                </button>
+                            </form>
                         </li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'account_login' %}">התחברות</a></li>

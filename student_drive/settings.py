@@ -159,11 +159,26 @@ ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_LOGOUT_ON_GET = True
-SOCIALACCOUNT_LOGIN_ON_GET = True
+
+ACCOUNT_LOGOUT_ON_GET = False
+SOCIALACCOUNT_LOGIN_ON_GET = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ACCOUNT_SIGNUP_FORM_CLASS = 'core.forms.CustomSignupForm'
+
+# ==========================================
+# Allauth Adapters & Social Auto-Connect
+# ==========================================
+# הפניית משתמשים חדשים למסך השלמת פרופיל
+ACCOUNT_ADAPTER = 'core.adapters.CustomAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
+
+# חיבור אוטומטי של גוגל לאימייל קיים (ללא מסך שגיאה)
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+# דילוג על טופס יצירת משתמש בהתחברות דרך גוגל
+SOCIALACCOUNT_AUTO_SIGNUP = True
+# ==========================================
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
