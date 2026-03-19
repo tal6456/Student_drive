@@ -20,18 +20,13 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 
 #TODO
-# מאפשר גישה מקומית תמיד, ובפרודקשן מוסיף את הדומיין של Render
-# הגדרה בסיסית - תמיד ריק או עם localhost בסיסי
-ALLOWED_HOSTS = ['student-drive.onrender.com']
+# הגדרת דומיינים מורשים (Localhost + DigitalOcean + Render למקרה גיבוי)
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '.ondigitalocean.app', 'student-drive.onrender.com']
 
-# Render מוסיף אוטומטית את שם המארח החיצוני למשתני הסביבה
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-
-# אם אנחנו במצב פיתוח, נאפשר עבודה מקומית
-if DEBUG:
-    ALLOWED_HOSTS += ['127.0.0.1', 'localhost', 'testserver']
+# מאפשר הזרקת דומיין מותאם אישית (Custom Domain) דרך משתני סביבה
+APP_DOMAIN = os.getenv('APP_DOMAIN')
+if APP_DOMAIN:
+    ALLOWED_HOSTS.append(APP_DOMAIN)
 
 # Application definition
 INSTALLED_APPS = [
@@ -188,7 +183,7 @@ if not DEBUG:
     SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
     CSRF_COOKIE_HTTPONLY = True  # תוקן ל-True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
 
-    CSRF_TRUSTED_ORIGINS = ['https://student-drive.onrender.com']
+    CSRF_TRUSTED_ORIGINS = ['https://*.ondigitalocean.app', 'https://student-drive.onrender.com']
 
     # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת

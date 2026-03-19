@@ -38,12 +38,13 @@ try:
 except Exception as e:
     print(f"⚠️ Could not create superuser: {e}")
 
-# הגדרת ה-Site
+# הגדרת ה-Site בצורה דינמית כדי שיתאים ל-DigitalOcean
+domain_name = os.getenv('SITE_DOMAIN', 'localhost:8000')
 try:
     site, created = Site.objects.update_or_create(
         id=1,
         defaults={
-            'domain': 'student-drive.onrender.com',
+            'domain': domain_name,
             'name': 'Student Drive'
         }
     )
