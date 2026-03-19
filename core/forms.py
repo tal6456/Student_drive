@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from .models import Document, Course, UserProfile, Folder
 from django.urls import reverse_lazy
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 # משיכת מודל המשתמש החדש שלנו (CustomUser) בצורה בטוחה
 User = get_user_model()
@@ -91,7 +91,12 @@ class CourseForm(BaseStyledModelForm):
 class CustomSignupForm(forms.Form):
     terms_accepted = forms.BooleanField(
         required=True,
-        label="אני מאשר/ת את תנאי השימוש ומדיניות הפרטיות של האתר",
+        label=format_html(
+            'אני קראתי ומאשר/ת את <a href="{}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>',
+            reverse_lazy('terms'),
+            reverse_lazy('privacy')
+        ),
+        error_messages={'required': 'חובה לאשר את התנאים כדי להמשיך למערכת.'},
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input ms-2', 'style': 'cursor: pointer;'})
     )
 
