@@ -9,7 +9,7 @@
 <style>
     /* הגדרות עיצוב חדשות ל-Header */
     .home-container { font-family: 'Assistant', sans-serif !important; }
-
+    
     .welcome-title {
         font-weight: 800;
         color: #202124;
@@ -54,7 +54,7 @@
     .input-wrapper { display: flex; align-items: center; flex-grow: 1; }
     .search-icon { color: #bbb; margin-left: 15px; font-size: 1.1rem; }
     .search-input { border: none; outline: none; width: 100%; font-size: 1.1rem; background: transparent; }
-
+    
     .creative-search-btn {
         background: #f8f9fa;
         border: 1px solid #ddd;
@@ -104,8 +104,8 @@
                 <form method="GET" action="{% url 'home' %}" class="creative-search-form">
                     <div class="input-wrapper">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" name="search" class="search-input"
-                               placeholder="מה בא לך ללמוד היום?..."
+                        <input type="text" name="search" class="search-input" 
+                               placeholder="מה בא לך ללמוד היום?..." 
                                value="{{ search_query|default:'' }}">
                     </div>
                     <button type="submit" class="creative-search-btn">
@@ -120,7 +120,7 @@
     {# --- שלוש קוביות הפעולה --- #}
     <div class="row g-3 mb-5 justify-content-center">
         <div class="col-md-3">
-            <a href="#" class="text-decoration-none">
+            <a href="{% url 'profile' %}" class="text-decoration-none">
                 <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
                     <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
                         <i class="fas fa-folder-open text-primary fs-3"></i>
@@ -152,10 +152,10 @@
     </div>
 
     <div class="row g-4">
-        {# --- תוכן מרכזי --- #}
+        {# --- תוכן מרכזי המכיל את ההיררכיה --- #}
         <div class="col-lg-8 order-2 order-lg-1">
             <div class="card shadow-sm border-0 rounded-4 p-4" style="min-height: 600px; background-color: var(--gd-card);">
-
+                
                 {% if step == 'search_results' %}
                     <div class="mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
                         <div>
@@ -185,8 +185,8 @@
                                             <span class="fw-bold text-dark fs-5">{{ course.name }}</span>
                                         </div>
                                         <div class="text-muted small">
-                                            <i class="fas fa-graduation-cap ms-1"></i> {{ course.major.university.name }}
-                                            <span class="mx-1">•</span>
+                                            <i class="fas fa-graduation-cap ms-1"></i> {{ course.major.university.name }} 
+                                            <span class="mx-1">•</span> 
                                             <i class="fas fa-book-open ms-1"></i> {{ course.major.name }}
                                         </div>
                                     </div>
@@ -206,7 +206,7 @@
                         </div>
                     {% endif %}
 
-                {% elif user.is_authenticated and not search_query and not request.GET.browse and step != 'search_results' %}
+                {% elif user.is_authenticated and not search_query and not request.GET.browse and step != 'search_results' and step != 'select_uni' and step != 'select_major' and step != 'select_year' and step != 'show_courses' %}
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary ms-2"></i> הסמסטר שלי</h4>
                         <a href="{% url 'lecturers_index' %}" class="btn btn-sm rounded-pill px-3 fw-bold transition hover-scale" style="background: rgba(255, 193, 7, 0.15); color: #d39e00; border: 1px solid rgba(255, 193, 7, 0.3);">
@@ -216,7 +216,9 @@
                     <div class="text-center py-5 opacity-25">
                         <p>הוסיפו קורסים למועדפים כדי שיופיעו כאן.</p>
                     </div>
+
                 {% else %}
+                    {# --- היררכיית העץ המלאה --- #}
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0 fw-bold">
@@ -245,6 +247,7 @@
                             <div class="col-md-6">
                                 <a href="?university={{ uni_id }}&major={{ major.id }}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
                                     <span class="fw-bold text-dark">{{ major.name }}</span>
+                                    <i class="fas fa-chevron-left ms-auto text-muted"></i>
                                 </a>
                             </div>
                             {% endfor %}
@@ -253,7 +256,7 @@
                         <div class="row g-4">
                             {% for y_val, y_name in years.items %}
                             <div class="col-md-4 text-center">
-                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white">
+                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white shadow-sm">
                                     <div class="display-6 fw-bold text-primary">{{ y_val }}</div>
                                     <div class="fw-bold text-dark">{{ y_name }}</div>
                                 </a>
@@ -261,12 +264,14 @@
                             {% endfor %}
                         </div>
                     {% elif step == 'show_courses' %}
-                        {% if sem_a %}
-                            {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="bolt" color="primary" %}
-                        {% endif %}
-                        {% if sem_b %}
-                            {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
-                        {% endif %}
+                        <div class="d-flex flex-column gap-4">
+                            {% if sem_a %}
+                                {% include "core/partials/collapsible_semester.html" with title="סמסטר א'" semester_id="sem-a" courses=sem_a icon="bolt" color="primary" %}
+                            {% endif %}
+                            {% if sem_b %}
+                                {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
+                            {% endif %}
+                        </div>
                     {% endif %}
                 {% endif %}
             </div>
@@ -284,7 +289,7 @@
                 </div>
                 <div id="monthDisplay" class="text-center fw-bold text-primary mb-3"></div>
                 <div id="calendarDays" class="d-flex flex-wrap text-center mb-3"></div>
-
+                
                 <div id="eventContainer" class="mt-2 border-top pt-3">
                     <div id="selectedDateHeader" class="small fw-bold text-muted mb-2">בחר יום...</div>
                     <div id="eventList" class="d-flex flex-column gap-2"></div>
