@@ -42,7 +42,7 @@
 
         .navbar > .container {
             display: flex !important;
-            flex-direction: row-reverse !important;
+            flex-direction: row !important; /* מחזיר לסדר טבעי של RTL: ימין לשמאל */
             justify-content: space-between;
             align-items: center;
         }
@@ -53,7 +53,8 @@
         .navbar-collapse {
             position: absolute;
             top: calc(100% + 15px);
-            right: 0;
+            left: 0;    /* זה יצמיד אותו לשמאל, בדיוק מתחת להמבורגר */
+            right: auto; /* זה מבטל את ההצמדה לימין */
             width: 260px;
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
