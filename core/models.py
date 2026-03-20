@@ -335,6 +335,7 @@ class VideoPost(Post):
     youtube_url = models.URLField(
         max_length=500,
         verbose_name="קישור ליוטיוב",
+        default='https://www.youtube.com'
         validators=[RegexValidator(
             regex=r'^(https?\:\/\/)?(www\.youtube\.com|youtu\.be)\/.+$',
             message='נא להזין קישור תקין מיוטיוב (למשל: https://www.youtube.com/watch?v=...)'
