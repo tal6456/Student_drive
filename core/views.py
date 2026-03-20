@@ -35,7 +35,20 @@ User = get_user_model()
 
 
 def home(request):
-    # בדיקה האם המשתמש הגיע דרך קישור שיתוף
+    # 1. הגנה: אם המשתמש לא מחובר, הוא לא רואה את דף הבית אלא מועבר ישר להתחברות
+    # הוספנו תנאי שמאפשר לו בכל זאת לראות תוצאות חיפוש או ניווט מוסדות גם בלי להתחבר (אופציונלי)
+    # אם אתה רוצה חסימה מוחלטת, תשאיר רק את: if not request.user.is_authenticated: return redirect('account_login')
+
+    search_query = request.GET.get('search', '').strip()
+    uni_id = request.GET.get('university')
+    major_id = request.GET.get('major')
+    year_id = request.GET.get('year')
+    browse_all = request.GET.get('browse')
+
+    if not request.user.is_authenticated and not any([search_query, uni_id, major_id, year_id, browse_all]):
+        return redirect('account_login')
+
+    # 2. בדיקה האם המשתמש הגיע דרך קישור שיתוף
     ref_code = request.GET.get('ref')
     if ref_code:
         request.session['referral_code'] = ref_code
@@ -47,13 +60,6 @@ def home(request):
         if not has_completed_profile and not request.session.get('onboarding_complete'):
             request.session['onboarding_complete'] = True
             return redirect('complete_profile')
-
-    # שליפת פרמטרים מה-URL
-    search_query = request.GET.get('search', '').strip()
-    uni_id = request.GET.get('university')
-    major_id = request.GET.get('major')
-    year_id = request.GET.get('year')
-    browse_all = request.GET.get('browse')  # הפרמטר החשוב!
 
     # הגדרות בסיסיות
     year_names = {1: "שנה א'", 2: "שנה ב'", 3: "שנה ג'", 4: "שנה ד'", 5: "תואר שני"}
@@ -67,10 +73,10 @@ def home(request):
     context = {
         'search_query': search_query,
         'top_users': top_users,
-        'years': year_names,  # שים לב: שיניתי ל-'years' כדי שיתאים ל-Template שלך (שם כתוב years.items)
+        'years': year_names,
     }
 
-    # 1. לוגיקת חיפוש - עדיפות ראשונה
+    # 3. לוגיקת חיפוש
     if search_query:
         courses_results = Course.objects.filter(
             Q(name__icontains=search_query) | Q(course_number__icontains=search_query)
@@ -80,10 +86,8 @@ def home(request):
         context['step'] = 'search_results'
         return render(request, 'core/home.html', context)
 
-    # 2. בדיקה האם להציג את עץ המוסדות או את "הסמסטר שלי"
-    # השינוי כאן: אנחנו נכנסים ללוגיקת ה-Steps רק אם יש פרמטר של ניווט (uni/major) או אם המשתמש לחץ על "חיפוש מוסד" (browse_all)
+    # 4. בדיקה האם להציג את עץ המוסדות או את "הסמסטר שלי"
     if any([uni_id, major_id, year_id, browse_all]):
-
         if uni_id:
             context['selected_uni'] = get_object_or_404(University, id=uni_id)
             context['uni_id'] = uni_id
@@ -99,7 +103,6 @@ def home(request):
             context['step'] = 'select_year'
             context['major_id'] = major_id
         else:
-            # הצגת קורסים בתוך הניווט
             courses = Course.objects.filter(major_id=major_id, year=year_id)
             context['selected_major'] = get_object_or_404(Major, id=major_id)
             context['sem_a'] = courses.filter(semester='A')
@@ -109,8 +112,7 @@ def home(request):
             context['year'] = year_id
 
     else:
-        # 3. ברירת מחדל מוחלטת - דף הבית הראשי ("הסמסטר שלי")
-        # כאן אנחנו לא מגדירים step, מה שיגרום ל-Template להציג את ה-else הסופי (הסמסטר שלי)
+        # 5. ברירת מחדל למשתמש מחובר - דף הבית הראשי ("הסמסטר שלי")
         if request.user.is_authenticated:
             context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
                 'major__university').all()
