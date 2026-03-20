@@ -787,17 +787,17 @@
         });
     }
 </script>
-    
+
     <script>
 // פונקציית ה-AI המרכזית
 function getAISummary(docId, event) {
     if (event) event.stopPropagation();
-    
+
     const btn = event.currentTarget;
     // מוצא את הקונטיינר הצהוב שנמצא בתוך doc_row.html
     const container = document.getElementById(`ai-summary-container-${docId}`);
     const textArea = container.querySelector('.summary-text');
-    
+
     // שינוי מצב הכפתור לטעינה
     const originalContent = btn.innerHTML;
     btn.disabled = true;
@@ -818,7 +818,7 @@ function getAISummary(docId, event) {
         if (data.success) {
             // הזרקת הטקסט לתוך הדיב ופתיחת התיבה
             textArea.innerText = data.summary;
-            container.classList.add('show'); 
+            container.classList.add('show');
             // גלילה קלה שהמשתמש יראה את הסיכום
             container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
@@ -840,7 +840,7 @@ function renderFiles() {
     const fileContainer = document.getElementById('drive-files');
     const files = Array.from(document.querySelectorAll('.file-card'));
     let visibleFiles = 0;
-    
+
     files.forEach(el => {
         if (el.getAttribute('data-parent') === currentPath) {
             el.classList.remove('d-none');
