@@ -7,6 +7,7 @@ import os
 import random
 import string
 import uuid
+from .utils import compress_to_webp
 
 # ==========================================
 # 0. מערכת המשתמשים (RBAC - Role Based Access Control)
@@ -125,8 +126,14 @@ class UserProfile(models.Model):
         return self.user.username
 
     def save(self, *args, **kwargs):
+        # יצירת קוד הזמנה אם אין
         if not self.referral_code:
             self.referral_code = generate_referral_code()
+
+        # --- כיווץ תמונת פרופיל ל-WebP ---
+        if self.profile_picture and not self.profile_picture.name.endswith('.webp'):
+            self.profile_picture = compress_to_webp(self.profile_picture)
+
         super().save(*args, **kwargs)
 
     @property
@@ -180,6 +187,11 @@ class University(models.Model):
     brand_color = models.CharField(max_length=7, default='#0d6efd', verbose_name="צבע מותג")
 
     def __str__(self): return self.name
+
+    def save(self, *args, **kwargs):
+        if self.logo and not self.logo.name.endswith('.webp'):
+            self.logo = compress_to_webp(self.logo)
+        super().save(*args, **kwargs)
 
 
 class Major(models.Model):
@@ -306,6 +318,11 @@ class Post(models.Model):
 
     class Meta: ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        if self.image and not self.image.name.endswith('.webp'):
+            self.image = compress_to_webp(self.image)
+        super().save(*args, **kwargs)
+
 
 class MarketplacePost(Post):
     CATEGORY_CHOICES = [('rent', 'השכרת דירה'), ('sell', 'מכירה'), ('giveaway', 'מסירה')]
@@ -316,6 +333,11 @@ class MarketplacePost(Post):
 class VideoPost(Post):
     video_file = models.FileField(upload_to='posts_videos/')
     thumbnail = models.ImageField(upload_to='video_thumbnails/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.thumbnail and not self.thumbnail.name.endswith('.webp'):
+            self.thumbnail = compress_to_webp(self.thumbnail)
+        super().save(*args, **kwargs)
 
 
 class Comment(models.Model):
@@ -355,6 +377,11 @@ class AcademicStaff(models.Model):
     def total_reviews(self): return self.reviews.count()
 
     def __str__(self): return self.name
+
+    def save(self, *args, **kwargs):
+        if self.image and not self.image.name.endswith('.webp'):
+            self.image = compress_to_webp(self.image)
+        super().save(*args, **kwargs)
 
 
 class Lecturer(AcademicStaff):
@@ -399,6 +426,11 @@ class Feedback(models.Model):
     screenshot = models.ImageField(upload_to='feedbacks/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_resolved = models.BooleanField(default=False, verbose_name="טופל?")
+
+    def save(self, *args, **kwargs):
+        if self.screenshot and not self.screenshot.name.endswith('.webp'):
+            self.screenshot = compress_to_webp(self.screenshot)
+        super().save(*args, **kwargs)
 
 
 # ==========================================

@@ -210,7 +210,7 @@ if not DEBUG:
     # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
     # ==========================================
     SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
-    CSRF_COOKIE_HTTPONLY = True  # תוקן ל-True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
+    CSRF_COOKIE_HTTPONLY = True  # תוקן ל - True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
 
     CSRF_TRUSTED_ORIGINS = ['https://*.ondigitalocean.app', 'https://student-drive.onrender.com']
 
@@ -218,7 +218,6 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000  # שנה אחת
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-
 
 
 # ==========================================
@@ -241,9 +240,6 @@ SOCIALACCOUNT_PROVIDERS = {
 # מוודא שהמערכת מחפשת את הנתונים בטבלאות האדמין ולא בקוד
 SOCIALACCOUNT_STORE_TOKENS = True
 
-# ==========================================
-# הגדרות אמזון S3 (חכמות - עובדות לפי משתני סביבה)
-# ==========================================
 # ==========================================
 # הגדרות אמזון S3 (חכמות - עובדות לפי משתני סביבה)
 # ==========================================

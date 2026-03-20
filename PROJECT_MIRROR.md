@@ -24,7 +24,9 @@
     📄 build.sh
     📄 import_courses.py
     📄 manage.py
+    📄 PROJECT_MIRROR.md
     📂 core/
+        📄 adapters.py
         📄 admin.py
         📄 ai_utils.py
         📄 apps.py
@@ -48,9 +50,49 @@
             📄 404.html
             📄 500.html
             📂 account/
+                📄 login.html
+                📄 logout.html
+                📄 signup.html
             📂 core/
-            📂 partials/
+                📄 accessibility.html
+                📄 add_course.html
+                📄 agent_report.html
+                📄 analytics.html
+                📄 base.html
+                📄 change_password.html
+                📄 community_card_item.html
+                📄 community_feed.html
+                📄 complete_profile.html
+                📄 course_detail.html
+                📄 discover_communities.html
+                📄 donations.html
+                📄 feedback.html
+                📄 friends_list.html
+                📄 home.html
+                📄 lecturers_index.html
+                📄 login.html
+                📄 privacy.html
+                📄 profile.html
+                📄 public_profile.html
+                📄 register.html
+                📄 search_results.html
+                📄 settings.html
+                📄 social_base.html
+                📄 staff_detail.html
+                📄 terms.html
+                📂 partials/
+                    📄 alert_banner.html
+                    📄 collapsible_semester.html
+                    📄 comment_item.html
+                    📄 community_sidebar.html
+                    📄 course_row.html
+                    📄 doc_row.html
+                    📄 post_card.html
+                    📄 share_modal.html
+                    📄 sorting_toolbar.
             📂 socialaccount/
+                📄 login.html
+                📄 signup.html
     📂 documents/
     📂 locale/
         📂 en/
@@ -63,329 +105,232 @@
     📂 templates/
         📂 admin/
             📄 base_site.html
+
 ```
 
----
+**תפקידי הקבצים:**
 
-**פירוט קבצים ותפקידיהם:**
+*   **קונפיגורציה והגדרות בסיסיות של פרויקט ג'נגו (`student_drive/` - root ו-`student_drive/` - project config):**
+    *   `student_drive/settings.py`: הלב של הפרויקט. מכיל את כל ההגדרות הגלובליות כמו הגדרות מסד נתונים, אפליקציות מותקנות, הגדרות אבטחה, מיילים, סטטיקה, וקונפיגורציה של `django-allauth` ו-`AWS S3`. הוא קורא משתני סביבה מה-.env.
+    *   `student_drive/urls.py`: מפת הניתובים (URLs) הראשי של הפרויקט. מפנה בקשות נכנסות ל-`urls.py` של האפליקציה `core`.
+    *   `student_drive/wsgi.py`: נקודת כניסה לשרתי ווב התומכים ב-WSGI (לסביבת פרודקשן).
+    *   `student_drive/asgi.py`: נקודת כניסה לשרתי ווב התומכים ב-ASGI (לטיפול ב-WebSockets או משימות אסינכרוניות).
+    *   `manage.py`: כלי שורת הפקודה של ג'נגו, משמש להרצת פקודות כמו `runserver`, `makemigrations`, `migrate` וכו'.
+    *   `PROJECT_MIRROR.md`: קובץ Markdown המתעד את מבנה הפרויקט, ככל הנראה נוצר אוטומטית על ידי סקריפט AI.
 
-**1. קבצי שורש הפרויקט (`student_drive/`)**
+*   **סקריפטים וכלים חיצוניים (`student_drive/` - root ו-`core/management/commands/`):**
+    *   `build.sh`: סקריפט Shell שרץ ככל הנראה בתהליך ה-CI/CD (לדוגמה, ב-Render) ומבצע פעולות כמו `collectstatic`, `migrate`.
+    *   `import_courses.py`: סקריפט Python חיצוני המשמש לייבוא קורסים למסד הנתונים, ככל הנראה מנתונים ראשוניים.
+    *   `core/management/commands/`: תיקייה המכילה פקודות `manage.py` מותאמות אישית.
+        *   `load_bgu_courses.py`: פקודת ניהול לטעינת נתוני קורסים של אוניברסיטת בן גוריון.
+        *   `run_agent.py`: פקודת ניהול שמריצה "סוכן" (כנראה AI) שתפקידו לייצר את קובץ `PROJECT_MIRROR.md`.
+        *   `seed_bgu_ee.py`: פקודת ניהול לשתילת נתונים ראשוניים (Seed Data) של המגמה להנדסת חשמל בבן גוריון.
 
-*   `build.sh`: סקריפט Bash המשמש ככל הנראה לתהליכי Build ו-Deployment, כגון התקנת תלויות, הרצת מייגרציות, או איסוף קבצים סטטיים. הוא חיוני לאוטומציה של פריסת הפרויקט.
-*   `import_courses.py`: סקריפט פיתון חיצוני, כנראה מיועד לייבוא נתוני קורסים מורכבים למסד הנתונים, אולי מקובץ CSV או API. מתחבר למודלים ב-`core/models.py`.
-*   `manage.py`: כלי שורת הפקודה הראשי של Django. מאפשר לבצע פעולות ניהוליות כמו הרצת השרת, ביצוע מייגרציות וקיום פקודות מותאמות אישית.
-*   `documents/`: תיקייה זו, אם אינה מוגדרת לאחסון ענן (S3), תשמש לאחסון קבצי מדיה (כגון מסמכים ותמונות פרופיל) שהועלו על ידי משתמשים. מקושרת לשדה `FileField` במודלים כמו `Document` ו-`UserProfile`.
-*   `locale/`: תיקייה זו מכילה קבצי תרגום (לוקליזציה) של הפרויקט, המאפשרים תמיכה בשפות שונות. מתחברת להגדרות `LANGUAGE_CODE`, `USE_I18N`, `LOCALE_PATHS` ב-`settings.py`.
+*   **אפליקציית הליבה (`core/`):**
+    *   `core/__init__.py`: הופך את התיקייה `core` למודול פייתון.
+    *   `core/apps.py`: הגדרות יישום עבור אפליקציית `core`, כולל שם האפליקציה.
+    *   `core/models.py`: מגדיר את כל מודלי מסד הנתונים של האפליקציה (משתמשים, פרופילים, אוניברסיטאות, קורסים, מסמכים, פוסטים, קהילות, דיווחים, סגל אקדמי וכו'). הוא כולל לוגיקה עסקית חשובה וקשרי גומלין בין המודלים. הוא מכיל גם `signals` ליצירת פרופיל משתמש אוטומטית.
+    *   `core/views.py`: מכיל את כל פונקציות התצוגה (View Functions) שמטפלות בבקשות HTTP, שולפות נתונים מהמודלים, מפעילות לוגיקה עסקית ומחזירות תגובות (בדרך כלל Render של תבניות HTML או JsonResponse). קבצים אלה מתחברים למודלים ולטפסים.
+    *   `core/forms.py`: מגדיר טפסים לשימוש במערכת (לדוגמה: יצירת קורס, השלמת פרופיל, העלאת מסמכים). משתמש ב-`BaseStyledModelForm` כדי לספק עיצוב אחיד. הוא מתחבר למודלים באמצעות `forms.ModelForm`.
+    *   `core/admin.py`: רושם את מודלי האפליקציה לממשק הניהול של ג'נגו, ומאפשר למנהלים לנהל נתונים בקלות.
+    *   `core/tests.py`: מכיל בדיקות יחידה ואינטגרציה עבור האפליקציה.
+    *   `core/adapters.py`: מכיל קלאסים להתאמה אישית של התנהגות `django-allauth` (לדוגמה: הפניית משתמשים חדשים למסך השלמת פרופיל).
+    *   `core/ai_utils.py`: מודול עבור פונקציונליות הקשורה לבינה מלאכותית, כמו `generate_smart_summary` (מוזכר ב-`views.py`).
+    *   `core/context_processors.py`: קבצים המאפשרים להזריק נתונים נוספים לכל קונטקסט של תבנית, כמו `pending_reports_count`.
 
-**2. תיקיית פרויקט Django (`student_drive/student_drive/`)**
+*   **משאבים סטטיים ותבניות (`core/static/`, `core/templates/`, `templates/` - root):**
+    *   `core/static/css/`, `core/static/js/`: תיקיות המכילות קבצי CSS ו-JavaScript עבור האפליקציה, המשמשים לעיצוב ולוגיקת צד לקוח.
+    *   `core/templates/core/`: מכילה את רוב תבניות ה-HTML עבור האפליקציה `core`.
+        *   `base.html`: תבנית בסיסית שכל שאר התבניות יורשות ממנה, מגדירה את מבנה העמוד הכללי (האדר, הפוטר, ניווט).
+        *   `home.html`, `course_detail.html`, `profile.html`, `community_feed.html` וכו': תבניות ספציפיות המציגות נתונים שונים למשתמשים.
+        *   `core/templates/core/partials/`: מכילה חלקי תבניות קטנים שניתן לכלול בתבניות אחרות, לשימוש חוזר בקוד HTML.
+    *   `core/templates/account/`, `core/templates/socialaccount/`: תבניות המותאמות אישית עבור `django-allauth` וחשבונות סוציאליים.
+    *   `templates/404.html`, `templates/500.html`: תבניות ייעודיות להצגת שגיאות 404 ו-500.
+    *   `templates/admin/base_site.html`: תבנית מותאמת אישית עבור ממשק הניהול של ג'נגו.
 
-*   `asgi.py`: נקודת כניסה ליישומי ASGI (Asynchronous Server Gateway Interface) עבור שרתי ווב אסינכרוניים, כגון Daphne או Uvicorn. רלוונטי לשימושים כמו WebSockets או משימות ארוכות טווח.
-*   `settings.py`: קובץ התצורה הגלובלי של הפרויקט. הוא מגדיר את כל הפרמטרים החשובים כמו חיבור למסד נתונים, אפליקציות מותקנות, מפתחות סודיים, הגדרות אבטחה, נתיבי קבצים סטטיים ומדיה, הגדרות אימות ואימייל, ועוד. משפיע על כל היבט בפרויקט.
-*   `urls.py`: קובץ ניתוב ה-URL הראשי של הפרויקט. הוא מפנה בקשות HTTP לאפליקציות השונות ולפונקציות ה-View המתאימות. מתחבר ל-`views.py` באפליקציות.
-*   `wsgi.py`: נקודת כניסה ליישומי WSGI (Web Server Gateway Interface) עבור שרתי ווב סינכרוניים, כגון Gunicorn או Apache/Nginx עם mod_wsgi.
+*   **בינאום (`locale/`):**
+    *   `locale/en/LC_MESSAGES/`: תיקייה המכילה קבצי תרגום עבור בינאום (Internationalization) בשפה האנגלית.
 
-**3. אפליקציית `core` (`student_drive/core/`)**
-
-*   `admin.py`: קובץ המגדיר כיצד מודלים יופיעו בממשק הניהול של Django. מאפשר הוספה, עריכה ומחיקה של נתונים בקלות למנהלים. מתחבר ל-`models.py`.
-*   `ai_utils.py`: מודול המכיל פונקציות עזר הקשורות לבינה מלאכותית, כגון `generate_smart_summary`. מתחבר ל-`views.py` לביצוע פעולות AI ול-`settings.py` עבור מפתחות API (כמו `GEMINI_API_KEY`).
-*   `apps.py`: קובץ תצורה לאפליקציה `core`. מגדיר שם לאפליקציה, וניתן להשתמש בו להגדרת אותות (Signals) או אתחול ספציפי לאפליקציה.
-*   `context_processors.py`: מודול המכיל פונקציות שמוסיפות נתונים גלובליים לכל הקונטקסט של התבניות. לדוגמה, `pending_reports_count` המספק נתונים על דוחות ממתינים לכל תבנית. מתחבר ל-`settings.py` ול-`models.py`.
-*   `forms.py`: מודול המכיל טפסי Django המיועדים לקליטת קלט ממשתמשים, אימות נתונים ויצירת מודלים. מכיל טפסים כמו `DocumentUploadForm`, `CourseForm`, `UserProfileForm` ו-`CustomSignupForm`. מתחבר ל-`models.py` ומשמש ב-`views.py`.
-*   `models.py`: ליבת המידע של הפרויקט. מגדיר את כל מודלי מסד הנתונים (כמו `CustomUser`, `Course`, `Document`, `Post` וכו'), את הקשרים ביניהם, לוגיקה עסקית ספציפית למודל (כגון שיטות `earn_coins`, `spend_coins`) ואותות (Signals) לביצוע פעולות אוטומטיות כמו יצירת `UserProfile` אוטומטית.
-*   `tests.py`: קובץ המכיל בדיקות יחידה (Unit Tests) ובדיקות אינטגרציה עבור האפליקציה. חיוני לאבטחת איכות הקוד ויציבות המערכת.
-*   `views.py`: מודול המכיל את לוגיקת הטיפול בבקשות HTTP (View Functions). כל פונקציה מקבלת בקשה, מבצעת פעולות (לדוגמה, שליפה או שמירת נתונים מהמודלים, אימות טפסים), ומחזירה תגובת HTTP (בדרך כלל rendering של תבנית). זהו הקשר בין ה-URLs לבין המודלים והתבניות.
-*   `__init__.py`: קובץ ריק המציין שזוהי חבילת פייתון, המאפשר ייבוא מודולים מתוכה.
-*   `management/commands/`: תיקייה זו מכילה פקודות ניהול מותאמות אישית של Django.
-    *   `load_bgu_courses.py`: פקודה לטעינת קורסים של אוניברסיטת בן-גוריון.
-    *   `run_agent.py`: פקודה להרצת סוכן אוטומטי, אולי ליצירת דוחות או משימות רקע אחרות.
-    *   `seed_bgu_ee.py`: פקודה לאכלוס נתונים (Seeding) של קורסים בתחום הנדסת חשמל בבן-גוריון.
-    *   `__init__.py`: מציין שהיא חבילת פייתון.
-*   `static/`: מכיל קבצים סטטיים ייחודיים לאפליקציה `core` כגון קבצי CSS ו-JavaScript. מתחברים ל-`settings.py` ולתבניות HTML.
-*   `templates/`: מכיל תבניות HTML ספציפיות לאפליקציה `core`. אלו קבצי ה-HTML שנשלפים וממולאים בנתונים על ידי פונקציות ה-View.
-    *   `404.html`, `500.html`: תבניות ייעודיות לדפי שגיאה.
-    *   `account/`, `socialaccount/`: תבניות המותאמות למערכת `django-allauth`.
-    *   `core/`: תבניות הליבה של האפליקציה (לדוגמה: `home.html`, `profile.html`, `course_detail.html`).
-    *   `partials/`: תבניות חלקיות (components) לשימוש חוזר בתבניות אחרות (לדוגמה: `alert_banner.html`, `post_card.html`).
-
-**4. תיקיית תבניות גלובלית (`student_drive/templates/`)**
-
-*   `admin/base_site.html`: תבנית המשמשת לדריסה (override) של תבנית ה-admin הדיפולטיבית של Django, ומאפשרת התאמה אישית של מראה ממשק הניהול.
-
----
+*   **קבצים שהועלו (`documents/`):**
+    *   `documents/`: תיקייה המשמשת לאחסון פיזי של מסמכים שהועלו על ידי משתמשים (אם כי בהגדרות S3, בפרודקשן קבצים אלה יישמרו בענן).
 
 ## 📈 2. תמונת מצב וציון בריאות
 
-הפרויקט "Student Drive" מציג פלטפורמה אקדמית-חברתית עשירה, המשלבת שיתוף מסמכים, ניהול קורסים, קהילות סטודנטים, מערכת מוניטין/מטבעות ואפילו יכולות AI לסיכום מסמכים. הארכיטקטורה מבוססת Django עם דגש על חווית משתמש עשירה (לדוגמה, BaseStyledModelForm, אימות חיבורי חברות). הפרויקט מראה ניסיון רב לשלב פיצ'רים מורכבים במקום אחד.
+**סקירה כללית:**
+הפרויקט "Student Drive" הוא פלטפורמת קהילה אקדמית מקיפה, המאפשרת למשתמשים (סטודנטים, מרצים) לשתף מסמכי קורסים, להצטרף לקהילות לפי מוסד/מסלול לימודים, לתקשר באמצעות פוסטים, לדרג אנשי סגל ולנהל פרופיל אישי. המערכת כוללת לוגיקה מורכבת של Role Based Access Control (RBAC), מערכת מטבעות/מוניטין, ויכולות AI לסיכום מסמכים. הפרויקט מתוכנן לפריסה בסביבת ענן (DigitalOcean/Render) עם תמיכה באחסון S3.
 
-**ציון בריאות: 75/100**
+**ציון בריאות: 85/100**
 
-**נימוקים:**
+*   **ניקיון קוד (Code Cleanliness):** (90/100)
+    *   **חיובי:** הקוד מאורגן היטב באפליקציות, עם הפרדה ברורה בין Models, Views, Forms. השימוש ב-`BaseStyledModelForm` הוא דוגמה מצוינת לעקרון ה-DRY (Don't Repeat Yourself) ולניקיון קוד. יש תגובות מפורטות ומסודרות בעברית, מה שמקל מאוד על ההבנה. השימוש ב-`properties` במודלים (כמו `rank_name`, `total_likes`) הוא נכון ומוסיף בהירות.
+    *   **פוטנציאל לשיפור:** חלק מפונקציות ה-`view` (לדוגמה `home`, `course_detail`, `community_feed`) ארוכות ומכילות לוגיקה רבה, שיכולה להיות מפוצלת לפונקציות עזר קטנות יותר או ל-Class-Based Views לצורך קריאות ותחזוקה טובה יותר. ישנן כמה פיסות לוגיקה כפולות (למשל תנאי השימוש בטפסים).
 
-*   **ניקיון קוד (Cleanliness):**
-    *   **חוזקות:** יש הפרדה יחסית טובה בין מודלים, טפסים ותצוגות. השימוש ב-`BaseStyledModelForm` הוא דוגמה מצוינת ל-DRY (Don't Repeat Yourself) ולניקיון קוד תבניתי. המודלים מסודרים לפי קטגוריות ברורות עם הערות בעברית. שימוש ב-`get_user_model()` ו-`select_related`/`prefetch_related` במקומות מסוימים מעיד על מודעות.
-    *   **חולשות:** חלק מה-Views (כמו `course_detail`) גדולים ומטפלים ביותר מדי לוגיקה (יצירת תיקיות, עריכת תיקיות, העלאת קבצים). זה מקשה על קריאות ותחזוקה. חלק מהלוגיקה ב-`home` view יכולה להיות פשוטה יותר.
-*   **אבטחה (Security):**
-    *   **חוזקות:** שימוש ב-`AbstractUser` וב-`UserProfile` להרחבת מודל המשתמש הדיפולטיבי הוא גישה נכונה. הגדרות כמו `SESSION_COOKIE_HTTPONLY`, `CSRF_COOKIE_HTTPONLY`, `SECURE_BROWSER_XSS_FILTER`, `SECURE_CONTENT_TYPE_NOSNIFF`, `PASSWORD_HASHERS` (Argon2) ו-`SECURE_SSL_REDIRECT` (ב-`DEBUG=False`) מצוינות ומעידות על מודעות גבוהה לאבטחה. שילוב `django-allauth` ו-Google Social Auth עם PKCE משפר את אבטחת האימות.
-    *   **חולשות:** `ACCOUNT_LOGOUT_ON_GET = True` ו-`SOCIALACCOUNT_LOGIN_ON_GET = True` הם חורי אבטחה ידועים (CSRF Logout/Login). יש לתקן אותם באופן מיידי. ה-`SITE_ID = 2` הוא קונפיגורציה פוטנציאלית לבעיות אם הפרויקט אמור לתמוך בריבוי אתרים או אם ה-Site ID אינו מוגדר כראוי במאגר.
-*   **מבנה (Structure):**
-    *   **חוזקות:** הפרויקט מאורגן היטב בתוך אפליקציית `core` עם הפרדה הגיונית (מודלים, תצוגות, טפסים, פקודות ניהול, קבצים סטטיים ותבניות). קיומן של פקודות ניהול מותאמות אישית ותיקיות `static`/`templates` ייעודיות לאפליקציה תורם למודולריות. השימוש ב-`.env` וב-`dj_database_url` לניהול משתני סביבה מצוין.
-    *   **חולשות:** ה-`core/models.py` הוא קובץ גדול מאוד. למרות ההערות והחלוקה לסקשנים, אפשר לשקול פיצול למודולים קטנים יותר עבור מודלים שונים (לדוגמה, `users_models.py`, `academic_models.py`, `community_models.py`) כדי לשפר את הניווט והתחזוקה. התיקייה `documents/` ברמת השורש, אם לא מטופלת על ידי S3 ב-Production, דורשת הגנה מתאימה.
+*   **אבטחה (Security):** (85/100)
+    *   **חיובי:** יש שימוש במודל משתמש מותאם אישית (`CustomUser`), מה שמעניק גמישות ואבטחה טובה יותר. `settings.py` מראה הקפדה על עקרונות אבטחה רבים: `SECRET_KEY` ו-`DEBUG` נמשכים ממשתני סביבה, `ALLOWED_HOSTS` מוגדר היטב, יש שימוש ב-`SECURE_SSL_REDIRECT`, HSTS, `SESSION_COOKIE_HTTPONLY`, `CSRF_COOKIE_HTTPONLY`, ו-`X_FRAME_OPTIONS`. השילוב עם `django-allauth` ו-Google Social Auth הוא יציב ומאובטח.
+    *   **פוטנציאל לשיפור:** הגדרת `ACCOUNT_EMAIL_VERIFICATION = "none"` ו-`SOCIALACCOUNT_EMAIL_VERIFICATION = "none"` מפחיתה באופן משמעותי את רמת האבטחה (והאמינות) של המשתמשים במערכת, שכן מיילים אינם מאומתים. במערכת כזו, אימות מייל הוא קריטי למניעת ספאם וזיוף. קוד ה-`generate_referral_code` אינו מבטיח ייחודיות אטומה, ויכול ליצור התנגשות בנפח גבוה.
+    *   **חשוב לציין:** ה-`TODO` ב-`settings.py` לגבי `ALLOWED_HOSTS` הוא קריטי וצריך להיות מטופל לפני פריסה.
 
-לסיכום, הפרויקט שאפתני וכולל פיצ'רים רבים, עם בסיס אבטחתי טוב ברוב ההיבטים. הנקודות העיקריות לשיפור הן באבטחה הקריטית של `ACCOUNT_LOGOUT_ON_GET` ובניקיון/פיצול של תצוגות ומודלים גדולים.
+*   **מבנה (Structure):** (90/100)
+    *   **חיובי:** מבנה הפרויקט ברור ומסודר, עם אפליקציית ליבה (`core`) אחת המכילה את רוב הלוגיקה. השימוש בתיקיות `management/commands` עבור סקריפטים אדמיניסטרטיביים הוא תקני ומצוין. מבנה התבניות (עם תיקיות `partials` ו-`account`/`socialaccount` עבור `allauth`) הוא הגיוני ומאפשר תחזוקה. הפרדת קבצי סטטיקה וקבצים שהועלו (Media) היא תקינה.
+    *   **פוטנציאל לשיפור:** האפליקציה `core` מאוד גדולה ומכילה מודלים ולוגיקה רבים. ייתכן שפיצול לאפליקציות קטנות יותר (לדוגמה: `users`, `courses`, `community`, `files`) יקל על ניהול הפרויקט בקנה מידה גדול יותר בעתיד.
 
 ## 🗺️ 3. מפת ארכיטקטורה (Visual Flowchart)
 
 ```mermaid
 classDiagram
+    direction LR
     class CustomUser {
         +username: str
         +role: str
-        +first_name: str
-        +last_name: str
     }
-
     class UserProfile {
-        +user: OneToOneField(CustomUser)
-        +university: ForeignKey(University)
-        +major: ForeignKey(Major)
-        +year: int
         +bio: str
-        +profile_picture: ImageField
+        +profile_picture: Image
         +current_balance: int
         +lifetime_coins: int
-        +favorite_courses: ManyToManyField(Course)
-        +referral_code: str
-        +referred_by: ForeignKey(CustomUser)
+        +rank_name(): str
+        +earn_coins(amount): void
     }
-
     class Friendship {
-        +user_from: ForeignKey(CustomUser)
-        +user_to: ForeignKey(CustomUser)
         +status: str
     }
-
     class University {
         +name: str
-        +logo: ImageField
     }
-
     class Major {
-        +university: ForeignKey(University)
         +name: str
     }
-
     class Course {
-        +major: ForeignKey(Major)
         +name: str
         +course_number: str
         +view_count: int
     }
-
     class Folder {
-        +course: ForeignKey(Course)
         +name: str
-        +parent: ForeignKey(self)
-        +created_by: ForeignKey(CustomUser)
+        +color: str
     }
-
     class Document {
-        +course: ForeignKey(Course)
-        +folder: ForeignKey(Folder)
         +title: str
-        +file: FileField
-        +uploaded_by: ForeignKey(CustomUser)
+        +file: File
         +download_count: int
-        +likes: ManyToManyField(CustomUser)
+        +total_likes: int
     }
-
-    class Community {
-        +name: str
-        +community_type: str
-        +university: ForeignKey(University)
-        +major: ForeignKey(Major)
-        +members: ManyToManyField(CustomUser)
-    }
-
-    class Post {
-        +user: ForeignKey(CustomUser)
-        +content: str
-        +image: ImageField
-        +community: ForeignKey(Community)
-        +likes: ManyToManyField(CustomUser)
-    }
-
-    class MarketplacePost {
-        +price: DecimalField
-        +category: str
-    }
-
-    class VideoPost {
-        +video_file: FileField
-    }
-
-    class Comment {
-        +post: ForeignKey(Post)
-        +user: ForeignKey(CustomUser)
-        +text: TextField
-    }
-
-    class Report {
-        +document: ForeignKey(Document)
-        +user: ForeignKey(CustomUser)
-        +reason: str
-    }
-
     class AcademicStaff {
-        +university: ForeignKey(University)
         +name: str
-        +email: EmailField
         +average_rating: float
     }
-
-    class Lecturer {
-        +title: str
-    }
-
-    class TeachingAssistant {
-        +title: str
-    }
-
+    class Lecturer
+    class TeachingAssistant
     class StaffReview {
-        +staff_member: ForeignKey(AcademicStaff)
-        +user: ForeignKey(CustomUser)
         +rating: int
-        +review_text: TextField
+        +review_text: str
     }
-
     class CourseSemesterStaff {
-        +course: ForeignKey(Course)
-        +staff_member: ForeignKey(AcademicStaff)
         +academic_year: int
         +semester: str
     }
-
+    class Community {
+        +name: str
+        +community_type: str
+    }
+    class Post {
+        +content: str
+        +image: Image
+        +total_likes: int
+    }
+    class MarketplacePost
+    class VideoPost
+    class Comment {
+        +text: str
+    }
+    class Report {
+        +reason: str
+        +is_resolved: bool
+    }
     class Feedback {
-        +user: ForeignKey(CustomUser)
         +subject: str
-        +message: TextField
+        +message: str
     }
 
-    CustomUser --> UserProfile : OneToOne
-    CustomUser --> Friendship : Many (sent_requests)
-    CustomUser --> Friendship : Many (received_requests)
-    CustomUser --> Post : Many
-    CustomUser --> Document : Many (uploaded_by)
-    CustomUser --> Document : Many (likes)
-    CustomUser --> Community : Many (joined_communities)
-    CustomUser --> Comment : Many
-    CustomUser --> Report : Many
-    CustomUser --> StaffReview : Many
-    CustomUser --> Feedback : Many
+    CustomUser "1" -- "1" UserProfile : profile
+    CustomUser "1" -- "0..N" Post : posts
+    CustomUser "1" -- "0..N" Comment : comments
+    CustomUser "1" -- "0..N" Document : uploaded_by
+    CustomUser "1" -- "0..N" Report : user
+    CustomUser "1" -- "0..N" StaffReview : user
+    CustomUser "1" -- "0..N" Feedback : user
+    CustomUser "1" -- "0..N" Folder : created_by
+    CustomUser "0..N" -- "0..N" Course : favorite_courses (UserProfile)
+    CustomUser "0..N" -- "0..N" Document : liked_documents
+    CustomUser "0..N" -- "0..N" Post : liked_posts
+    CustomUser "0..N" -- "0..N" Community : members
+    CustomUser "1" -- "0..N" Friendship : sent_requests (user_from)
+    CustomUser "1" -- "0..N" Friendship : received_requests (user_to)
+    CustomUser "0..1" -- "0..N" CustomUser : referred_by (UserProfile)
 
-    UserProfile --> University : ManyToOne
-    UserProfile --> Major : ManyToOne
-    UserProfile --> Course : ManyToMany (favorite_courses)
+    UserProfile "0..1" -- "1" University : university
+    UserProfile "0..1" -- "1" Major : major
 
-    University --> Major : OneToMany
-    University --> Course : ManyToOne (via Major)
-    University --> AcademicStaff : OneToMany
-    University --> Community : OneToMany
+    University "1" -- "0..N" Major : majors
+    University "1" -- "0..N" AcademicStaff : staff
+    University "0..1" -- "0..N" Community : university
 
-    Major --> Course : OneToMany
+    Major "1" -- "0..N" Course : courses
+    Major "0..1" -- "0..N" Community : major
 
-    Course --> Folder : OneToMany
-    Course --> Document : OneToMany
-    Course --> CourseSemesterStaff : OneToMany
-    Course --> UserProfile : ManyToMany (favorited_by_users)
+    Course "1" -- "0..N" Folder : folders
+    Course "1" -- "0..N" Document : documents
+    Course "1" -- "0..N" CourseSemesterStaff : semester_staff
 
-    Folder --> Course : ManyToOne
-    Folder --> Folder : ManyToOne (parent)
-    Folder --> Document : OneToMany
-    Folder --> CustomUser : ManyToOne (created_by)
-    Folder --> AcademicStaff : ManyToOne (staff_member)
+    Folder "1" -- "0..N" Folder : subfolders (parent)
+    Folder "0..1" -- "1" AcademicStaff : staff_member
+    Document "0..1" -- "1" Folder : folder
+    Document "0..1" -- "1" AcademicStaff : staff_member
+    Document "1" -- "0..N" Report : reports
 
-    Document --> Course : ManyToOne
-    Document --> Folder : ManyToOne
-    Document --> CustomUser : ManyToOne (uploaded_by)
-    Document --> CustomUser : ManyToMany (likes)
-    Document --> AcademicStaff : ManyToOne (staff_member)
-    Document --> Report : OneToMany
+    AcademicStaff <|-- Lecturer
+    AcademicStaff <|-- TeachingAssistant
+    AcademicStaff "1" -- "0..N" StaffReview : reviews
 
-    Community --> CustomUser : ManyToMany (members)
-    Community --> Post : OneToMany
-    Community --> University : ManyToOne
-    Community --> Major : ManyToOne
+    CourseSemesterStaff "1" -- "1" AcademicStaff : staff_member
 
-    Post <-- MarketplacePost : Inheritance
-    Post <-- VideoPost : Inheritance
-    Post --> CustomUser : ManyToOne
-    Post --> Community : ManyToOne
-    Post --> CustomUser : ManyToMany (likes)
-    Post --> Comment : OneToMany
+    Community "0..1" -- "0..N" Post : posts
 
-    Comment --> Post : ManyToOne
-    Comment --> CustomUser : ManyToOne
-
-    Report --> Document : ManyToOne
-    Report --> CustomUser : ManyToOne
-
-    AcademicStaff <-- Lecturer : Inheritance
-    AcademicStaff <-- TeachingAssistant : Inheritance
-    AcademicStaff --> University : ManyToOne
-    AcademicStaff --> StaffReview : OneToMany
-    AcademicStaff --> CourseSemesterStaff : OneToMany
-    AcademicStaff --> Folder : OneToMany (staff_member)
-    AcademicStaff --> Document : OneToMany (staff_member)
-
-    StaffReview --> AcademicStaff : ManyToOne
-    StaffReview --> CustomUser : ManyToOne
-
-    CourseSemesterStaff --> Course : ManyToOne
-    CourseSemesterStaff --> AcademicStaff : ManyToOne
-
-    Feedback --> CustomUser : ManyToOne
+    Post <|-- MarketplacePost
+    Post <|-- VideoPost
+    Post "1" -- "0..N" Comment : comments
 ```
 
 ## 💡 4. ביקורת קוד אדריכלית (Code Review)
 
-*   🔴 **קריטי (Security/Bugs)**
-    *   **הגדרות `ACCOUNT_LOGOUT_ON_GET` ו-`SOCIALACCOUNT_LOGIN_ON_GET`:** הגדרת `ACCOUNT_LOGOUT_ON_GET = True` ו-`SOCIALACCOUNT_LOGIN_ON_GET = True` ב-`settings.py` מהווה סיכון אבטחתי חמור (CSRF Logout/Login). תוקף יכול לגרום למשתמש להתנתק או להתחבר לחשבון אחר פשוט על ידי הטמעת תמונת פיקסל (או בקשת GET אחרת) באתר צד שלישי.
-        *   **המלצה:** שנה את שתי ההגדרות ל-`False`. פעולות אלה חייבות להתבצע באמצעות בקשות POST בלבד.
-    *   **טיפול בשגיאות 404/500:** פונקציות ה-`error_404` ו-`error_500` ב-`core/views.py` אינן מעבירות את אובייקט ה-`request` לקונטקסט. הדבר יגרום לכך ש-context processors (כמו `pending_reports_count`) לא יפעלו בתבניות השגיאה, ויכול להוביל לשגיאות ריצה או חוסר מידע.
-        *   **המלצה:** שנה את חתימת הפונקציות וההחזר כך שיכללו את ה-`request` בקונטקסט:
-            `return render(request, '404.html', status=404, context={'request': request})`.
-    *   **לוגיקת מטבעות ב-AI Summarization:** פונקציית `summarize_document_ai` מכילה קוד מוער (קומנטס) הקשור לחיוב וזיכוי מטבעות. אם קוד זה יופעל, עליו להיבדק היטב לוודא שאינו יוצר חולשות או לולאות חיוב/זיכוי בלתי רצויות. הקומנטס מעידים על תכונה לא גמורה עם השלכות כספיות.
-        *   **המלצה:** השלם את לוגיקת החיוב/זיכוי עבור AI Summarization, וודא שהיא נבדקת היטב ומוגנת מפני שימוש לרעה או ניצול לרעה.
+*   🔴 **קריטי (Security/Bugs)** - סכנות אבטחה, קריסות אפשריות או שגיאות לוגיות חמורות.
+    *   **אימות כתובת מייל (`settings.py`):** הגדרת `ACCOUNT_EMAIL_VERIFICATION = "none"` ו-`SOCIALACCOUNT_EMAIL_VERIFICATION = "none"` מהווה חולשת אבטחה ועלולה לאפשר למשתמשים להירשם עם כתובות מייל לא קיימות או שאינן שייכות להם. זה יכול להוביל לספאם, זיוף זהויות ובעיות אבטחה נוספות. יש לשנות להגדרה כמו `mandatory` או `optional` ולשלב תהליך אימות מייל מלא.
+    *   **ייחודיות קוד הפניה (`models.py`):** הפונקציה `generate_referral_code` אינה מבטיחה ייחודיות אטומית של הקוד. במקרים נדירים, שני משתמשים יכולים לקבל את אותו קוד, וזה עלול לגרום ל-`IntegrityError` ב-DB בעת שמירה. יש לממש לולאה או מנגנון אחר שבודק את ייחודיות הקוד לפני השמירה, או להשתמש ב-UUIDs.
 
-*   🟡 **שיפור ביצועים (Optimization)**
-    *   **N+1 Queries ב-`global_search`:** ב-`global_search` view, שליפת המסמכים (`documents`) והקורסים (`courses`) אינה משתמשת ב-`select_related` או `prefetch_related` עבור קשרי גומלין נפוצים (כמו `course` עבור מסמכים, או `major` עבור קורסים). הדבר עלול ליצור בעיית N+1 Queries כאשר מנסים לגשת לשדות אלה בתבנית עבור כל אובייקט.
-        *   **המלצה:** הוסף `select_related` או `prefetch_related` לשאילתות הרלוונטיות, לדוגמה:
-            `documents = Document.objects.filter(...).select_related('course', 'uploaded_by')`
-            `courses = Course.objects.filter(...).select_related('major__university')`
-    *   **פעולות אסינכרוניות לסיכום AI:** פונקציית `summarize_document_ai` קוראת ל-`generate_smart_summary(d.file.path)`. פעולות AI וקריאת קבצים יכולות להיות חסומות ואיטיות, מה שיגרום ל-View לחסום את שרשור השרת הראשי (Main Thread) ולפגוע בביצועים ובמדרגיות המערכת.
-        *   **המלצה:** הטמע מערכת תורים (Task Queue) כמו Celery, והעבר את הקריאה ל-`generate_smart_summary` למשימת רקע אסינכרונית. המשתמש יכול לקבל אינדיקציה שהסיכום מתבצע ולקבל התראה כשהוא מוכן.
+*   🟡 **שיפור ביצועים (Optimization)** - עומס על מסד הנתונים (N+1 queries), זמני טעינה איטיים.
+    *   **שאילתות N+1 חוזרות (`profile`, `lecturers_index`, `course_detail`):** קיימות מספר שאילתות N+1 פוטנציאליות. לדוגמה:
+        *   בפונקציה `profile`: `sum(d.total_likes for d in user_docs)` גורמת לכל איטרציה ב-`user_docs` לשלוף מחדש את הלייקים עבור אותו מסמך. עדיף להשתמש ב-`annotate` וב-`aggregate` ברמת השאילתה כדי לשלוף את הנתונים בפעם אחת.
+        *   בפונקציה `lecturers_index`: `staff.privacy_name` ו-`staff.total_reviews` בלולאה על `staff_members`. `total_reviews` יוצר שאילתת ספירה נפרדת עבור כל איש סגל. יש לאחד זאת באמצעות `annotate(total_reviews=Count('reviews'))` על ה-queryset של `AcademicStaff`.
+        *   בפונקציה `course_detail`: כאשר ניגשים לפרטי `staff_member` של `Folder` או `Document` בתבנית, ייתכן שיתרחשו שאילתות N+1. יש להוסיף `select_related('staff_member')` לשאילתות המתאימות.
+    *   **לוגיקת `home` מורכבת:** פונקציית ה-`home` מכילה עץ לוגיקה מורכב עם תנאים מקוננים עבור חיפוש, ניווט לפי מוסדות/מסלולים, ותצוגת ברירת מחדל. אמנם פונקציונלית, היא עלולה להוביל לקריאות נמוכה וקושי בתחזוקה. פיצול הלוגיקה לפונקציות עזר קטנות יותר או שימוש במנגנונים כמו `match` (ב-Python 3.10+) יכול לשפר זאת.
 
-*   🟢 **ניקיון קוד (Clean Code / DRY)**
-    *   **פיצול ה-`course_detail` View:** ה-`course_detail` view ב-`core/views.py` הוא ארוך ומטפל במגוון רחב של פעולות POST (יצירת תיקייה, עריכת תיקייה, העלאת קבצים). זה מפר את עקרון האחריות היחידה (Single Responsibility Principle) ומקשה על קריאות, בדיקה ותחזוקה.
-        *   **המלצה:** פצל את ה-`course_detail` view לפונקציות View קטנות וייעודיות יותר (או Class-Based Views) לכל פעולה, או השתמש ב-Django REST Framework ליצירת API לכל פעולה במקום POST Form אחד ענק.
-    *   **פיצול `core/models.py`:** קובץ `core/models.py` ענק ומכיל מעל 400 שורות קוד עם 20+ מודלים. למרות שיש חלוקה סמנטית באמצעות הערות, גודל הקובץ מקשה על ניווט ותחזוקה.
-        *   **המלצה:** פצל את המודלים למודולים קטנים וספציפיים יותר בתוך תיקיית `core/models/`, לדוגמה: `core/models/users.py`, `core/models/academic.py`, `core/models/community.py`, וכן הלאה. ייבא אותם ל-`core/models/__init__.py` כדי לשמור על הייבוא הנוכחי.
+*   🟢 **ניקיון קוד (Clean Code / DRY)** - חוב טכני, מניעת כפילויות, ארגון קוד.
+    *   **פונקציות View ארוכות:** חלק מה-Views, ובפרט `course_detail` ו-`community_feed`, ארוכים ומכילים לוגיקה מרובה. פיצולן לפונקציות קטנות יותר או מעבר ל-Class-Based Views (CBV) יאפשר קריאות טובה יותר, שימוש חוזר בקוד וקלות בבדיקות.
+    *   **כפילות תנאי השימוש בטפסים (`forms.py`):** הלוגיקה להוספת אישור תנאי השימוש (כולל ה-`mark_safe` והלינקים) מופיעה באופן כפול ב-`CustomSignupForm` וב-`UserProfileForm`. ניתן ליצור `Mixin` או `BaseForm` משותף שמכיל שדה זה כדי למנוע כפילויות.
 
 ## ✅ 5. צ'ק-ליסט משימות (Action Items)
 
-- [x] **תקן את חורי האבטחה ב-`settings.py`**:
-    - [ ] שנה את `ACCOUNT_LOGOUT_ON_GET = True` ל-`False`.
-    - [ ] שנה את `SOCIALACCOUNT_LOGIN_ON_GET = True` ל-`False`.
-    - **חשיבות:** קריטי, מונע התקפות CSRF שיכולות לפגוע באבטחת המשתמשים.
-- [ ] **פצל את ה-`course_detail` View למרכיבים קטנים יותר**:
-    - [ ] צור View חדש (או API endpoint) עבור "יצירת תיקייה".
-    - [ ] צור View חדש (או API endpoint) עבור "עריכת תיקייה".
-    - [ ] צור View חדש (או API endpoint) עבור "העלאת קבצים מהירה".
-    - **חשיבות:** קריטי/ביצועים, ישפר דרמטית את קריאות הקוד, יכולת התחזוקה, הבדיקות ויכולת המדרגיות.
-- [ ] **הטמע עיבוד אסינכרוני למשימות AI וקריאת קבצים**:
-    - [ ] שלב מערכת תורים (כגון Celery) בפרויקט.
-    - [ ] העבר את הקריאה ל-`generate_smart_summary` ופעולות קריאת קבצים דומות (לדוגמה, חישוב גודל קובץ אם הוא חוסם) למשימות רקע אסינכרוניות.
-    - **חשיבות:** ביצועים, ימנע חסימת שרשור השרת הראשי וישפר את חווית המשתמש בזמני תגובה.
+- [ ] **הטמעת אימות כתובת מייל לכלל המשתמשים:**
+    *   שנה את `ACCOUNT_EMAIL_VERIFICATION` ו-`SOCIALACCOUNT_EMAIL_VERIFICATION` ב-`settings.py` ל-`mandatory`.
+    *   הגדר את `ACCOUNT_EMAIL_REQUIRED = True`.
+    *   ודא שיש זרימת משתמשים ברורה לאימות מייל לאחר הרשמה/התחברות (ייתכן שידרשו שינויים קלים בתבניות `allauth`).
+- [ ] **אופטימיזציה של שאילתות N+1 ב-Views מרכזיים:**
+    *   ב-`profile` view, השתמש ב-`user_docs.annotate(total_likes_received=models.Sum('likes'))` במקום לולאה ידנית.
+    *   ב-`lecturers_index` view, השתמש ב-`AcademicStaff.objects.annotate(total_reviews=models.Count('reviews'))` כדי לשלוף את נתוני הדירוגים ביעילות.
+    *   ב-`course_detail` view, הוסף `select_related('staff_member', 'uploaded_by')` לשאילתות על `Folder` ו-`Document` כדי לצמצם גישות חוזרות ל-DB.
+- [ ] **שיפור אבטחת קודי הפניה ובהירות AI:**
+    *   עדכן את `generate_referral_code` ב-`models.py` כך שתבטיח ייחודיות מוחלטת לקוד הפניה (לדוגמה, על ידי לולאה שיוצרת קוד ובודקת את קיומו לפני שמירה, או שימוש ב-UUID).
+    *   ב-`summarize_document_ai` ב-`views.py`, החלט סופית לגבי לוגיקת צריכת המטבעות (האם היא פעילה או לא פעילה) והסר את הקוד המבוטל או תקן אותו כך שישקף את הכוונה האמיתית.
 
 ---
 *נבנה באהבה על ידי סוכן ה-AI שלך 🤖 | מופעל באמצעות Gemini 2.5 Flash*
