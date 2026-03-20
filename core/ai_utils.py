@@ -1,16 +1,13 @@
 from django.conf import settings
 from google import genai
 import PyPDF2
-import os
 
 
-
-
-def extract_text_from_pdf(file_path):
-    """פונקציה שפותחת את ה-PDF ומוציאה ממנו טקסט"""
+def extract_text_from_pdf(file_field):
+    """פותח PDF (גם מ-S3) ומוציא ממנו טקסט"""
     text = ""
     try:
-        with open(file_path, 'rb') as f:
+        with file_field.open('rb') as f:
             reader = PyPDF2.PdfReader(f)
             num_pages = min(5, len(reader.pages))
             for i in range(num_pages):
@@ -22,33 +19,35 @@ def extract_text_from_pdf(file_path):
     return text
 
 
-def generate_smart_summary(file_path):
+def generate_smart_summary(document):
     """שולח את הטקסט ל-Gemini ומחזיר סיכום בעברית"""
 
-    # השורה הזו חייבת להיות פה כדי שהשרת ימשוך את המפתח בזמן אמת
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-    if not os.path.exists(file_path):
-        return "שגיאה: הקובץ לא נמצא על השרת."
+    # 🔥 לוקחים את הקובץ מתוך ה-Document (מתאים ל-S3)
+    file_field = document.file
 
-    text = extract_text_from_pdf(file_path)
+    if not file_field:
+        return "שגיאה: לא נמצא קובץ."
+
+    text = extract_text_from_pdf(file_field)
 
     if not text.strip():
         return "לא הצלחנו לקרוא טקסט מהקובץ. ייתכן והוא סרוק כתמונה."
 
     prompt = f"""
-         תכין לי תקציר ממוקד, קצר וברור בעברית של עד 15 שורות.
-        הוראות עיצוב חובה:
-        1. השתמש בנקודות (Bullet points) כדי לסדר את המידע.
-        2. אל תשתמש בסימני כוכביות (** או *) בשום צורה. כתוב טקסט נקי וקריא.
-        3. עד 15 שורות 
+    תכין לי תקציר ממוקד, קצר וברור בעברית של עד 15 שורות.
 
-        הטקסט לסיכום:
-        {text}
-        """
+    הוראות עיצוב חובה:
+    1. השתמש בנקודות (Bullet points) כדי לסדר את המידע.
+    2. אל תשתמש בסימני כוכביות (** או *) בשום צורה. כתוב טקסט נקי וקריא.
+    3. עד 15 שורות
+
+    הטקסט לסיכום:
+    {text}
+    """
 
     try:
-        # לא נוגע במודל! נשאר בול כמו בגיטהאב שלך:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,

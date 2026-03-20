@@ -495,7 +495,7 @@ def summarize_document_ai(request, document_id):
     #     if p.current_balance < 5:
     #         return JsonResponse({'success': False, 'error': 'אין לך מספיק מטבעות!'})
 
-    s = generate_smart_summary(d.file.path)
+    s = generate_smart_summary(d)
 
     if "שגיאה" not in s:
         # if not is_admin:
