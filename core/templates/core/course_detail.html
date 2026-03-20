@@ -787,4 +787,82 @@
         });
     }
 </script>
+    
+    <script>
+// פונקציית ה-AI המרכזית
+function getAISummary(docId, event) {
+    if (event) event.stopPropagation();
+    
+    const btn = event.currentTarget;
+    // מוצא את הקונטיינר הצהוב שנמצא בתוך doc_row.html
+    const container = document.getElementById(`ai-summary-container-${docId}`);
+    const textArea = container.querySelector('.summary-text');
+    
+    // שינוי מצב הכפתור לטעינה
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/document/${docId}/ai-summary/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // הזרקת הטקסט לתוך הדיב ופתיחת התיבה
+            textArea.innerText = data.summary;
+            container.classList.add('show'); 
+            // גלילה קלה שהמשתמש יראה את הסיכום
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            alert("שגיאה מה-AI: " + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("תקלה בתקשורת: וודא שהשרת רץ ושהמפתח (API KEY) תקין.");
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    });
+}
+
+// לוגיקה קיימת של הדרייב (המשך המיון שנקטע לך)
+function renderFiles() {
+    const fileContainer = document.getElementById('drive-files');
+    const files = Array.from(document.querySelectorAll('.file-card'));
+    let visibleFiles = 0;
+    
+    files.forEach(el => {
+        if (el.getAttribute('data-parent') === currentPath) {
+            el.classList.remove('d-none');
+            visibleFiles++;
+        } else {
+            el.classList.add('d-none');
+        }
+    });
+
+    // הצגת כותרות ומצב ריק
+    document.getElementById('folders-title').classList.toggle('d-none', document.querySelectorAll('.folder-card:not(.d-none)').length === 0);
+    document.getElementById('files-title').classList.toggle('d-none', visibleFiles === 0);
+    document.getElementById('empty-state').classList.toggle('d-none', visibleFiles > 0 || document.querySelectorAll('.folder-card:not(.d-none)').length > 0);
+}
+
+// הפעלה ראשונית בטעינה
+document.addEventListener('DOMContentLoaded', () => {
+    let hashPath = window.location.hash ? window.location.hash.substring(1) : 'root';
+    rebuildHistoryFromPath(hashPath);
+    renderDrive();
+    renderFiles();
+});
+</script>
 {% endblock %}
+

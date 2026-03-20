@@ -485,6 +485,7 @@ def download_file(request, document_id):
     return redirect(d.file.url)
 
 
+# הוסף את זה מעל הפונקציה כדי לבדוק אם זו בעיית אבטחה
 @login_required
 def summarize_document_ai(request, document_id):
     d, p = get_object_or_404(Document, id=document_id), request.user.profile
