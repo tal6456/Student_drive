@@ -22,13 +22,11 @@
     <style>
         .navbar > .container {
             display: flex !important;
-            flex-direction: row-reverse !important; 
+            flex-direction: row-reverse !important;
             justify-content: space-between;
             align-items: center;
         }
-
         .nav-hover-wrapper { position: relative; }
-        
         .navbar-collapse {
             position: absolute;
             top: 100%;
@@ -44,7 +42,6 @@
             transition: all 0.3s ease;
             z-index: 1050;
         }
-
         @media (min-width: 992px) {
             .nav-hover-wrapper:hover .navbar-collapse {
                 visibility: visible;
@@ -53,6 +50,13 @@
                 display: block !important;
             }
             .navbar-toggler { display: block !important; }
+        }
+
+        /* --- אנימציה וסטייל למטבעות הצפים --- */
+        @keyframes coinFloat {
+            0% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-58%) translateX(-3px); }
+            100% { transform: translateY(-50%) translateX(0); }
         }
 
         .floating-coins {
@@ -67,9 +71,28 @@
             box-shadow: -4px 4px 15px rgba(0,0,0,0.2);
             border: 1px solid #E69500;
             border-right: none;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: coinFloat 3s ease-in-out infinite;
         }
+
+        .floating-coins:hover {
+            padding-right: 25px;
+            transform: translateY(-50%) scale(1.1);
+            background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
+            box-shadow: -6px 6px 20px rgba(255, 165, 0, 0.4);
+            animation-play-state: paused; /* מפסיק לצוף כשנוגעים בו */
+        }
+
+        .floating-coins i {
+            transition: transform 0.6s ease;
+        }
+
+        .floating-coins:hover i {
+            transform: rotate(360deg) scale(1.2);
+        }
+
         .floating-coins a { color: #664000; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        /* ------------------------------------ */
 
         .footer-lang-bar { margin-bottom: 20px; }
         .lang-btn-footer {
@@ -82,10 +105,13 @@
             margin: 0 8px;
             transition: 0.3s;
             display: inline-block;
+            cursor: pointer;
         }
         .lang-btn-footer:hover { background: var(--gd-primary); color: white; }
         
-        /* עיצוב התראות בתוך התפריט */
+        iframe.goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        .goog-te-gadget { display: none !important; }
         .nav-notification-badge {
             background-color: #dc3545;
             color: white;
@@ -103,7 +129,7 @@
     <div id="loading-bar"></div>
 
     {% if user.is_authenticated %}
-    <div class="floating-coins animate__animated animate__fadeInRight">
+    <div class="floating-coins">
         <a href="{% url 'profile' %}">
             <i class="fas fa-coins fs-4"></i>
             <span class="fs-5">{{ user.profile.current_balance }}</span>
@@ -113,8 +139,7 @@
 
     <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom shadow-sm">
         <div class="container">
-            
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale" href="{% url 'home' %}">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate" href="{% url 'home' %}">
                 <div class="d-flex align-items-center justify-content-center bg-primary bg-gradient shadow-sm" style="width: 40px; height: 40px; border-radius: 12px; transform: rotate(-8deg);">
                     <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
                 </div>
@@ -146,7 +171,7 @@
                                         <span class="nav-notification-badge">{{ user.profile.pending_friend_requests.count }}</span>
                                     {% endif %}
                                 </a>
-                                </li>
+                            </li>
 
                             <li class="nav-item border-top pt-3 mt-2">
                                 <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle ms-2"></i> פרופיל</a>
@@ -175,15 +200,15 @@
 
     <footer class="footer py-5 mt-auto border-top">
         <div class="container text-center">
-            <div class="footer-lang-bar">
-                <a href="javascript:void(0)" onclick="doGTranslate('he|en')" class="lang-btn-footer">English</a>
-                <a href="javascript:void(0)" onclick="doGTranslate('he|he')" class="lang-btn-footer">עברית</a>
+            <div class="footer-lang-bar notranslate">
+                <a onclick="TranslateRunner('en')" class="lang-btn-footer">English</a>
+                <a onclick="TranslateRunner('he')" class="lang-btn-footer">עברית</a>
             </div>
-            <div id="google_translate_element" style="display:none"></div>
+            <div id="google_translate_element" style="display:none;"></div>
 
             <div class="row align-items-center">
                 <div class="col-md-4 text-md-start">
-                    <span class="fw-bold fs-5">בית הסטודנט</span>
+                    <span class="fw-bold fs-5 notranslate">בית הסטודנט</span>
                     <p class="text-muted mb-0 small">&copy; 2026 כל הזכויות שמורות</p>
                 </div>
                 <div class="col-md-4">
@@ -200,29 +225,35 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
 
-    <script>
-        // תיקון פונקציית התרגום
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({pageLanguage: 'he', autoDisplay: false}, 'google_translate_element');
-        }
-
-        function doGTranslate(lang_pair) {
-            const lang = lang_pair.split('|')[1];
-            if (typeof(document.cookie) !== 'undefined') {
-                document.cookie = "googtrans=/he/" + lang + "; path=/";
-                document.cookie = "googtrans=/he/" + lang + "; domain=" + window.location.hostname + "; path=/";
-            }
+    <script type="text/javascript">
+        function TranslateRunner(l) {
+            var c = "/he/" + l;
+            var d = window.location.hostname;
+            document.cookie = "googtrans=" + c + "; path=/";
+            document.cookie = "googtrans=" + c + "; domain=" + d + "; path=/";
+            localStorage.setItem('user_lang', l);
             location.reload();
         }
 
-        // שאר הפונקציות שלך (Like, AI, CSRF)
-        function getCsrfToken() { return document.querySelector('#csrf-wrapper [name=csrfmiddlewaretoken]')?.value || ''; }
-        
-        async function secureFetch(resource, config = {}) {
-            if (!config.headers) config.headers = {};
-            config.headers['X-CSRFToken'] = getCsrfToken();
-            return window.fetch(resource, config);
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'he',
+                includedLanguages: 'en,he',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
         }
+
+        (function() {
+            var s = localStorage.getItem('user_lang');
+            if (s && s !== 'he') {
+                var v = "/he/" + s;
+                if (!document.cookie.includes('googtrans')) {
+                    document.cookie = "googtrans=" + v + "; path=/";
+                    document.cookie = "googtrans=" + v + "; domain=" + window.location.hostname + "; path=/";
+                }
+            }
+        })();
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
