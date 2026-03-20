@@ -4,7 +4,7 @@ import PyPDF2
 import os
 
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
 
 def extract_text_from_pdf(file_path):
     """פונקציה שפותחת את ה-PDF ומוציאה ממנו טקסט"""
