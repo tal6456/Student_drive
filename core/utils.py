@@ -34,6 +34,6 @@ def validate_file_size(value):
     """
     מוודא שקובץ שהועלה לא חורג מהמשקל המקסימלי המותר (20MB)
     """
-    limit_mb = 20
+    limit_mb = 4
     if value.size > limit_mb * 1024 * 1024:
         raise ValidationError(f"אופס! הקובץ גדול מדי ({limit_mb}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ (ניתן לעשות זאת בחינם באתר iLovePDF) ונסה שוב.")
