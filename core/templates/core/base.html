@@ -353,5 +353,76 @@
         }
     });
 </script>
+<script>
+function toggleFavorite(event, el) {
+    event.preventDefault();
+    const url = el.dataset.url;
+    const starIcon = el.querySelector('i');
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_favorite) {
+            // החלפת אייקון לכוכב מלא
+            starIcon.classList.remove('far', 'opacity-50');
+            starIcon.classList.add('fas', 'text-warning');
+
+            // --- אנימציה מגניבה ---
+            starIcon.animate([
+                { transform: 'scale(1)', opacity: 0.5 },
+                { transform: 'scale(1.6)', opacity: 1 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], {
+                duration: 400,
+                easing: 'ease-out'
+            });
+
+            // אפשר להוסיף פיצוץ חלקיקים קטנים (אופציונלי)
+            createStarParticles(el);
+
+        } else {
+            starIcon.classList.remove('fas', 'text-warning');
+            starIcon.classList.add('far', 'opacity-50');
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+// פונקציה לאפקט חלקיקים קטנים של כוכבים
+function createStarParticles(el) {
+    for (let i = 0; i < 5; i++) {
+        const particle = document.createElement('div');
+        particle.style.position = 'absolute';
+        particle.style.width = '6px';
+        particle.style.height = '6px';
+        particle.style.background = '#FFD700';
+        particle.style.borderRadius = '50%';
+        particle.style.top = '50%';
+        particle.style.left = '50%';
+        particle.style.pointerEvents = 'none';
+        particle.style.zIndex = 1000;
+        el.appendChild(particle);
+
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 30 + Math.random() * 20;
+
+        particle.animate([
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: `translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px) scale(0.5)`, opacity: 0 }
+        ], {
+            duration: 500 + Math.random()*200,
+            easing: 'ease-out'
+        });
+
+        setTimeout(() => particle.remove(), 700);
+    }
+}
+</script>
 </body>
 </html>
