@@ -7,7 +7,7 @@
          style="cursor: pointer; z-index: 20; position: relative;" 
          title="הוסף/הסר ממועדפים">
         
-        {% if course in favorite_courses %}
+        {% if course.id in favorite_ids %}
             <i class="fas fa-star fs-5 text-warning star-icon-{{ course.id }} hover-scale"></i>
         {% else %}
             <i class="far fa-star fs-5 opacity-50 star-icon-{{ course.id }} hover-scale" style="color: var(--gd-text-muted);"></i>

@@ -75,6 +75,8 @@ def home(request):
         'top_users': top_users,
         'years': year_names,
     }
+    if request.user.is_authenticated:
+        context['favorite_ids'] = request.user.profile.favorite_courses.values_list('id', flat=True)
 
     # 3. לוגיקת חיפוש
     if search_query:
