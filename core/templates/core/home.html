@@ -206,7 +206,7 @@
                         </div>
                     {% endif %}
 
-                {% elif user.is_authenticated and not search_query and not request.GET.browse and step == 'select_uni' %}
+                {% elif user.is_authenticated and not search_query and not request.GET.browse and step != 'search_results' %}
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary ms-2"></i> הסמסטר שלי</h4>
                         <a href="{% url 'lecturers_index' %}" class="btn btn-sm rounded-pill px-3 fw-bold transition hover-scale" style="background: rgba(255, 193, 7, 0.15); color: #d39e00; border: 1px solid rgba(255, 193, 7, 0.3);">
