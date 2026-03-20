@@ -161,15 +161,19 @@
 
         .floating-coins a { color: #664000; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; }
 
-        .footer-lang-bar { margin-bottom: 20px; }
+        footer-lang-bar { 
+    margin-bottom: 0px; /* שינינו מ-20 ל-0 */
+    display: flex; 
+    gap: 5px; 
+}
         .lang-btn-footer {
-            padding: 6px 20px;
+            padding: 6px 15px;
             border-radius: 50px;
             border: 1.5px solid #1a73e8;
             color: #1a73e8;
             text-decoration: none;
             font-weight: bold;
-            margin: 0 8px;
+            margin: 0 4px;
             transition: 0.3s;
             display: inline-block;
             cursor: pointer;
@@ -280,29 +284,35 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="footer py-5 mt-auto border-top">
-        <div class="container text-center">
-            <div class="footer-lang-bar notranslate">
-                <a onclick="TranslateRunner('en')" class="lang-btn-footer">English</a>
-                <a onclick="TranslateRunner('he')" class="lang-btn-footer">עברית</a>
+<footer class="footer py-4 mt-auto border-top">
+    <div class="container">
+        <div class="row align-items-center">
+            
+            <div class="col-md-4 text-md-start d-flex align-items-center gap-2">
+                <span class="fw-bold fs-6 notranslate">בית הסטודנט</span>
+                <small class="text-muted">© 2026</small>
             </div>
-            <div id="google_translate_element" style="display:none;"></div>
 
-            <div class="row align-items-center">
-                <div class="col-md-4 text-md-start">
-                    <span class="fw-bold fs-5 notranslate">בית הסטודנט</span>
-                    <p class="text-muted mb-0 small">&copy; 2026 כל הזכויות שמורות</p>
+            <div class="col-md-4 d-flex justify-content-center align-items-center gap-3">
+                <div class="footer-lang-bar notranslate d-flex gap-2 m-0">
+                    <a onclick="TranslateRunner('en')" class="lang-btn-footer">English</a>
+                    <a onclick="TranslateRunner('he')" class="lang-btn-footer">עברית</a>
                 </div>
-                <div class="col-md-4">
-                    <a href="{% url 'submit_feedback' %}" class="text-decoration-none fw-bold small"><i class="fas fa-comment-dots"></i> הצעות ייעול</a>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <a href="{% url 'privacy' %}" class="text-muted small mx-2">פרטיות</a>
-                    <a href="{% url 'terms' %}" class="text-muted small mx-2">תנאים</a>
-                </div>
+                <div style="border-left: 1px solid #dee2e6; height: 15px;" class="d-none d-md-block"></div>
+                <a href="{% url 'submit_feedback' %}" class="text-decoration-none fw-bold small">
+                    <i class="fas fa-comment-dots text-primary"></i> הצעות ייעול
+                </a>
             </div>
+
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'privacy' %}" class="text-muted small mx-2">פרטיות</a>
+                <a href="{% url 'terms' %}" class="text-muted small mx-2">תנאים</a>
+            </div>
+
         </div>
-    </footer>
+    </div>
+    <div id="google_translate_element" style="display:none;"></div>
+</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
