@@ -83,11 +83,12 @@
     .side-leaderboard:hover { left: 0; }
     .side-handle { width: 40px; height: 80px; background: linear-gradient(135deg, #ffd700, #ffa500); color: white; display: flex; align-items: center; justify-content: center; border-radius: 0 20px 20px 0; cursor: pointer; }
     .side-panel { flex: 1; background: white; border-radius: 0 15px 15px 0; border: 1px solid #eee; }
+    .year-selector-card { border: 1px solid var(--gd-border); }
 </style>
 
 <div class="container mt-4 mb-5 home-container" dir="rtl">
 
-    {# --- ראש העמוד המעודכן --- #}
+    {# --- ראש העמוד --- #}
     <div class="row justify-content-center mb-5 animate__animated animate__fadeIn">
         <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
@@ -152,89 +153,59 @@
     </div>
 
     <div class="row g-4">
-        {# --- תוכן מרכזי המכיל את ההיררכיה --- #}
+        {# --- תוכן מרכזי --- #}
         <div class="col-lg-8 order-2 order-lg-1">
             <div class="card shadow-sm border-0 rounded-4 p-4" style="min-height: 600px; background-color: var(--gd-card);">
                 
                 {% if step == 'search_results' %}
+                    {# --- תצוגת חיפוש --- #}
                     <div class="mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
                         <div>
                             <h4 class="fw-bold mb-0">תוצאות חיפוש עבור: <span class="text-primary">"{{ search_query }}"</span></h4>
-                            <small class="text-muted">מצאנו {{ courses_results|length }} קורסים רלוונטיים</small>
+                            <small class="text-muted">מצאנו {{ courses_results|length }} קורסים</small>
                         </div>
                         <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">נקה חיפוש</a>
                     </div>
 
-                    {% if courses_results %}
-                        <div class="row g-3">
-                            {% for course in courses_results %}
-                            <div class="col-12">
-                                <a href="{% url 'course_detail' course.id %}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale shadow-sm" style="border-right: 5px solid {{ course.major.university.brand_color|default:'#1a73e8' }} !important;">
-                                    <div class="flex-shrink-0 ms-3 d-none d-sm-block">
-                                        {% if course.major.university.logo %}
-                                            <img src="{{ course.major.university.logo.url }}" alt="לוגו" class="rounded-circle border p-1" style="width: 50px; height: 50px; object-fit: contain; background: white;">
-                                        {% else %}
-                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
-                                                <i class="fas fa-university text-muted"></i>
-                                            </div>
-                                        {% endif %}
+                    <div class="row g-3">
+                        {% for course in courses_results %}
+                        <div class="col-12">
+                            <a href="{% url 'course_detail' course.id %}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale shadow-sm">
+                                <div class="flex-grow-1 text-end">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge rounded-pill bg-light text-dark border small fw-normal">{{ course.course_number }}</span>
+                                        <span class="fw-bold text-dark fs-5">{{ course.name }}</span>
                                     </div>
-                                    <div class="flex-grow-1 text-end">
-                                        <div class="d-flex align-items-center gap-2 mb-1">
-                                            <span class="badge rounded-pill bg-light text-dark border small fw-normal">{{ course.course_number }}</span>
-                                            <span class="fw-bold text-dark fs-5">{{ course.name }}</span>
-                                        </div>
-                                        <div class="text-muted small">
-                                            <i class="fas fa-graduation-cap ms-1"></i> {{ course.major.university.name }} 
-                                            <span class="mx-1">•</span> 
-                                            <i class="fas fa-book-open ms-1"></i> {{ course.major.name }}
-                                        </div>
-                                    </div>
-                                    <div class="ms-auto">
-                                        <i class="fas fa-chevron-left text-muted opacity-50"></i>
-                                    </div>
-                                </a>
-                            </div>
-                            {% endfor %}
+                                    <div class="text-muted small">{{ course.major.university.name }} | {{ course.major.name }}</div>
+                                </div>
+                                <i class="fas fa-chevron-left ms-auto text-muted"></i>
+                            </a>
                         </div>
-                    {% else %}
+                        {% empty %}
                         <div class="text-center py-5">
-                            <i class="fas fa-search-minus text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
-                            <h5 class="fw-bold text-muted">אופס! לא מצאנו קורס כזה...</h5>
-                            <p class="text-muted small">נסה לחפש לפי שם הקורס או מספר הקורס (למשל: "חדווא")</p>
-                            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 mt-2">חזרה לדף הבית</a>
+                            <h5 class="text-muted">לא נמצאו תוצאות לחיפוש זה.</h5>
                         </div>
-                    {% endif %}
-
-                {% elif user.is_authenticated and not search_query and not request.GET.browse and step != 'search_results' and step != 'select_uni' and step != 'select_major' and step != 'select_year' and step != 'show_courses' %}
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary ms-2"></i> הסמסטר שלי</h4>
-                        <a href="{% url 'lecturers_index' %}" class="btn btn-sm rounded-pill px-3 fw-bold transition hover-scale" style="background: rgba(255, 193, 7, 0.15); color: #d39e00; border: 1px solid rgba(255, 193, 7, 0.3);">
-                            <i class="fas fa-star ms-1 small"></i> דירוג מרצים
-                        </a>
-                    </div>
-                    <div class="text-center py-5 opacity-25">
-                        <p>הוסיפו קורסים למועדפים כדי שיופיעו כאן.</p>
+                        {% endfor %}
                     </div>
 
-                {% else %}
-                    {# --- היררכיית העץ המלאה --- #}
+                {% elif request.GET.browse or step == 'select_uni' or step == 'select_major' or step == 'select_year' or step == 'show_courses' %}
+                    {# --- תצוגת ניווט (העץ) --- #}
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0 fw-bold">
                                 <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none text-primary">מוסדות</a></li>
-                                {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}" class="text-decoration-none text-muted">{{ selected_uni.name }}</a></li>{% endif %}
+                                {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}&browse=true" class="text-decoration-none text-muted">{{ selected_uni.name }}</a></li>{% endif %}
                                 {% if selected_major %}<li class="breadcrumb-item active">{{ selected_major.name }}</li>{% endif %}
                             </ol>
                         </nav>
-                        <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">חזרה</a>
+                        <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">חזרה ללובי</a>
                     </div>
 
-                    {% if step == 'select_uni' %}
+                    {% if step == 'select_uni' or not selected_uni %}
                         <div class="row g-3">
                             {% for uni in universities %}
                             <div class="col-md-6">
-                                <a href="?university={{ uni.id }}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
+                                <a href="?university={{ uni.id }}&browse=true" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
                                     <span class="fw-bold text-dark">{{ uni.name }}</span>
                                     <i class="fas fa-chevron-left ms-auto text-muted"></i>
                                 </a>
@@ -245,7 +216,7 @@
                         <div class="row g-3">
                             {% for major in majors %}
                             <div class="col-md-6">
-                                <a href="?university={{ uni_id }}&major={{ major.id }}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
+                                <a href="?university={{ uni_id }}&major={{ major.id }}&browse=true" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
                                     <span class="fw-bold text-dark">{{ major.name }}</span>
                                     <i class="fas fa-chevron-left ms-auto text-muted"></i>
                                 </a>
@@ -256,7 +227,7 @@
                         <div class="row g-4">
                             {% for y_val, y_name in years.items %}
                             <div class="col-md-4 text-center">
-                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white shadow-sm">
+                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white shadow-sm">
                                     <div class="display-6 fw-bold text-primary">{{ y_val }}</div>
                                     <div class="fw-bold text-dark">{{ y_name }}</div>
                                 </a>
@@ -273,6 +244,21 @@
                             {% endif %}
                         </div>
                     {% endif %}
+
+                {% else %}
+                    {# --- ברירת מחדל: "הסמסטר שלי" --- #}
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary ms-2"></i> הסמסטר שלי</h4>
+                        <a href="{% url 'lecturers_index' %}" class="btn btn-sm rounded-pill px-3 fw-bold transition hover-scale" style="background: rgba(255, 193, 7, 0.15); color: #d39e00; border: 1px solid rgba(255, 193, 7, 0.3);">
+                            <i class="fas fa-star ms-1 small"></i> דירוג מרצים
+                        </a>
+                    </div>
+                    
+                    <div class="text-center py-5 opacity-25">
+                        <i class="fas fa-book-reader mb-3" style="font-size: 3.5rem;"></i>
+                        <h5 class="fw-bold">הדרייב שלך ריק?</h5>
+                        <p>הוסיפו קורסים למועדפים כדי שיופיעו כאן בגישה מהירה.</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -299,7 +285,7 @@
     </div>
 </div>
 
-{# --- Modal --- #}
+{# --- Modal אירוע --- #}
 <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true" dir="rtl">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 rounded-4 shadow">
@@ -400,8 +386,8 @@
     function updateEventList(key) {
         const list = document.getElementById('eventList');
         const header = document.getElementById('selectedDateHeader');
-        const [y, m, d] = key.split('-');
-        header.innerText = `אירועים ל-${d}/${m}:`;
+        const parts = key.split('-');
+        header.innerText = `אירועים ל-${parts[2]}/${parts[1]}:`;
         if(evs[key]) {
             list.innerHTML = evs[key].map(ev => `
                 <div class="p-2 bg-light rounded-3 border-start border-primary border-3 shadow-sm mb-2 text-end">

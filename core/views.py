@@ -53,7 +53,7 @@ def home(request):
     uni_id = request.GET.get('university')
     major_id = request.GET.get('major')
     year_id = request.GET.get('year')
-    browse_all = request.GET.get('browse')
+    browse_all = request.GET.get('browse')  # הפרמטר החשוב!
 
     # הגדרות בסיסיות
     year_names = {1: "שנה א'", 2: "שנה ב'", 3: "שנה ג'", 4: "שנה ד'", 5: "תואר שני"}
@@ -67,56 +67,53 @@ def home(request):
     context = {
         'search_query': search_query,
         'top_users': top_users,
-        'year_names': year_names,
+        'years': year_names,  # שים לב: שיניתי ל-'years' כדי שיתאים ל-Template שלך (שם כתוב years.items)
     }
 
-    # לוגיקת חיפוש (כאן השינוי המרכזי)
+    # 1. לוגיקת חיפוש - עדיפות ראשונה
     if search_query:
-        # מחפש קורסים לפי שם או מספר קורס
         courses_results = Course.objects.filter(
             Q(name__icontains=search_query) | Q(course_number__icontains=search_query)
         ).select_related('major__university')
 
         context['courses_results'] = courses_results
-        context['step'] = 'search_results'  # מגדיר סטפ מיוחד לחיפוש
+        context['step'] = 'search_results'
         return render(request, 'core/home.html', context)
 
-    # לוגיקת ניווט רגילה (Steps)
-    if request.user.is_authenticated and not any([uni_id, major_id, year_id, browse_all]):
-        profile = request.user.profile
-        if profile.university and profile.major and profile.year:
-            uni_id = profile.university.id
-            major_id = profile.major.id
-            year_id = profile.year
+    # 2. בדיקה האם להציג את עץ המוסדות או את "הסמסטר שלי"
+    # השינוי כאן: אנחנו נכנסים ללוגיקת ה-Steps רק אם יש פרמטר של ניווט (uni/major) או אם המשתמש לחץ על "חיפוש מוסד" (browse_all)
+    if any([uni_id, major_id, year_id, browse_all]):
 
-    if uni_id:
-        context['selected_uni'] = get_object_or_404(University, id=uni_id)
-        context['uni_id'] = uni_id
+        if uni_id:
+            context['selected_uni'] = get_object_or_404(University, id=uni_id)
+            context['uni_id'] = uni_id
 
-    if not uni_id:
-        context['universities'] = University.objects.all()
-        context['step'] = 'select_uni'
-    elif uni_id and not major_id:
-        context['majors'] = Major.objects.filter(university_id=uni_id)
-        context['step'] = 'select_major'
-    elif major_id and not year_id:
-        context['selected_major'] = get_object_or_404(Major, id=major_id)
-        context['years'] = year_names
-        context['step'] = 'select_year'
-        context['major_id'] = major_id
+        if not uni_id:
+            context['universities'] = University.objects.all()
+            context['step'] = 'select_uni'
+        elif uni_id and not major_id:
+            context['majors'] = Major.objects.filter(university_id=uni_id)
+            context['step'] = 'select_major'
+        elif major_id and not year_id:
+            context['selected_major'] = get_object_or_404(Major, id=major_id)
+            context['step'] = 'select_year'
+            context['major_id'] = major_id
+        else:
+            # הצגת קורסים בתוך הניווט
+            courses = Course.objects.filter(major_id=major_id, year=year_id)
+            context['selected_major'] = get_object_or_404(Major, id=major_id)
+            context['sem_a'] = courses.filter(semester='A')
+            context['sem_b'] = courses.filter(semester='B')
+            context['step'] = 'show_courses'
+            context['major_id'] = major_id
+            context['year'] = year_id
+
     else:
-        # הצגת קורסים לפי סינון מובנה
-        courses = Course.objects.filter(major_id=major_id, year=year_id)
-        context['selected_major'] = get_object_or_404(Major, id=major_id)
-        context['sem_a'] = courses.filter(semester='A', track='general')
-        context['sem_b'] = courses.filter(semester='B', track='general')
-        context['specializations'] = courses.exclude(track='general').order_by('track')
-        context['step'] = 'show_courses'
-        context['major_id'] = major_id
-        context['year'] = year_id
-
-    if request.user.is_authenticated:
-        context['favorite_courses'] = request.user.profile.favorite_courses.select_related('major__university').all()
+        # 3. ברירת מחדל מוחלטת - דף הבית הראשי ("הסמסטר שלי")
+        # כאן אנחנו לא מגדירים step, מה שיגרום ל-Template להציג את ה-else הסופי (הסמסטר שלי)
+        if request.user.is_authenticated:
+            context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
+                'major__university').all()
 
     return render(request, 'core/home.html', context)
 def live_search(request):
