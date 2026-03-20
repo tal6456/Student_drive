@@ -23,6 +23,28 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 # הגדרת דומיינים מורשים (Localhost + DigitalOcean + Render למקרה גיבוי)
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '.ondigitalocean.app', 'student-drive.onrender.com']
 
+# ==========================================
+# הגדרות שליחת מיילים (דרך ג'ימייל)
+# ==========================================
+# רשימת המנהלים שיקבלו מייל בכל פעם שיש שגיאת 500
+ADMINS = [
+    ('Tal', 'student.drive10@gmail.com'),
+    ('KOZO', 'amitkozo5528@gmail.com') # קוזו תעדכן את המייל הרישמי שלך
+]
+
+# המייל שממנו יישלחו ההודעות (יכול להיות אותו מייל)
+SERVER_EMAIL = 'student.drive10@gmail.com'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'student.drive10@gmail.com'
+# כאן שמים סיסמת אפליקציה של גוגל, לא את הסיסמה הרגילה שלך! עדיף להשתמש במשתנה סביבה:
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+
 # מאפשר הזרקת דומיין מותאם אישית (Custom Domain) דרך משתני סביבה
 APP_DOMAIN = os.getenv('APP_DOMAIN')
 if APP_DOMAIN:
@@ -177,14 +199,6 @@ SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 # דילוג על טופס יצירת משתמש בהתחברות דרך גוגל
 SOCIALACCOUNT_AUTO_SIGNUP = True
-# ==========================================
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-X_FRAME_OPTIONS = 'SAMEORIGIN'
-
-handler404 = 'core.views.error_404'
-handler500 = 'core.views.error_500'
 
 # -----------------------------------------------------------
 # -----------------------------------------------------------
@@ -205,17 +219,7 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-    # הגדרות אמזון S3
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
 
-    # הגדרות שגורמות לג'נגו להשתמש ב-S3 עבור קבצי מדיה (הקבצים שהסטודנטים מעלים)
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-    # כתובת ה-URL שדרכה הסטודנטים יראו את הקבצים
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 # ==========================================
 # Google Social Auth Configuration
@@ -236,3 +240,19 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # מוודא שהמערכת מחפשת את הנתונים בטבלאות האדמין ולא בקוד
 SOCIALACCOUNT_STORE_TOKENS = True
+
+# ==========================================
+# הגדרות אמזון S3 (חכמות - עובדות לפי משתני סביבה)
+# ==========================================
+if os.getenv('AWS_ACCESS_KEY_ID'):
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+
+    # שימוש ב-S3 לקבצי מדיה
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+    # ביטול פקיעת התוקף של הקישורים (כדי שלא ייעלמו אחרי שעה)
+    AWS_QUERYSTRING_AUTH = False
