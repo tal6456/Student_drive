@@ -24,6 +24,10 @@ def extract_text_from_pdf(file_path):
 
 def generate_smart_summary(file_path):
     """שולח את הטקסט ל-Gemini ומחזיר סיכום בעברית"""
+
+    # השורה הזו חייבת להיות פה כדי שהשרת ימשוך את המפתח בזמן אמת
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
     if not os.path.exists(file_path):
         return "שגיאה: הקובץ לא נמצא על השרת."
 
@@ -31,7 +35,7 @@ def generate_smart_summary(file_path):
 
     if not text.strip():
         return "לא הצלחנו לקרוא טקסט מהקובץ. ייתכן והוא סרוק כתמונה."
-    # מה שאנחנו שולחים ל - AI
+
     prompt = f"""
          תכין לי תקציר ממוקד, קצר וברור בעברית של עד 15 שורות.
         הוראות עיצוב חובה:
@@ -44,7 +48,7 @@ def generate_smart_summary(file_path):
         """
 
     try:
-        # הקריאה החדשה והמעודכנת למודל (שונה לגרסה 2.5)
+        # לא נוגע במודל! נשאר בול כמו בגיטהאב שלך:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
