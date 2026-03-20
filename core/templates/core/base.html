@@ -26,31 +26,73 @@
             justify-content: space-between;
             align-items: center;
         }
+        
         .nav-hover-wrapper { position: relative; }
+        
+        /* --- המבורגר מודרני, צר ויוקרתי --- */
         .navbar-collapse {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 15px);
             right: 0;
-            width: 320px;
-            background: white;
-            box-shadow: -10px 15px 40px rgba(0,0,0,0.1);
-            border-radius: 0 0 20px 20px;
+            width: 260px; /* רוחב צר יותר */
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px); /* אפקט זכוכית */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-radius: 20px;
             padding: 20px;
             visibility: hidden;
             opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
+            transform: translateY(15px) scale(0.97);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1050;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
+
         @media (min-width: 992px) {
             .nav-hover-wrapper:hover .navbar-collapse {
                 visibility: visible;
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
                 display: block !important;
             }
             .navbar-toggler { display: block !important; }
         }
+
+        .navbar-nav .nav-link {
+            color: #333 !important;
+            font-weight: 600;
+            padding: 10px 15px !important;
+            border-radius: 12px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background: rgba(26, 115, 232, 0.08);
+            color: #1a73e8 !important;
+            transform: translateX(-5px);
+        }
+
+        /* כפתור אנליטיקס מובלט לאדמינים בלבד */
+        .admin-link {
+            background: rgba(108, 92, 231, 0.1) !important;
+            color: #6c5ce7 !important;
+            margin-top: 8px;
+        }
+        .admin-link:hover {
+            background: #6c5ce7 !important;
+            color: white !important;
+        }
+
+        .navbar-collapse .input-group {
+            background: #f1f3f4;
+            border: none !important;
+            border-radius: 100px;
+            padding: 2px 5px;
+        }
+        /* ------------------------------------ */
 
         /* --- אנימציה וסטייל למטבעות הצפים --- */
         @keyframes coinFloat {
@@ -80,20 +122,14 @@
             transform: translateY(-50%) scale(1.1);
             background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
             box-shadow: -6px 6px 20px rgba(255, 165, 0, 0.4);
-            animation-play-state: paused; /* מפסיק לצוף כשנוגעים בו */
+            animation-play-state: paused;
         }
 
-        .floating-coins i {
-            transition: transform 0.6s ease;
-        }
-
-        .floating-coins:hover i {
-            transform: rotate(360deg) scale(1.2);
-        }
-
+        .floating-coins i { transition: transform 0.6s ease; }
+        .floating-coins:hover i { transform: rotate(360deg) scale(1.2); }
         .floating-coins a { color: #664000; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        /* ------------------------------------ */
 
+        /* --- שונות --- */
         .footer-lang-bar { margin-bottom: 20px; }
         .lang-btn-footer {
             padding: 6px 20px;
@@ -155,18 +191,18 @@
                     <form class="mb-4" action="{% url 'global_search' %}" method="GET">
                         <div class="input-group shadow-sm rounded-pill overflow-hidden border">
                             <button class="btn bg-white border-0 text-muted px-3" type="submit"><i class="fas fa-search"></i></button>
-                            <input class="form-control border-0 bg-white" type="search" name="q" placeholder="חיפוש מהיר..." value="{{ request.GET.q }}" required>
+                            <input class="form-control border-0 bg-white" type="search" name="q" placeholder="חיפוש..." value="{{ request.GET.q }}" required>
                         </div>
                     </form>
 
-                    <ul class="navbar-nav flex-column gap-2">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home ms-2"></i> דף הבית</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users ms-2"></i> הקהילה שלי</a></li>
+                    <ul class="navbar-nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> דף הבית</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
 
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <a class="nav-link d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-                                    <i class="fas fa-bell ms-2"></i> התראות
+                                    <i class="fas fa-bell"></i> התראות
                                     {% if user.profile.pending_friend_requests.count > 0 %}
                                         <span class="nav-notification-badge">{{ user.profile.pending_friend_requests.count }}</span>
                                     {% endif %}
@@ -174,12 +210,17 @@
                             </li>
 
                             <li class="nav-item border-top pt-3 mt-2">
-                                <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle ms-2"></i> פרופיל</a>
-                                <a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog ms-2"></i> הגדרות</a>
-                                <form method="post" action="{% url 'account_logout' %}">
+                                <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> פרופיל</a>
+                                <a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a>
+                                
+                                {% if user.is_staff %}
+                                <a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a>
+                                {% endif %}
+
+                                <form method="post" action="{% url 'account_logout' %}" class="mt-1">
                                     {% csrf_token %}
                                     <button type="submit" class="nav-link text-danger border-0 bg-transparent p-0 w-100 text-start py-2">
-                                        <i class="fas fa-sign-out-alt ms-2"></i> התנתקות
+                                        <i class="fas fa-sign-out-alt"></i> התנתקות
                                     </button>
                                 </form>
                             </li>
