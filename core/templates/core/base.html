@@ -35,10 +35,15 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
+        /*the logo up button*/
         .navbar {
             z-index: 1060 !important;
         }
+        .navbar-brand { 
+    position: relative;
+    left: 50px; /* מזיז את הלוגו ימינה ב-40 פיקסלים */
+    transition: all 0.3s ease;
+}
 
         .navbar > .container {
             display: flex !important;
@@ -47,7 +52,13 @@
             align-items: center;
         }
 
-        .nav-hover-wrapper { position: relative; }
+        .nav-hover-wrapper { 
+            position: relative; 
+            /* הזזה ישירה שמאלה - הגדל את המספר כדי להזיז עוד */
+            right: 50px; 
+            display: flex;
+            align-items: center;
+        }
 
         /* --- המבורגר מודרני, צר ויוקרתי --- */
         .navbar-collapse {
