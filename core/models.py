@@ -331,11 +331,39 @@ class MarketplacePost(Post):
 
 
 class VideoPost(Post):
-    video_file = models.FileField(upload_to='posts_videos/')
+    # החלפנו את שדה הקובץ הכבד בשדה טקסט קליל לקישור בלבד!
+    youtube_url = models.URLField(
+        max_length=500,
+        verbose_name="קישור ליוטיוב",
+        validators=[RegexValidator(
+            regex=r'^(https?\:\/\/)?(www\.youtube\.com|youtu\.be)\/.+$',
+            message='נא להזין קישור תקין מיוטיוב (למשל: https://www.youtube.com/watch?v=...)'
+        )]
+    )
     thumbnail = models.ImageField(upload_to='video_thumbnails/', null=True, blank=True)
+
+    @property
+    def embed_url(self):
+        """ ממיר אוטומטית קישור רגיל של יוטיוב לקישור שניתן להציג באתר """
+        url = self.youtube_url
+        if not url:
+            return ""
+
+        # תופס קישורים רגילים של יוטיוב
+        if 'youtube.com/watch?v=' in url:
+            video_id = url.split('v=')[1].split('&')[0]
+            return f"https://www.youtube.com/embed/{video_id}"
+
+        # תופס קישורים מקוצרים (מהפלאפון)
+        elif 'youtu.be/' in url:
+            video_id = url.split('youtu.be/')[1].split('?')[0]
+            return f"https://www.youtube.com/embed/{video_id}"
+
+        return url
 
     def save(self, *args, **kwargs):
         if self.thumbnail and not self.thumbnail.name.endswith('.webp'):
+            from .utils import compress_to_webp  # ליתר ביטחון נוודא שזה מיובא
             self.thumbnail = compress_to_webp(self.thumbnail)
         super().save(*args, **kwargs)
 
