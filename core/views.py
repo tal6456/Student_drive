@@ -631,9 +631,13 @@ def community_feed(request):
                     price=request.POST.get('price') or None
                 )
             elif post_type == 'video':
+                # אנחנו משתמשים ב-POST במקום FILES, ושומרים את זה לשדה החדש youtube_url
                 VideoPost.objects.create(
-                    user=request.user, content=content, community=target_community,
-                    university=profile.university, video_file=request.FILES.get('video_file')
+                    user=request.user,
+                    content=content,
+                    community=target_community,
+                    university=profile.university,
+                    youtube_url=request.POST.get('youtube_url')
                 )
             else:
                 Post.objects.create(
