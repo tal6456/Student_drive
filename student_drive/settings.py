@@ -77,8 +77,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -135,7 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
 # ==========================================
 SESSION_COOKIE_HTTPONLY = True  # מונע מ-JS לגשת לסשן
-CSRF_COOKIE_HTTPONLY = True     # מונע מ-JS לגשת ל-CSRF
+CSRF_COOKIE_HTTPONLY = False     # מונע מ-JS לגשת ל-CSRF
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -210,7 +210,7 @@ if not DEBUG:
     # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
     # ==========================================
     SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
-    CSRF_COOKIE_HTTPONLY = True  # תוקן ל-True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
+    CSRF_COOKIE_HTTPONLY = False  # תוקן ל-True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
 
     CSRF_TRUSTED_ORIGINS = ['https://*.ondigitalocean.app', 'https://student-drive.onrender.com']
 

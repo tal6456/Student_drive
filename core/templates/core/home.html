@@ -250,10 +250,24 @@
                         </a>
                     </div>
                     
-                    <div class="text-center py-5 opacity-25">
-                        <i class="fas fa-book-reader mb-3" style="font-size: 3.5rem;"></i>
-                        <h5 class="fw-bold">הדרייב שלך ריק?</h5>
-                        <p>הוסיפו קורסים למועדפים כדי שיופיעו כאן בגישה מהירה.</p>
+                    <div class="row g-3">
+                        {% if favorite_courses %}
+                            {% for course in favorite_courses %}
+                            <div class="col-md-6 col-lg-4">
+                                <a href="{% url 'course_detail' course.id %}" class="nav-item-card d-block p-3 border rounded-4 text-decoration-none bg-white transition hover-scale shadow-sm text-center">
+                                    <div class="mb-2"><i class="fas fa-folder text-primary fs-2"></i></div>
+                                    <div class="fw-bold text-dark text-truncate">{{ course.name }}</div>
+                                    <div class="text-muted tiny-text">{{ course.course_number }}</div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5 opacity-25 w-100">
+                                <i class="fas fa-book-reader mb-3" style="font-size: 3.5rem;"></i>
+                                <h5 class="fw-bold">הדרייב שלך ריק?</h5>
+                                <p>הוסיפו קורסים למועדפים כדי שיופיעו כאן בגישה מהירה.</p>
+                            </div>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -421,6 +435,34 @@
     document.getElementById('prevMonth').onclick = () => { d.setMonth(d.getMonth()-1); renderCal(); };
     document.getElementById('nextMonth').onclick = () => { d.setMonth(d.getMonth()+1); renderCal(); };
     renderCal();
+
+    // הפונקציה החדשה להוספה לסמסטר שלי
+    function toggleFavorite(event, element) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        const url = element.getAttribute('data-url');
+        const icon = element.querySelector('i');
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'added' || data.is_favorite) {
+                icon.classList.remove('far', 'opacity-50');
+                icon.classList.add('fas', 'text-warning');
+            } else {
+                icon.classList.remove('fas', 'text-warning');
+                icon.classList.add('far', 'opacity-50');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 </script>
 
 {% endblock %}
