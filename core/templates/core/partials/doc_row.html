@@ -62,8 +62,11 @@
             <div class="vr mx-1 d-none d-md-block" style="background-color: var(--border-color);"></div>
 
             {% if user.is_authenticated %}
-                <button onclick="toggleLike(event, this)" data-url="{% url 'like_document' doc.id %}" class="btn btn-sm {% if user in doc.likes.all %}btn-primary text-white{% else %}btn-outline-primary{% endif %} rounded-pill px-3 shadow-sm like-btn" title="אהבתי">
-                    <i class="fas fa-thumbs-up"></i> <span class="like-count">{{ doc.total_likes }}</span>
+                <button onclick="handleDocumentLike({{ doc.id }}, this)" 
+                        class="btn btn-sm {% if user in doc.likes.all %}btn-primary text-white{% else %}btn-outline-primary{% endif %} rounded-pill px-3 shadow-sm like-btn" 
+                        title="אהבתי">
+                    <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i> 
+                    <span class="like-count-{{ doc.id }}">{{ doc.total_likes }}</span>
                 </button>
             {% else %}
                 <span class="badge rounded-pill border px-3 py-2" style="background-color: var(--bg-main); color: var(--text-main); border-color: var(--border-color) !important;">
