@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('core', '0003_alter_community_unique_together'),
+        ('core', '0002_conversation_message'),
     ]
 
     operations = [
