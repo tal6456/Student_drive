@@ -115,39 +115,45 @@
     </div>
 
     {# --- שלוש קוביות הפעולה --- #}
-    <div class="row g-3 mb-5 justify-content-center">
-        <div class="col-md-3">
-            {# שינוי עמית: הקישור הועבר לדרייב אישי #}
-            <a href="{% url 'personal_drive' %}" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
-                        <i class="fas fa-hdd text-primary fs-3"></i>
-                    </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">דרייב אישי</h6>
+<div class="row g-3 mb-5 justify-content-center">
+
+    <!-- הקהילה שלי (יהיה שמאל) -->
+    <div class="col-md-3">
+        <a href="{% url 'community_feed' %}" class="text-decoration-none">
+            <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
+                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(40, 167, 69, 0.1);">
+                    <i class="fas fa-users text-success fs-3"></i>
                 </div>
-            </a>
-        </div>
-        <div class="col-md-3">
-            <a href="?browse=true" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
-                        <i class="fas fa-university text-primary fs-3"></i>
-                    </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">חיפוש מוסד</h6>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3">
-            <a href="{% url 'community_feed' %}" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(40, 167, 69, 0.1);">
-                        <i class="fas fa-users text-success fs-3"></i>
-                    </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">הקהילה שלי</h6>
-                </div>
-            </a>
-        </div>
+                <h6 class="fw-bold mb-1" style="color: var(--gd-text);">הקהילה שלי</h6>
+            </div>
+        </a>
     </div>
+
+    <!-- חיפוש מוסד (אמצע) -->
+    <div class="col-md-3">
+        <a href="?browse=true" class="text-decoration-none">
+            <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
+                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
+                    <i class="fas fa-university text-primary fs-3"></i>
+                </div>
+                <h6 class="fw-bold mb-1" style="color: var(--gd-text);">חיפוש מוסד</h6>
+            </div>
+        </a>
+    </div>
+
+    <!-- דרייב אישי (ימין) -->
+    <div class="col-md-3">
+        <a href="{% url 'personal_drive' %}" class="text-decoration-none">
+            <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
+                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
+                    <i class="fas fa-hdd text-primary fs-3"></i>
+                </div>
+                <h6 class="fw-bold mb-1" style="color: var(--gd-text);">דרייב אישי</h6>
+            </div>
+        </a>
+    </div>
+
+</div>
 
     <div class="row g-4">
         {# --- תוכן מרכזי --- #}
