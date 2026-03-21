@@ -90,6 +90,18 @@
     transform: rotate(360deg) scale(1.2);
     transition: transform 1.5s ease;
 }
+#calendarWeekdays {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--gd-text);
+    margin-bottom: 5px;
+}
+
+#calendarWeekdays .weekday {
+    width: 14.28%; /* כל יום תופס 1/7 מהרוחב */
+    text-align: center;
+}
 
 
 </style>
@@ -160,7 +172,7 @@
 
             <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
                  style="width: 55px; height: 55px; background: linear-gradient(135deg, #7b61ff, #34a853);">
-                
+
                 <!-- אייקון יותר "דרייבי" -->
                 <i class="fab fa-google-drive text-white fs-3 folder-icon"></i>
             </div>
@@ -336,23 +348,48 @@
         </div>
 
         {# --- צד שמאל: לוח שנה + אלופי הדרייב --- #}
-        <div class="col-lg-4 order-1 order-lg-2">
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background-color: var(--gd-card);">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold mb-0">לו"ז אישי</h6>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-light border rounded-circle shadow-sm" id="prevMonth"><i class="fas fa-chevron-right tiny-icon"></i></button>
-                        <button class="btn btn-sm btn-light border rounded-circle shadow-sm" id="nextMonth"><i class="fas fa-chevron-left tiny-icon"></i></button>
-                    </div>
-                </div>
-                <div id="monthDisplay" class="text-center fw-bold text-primary mb-3"></div>
-                <div id="calendarDays" class="d-flex flex-wrap text-center mb-3"></div>
+<div class="col-lg-4 order-1 order-lg-2">
 
-                <div id="eventContainer" class="mt-2 border-top pt-3">
-                    <div id="selectedDateHeader" class="small fw-bold text-muted mb-2">בחר יום...</div>
-                    <div id="eventList" class="d-flex flex-column gap-2"></div>
-                </div>
+    <!-- כרטיס לוח שנה -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background-color: var(--gd-card);">
+
+        <!-- כותרת + כפתורי ניווט -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">לו"ז אישי</h6>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-light border rounded-circle shadow-sm" id="prevMonth">
+                    <i class="fas fa-chevron-right tiny-icon"></i>
+                </button>
+                <button class="btn btn-sm btn-light border rounded-circle shadow-sm" id="nextMonth">
+                    <i class="fas fa-chevron-left tiny-icon"></i>
+                </button>
             </div>
+        </div>
+
+        <!-- תצוגת חודש -->
+        <div id="monthDisplay" class="text-center fw-bold text-primary mb-2"></div>
+
+        <!-- שורת ימים בעברית -->
+        <div id="calendarWeekdays" class="d-flex text-center fw-bold mb-2">
+            <div class="weekday">א</div>
+            <div class="weekday">ב</div>
+            <div class="weekday">ג</div>
+            <div class="weekday">ד</div>
+            <div class="weekday">ה</div>
+            <div class="weekday">ו</div>
+            <div class="weekday">ש</div>
+        </div>
+
+        <!-- לוח מספרי הימים -->
+        <div id="calendarDays" class="d-flex flex-wrap text-center mb-3"></div>
+
+        <!-- תצוגת אירועים -->
+        <div id="eventContainer" class="mt-2 border-top pt-3">
+            <div id="selectedDateHeader" class="small fw-bold text-muted mb-2">בחר יום...</div>
+            <div id="eventList" class="d-flex flex-column gap-2"></div>
+        </div>
+
+    </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background-color: var(--gd-card);">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
