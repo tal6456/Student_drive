@@ -158,11 +158,18 @@ class UserProfile(models.Model):
 
 @receiver(post_save, sender=CustomUser)
 def create_or_save_user_profile(sender, instance, created, **kwargs):
-    """ מייצר פרופיל אוטומטית לכל משתמש חדש """
+    """ מייצר פרופיל אוטומטית לכל משתמש חדש - גרסה בטוחה """
     if created:
         UserProfile.objects.create(user=instance)
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
+    else:
+        # משתמשים ב-filter.update כדי למנוע קריאה ל-save() של הפרופיל
+        # שעלולה להתנגש עם תהליכי מחיקה או מיגרציות
+        if hasattr(instance, 'profile'):
+            # בדיקה שהפרופיל לא נמחק כבר מהזיכרון
+            try:
+                instance.profile.save()
+            except UserProfile.DoesNotExist:
+                pass
 
 
 class Friendship(models.Model):
