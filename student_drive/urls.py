@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
-from core import views, agent_views  # הוספתי את agent_views כאן
+# הוספתי כאן את personal_drive לייבוא
+from core import views, agent_views, personal_drive
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -21,6 +22,11 @@ urlpatterns = [
     path('course/<int:course_id>/toggle_favorite/', views.toggle_favorite_course, name='toggle_favorite_course'),
     path('add-course/', views.add_course, name='add_course'),
     path('course/<int:course_id>/folder/<int:folder_id>/', views.course_detail, name='course_detail_folder'),
+
+    # ==========================================
+    # הדרייב האישי החדש (מה שהוספנו עכשיו)
+    # ==========================================
+    path('drive/', personal_drive.personal_drive, name='personal_drive'),
 
     # ==========================================
     # קהילה ורשת חברתית

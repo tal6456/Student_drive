@@ -485,7 +485,26 @@ def auto_join_communities(sender, instance, created, **kwargs):
             )
             major_community.members.add(instance.user)
 
+class DownloadLog(models.Model):
+    # משתמשים ב-CustomUser כי זה המודל שהגדרת בתחילת הקובץ
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    document = models.ForeignKey('Document', on_delete=models.CASCADE)
+    downloaded_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.user.username} הוריד את {self.document.title}"
+
+class Vote(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    document = models.ForeignKey('Document', on_delete=models.CASCADE, related_name='votes')
+    value = models.SmallIntegerField() # 1 ללייק, -1 לדיסלייק
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'document')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.value} on {self.document.title}"
 # ==========================================
 #  רכיב הסוכן האישי (Student Agent)
 # ==========================================

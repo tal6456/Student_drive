@@ -117,12 +117,13 @@
     {# --- שלוש קוביות הפעולה --- #}
     <div class="row g-3 mb-5 justify-content-center">
         <div class="col-md-3">
-            <a href="{% url 'profile' %}" class="text-decoration-none">
+            {# שינוי עמית: הקישור הועבר לדרייב אישי #}
+            <a href="{% url 'personal_drive' %}" class="text-decoration-none">
                 <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
                     <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
-                        <i class="fas fa-folder-open text-primary fs-3"></i>
+                        <i class="fas fa-hdd text-primary fs-3"></i>
                     </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">הקבצים שלי</h6>
+                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">דרייב אישי</h6>
                 </div>
             </a>
         </div>

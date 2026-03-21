@@ -1,0 +1,60 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-4 text-end">
+        <h1 class="fw-bold"><i class="fas fa-hdd text-primary ms-3"></i>הדרייב האישי שלי</h1>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-5 text-end" style="background: var(--gd-card-bg); border: 1px solid var(--gd-border) !important;">
+        <div class="card-header bg-white border-0 pt-4 pb-0 text-end">
+            <h5 class="fw-bold text-dark"><i class="fas fa-file-upload text-success ms-2"></i>קבצים שהעליתי</h5>
+            <p class="text-muted small">כל החומר הלימודי ששיתפת עם הקהילה</p>
+            <hr class="opacity-25">
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for doc in uploaded_files %}
+                    {% include "core/partials/doc_row.html" with doc=doc %}
+                {% empty %}
+                    <div class="text-center py-5 text-muted">עדיין לא העלית קבצים לאתר.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-5 text-end" style="background: var(--gd-card-bg); border: 1px solid var(--gd-border) !important;">
+        <div class="card-header bg-white border-0 pt-4 pb-0 text-end">
+            <h5 class="fw-bold text-dark"><i class="fas fa-history text-info ms-2"></i>קבצים שהורדתי</h5>
+            <p class="text-muted small">היסטוריית הקבצים שפתחת בדרייב</p>
+            <hr class="opacity-25">
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for log in download_logs %}
+                    {% include "core/partials/doc_row.html" with doc=log.document %}
+                {% empty %}
+                    <div class="text-center py-5 text-muted">עדיין לא הורדת קבצים מהאתר.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-5 text-end" style="background: var(--gd-card-bg); border: 1px solid var(--gd-border) !important;">
+        <div class="card-header bg-white border-0 pt-4 pb-0 text-end">
+            <h5 class="fw-bold text-dark"><i class="fas fa-heart text-danger ms-2"></i>קבצים שסימנתי בלייק</h5>
+            <hr class="opacity-25">
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for vote in voted_files %}
+                    {% include "core/partials/doc_row.html" with doc=vote.document %}
+                {% empty %}
+                    <div class="text-center py-5 text-muted">אין קבצים שסימנת בלייק.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

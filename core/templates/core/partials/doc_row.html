@@ -74,7 +74,7 @@
                 </span>
             {% endif %}
 
-            <a href="{% url 'download_file' doc.id %}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" title="הורד קובץ">
+            <a href="{% url 'download_file' doc.id %}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" title="הורד קובץ" download="{{ doc.title }}">
                 <i class="fas fa-download"></i> <span class="d-none d-md-inline">{{ doc.download_count }}</span>
             </a>
 
@@ -106,7 +106,6 @@
 </div>
 
 <style>
-
 </style>
 
 {% if doc.file.name|lower|slice:"-4:" == ".pdf" or doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" or doc.file.name|lower|slice:"-4:" == "pptx" or doc.file.name|lower|slice:"-3:" == "ppt" %}
