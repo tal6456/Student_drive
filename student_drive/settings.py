@@ -72,8 +72,6 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
 ]
 
-SITE_ID = 3
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -262,3 +260,12 @@ if os.getenv('AWS_ACCESS_KEY_ID'):
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
+
+    # --- הגדרת SITE_ID אוטומטית כדי למנוע קריסות של Allauth ---
+    try:
+        from django.contrib.sites.models import Site
+
+        # מנסה למצוא אתר קיים, ואם אין - מגדיר כברירת מחדל 1 כדי לא לקרוס
+        SITE_ID = getattr(Site.objects.first(), 'id', 1)
+    except Exception:
+        SITE_ID = 1
