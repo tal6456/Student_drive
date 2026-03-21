@@ -12,7 +12,13 @@ self.addEventListener('install', event => {
   );
 });
 
+// --- כאן השינוי המרכזי ---
 self.addEventListener('fetch', event => {
+  // אם זו בקשת POST (כמו מחיקה או לייק), אל תנסה לטפל בה בקאש - שלח אותה ישר לשרת
+  if (event.request.method !== 'GET') {
+      return;
+  }
+
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   );
