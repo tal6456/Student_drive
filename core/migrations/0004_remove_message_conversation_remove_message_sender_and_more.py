@@ -11,14 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='message',
-            name='conversation',
-        ),
-        migrations.RemoveField(
-            model_name='message',
-            name='sender',
-        ),
         migrations.AlterUniqueTogether(
             name='community',
             unique_together=set(),
@@ -30,18 +22,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='videopost',
             name='youtube_url',
-            field=models.URLField(default='https://youtube.com', max_length=500, validators=[django.core.validators.RegexValidator(message='נא להזין קישור תקין מיוטיוב (למשל: https://www.youtube.com/watch?v=...)', regex='^(https?\\:\\/\\/)?(www\\.youtube\\.com|youtu\\.be)\\/.+$')], verbose_name='קישור ליוטיוב'),
+            field=models.URLField(default='https://youtube.com', max_length=500, validators=[
+                django.core.validators.RegexValidator(
+                    message='נא להזין קישור תקין מיוטיוב (למשל: https://www.youtube.com/watch?v=...)',
+                    regex='^(https?\\:\\/\\/)?(www\\.youtube\\.com|youtu\\.be)\\/.+$')], verbose_name='קישור ליוטיוב'),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='document',
             name='file',
             field=models.FileField(upload_to='documents/', validators=[core.utils.validate_file_size]),
-        ),
-        migrations.DeleteModel(
-            name='Conversation',
-        ),
-        migrations.DeleteModel(
-            name='Message',
         ),
     ]
