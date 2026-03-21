@@ -53,10 +53,17 @@
         .mobile-bottom-nav .nav-item.active { color: #1a73e8; }
         .mobile-bottom-nav .nav-item:active { transform: scale(0.9); }
         
-        /* הסתרת הפוטר המקורי במובייל כדי שלא יתנגש עם התפריט התחתון */
+        /* התאמות מיוחדות למובייל */
         @media (max-width: 991px) {
             .footer { display: none !important; }
-            #main-content { padding-bottom: 70px; } /* ריווח שלא יוסתר תוכן */
+            #main-content { padding-bottom: 70px; }
+            
+            /* ביטול הדחיפה של ה-50 פיקסלים כדי שההמבורגר לא יברח מהמסך */
+            .navbar-brand { left: 0 !important; }
+            .nav-hover-wrapper { right: 0 !important; }
+            
+            /* נעילה הרמטית נגד גלילה אופקית (ימינה-שמאלה) */
+            body, html { overflow-x: hidden; }
         }
         /* --- [NEW] Search Backdrop Style --- */
         #search-focus-backdrop {
@@ -268,8 +275,8 @@
                     <a href="{% url 'account_login' %}" class="nav-link fw-bold text-primary px-2 transition-all">התחברות</a>
 
                 {% else %}
-                    <button class="navbar-toggler border-0 shadow-none" type="button">
-                        <i class="fas fa-bars fs-2" style="color: #212529;"></i>
+                    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <i class="fas fa-bars fs-2" style="color: var(--gd-text, #212529);"></i>
                     </button>
 
                     <div class="collapse navbar-collapse" id="navbarNav">
