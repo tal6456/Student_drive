@@ -15,14 +15,10 @@ class Migration(migrations.Migration):
             name='community',
             unique_together=set(),
         ),
-        migrations.RemoveField(
-            model_name='videopost',
-            name='video_file',
-        ),
         migrations.AddField(
             model_name='videopost',
             name='youtube_url',
-            field=models.URLField(default='https://youtube.com', max_length=500, validators=[
+            field=models.URLField(default='https://www.youtube.com', max_length=500, validators=[
                 django.core.validators.RegexValidator(
                     message='נא להזין קישור תקין מיוטיוב (למשל: https://www.youtube.com/watch?v=...)',
                     regex='^(https?\\:\\/\\/)?(www\\.youtube\\.com|youtu\\.be)\\/.+$')], verbose_name='קישור ליוטיוב'),
