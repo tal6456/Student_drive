@@ -323,7 +323,7 @@ def course_detail(request, course_id):
             if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
-            from .utils import GLOBAL_MAX_FILE_SIZE_MB, GLOBAL_ALLOWED_DOCUMENTS
+            from .utils import GLOBAL_MAX_FILE_SIZE_MB, GLOBAL_ALLOWED_DOCUMENTS, GLOBAL_ALLOWED_IMAGES
 
             uploaded_count = 0
 
@@ -338,7 +338,7 @@ def course_detail(request, course_id):
                     })
 
                 # מוודא רק שזה קובץ חוקי מהרשימה שלנו (בלי מגבלת מינימום!)
-                if ext in GLOBAL_ALLOWED_DOCUMENTS:
+                if ext in GLOBAL_ALLOWED_DOCUMENTS or ext in GLOBAL_ALLOWED_IMAGES:
                     assigned_staff = parent_folder.staff_member if parent_folder else None
                     Document.objects.create(
                         course=course, folder=parent_folder,
