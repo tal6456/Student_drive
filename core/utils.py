@@ -4,7 +4,24 @@ from PIL import Image
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 
+# ==============================================
+# ⚙️ הגדרות גלובליות - "מרכז הבקרה" של הקבצים באתר
+# ==============================================
+GLOBAL_MAX_FILE_SIZE_MB = 20
 
+GLOBAL_ALLOWED_DOCUMENTS = [
+    '.pdf', '.doc', '.docx', '.txt',
+    '.ppt', '.pptx', '.xls', '.xlsx',
+    '.zip', '.rar'
+]
+
+GLOBAL_ALLOWED_IMAGES = [
+    '.jpg', '.jpeg', '.png', '.webp', '.gif'
+]
+
+# ==============================================
+# 1. פונקציית דחיסת תמונות (WebP)
+# ==============================================
 def compress_to_webp(image_field, max_size=(1200, 1200), quality=80):
     if not image_field:
         return image_field
@@ -28,13 +45,11 @@ def compress_to_webp(image_field, max_size=(1200, 1200), quality=80):
     return ContentFile(output.read(), name=new_filename)
 
 # ==============================================
-# פונקציית הגבלת העלאת קבצים של עד 20 מגה בייט
+# 2. ולידטור משקל קבצים גלובלי (למודלים)
 # ==============================================
 def validate_file_size(value):
     """
-    מוודא שקובץ שהועלה לא חורג מהמשקל המקסימלי המותר (20MB)
-    עובד על כל סוגי הקבצים (תמונות, מסמכים, מצגות, קבצי כיווץ וכו')
+    מוודא שקובץ שהועלה לא חורג מהמשקל המקסימלי שהוגדר למעלה
     """
-    limit_mb = 20
-    if value.size > limit_mb * 1024 * 1024:
-        raise ValidationError(f"אופס! הקובץ גדול מדי ({limit_mb}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ ונסה שוב.")
+    if value.size > GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
+        raise ValidationError(f"אופס! הקובץ גדול מדי ({GLOBAL_MAX_FILE_SIZE_MB}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ ונסה שוב.")

@@ -59,7 +59,7 @@ class UserProfile(models.Model):
 
     # --- פרטים אישיים ---
     bio = models.TextField(max_length=500, blank=True, verbose_name="קצת עלי (Bio)")
-    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True, verbose_name="תמונת פרופיל")
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True, verbose_name="תמונת פרופיל", validators=[validate_file_size])
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="מספר טלפון")
 
     # --- כלכלת המערכת ומוניטין ---
@@ -183,7 +183,7 @@ class Friendship(models.Model):
 
 class University(models.Model):
     name = models.CharField(max_length=100, verbose_name="שם המוסד")
-    logo = models.ImageField(upload_to='university_logos/', null=True, blank=True, verbose_name="לוגו המוסד")
+    logo = models.ImageField(upload_to='university_logos/', null=True, blank=True, verbose_name="לוגו המוסד", validators=[validate_file_size])
     brand_color = models.CharField(max_length=7, default='#0d6efd', verbose_name="צבע מותג")
 
     def __str__(self): return self.name
@@ -306,7 +306,7 @@ class Community(models.Model):
 class Post(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField(verbose_name="תוכן הפוסט")
-    image = models.ImageField(upload_to='posts_images/', null=True, blank=True)
+    image = models.ImageField(upload_to='posts_images/', null=True, blank=True, validators=[validate_file_size])
     university = models.ForeignKey('University', on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', verbose_name="קהילה",
                                   null=True, blank=True)
@@ -341,7 +341,7 @@ class VideoPost(Post):
             message='נא להזין קישור תקין מיוטיוב (למשל: https://www.youtube.com/watch?v=...)'
         )]
     )
-    thumbnail = models.ImageField(upload_to='video_thumbnails/', null=True, blank=True)
+    thumbnail = models.ImageField(upload_to='video_thumbnails/', null=True, blank=True, validators=[validate_file_size])
 
     @property
     def embed_url(self):
@@ -393,7 +393,7 @@ class AcademicStaff(models.Model):
     university = models.ForeignKey(University, on_delete=models.CASCADE, verbose_name="אוניברסיטה")
     name = models.CharField(max_length=100, verbose_name="שם מלא")
     email = models.EmailField(blank=True, null=True, verbose_name="אימייל (אופציונלי)")
-    image = models.ImageField(upload_to='staff_images/', null=True, blank=True, verbose_name="תמונה")
+    image = models.ImageField(upload_to='staff_images/', null=True, blank=True, verbose_name="תמונה", validators=[validate_file_size])
     average_rating = models.FloatField(default=0.0, verbose_name="דירוג ממוצע")
 
     @property
@@ -452,7 +452,7 @@ class Feedback(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
     subject = models.CharField(max_length=200)
     message = models.TextField()
-    screenshot = models.ImageField(upload_to='feedbacks/', null=True, blank=True)
+    screenshot = models.ImageField(upload_to='feedbacks/', null=True, blank=True, validators=[validate_file_size])
     created_at = models.DateTimeField(auto_now_add=True)
     is_resolved = models.BooleanField(default=False, verbose_name="טופל?")
 
