@@ -181,31 +181,14 @@
             box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2) !important;
             transform: scale(1.02);
         }
+        
 
         @keyframes coinFloat {
             0% { transform: translateY(-50%) translateX(0); }
             50% { transform: translateY(-58%) translateX(-3px); }
             100% { transform: translateY(-50%) translateX(0); }
         }
-
-        .floating-coins {
-            position: fixed;
-            right: 0;
-            top: 40%;
-            transform: translateY(-50%);
-            z-index: 1000;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            padding: 12px 18px;
-            border-radius: 25px 0 0 25px;
-            box-shadow: -4px 4px 15px rgba(0,0,0,0.2);
-            border: 1px solid #E69500;
-            border-right: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: coinFloat 3s ease-in-out infinite;
-        }
-
-        .floating-coins a { color: #664000; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-
+        
         /* עיצוב הפוטר - כאן הוספתי את הנקודה שתקנה את המבנה */
         .footer-lang-bar {
             margin-bottom: 0px;
@@ -237,6 +220,23 @@
             border-radius: 50px;
             margin-right: 5px;
         }
+        .nav-coin a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: background-color 0.2s;
+}
+
+.nav-coin a:hover {
+    background-color: rgba(26, 115, 232, 0.1);
+}
+
+.nav-coin i {
+    color: #FFD700;
+}
         
         
     </style>
@@ -247,87 +247,94 @@
     <div id="search-focus-backdrop"></div>
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
+    
+<nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
 
-    {% if user.is_authenticated %}
-    <div class="floating-coins">
-        <a href="{% url 'profile' %}">
-            <i class="fas fa-coins fs-4"></i>
-            <span class="fs-5">{{ user.profile.current_balance }}</span>
+        <!-- לוגו בצד שמאל -->
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate" href="{% url 'home' %}">
+            <div class="d-flex align-items-center justify-content-center bg-primary bg-gradient shadow-sm"
+                 style="width: 40px; height: 40px; border-radius: 12px; transform: rotate(-8deg);">
+                <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
+            </div>
+            <span style="color: #212529; font-size: 1.4rem;">בית הסטודנט</span>
         </a>
-    </div>
-    {% endif %}
+    <div class="d-flex align-items-center gap-2">
 
-    <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom shadow-sm">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate" href="{% url 'home' %}">
-                <div class="d-flex align-items-center justify-content-center bg-primary bg-gradient shadow-sm" style="width: 40px; height: 40px; border-radius: 12px; transform: rotate(-8deg);">
-                    <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
-                </div>
-                <span style="color: #212529; font-size: 1.4rem;">בית הסטודנט</span>
-            </a>
+            {% if user.is_authenticated %}
+            <!-- המטבעות **חיצוניים להמבורגר**, לא חלק מ-hover wrapper**
+            -->
+            <div class="nav-coin d-flex align-items-center">
+                <a href="{% url 'profile' %}" class="d-flex align-items-center text-decoration-none text-dark fw-bold">
+                    <i class="fas fa-coins me-1"></i>
+                    <span>{{ user.profile.current_balance }}</span>
+                </a>
+            </div>
+            {% endif %}
+    
+    
 
-            <div class="nav-hover-wrapper">
+        <!-- wrapper חדש סביב המטבעות, המבורגר והתפריט -->
+        <div class="nav-hover-wrapper d-flex align-items-center gap-3 position-relative">
+           
+            <!-- כפתור המבורגר בלבד לפתיחת התפריט -->
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fas fa-bars fs-2" style="color: var(--gd-text, #212529);"></i>
+            </button>
+        
 
-                {% if request.resolver_match.url_name == 'account_login' %}
-                    <a href="{% url 'account_signup' %}" class="nav-link fw-bold text-primary px-2 transition-all">הרשמה</a>
-
-                {% elif request.resolver_match.url_name == 'account_signup' %}
-                    <a href="{% url 'account_login' %}" class="nav-link fw-bold text-primary px-2 transition-all">התחברות</a>
-
-                {% else %}
-                    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <i class="fas fa-bars fs-2" style="color: var(--gd-text, #212529);"></i>
-                    </button>
-
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <form class="mb-4" action="{% url 'global_search' %}" method="GET">
-                            <div class="input-group shadow-sm rounded-pill overflow-hidden border">
-                                <button class="btn bg-white border-0 text-muted px-3" type="submit"><i class="fas fa-search"></i></button>
-                                <input id="navbarSearchInput" class="form-control border-0 bg-white" type="search" name="q" placeholder="חיפוש..." value="{{ request.GET.q }}" required>
-                            </div>
-                        </form>
-
-                        <ul class="navbar-nav flex-column">
-                            <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> דף הבית</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
-
-                            {% if user.is_authenticated %}
-                                <li class="nav-item">
-                                    <a class="nav-link d-flex align-items-center" href="#">
-                                        <i class="fas fa-bell"></i> התראות
-                                        {% if user.profile.pending_friend_requests.count > 0 %}
-                                            <span class="nav-notification-badge">{{ user.profile.pending_friend_requests.count }}</span>
-                                        {% endif %}
-                                    </a>
-                                </li>
-
-                                <li class="nav-item border-top pt-3 mt-2">
-                                    <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> פרופיל</a>
-                                    <a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a>
-
-                                    {% if user.is_staff %}
-                                    <a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a>
-                                    {% endif %}
-
-                                    <form method="post" action="{% url 'account_logout' %}" class="mt-1">
-                                        {% csrf_token %}
-                                        <button type="submit" class="nav-link text-danger border-0 bg-transparent p-0 w-100 text-end py-2">
-                                            <i class="fas fa-sign-out-alt"></i> התנתקות
-                                        </button>
-                                    </form>
-                                </li>
-                            {% else %}
-                                <li class="nav-item border-top pt-3 mt-2">
-                                    <a class="btn btn-primary rounded-pill w-100 mb-2" href="{% url 'account_login' %}">התחברות</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+            <!-- תפריט נגלל -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="mb-4" action="{% url 'global_search' %}" method="GET">
+                    <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                        <button class="btn bg-white border-0 text-muted px-3" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <input id="navbarSearchInput" class="form-control border-0 bg-white" type="search" name="q"
+                               placeholder="חיפוש..." value="{{ request.GET.q }}" required>
                     </div>
-                {% endif %}
+                </form>
+            
+
+                <ul class="navbar-nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> דף הבית</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" href="#">
+                                <i class="fas fa-bell"></i> התראות
+                                {% if user.profile.pending_friend_requests.count > 0 %}
+                                    <span class="nav-notification-badge">{{ user.profile.pending_friend_requests.count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+
+                        <li class="nav-item border-top pt-3 mt-2">
+                            <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> פרופיל</a>
+                            <a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a>
+
+                            {% if user.is_staff %}
+                            <a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a>
+                            {% endif %}
+
+                            <form method="post" action="{% url 'account_logout' %}" class="mt-1">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link text-danger border-0 bg-transparent p-0 w-100 text-end py-2">
+                                    <i class="fas fa-sign-out-alt"></i> התנתקות
+                                </button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item border-top pt-3 mt-2">
+                            <a class="btn btn-primary rounded-pill w-100 mb-2" href="{% url 'account_login' %}">התחברות</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
-    </nav>
-
+    </div>
+</nav>
     <main id="main-content" class="{% block container_class %}container{% endblock %} mb-5 mt-4">
         {% block content %}{% endblock %}
     </main>
@@ -731,5 +738,6 @@ function getAISummary(docId, event) {
         <span>פרופיל</span>
     </a>
 </nav>
+
 </body>
 </html>
