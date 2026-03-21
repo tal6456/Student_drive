@@ -33,7 +33,8 @@ def compress_to_webp(image_field, max_size=(1200, 1200), quality=80):
 def validate_file_size(value):
     """
     מוודא שקובץ שהועלה לא חורג מהמשקל המקסימלי המותר (20MB)
+    עובד על כל סוגי הקבצים (תמונות, מסמכים, מצגות, קבצי כיווץ וכו')
     """
     limit_mb = 20
     if value.size > limit_mb * 1024 * 1024:
-        raise ValidationError(f"אופס! הקובץ גדול מדי ({limit_mb}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ (ניתן לעשות זאת בחינם באתר iLovePDF) ונסה שוב.")
+        raise ValidationError(f"אופס! הקובץ גדול מדי ({limit_mb}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ ונסה שוב.")

@@ -315,40 +315,35 @@ def course_detail(request, course_id):
 
             return redirect(redirect_url)
 
+
         elif action == 'quick_upload':
+
             uploaded_files = request.FILES.getlist('file')
+
             folder_id = request.POST.get('folder_id')
+
             parent_folder = None
 
             if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
-            # רק מסמכים אמיתיים יתקבלו
-            allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+            # רשימה מורחבת ובטוחה של קבצים מותרים (הכנה לעתיד!)
+            allowed_extensions = [
+                '.pdf', '.doc', '.docx', '.txt',
+                '.ppt', '.pptx', '.xls', '.xlsx',
+                '.zip', '.rar'
+            ]
             uploaded_count = 0
-
             for uploaded_file in uploaded_files:
                 ext = os.path.splitext(uploaded_file.name)[1].lower()
 
-                # הגנת 20 מגה-בייט: עוצרים פה ומחזירים שגיאה מיד
+                # הגנת 20 מגה-בייט אוניברסלית: עוצרים פה ומחזירים שגיאה מיד
                 if uploaded_file.size > 20 * 1024 * 1024:
                     return JsonResponse({
                         'success': False,
-                        'error': f'הקובץ "{uploaded_file.name}" שוקל מעל 20MB. אנא כווץ אותו (למשל באתר iLovePDF.com) ונסה שוב.'
+                        'error': f'הקובץ "{uploaded_file.name}" שוקל מעל 20MB. אנא כווץ אותו ונסה שוב.'
                     })
-
-                # הגנה מספאם: גם סיומת נכונה וגם קובץ ששוקל יותר מ-10KB (שלא יעלו מסמך ריק)
-                if ext in allowed_extensions and uploaded_file.size > 10240:
-                    assigned_staff = parent_folder.staff_member if parent_folder else None
-
-                # הגנת 20 מגה-בייט: עוצרים פה ומחזירים שגיאה מיד
-                if uploaded_file.size > 20 * 1024 * 1024:
-                    return JsonResponse({
-                        'success': False,
-                        'error': f'הקובץ "{uploaded_file.name}" שוקל מעל 20MB. אנא כווץ אותו (למשל באתר iLovePDF.com) ונסה שוב.'
-                    })
-
-                # הגנה מספאם: גם סיומת נכונה וגם קובץ ששוקל יותר מ-10KB (שלא יעלו מסמך ריק)
+                # הגנה מספאם ומקבצים מסוכנים
                 if ext in allowed_extensions and uploaded_file.size > 10240:
                     assigned_staff = parent_folder.staff_member if parent_folder else None
                     Document.objects.create(
@@ -357,15 +352,14 @@ def course_detail(request, course_id):
                         file=uploaded_file, staff_member=assigned_staff,
                         uploaded_by=request.user
                     )
-                    # תגמול סמלי בלבד על ההעלאה (כדי לא לעודד ספאם)
+                    # תגמול סמלי בלבד על ההעלאה
                     request.user.profile.earn_coins(1)
                     uploaded_count += 1
-
             if uploaded_count > 0:
                 return JsonResponse({'success': True, 'message': f'הועלו {uploaded_count} קבצים בהצלחה.'})
             else:
                 return JsonResponse(
-                    {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק מסמכי PDF/Word תקינים (מעל 10KB).'})
+                    {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק מסמכים/מצגות/כיווץ תקינים (מעל 10KB).'})
 
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
