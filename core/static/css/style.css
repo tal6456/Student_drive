@@ -47,14 +47,10 @@
 /* -----------------------------------------
    2. GLOBAL HTML ELEMENTS & UTILITIES
    ----------------------------------------- */
-
 body {
-    background-color: transparent !important;
-    background-image: url("../background.jpeg") !important;
-    background-attachment: fixed !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
+    background:
+        linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)),
+        url("../background.jpeg") center / cover no-repeat fixed !important;
 
     color: var(--gd-text) !important;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -63,6 +59,22 @@ body {
     flex-direction: column;
     margin: 0;
     padding: 0;
+}
+
+/* 🌙 דארק מוד — מוסיף שכבת כהות מעל התמונה */
+[data-theme='dark'] body {
+    background:
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+        url("../background.jpeg") center / cover no-repeat fixed !important;
+}
+
+/* 🌙 גם אם זה AUTO לפי מערכת */
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme='light']) {
+        background:
+            linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+            url("../background.jpeg") center / cover no-repeat fixed !important;
+    }
 }
 
 main {
@@ -374,3 +386,32 @@ body { top: 0px !important; position: static !important; }
     justify-content: center;
 }
 .pwa-icon-512::after { content: "ה"; }
+/* =========================================
+   🔥 HARD OVERRIDE - WILL 100% WORK
+   ========================================= */
+
+/* NAVBAR MENU */
+body[data-theme='dark'] .navbar-collapse {
+    background: rgba(20, 20, 20, 0.95) !important;
+    border: 1px solid #444 !important;
+}
+
+/* LINKS */
+body[data-theme='dark'] .navbar-nav .nav-link {
+    color: #e8eaed !important;
+}
+
+/* SEARCH BOX */
+body[data-theme='dark'] .navbar-collapse .input-group {
+    background: rgba(40,40,40,0.9) !important;
+}
+
+body[data-theme='dark'] .navbar-collapse .form-control {
+    background: transparent !important;
+    color: #fff !important;
+}
+
+/* ICON */
+body[data-theme='dark'] .navbar-toggler i {
+    color: #fff !important;
+}

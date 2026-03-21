@@ -75,6 +75,8 @@ def home(request):
         'top_users': top_users,
         'years': year_names,
     }
+    if request.user.is_authenticated:
+        context['favorite_ids'] = request.user.profile.favorite_courses.values_list('id', flat=True)
 
     # 3. לוגיקת חיפוש
     if search_query:
@@ -492,6 +494,7 @@ def download_file(request, document_id):
     return redirect(d.file.url)
 
 
+# הוסף את זה מעל הפונקציה כדי לבדוק אם זו בעיית אבטחה
 @login_required
 def summarize_document_ai(request, document_id):
     d, p = get_object_or_404(Document, id=document_id), request.user.profile
@@ -501,7 +504,7 @@ def summarize_document_ai(request, document_id):
     #     if p.current_balance < 5:
     #         return JsonResponse({'success': False, 'error': 'אין לך מספיק מטבעות!'})
 
-    s = generate_smart_summary(d.file.path)
+    s = generate_smart_summary(d)
 
     if "שגיאה" not in s:
         # if not is_admin:

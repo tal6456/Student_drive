@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from core import views
+from core import views, agent_views  # הוספתי את agent_views כאן
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -9,7 +9,7 @@ urlpatterns = [
     # ממשק ניהול
     path('admin/', admin.site.urls),
 
-# השורה שמוסיפה את ה-Service Worker לכתובת הראשית:
+    # השורה שמוסיפה את ה-Service Worker לכתובת הראשית:
     path('sw.js', TemplateView.as_view(template_name="sw.js", content_type='application/javascript'), name='sw.js'),
 
     # מערכת ההרשמה והתחברות (Allauth)
@@ -23,13 +23,13 @@ urlpatterns = [
     path('course/<int:course_id>/folder/<int:folder_id>/', views.course_detail, name='course_detail_folder'),
 
     # ==========================================
-    # קהילה ורשת חברתית (הנתיבים החדשים!)
+    # קהילה ורשת חברתית
     # ==========================================
     path('feed/', views.community_feed, name='community_feed'),
-    path('u/<str:username>/', views.public_profile, name='public_profile'),  # פרופיל ציבורי
-    path('post/<int:post_id>/like/', views.like_post, name='like_post'),  # לייק לפוסט (AJAX)
-    path('community/<int:community_id>/join/', views.join_community, name='join_community'),  # נתיב הצטרפות לקהילה
-    path('communities/discover/', views.discover_communities, name='discover_communities'),  # דף גילוי קהילות (Discover Communities)
+    path('u/<str:username>/', views.public_profile, name='public_profile'),
+    path('post/<int:post_id>/like/', views.like_post, name='like_post'),
+    path('community/<int:community_id>/join/', views.join_community, name='join_community'),
+    path('communities/discover/', views.discover_communities, name='discover_communities'),
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
 
     # חיפושים דינמיים ו-API
@@ -39,14 +39,13 @@ urlpatterns = [
     # ניהול קבצים
     path('download/<int:document_id>/', views.download_file, name='download_file'),
     path('document/<int:document_id>/like/', views.like_document, name='like_document'),
-
     path('report/<int:document_id>/', views.report_document, name='report_document'),
 
     # הוספת אוניברסיטה ופקולטה
     path('ajax/add-university/', views.add_university_ajax, name='add_university_ajax'),
     path('ajax/add-major/', views.add_major_ajax, name='add_major_ajax'),
 
-    # פרופיל ואנליטיקס (של המשתמש המחובר)
+    # פרופיל ואנליטיקס
     path('profile/', views.profile, name='profile'),
     path('complete-profile/', views.complete_profile, name='complete_profile'),
     path('analytics/', views.analytics_dashboard, name='analytics'),
@@ -62,25 +61,28 @@ urlpatterns = [
 
     # סגל אקדמי ושונות
     path('lecturers/', views.lecturers_index, name='lecturers_index'),
-    path('staff/<int:staff_id>/rate/', views.rate_staff, name='rate_staff'),  # השורה שתוקנה!
+    path('staff/<int:staff_id>/rate/', views.rate_staff, name='rate_staff'),
     path('staff/<int:staff_id>/', views.staff_detail, name='staff_detail'),
     path('course/<int:course_id>/set_lecturer/', views.set_semester_lecturer, name='set_semester_lecturer'),
     path('feedback/', views.submit_feedback, name='submit_feedback'),
     path('document/<int:document_id>/ai-summary/', views.summarize_document_ai, name='summarize_document_ai'),
     path('donations/', views.donations, name='donations'),
 
-    # שליחה בקשה ודחייה של חברות
+    # חברות
     path('friend/request/<str:username>/', views.send_friend_request, name='send_friend_request'),
     path('friend/accept/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
     path('friend/reject/<int:request_id>/', views.reject_friend_request, name='reject_friend_request'),
-
-    path('search/', views.global_search, name='global_search'),
-
     path('my-friends/', views.my_friends, name='my_friends'),
     path('friend/remove/<str:friend_username>/', views.remove_friend, name='remove_friend'),
 
-    # לוח הבקרה הסודי של סוכן התיעוד
+    path('search/', views.global_search, name='global_search'),
     path('system-architecture-mirror/', views.agent_report, name='agent_report'),
+
+    # ==========================================
+    # סוכן אישי (Personal AI Agent)
+    # ==========================================
+    path('agent/upload/', agent_views.upload_agent_file, name='agent_upload_file'),
+    path('agent/ask/', agent_views.ask_agent_question, name='agent_ask_question'),
 ]
 
 if settings.DEBUG:

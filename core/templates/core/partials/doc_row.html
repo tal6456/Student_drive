@@ -51,18 +51,13 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            {% if doc.file.name|lower|slice:"-4:" == ".pdf" or doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" or doc.file.name|lower|slice:"-4:" == "pptx" or doc.file.name|lower|slice:"-3:" == "ppt" %}
-                <button class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#previewModal{{ doc.id }}" title="תצוגה מקדימה">
-                    <i class="fas fa-eye"></i> <span class="d-none d-md-inline">הצצה</span>
-                </button>
-            {% endif %}
-
-            {% if user.is_staff and doc.file.name|lower|slice:"-4:" == ".pdf" %}
-                 <button onclick="generateAISummary({{ doc.id }}, this)" class="btn btn-sm btn-outline-warning rounded-pill fw-bold shadow-sm d-flex align-items-center gap-1 ai-btn" title="תקצר לי (ניסיוני)">
-                     <i class="fas fa-magic"></i> <span class="d-none d-md-inline">AI</span>
-                 </button>
-            {% endif %}
+{% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
+    <button onclick="getAISummary('{{ doc.id }}', event)" 
+            class="btn btn-sm btn-outline-warning rounded-pill fw-bold shadow-sm d-flex align-items-center gap-1 ai-btn" 
+            title="תקצר לי (ניסיוני)">
+        <i class="fas fa-magic"></i> <span class="d-none d-md-inline">AI</span>
+    </button>
+{% endif %}
 
             <div class="vr mx-1 d-none d-md-block" style="background-color: var(--border-color);"></div>
 

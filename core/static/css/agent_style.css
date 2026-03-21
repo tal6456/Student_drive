@@ -1,0 +1,131 @@
+/* מיקום הקונטיינר הכללי בפינה השמאלית התחתונה */
+#student-agent-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 2000;
+    direction: rtl;
+}
+
+/* כפתור הבוט העגול */
+#agent-toggle-btn {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    border: none;
+    background-color: #0d6efd; /* צבע כחול בסיסי */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+/* הגיף המצדיע - קבוע וגלוי תמיד */
+.agent-icon-salute {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block !important; /* מבטל כל הגדרה אחרת של הסתרה */
+    opacity: 1 !important;     /* מבטיח שהגיף לא שקוף */
+    z-index: 5;                /* מעלה את הגיף מעל שכבת הרקע הכחולה */
+}
+
+/* אפקט תגובה קל במעבר עכבר */
+#agent-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+/* חלונית הצ'אט - מונמכת כדי לחשוף את ה-Header והשם amit */
+#agent-chat-window {
+    width: 330px;
+    height: 460px;
+    background: white;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: absolute;
+    bottom: 75px; /* מונמך למניעת הסתרת תוכן עליון כפי שרואים בצילום */
+    left: 0;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    border: 1px solid #dee2e6;
+}
+
+.agent-hidden {
+    display: none !important;
+}
+
+#agent-messages {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* עיצוב בועות ההודעה */
+.agent-msg, .user-msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.agent-msg {
+    background-color: white;
+    align-self: flex-start;
+    border: 1px solid #dee2e6;
+    border-bottom-right-radius: 2px;
+}
+
+.user-msg {
+    background-color: #0d6efd;
+    color: white;
+    align-self: flex-end;
+    border-bottom-left-radius: 2px;
+}
+
+/* עיצוב שורת הקלט והכפתורים */
+#agent-user-input {
+    border-radius: 20px;
+    font-size: 13.5px;
+}
+
+#agent-send-btn {
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* עיצוב כפתור ה-Quiz Mode */
+#quiz-mode-btn {
+    border-radius: 10px;
+    font-weight: 600;
+    border-color: #ffc107;
+    color: #856404;
+    transition: all 0.3s ease;
+}
+
+#quiz-mode-btn:hover {
+    background-color: #ffc107;
+    color: white;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+}
+
+/* מוודא שהכפתורים בשורה אחת מתחלקים יפה */
+.gap-2 {
+    gap: 0.5rem !important;
+}
