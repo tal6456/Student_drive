@@ -442,16 +442,24 @@
             </div>
             <div class="modal-body">
                 <input type="text" id="evTitle" class="form-control form-control-sm mb-2" placeholder="מה המשימה?">
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="tiny-text">התחלה:</label>
-                        <input type="time" id="evStart" class="form-control form-control-sm">
-                    </div>
-                    <div class="col-6">
-                        <label class="tiny-text">סיום:</label>
-                        <input type="time" id="evEnd" class="form-control form-control-sm">
-                    </div>
-                </div>
+<!-- אירוע כל היום -->
+<div class="form-check mb-2">
+    <input class="form-check-input" type="checkbox" value="" id="evAllDay">
+    <label class="form-check-label tiny-text" for="evAllDay">
+        אירוע לכל היום
+    </label>
+</div>
+
+<div id="timeInputs" class="row g-2 mb-3">
+    <div class="col-6">
+        <label class="tiny-text">התחלה:</label>
+        <input type="time" id="evStart" class="form-control form-control-sm">
+    </div>
+    <div class="col-6">
+        <label class="tiny-text">סיום:</label>
+        <input type="time" id="evEnd" class="form-control form-control-sm">
+    </div>
+</div>
                 <button class="btn btn-primary btn-sm w-100 rounded-pill fw-bold" id="saveEvBtn">שמור בלו"ז</button>
             </div>
         </div>
@@ -469,72 +477,134 @@
 
     let d = new Date(2026, 2, 1);
     let evs = JSON.parse(localStorage.getItem('stu_events')) || {};
+    // הצגת/הסתרת שדות זמן לפי checkbox "כל היום"
 
-    function renderCal() {
-        const m = d.getMonth(), y = d.getFullYear();
-        const monthNames = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
-        document.getElementById('monthDisplay').innerText = monthNames[m] + " " + y;
-        const grid = document.getElementById('calendarDays');
-        grid.innerHTML = '';
-        const first = new Date(y, m, 1).getDay();
-        const days = new Date(y, m + 1, 0).getDate();
-        for(let i=0; i<first; i++) grid.innerHTML += '<div class="day-cell opacity-0"></div>';
-        for(let i=1; i<=days; i++) {
-            const dateKey = `${y}-${m+1}-${i}`;
-            const cell = document.createElement('div');
-            cell.className = 'day-cell';
-            if(evs[dateKey]) cell.classList.add('has-event');
-            const today = new Date();
-            if(i === today.getDate() && m === today.getMonth() && y === today.getFullYear()) cell.classList.add('today');
-            cell.innerText = i;
-            cell.onclick = () => openModal(i, m+1, y);
-            grid.appendChild(cell);
-        }
+function renderCal() {
+    const m = d.getMonth(), y = d.getFullYear();
+    const monthNames = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+                        "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+    document.getElementById('monthDisplay').innerText = monthNames[m] + " " + y;
+    const grid = document.getElementById('calendarDays');
+    grid.innerHTML = '';
+    const first = new Date(y, m, 1).getDay();
+    const days = new Date(y, m + 1, 0).getDate();
+
+    for (let i = 0; i < first; i++) grid.innerHTML += '<div class="day-cell opacity-0"></div>';
+
+    for (let i = 1; i <= days; i++) {
+        const dateKey = `${y}-${m + 1}-${i}`;
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+        if (evs[dateKey]) cell.classList.add('has-event');
+
+        const today = new Date();
+        if (i === today.getDate() && m === today.getMonth() && y === today.getFullYear())
+            cell.classList.add('today');
+
+        cell.innerText = i;
+        cell.onclick = () => openModal(i, m + 1, y);
+        grid.appendChild(cell);
     }
+}
 
-    function openModal(day, month, year) {
-        const key = `${year}-${month}-${day}`;
-        document.getElementById('modalDate').innerText = `${day}/${month}`;
-        const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-        modal.show();
-        document.getElementById('saveEvBtn').onclick = () => {
-            const title = document.getElementById('evTitle').value;
-            const start = document.getElementById('evStart').value;
-            const end = document.getElementById('evEnd').value;
-            if(title && start && end) {
-                if(!evs[key]) evs[key] = [];
-                evs[key].push({ title, start, end });
-                localStorage.setItem('stu_events', JSON.stringify(evs));
-                document.getElementById('evTitle').value = '';
-                modal.hide();
-                renderCal();
-                updateEventList(key);
-            }
-        };
-        updateEventList(key);
-    }
+function openModal(day, month, year) {
+    const key = `${year}-${month}-${day}`;
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    modal.show();
 
-    function updateEventList(key) {
-        const list = document.getElementById('eventList');
-        const header = document.getElementById('selectedDateHeader');
-        const parts = key.split('-');
-        header.innerText = `אירועים ל-${parts[2]}/${parts[1]}:`;
-        if(evs[key]) {
-            list.innerHTML = evs[key].map(ev => `
-                <div class="p-2 bg-light rounded-3 border-start border-primary border-3 shadow-sm mb-2 text-end">
-                    <div class="fw-bold small">${ev.title}</div>
-                    <div class="tiny-text"><i class="far fa-clock"></i> ${ev.start} - ${ev.end}</div>
-                </div>
-            `).join('');
+    // אלמנטים
+    const titleInput = document.getElementById('evTitle');
+    const startInput = document.getElementById('evStart');
+    const endInput = document.getElementById('evEnd');
+    const allDayCheckbox = document.getElementById('evAllDay');
+    const timeInputs = document.getElementById('timeInputs');
+
+    // נקה שדות קודם
+    titleInput.value = '';
+    startInput.value = '';
+    endInput.value = '';
+    allDayCheckbox.checked = false;
+    timeInputs.style.display = 'flex';
+
+    // טעינת אירוע קיים (אם יש)
+    if (evs[key] && evs[key].length > 0) {
+        const ev = evs[key][0]; // לטובת הדגמה, נטפל באירוע הראשון
+        titleInput.value = ev.title || '';
+        if (ev.allDay) {
+            allDayCheckbox.checked = true;
+            timeInputs.style.display = 'none';
         } else {
-            list.innerHTML = '<div class="text-muted small italic text-center py-2">אין אירועים ליום זה</div>';
+            startInput.value = ev.start || '';
+            endInput.value = ev.end || '';
+            timeInputs.style.display = 'flex';
         }
     }
 
-    document.getElementById('prevMonth').onclick = () => { d.setMonth(d.getMonth()-1); renderCal(); };
-    document.getElementById('nextMonth').onclick = () => { d.setMonth(d.getMonth()+1); renderCal(); };
-    renderCal();
+    // עדכון תצוגת שדות זמן לפי ה-checkbox
+    allDayCheckbox.onchange = () => {
+        timeInputs.style.display = allDayCheckbox.checked ? 'none' : 'flex';
+    };
 
+    // שמירת אירוע
+    document.getElementById('saveEvBtn').onclick = () => {
+        const title = titleInput.value;
+        const start = startInput.value;
+        const end = endInput.value;
+        const allDay = allDayCheckbox.checked;
+
+        if (!title || (!allDay && (!start || !end))) {
+            alert("אנא הזן שם אירוע ותאריך/שעות אם לא אירוע כל היום");
+            return;
+        }
+
+        if (!evs[key]) evs[key] = [];
+        evs[key].push({
+            title,
+            start: allDay ? '' : start,
+            end: allDay ? '' : end,
+            allDay: allDay
+        });
+        localStorage.setItem('stu_events', JSON.stringify(evs));
+
+        // איפוס שדות
+        titleInput.value = '';
+        allDayCheckbox.checked = false;
+        timeInputs.style.display = 'flex';
+
+        modal.hide();
+        renderCal();
+        updateEventList(key);
+    };
+
+    updateEventList(key);
+}
+function updateEventList(key) {
+    const list = document.getElementById('eventList');
+    const header = document.getElementById('selectedDateHeader');
+    const parts = key.split('-');
+    header.innerText = `אירועים ל-${parts[2]}/${parts[1]}:`;
+
+    if (evs[key]) {
+        list.innerHTML = evs[key].map(ev => `
+            <div class="p-2 bg-light rounded-3 border-start border-primary border-3 shadow-sm mb-2 text-end">
+                <div class="fw-bold small">${ev.title}</div>
+                <div class="tiny-text">
+                    ${ev.allDay 
+                        ? '<i class="far fa-calendar-alt"></i> כל היום' 
+                        : `<i class="far fa-clock"></i> ${ev.start} - ${ev.end}`}
+                </div>
+            </div>
+        `).join('');
+    } else {
+        list.innerHTML = '<div class="text-muted small italic text-center py-2">אין אירועים ליום זה</div>';
+    }
+}
+
+// ניווט חודשים
+document.getElementById('prevMonth').onclick = () => { d.setMonth(d.getMonth() - 1); renderCal(); };
+document.getElementById('nextMonth').onclick = () => { d.setMonth(d.getMonth() + 1); renderCal(); };
+
+renderCal();
     // הפונקציה החדשה להוספה לסמסטר שלי
     function toggleFavorite(event, element) {
         if (event) {
