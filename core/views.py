@@ -340,6 +340,17 @@ def course_detail(request, course_id):
                 # הגנה מספאם: גם סיומת נכונה וגם קובץ ששוקל יותר מ-10KB (שלא יעלו מסמך ריק)
                 if ext in allowed_extensions and uploaded_file.size > 10240:
                     assigned_staff = parent_folder.staff_member if parent_folder else None
+
+                # הגנת 20 מגה-בייט: עוצרים פה ומחזירים שגיאה מיד
+                if uploaded_file.size > 20 * 1024 * 1024:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'הקובץ "{uploaded_file.name}" שוקל מעל 20MB. אנא כווץ אותו (למשל באתר iLovePDF.com) ונסה שוב.'
+                    })
+
+                # הגנה מספאם: גם סיומת נכונה וגם קובץ ששוקל יותר מ-10KB (שלא יעלו מסמך ריק)
+                if ext in allowed_extensions and uploaded_file.size > 10240:
+                    assigned_staff = parent_folder.staff_member if parent_folder else None
                     Document.objects.create(
                         course=course, folder=parent_folder,
                         title=os.path.splitext(uploaded_file.name)[0],
