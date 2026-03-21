@@ -3,7 +3,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>{% block title %}בית הסטודנט{% endblock %}</title>
 
     <link rel="apple-touch-icon" href="{% static 'icon-192.png' %}">
@@ -24,6 +24,47 @@
 
     {% block extra_css %}
     <style>
+        /* --- תפריט תחתון לאפליקציה במובייל --- */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--gd-card, #ffffff);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); /* תמיכה באייפונים החדשים */
+            z-index: 1050;
+            border-top: 1px solid var(--gd-border, #eeeeee);
+        }
+        .mobile-bottom-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--gd-text-muted, #6c757d);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            gap: 4px;
+            transition: 0.2s;
+        }
+        .mobile-bottom-nav .nav-item i { font-size: 1.3rem; }
+        .mobile-bottom-nav .nav-item.active { color: #1a73e8; }
+        .mobile-bottom-nav .nav-item:active { transform: scale(0.9); }
+        
+        /* התאמות מיוחדות למובייל */
+        @media (max-width: 991px) {
+            .footer { display: none !important; }
+            #main-content { padding-bottom: 70px; }
+            
+            /* ביטול הדחיפה של ה-50 פיקסלים כדי שההמבורגר לא יברח מהמסך */
+            .navbar-brand { left: 0 !important; }
+            .nav-hover-wrapper { right: 0 !important; }
+            
+            /* נעילה הרמטית נגד גלילה אופקית (ימינה-שמאלה) */
+            body, html { overflow-x: hidden; }
+        }
         /* --- [NEW] Search Backdrop Style --- */
         #search-focus-backdrop {
             position: fixed;
@@ -81,6 +122,13 @@
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1050;
             border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        /* פתיחת התפריט במובייל בלחיצה על ההמבורגר */
+        .navbar-collapse.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(15px) scale(1);
+            display: block !important;
         }
 
         @media (min-width: 992px) {
@@ -227,8 +275,8 @@
                     <a href="{% url 'account_login' %}" class="nav-link fw-bold text-primary px-2 transition-all">התחברות</a>
 
                 {% else %}
-                    <button class="navbar-toggler border-0 shadow-none" type="button">
-                        <i class="fas fa-bars fs-2" style="color: #212529;"></i>
+                    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <i class="fas fa-bars fs-2" style="color: var(--gd-text, #212529);"></i>
                     </button>
 
                     <div class="collapse navbar-collapse" id="navbarNav">
@@ -664,5 +712,24 @@ function getAISummary(docId, event) {
     });
 }
 </script>
+    
+<nav class="mobile-bottom-nav d-lg-none notranslate">
+    <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>ראשי</span>
+    </a>
+    <a href="{% url 'global_search' %}" class="nav-item {% if request.resolver_match.url_name == 'global_search' %}active{% endif %}">
+        <i class="fas fa-search"></i>
+        <span>חיפוש</span>
+    </a>
+    <a href="{% url 'community_feed' %}" class="nav-item {% if request.resolver_match.url_name == 'community_feed' %}active{% endif %}">
+        <i class="fas fa-users"></i>
+        <span>קהילה</span>
+    </a>
+    <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <i class="fas fa-user-circle"></i>
+        <span>פרופיל</span>
+    </a>
+</nav>
 </body>
 </html>
