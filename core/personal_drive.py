@@ -8,12 +8,12 @@ def personal_drive(request):
     user = request.user
 
     # 1. קבצים שהעליתי
-    # במודל Document השדה הוא 'upload_date' (ראינו בשגיאה הקודמת)
+    # במודל Document השדה הוא 'upload_date'
     uploaded_files = Document.objects.filter(uploaded_by=user).order_by('-upload_date')
 
     # 2. קבצים שהורדתי
-    # במודל DownloadLog השדה הוא 'downloaded_at'
-    download_logs = DownloadLog.objects.filter(user=user).select_related('document').order_by('-downloaded_at')
+    # תיקון: שינינו את השם מ-downloaded_at ל-download_date כדי שיתאים למודל המעודכן
+    download_logs = DownloadLog.objects.filter(user=user).select_related('document').order_by('-download_date')
 
     # 3. קבצים שנתתי להם לייק/דיסלייק
     # במודל Vote השדה הוא 'created_at'
