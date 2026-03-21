@@ -194,7 +194,7 @@
     </style>
     {% endblock %}
 </head>
-<body data-theme="{{ user.profile.theme_preference|default:'auto' }}">
+<body data-theme="{% if user.is_authenticated %}{{ user.profile.theme_preference }}{% else %}auto{% endif %}">
 
     <div id="search-focus-backdrop"></div>
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
