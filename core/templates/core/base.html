@@ -485,6 +485,97 @@ function globalDelete(itemType, itemId, reloadPage = true) {
         }
     });
 }
+
+// ==========================================
+// פונקציות לניהול לייקים ותגובות (AJAX)
+// ==========================================
+
+// 1. ניהול לייקים לפוסטים
+function handlePostLike(postId, btn) {
+    fetch(`/post/${postId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const icon = btn.querySelector('i');
+        const countSpan = btn.querySelector('.like-count');
+        
+        if (data.liked) {
+            btn.classList.add('text-primary', 'fw-bold');
+            btn.classList.remove('text-muted');
+            icon.classList.replace('far', 'fas');
+        } else {
+            btn.classList.remove('text-primary', 'fw-bold');
+            btn.classList.add('text-muted');
+            icon.classList.replace('fas', 'far');
+        }
+        countSpan.innerText = data.total_likes;
+    })
+    .catch(err => console.error('Like Error:', err));
+}
+
+// 2. פתיחה/סגירה של אזור התגובות
+function toggleComments(postId) {
+    const section = document.getElementById(`comments-section-${postId}`);
+    if (section.classList.contains('d-none')) {
+        section.classList.remove('d-none');
+    } else {
+        section.classList.add('d-none');
+    }
+}
+
+// 3. שליחת תגובה חדשה
+function submitComment(postId) {
+    const input = document.getElementById(`comment-input-${postId}`);
+    const text = input.value.trim();
+    
+    if (!text) return;
+
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+    fetch(`/post/${postId}/comment/`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // יצירת אלמנט התגובה החדש והוספתו לרשימה
+            const list = document.getElementById(`comments-list-${postId}`);
+            const commentHTML = `
+                <div class="d-flex gap-2 mb-2 animate__animated animate__fadeIn">
+                    <img src="${data.user_img || '/static/images/default-avatar.png'}" class="rounded-circle shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                    <div class="p-2 rounded-4 px-3 flex-grow-1 shadow-sm" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small" style="color: var(--gd-text);">${data.username}</span>
+                            <span class="text-muted" style="font-size: 0.65rem;">${data.created_at}</span>
+                        </div>
+                        <p class="small mb-0" style="color: var(--gd-text); white-space: pre-wrap;">${data.text}</p>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', commentHTML);
+            input.value = '';
+            
+            // עדכון מונה התגובות
+            const countEl = document.getElementById(`comment-count-${postId}`);
+            countEl.innerText = parseInt(countEl.innerText) + 1;
+            
+            // גלילה לתחתית הרשימה
+            list.scrollTop = list.scrollHeight;
+        } else {
+            alert(data.error);
+        }
+    })
+    .catch(err => console.error('Comment Error:', err));
+}
 </script>
 </body>
 </html>
