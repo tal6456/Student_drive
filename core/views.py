@@ -493,6 +493,32 @@ def download_file(request, document_id):
     return redirect(d.file.url)
 
 
+@login_required
+def document_viewer(request, document_id):
+    """
+    מכין את הקובץ לתצוגה חכמה בתוך האתר (Google Docs Viewer / PDF / תמונה)
+    """
+    document = get_object_or_404(Document, id=document_id)
+
+    # חילוץ הסיומת בלי הנקודה
+    ext = document.file_extension.replace('.', '').lower()
+    file_type = 'other'
+
+    if ext in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+        file_type = 'image'
+    elif ext == 'pdf':
+        file_type = 'pdf'
+    elif ext in ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']:
+        file_type = 'office'
+
+    context = {
+        'document': document,
+        'file_type': file_type,
+        # Google Docs Viewer חייב קישור מלא (כולל https והדומיין)
+        'absolute_file_url': request.build_absolute_uri(document.file.url)
+    }
+    return render(request, 'core/document_viewer.html', context)
+
 # הוסף את זה מעל הפונקציה כדי לבדוק אם זו בעיית אבטחה
 @login_required
 def summarize_document_ai(request, document_id):

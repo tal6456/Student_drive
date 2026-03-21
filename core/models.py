@@ -264,7 +264,10 @@ class Document(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True, related_name='documents')
     title = models.CharField(max_length=200, verbose_name="כותרת הקובץ")
+
+    # חיבור הוולידטור החכם לשדה הקובץ
     file = models.FileField(upload_to='documents/', validators=[validate_file_size])
+
     file_extension = models.CharField(max_length=10, blank=True)
     file_size_bytes = models.PositiveIntegerField(default=0)
     uploaded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
@@ -281,6 +284,18 @@ class Document(models.Model):
                 self.file_size_bytes = self.file.size
             except:
                 pass
+
+            # --- הלוגיקה החדשה: כיווץ תמונות שעולות לדרייב ---
+            image_extensions = ['.jpg', '.jpeg', '.png']
+            if self.file_extension in image_extensions and not self.file.name.endswith('.webp'):
+                self.file = compress_to_webp(self.file)
+                self.file_extension = '.webp'
+                # עדכון המשקל מחדש אחרי הכיווץ
+                try:
+                    self.file_size_bytes = self.file.size
+                except:
+                    pass
+
         super().save(*args, **kwargs)
 
     @property

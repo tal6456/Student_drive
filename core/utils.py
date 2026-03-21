@@ -45,14 +45,20 @@ def compress_to_webp(image_field, max_size=(1200, 1200), quality=80):
     return ContentFile(output.read(), name=new_filename)
 
 # ==============================================
-# 2. ולידטור משקל קבצים גלובלי (למודלים)
+# 2. ולידטור משקל קבצים חכם (שומרים על השם המקורי!)
 # ==============================================
 def validate_file_size(value):
-    """
-    מוודא שקובץ שהועלה לא חורג מהמשקל המקסימלי שהוגדר למעלה
-    """
-    if value.size > GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
-        raise ValidationError(f"אופס! הקובץ גדול מדי ({GLOBAL_MAX_FILE_SIZE_MB}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ ונסה שוב.")
+    ext = os.path.splitext(value.name)[1].lower()
+    image_exts = ['.jpg', '.jpeg', '.png', '.webp']
+
+    if ext in image_exts:
+        limit = 5 * 1024 * 1024  # תמונות עד 5MB
+        if value.size > limit:
+            raise ValidationError('תמונות מוגבלות לגודל של עד 5MB.')
+    else:
+        limit = 20 * 1024 * 1024  # מסמכים עד 20MB
+        if value.size > limit:
+            raise ValidationError('מסמכים מוגבלים לגודל של עד 20MB.')
 
 # ==============================================
 # 3. מוח ההרשאות - מערכת מחיקות חכמה

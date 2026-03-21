@@ -11,13 +11,15 @@
                     <i class="fas fa-file-powerpoint fa-2x text-warning drop-shadow"></i>
                 {% elif doc.file.name|lower|slice:"-4:" == ".zip" or doc.file.name|lower|slice:"-4:" == ".rar" %}
                     <i class="fas fa-file-archive fa-2x text-secondary drop-shadow"></i>
+                {% elif doc.file.name|lower|slice:"-4:" == ".jpg" or doc.file.name|lower|slice:"-4:" == "jpeg" or doc.file.name|lower|slice:"-4:" == ".png" or doc.file.name|lower|slice:"-5:" == ".webp" %}
+                    <i class="fas fa-file-image fa-2x text-success drop-shadow"></i>
                 {% else %}
                     <i class="fas fa-file-alt fa-2x text-info drop-shadow"></i>
                 {% endif %}
             </div>
 
             <div>
-                <a href="{% url 'download_file' doc.id %}" target="_blank" class="text-decoration-none fw-bold fs-6 hover-primary d-block mb-1" style="color: var(--text-main);">
+                <a href="{% url 'document_viewer' doc.id %}" class="text-decoration-none fw-bold fs-6 hover-primary d-block mb-1" style="color: var(--text-main);">
                     {{ doc.title }}
                 </a>
 
@@ -52,16 +54,7 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            {% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
-                <button onclick="getAISummary('{{ doc.id }}', event)" 
-                        class="btn btn-sm btn-outline-warning rounded-pill fw-bold shadow-sm d-flex align-items-center gap-1 ai-btn" 
-                        title="תקצר לי (ניסיוני)">
-                    <i class="fas fa-magic"></i> <span class="d-none d-md-inline">AI</span>
-                </button>
-            {% endif %}
-
-            <div class="vr mx-1 d-none d-md-block" style="background-color: var(--border-color);"></div>
-
+            
             {% if user.is_authenticated %}
                 <button onclick="handleDocumentLike({{ doc.id }}, this)" 
                         class="btn btn-sm {% if user in doc.likes.all %}btn-primary text-white{% else %}btn-outline-primary{% endif %} rounded-pill px-3 shadow-sm like-btn" 
@@ -75,8 +68,8 @@
                 </span>
             {% endif %}
 
-            <a href="{% url 'download_file' doc.id %}" class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" title="הורד קובץ" download="{{ doc.title }}">
-                <i class="fas fa-download"></i> <span class="d-none d-md-inline">{{ doc.download_count }}</span>
+            <a href="{% url 'document_viewer' doc.id %}" class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" title="פתח קובץ">
+                <i class="fas fa-eye"></i> <span class="d-none d-md-inline">צפה</span>
             </a>
 
             {% if user.is_authenticated %}
@@ -94,60 +87,7 @@
             {% endif %}
         </div>
     </div>
-
-    <div id="ai-summary-container-{{ doc.id }}" class="collapse mt-3">
-        <div class="card border-warning border-2 shadow-sm rounded-4" style="background-color: var(--card-bg);">
-            <div class="card-body position-relative">
-                <button type="button" class="btn-close position-absolute top-0 start-0 m-3" onclick="document.getElementById('ai-summary-container-{{ doc.id }}').classList.remove('show');"></button>
-                <h6 class="fw-bold text-warning mb-3"><i class="fas fa-robot"></i> תקציר AI של תוכן הקובץ:</h6>
-                <div class="summary-text" style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; color: var(--text-main);"></div>
-            </div>
-        </div>
-    </div>
 </div>
-
-{% if doc.file.name|lower|slice:"-4:" == ".pdf" or doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" or doc.file.name|lower|slice:"-4:" == "pptx" or doc.file.name|lower|slice:"-3:" == "ppt" %}
-<div class="modal fade" id="previewModal{{ doc.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow-lg" style="background-color: var(--card-bg);">
-            <div class="modal-header border-bottom px-4 py-3" style="border-color: var(--border-color) !important;">
-                <h5 class="modal-title fw-bold" style="color: var(--text-main);">
-                    {% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
-                        <i class="fas fa-file-pdf text-danger me-2"></i>
-                    {% elif doc.file.name|lower|slice:"-4:" == "docx" or doc.file.name|lower|slice:"-3:" == "doc" %}
-                        <i class="fas fa-file-word text-primary me-2"></i>
-                    {% else %}
-                        <i class="fas fa-file-powerpoint text-warning me-2"></i>
-                    {% endif %}
-                    {{ doc.title }}
-                </h5>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-muted small d-none d-md-inline" style="color: var(--text-muted) !important;"><i class="fas fa-info-circle"></i> Google Docs Preview</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--close-btn-filter);"></button>
-                </div>
-            </div>
-            <div class="modal-body p-0 position-relative" style="height: 75vh; overflow: hidden; background: var(--bg-main);">
-                <div class="position-absolute top-50 start-50 translate-middle text-center text-muted" id="loader{{ doc.id }}" style="z-index: 1;">
-                    <div class="spinner-border text-primary mb-2" role="status"></div>
-                    <div style="color: var(--text-main);">טוען תצוגה...</div>
-                </div>
-
-                {% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
-                    <iframe src="{{ doc.file.url }}"
-                            onload="document.getElementById('loader{{ doc.id }}').style.display='none';"
-                            style="width: 100%; height: 100%; border: none; z-index: 2; position: relative;">
-                    </iframe>
-                {% else %}
-                    <iframe src="https://docs.google.com/gview?url={{ request.scheme }}://{{ request.get_host }}{{ doc.file.url }}&embedded=true"
-                            onload="document.getElementById('loader{{ doc.id }}').style.display='none';"
-                            style="width: 100%; height: 100%; border: none; z-index: 2; position: relative;">
-                    </iframe>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 {% if user.is_authenticated %}
 <div class="modal fade" id="reportModal{{ doc.id }}" tabindex="-1" aria-hidden="true">
