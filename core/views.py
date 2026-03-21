@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -10,6 +10,8 @@ from django.contrib import messages
 from django.utils import timezone
 import datetime
 import os
+import json
+import re
 from django.db import models
 
 from .models import (University, Major, Course, Document, UserProfile,
@@ -25,9 +27,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.shortcuts import render
 
-import json
-import re
+
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse, FileResponse
 
 
 # שימוש במודל המשתמש החדש בצורה בטוחה
@@ -490,19 +492,22 @@ def download_file(request, document_id):
     d = get_object_or_404(Document, id=document_id)
     d.download_count += 1
     d.save()
-    return redirect(d.file.url)
+
+    # שימוש ב-FileResponse עם as_attachment=True מאלץ את הדפדפן להוריד את הקובץ
+    return FileResponse(d.file.open('rb'), as_attachment=True, filename=os.path.basename(d.file.name))
 
 
 @login_required
 def document_viewer(request, document_id):
-    """
-    מכין את הקובץ לתצוגה חכמה בתוך האתר (Google Docs Viewer / PDF / תמונה)
-    """
+    from django.shortcuts import get_object_or_404, render
+    from .models import Document
+
     document = get_object_or_404(Document, id=document_id)
 
     # חילוץ הסיומת בלי הנקודה
     ext = document.file_extension.replace('.', '').lower()
     file_type = 'other'
+    text_content = None  # משתנה חדש לשמירת הטקסט
 
     if ext in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
         file_type = 'image'
@@ -510,11 +515,26 @@ def document_viewer(request, document_id):
         file_type = 'pdf'
     elif ext in ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']:
         file_type = 'office'
+    elif ext == 'txt':
+        file_type = 'text'
+        try:
+            # קריאת התוכן בשרת כדי להציג אותו יפה באתר
+            document.file.open('rb')
+            raw_data = document.file.read()
+            try:
+                text_content = raw_data.decode('utf-8')
+            except UnicodeDecodeError:
+                # גיבוי: למקרה שהקובץ נשמר בנוטפד ישן בעברית
+                text_content = raw_data.decode('windows-1255', errors='replace')
+        except Exception:
+            text_content = "אירעה שגיאה בטעינת תוכן הקובץ."
+        finally:
+            document.file.close()
 
     context = {
         'document': document,
         'file_type': file_type,
-        # Google Docs Viewer חייב קישור מלא (כולל https והדומיין)
+        'text_content': text_content,  # מעבירים את הטקסט לתבנית
         'absolute_file_url': request.build_absolute_uri(document.file.url)
     }
     return render(request, 'core/document_viewer.html', context)
