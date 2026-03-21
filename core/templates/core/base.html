@@ -613,6 +613,47 @@ function handleDocumentLike(docId, btn) {
     })
     .catch(err => console.error('Doc Like Error:', err));
 }
+
+// 5. פונקציית ה-AI הגלובלית (עובדת בדרייב ובפרופיל)
+function getAISummary(docId, event) {
+    if (event) event.stopPropagation();
+
+    const btn = event.currentTarget;
+    const container = document.getElementById(`ai-summary-container-${docId}`);
+    if (!container) return; // הגנה למקרה שהקונטיינר לא קיים בדף
+    
+    const textArea = container.querySelector('.summary-text');
+
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/document/${docId}/ai-summary/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            textArea.innerText = data.summary;
+            container.classList.add('show');
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            Swal.fire('אופס!', data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('שגיאה', 'תקלה בתקשורת עם שרת ה-AI.', 'error');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    });
+}
 </script>
 </body>
 </html>

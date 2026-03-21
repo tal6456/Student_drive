@@ -79,9 +79,17 @@
             </a>
 
             {% if user.is_authenticated %}
-            <button class="btn btn-sm text-secondary ms-1 p-1 report-btn-hover" data-bs-toggle="modal" data-bs-target="#reportModal{{ doc.id }}" title="דווח על קובץ">
-                <i class="fas fa-flag"></i>
-            </button>
+                {% if user == doc.uploaded_by or user.is_staff %}
+                <button onclick="globalDelete('document', {{ doc.id }})" 
+                        class="btn btn-sm text-danger ms-1 p-1 hover-scale" 
+                        title="מחק קובץ לצמיתות">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                {% endif %}
+
+                <button class="btn btn-sm text-secondary ms-1 p-1 report-btn-hover" data-bs-toggle="modal" data-bs-target="#reportModal{{ doc.id }}" title="דווח על קובץ">
+                    <i class="fas fa-flag"></i>
+                </button>
             {% endif %}
         </div>
     </div>
