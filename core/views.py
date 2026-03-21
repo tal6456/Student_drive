@@ -317,46 +317,67 @@ def course_detail(request, course_id):
 
 
 
+
         elif action == 'quick_upload':
+
             uploaded_files = request.FILES.getlist('file')
+
             folder_id = request.POST.get('folder_id')
+
             parent_folder = None
 
             if folder_id and folder_id not in ['root', 'null']:
                 parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
 
-            # --- הנה הקסם הארכיטקטוני: שואבים את ההגדרות ממרכז הבקרה! ---
             from .utils import GLOBAL_MAX_FILE_SIZE_MB, GLOBAL_ALLOWED_DOCUMENTS
 
             uploaded_count = 0
 
             for uploaded_file in uploaded_files:
+
                 ext = os.path.splitext(uploaded_file.name)[1].lower()
 
-                # בדיקת משקל דינמית לפי מרכז הבקרה (אם תחליף שם ל-30, זה יתעדכן גם כאן אוטומטית)
+                # בדיקת משקל מקסימלי (20MB)
+
                 if uploaded_file.size > GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
                     return JsonResponse({
+
                         'success': False,
+
                         'error': f'הקובץ "{uploaded_file.name}" שוקל מעל {GLOBAL_MAX_FILE_SIZE_MB}MB. אנא כווץ אותו ונסה שוב.'
+
                     })
 
-                # הגנה מספאם (שימוש ברשימת הסיומות המרכזית שלנו)
-                if ext in GLOBAL_ALLOWED_DOCUMENTS and uploaded_file.size > 10240:
+                # מוודא רק שזה קובץ חוקי מהרשימה שלנו (בלי מגבלת מינימום!)
+
+                if ext in GLOBAL_ALLOWED_DOCUMENTS:
                     assigned_staff = parent_folder.staff_member if parent_folder else None
+
                     Document.objects.create(
+
                         course=course, folder=parent_folder,
+
                         title=os.path.splitext(uploaded_file.name)[0],
+
                         file=uploaded_file, staff_member=assigned_staff,
+
                         uploaded_by=request.user
+
                     )
+
                     request.user.profile.earn_coins(1)
+
                     uploaded_count += 1
 
             if uploaded_count > 0:
+
                 return JsonResponse({'success': True, 'message': f'הועלו {uploaded_count} קבצים בהצלחה.'})
+
             else:
+
                 return JsonResponse(
-                    {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק קבצים נתמכים (מעל 10KB).'})
+
+                    {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק סוגי קבצים נתמכים.'})
 
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
