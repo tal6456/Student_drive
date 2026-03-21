@@ -293,8 +293,8 @@
 
             <div class="col-md-4 d-flex justify-content-center align-items-center gap-3">
 <div class="footer-lang-bar notranslate d-flex gap-2 m-0">
-    <a href="#googtrans(he|en)" onclick="location.reload()" class="lang-btn-footer">English</a>
-    <a href="#googtrans(he|he)" onclick="location.reload()" class="lang-btn-footer">עברית</a>
+    <a href="javascript:void(0)" onclick="forceTranslate('en')" class="lang-btn-footer">English</a>
+    <a href="javascript:void(0)" onclick="forceTranslate('he')" class="lang-btn-footer">עברית</a>
 </div>
                 <div style="border-left: 1px solid #dee2e6; height: 15px;" class="d-none d-md-block"></div>
                 <a href="{% url 'submit_feedback' %}" class="text-decoration-none fw-bold small">
@@ -317,18 +317,24 @@
 <script type="text/javascript">
     // פונקציית תרגום אגרסיבית שעוקפת את הבעיה
     function forceTranslate(lang) {
-        var domain = window.location.hostname;
-        var cookieVal = (lang === 'he') ? "" : "/he/" + lang;
-        
-        // 1. הגדרת הקוקי של גוגל לכל הווריאציות של הדומיין
+    const domain = window.location.hostname;
+    const cookieVal = (lang === 'he') ? "" : "/he/" + lang;
+    
+    // 1. ניקוי אגרסיבי של קוקיז ישנים כדי למנוע התנגשויות
+    const cookies = ["googtrans", "googtrans_"];
+        cookies.forEach(c => {
+            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + domain + "; path=/;";
+            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=." + domain + "; path=/;";
+        });
+    
+        // 2. הגדרת הקוקי החדש
         document.cookie = "googtrans=" + cookieVal + "; path=/";
         document.cookie = "googtrans=" + cookieVal + "; domain=" + domain + "; path=/";
         document.cookie = "googtrans=" + cookieVal + "; domain=." + domain + "; path=/";
         
-        // 2. שמירה מקומית כדי שהשפה תישאר במעבר דפים
+        // 3. שמירה מקומית וריענון
         localStorage.setItem('user_lang', lang);
-        
-        // 3. ריענון הדף - עכשיו הוא יטען עם הקוקי הנכון
         window.location.reload();
     }
 
@@ -357,6 +363,7 @@
         }
     });
 </script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>    
 <script>
 function toggleFavorite(event, el) {
     event.preventDefault();
