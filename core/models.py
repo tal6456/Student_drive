@@ -494,15 +494,13 @@ def auto_join_communities(sender, instance, created, **kwargs):
             major_community.members.add(instance.user)
 
 class DownloadLog(models.Model):
-    # משתמשים ב-CustomUser כי זה המודל שהגדרת בתחילת הקובץ
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     document = models.ForeignKey('Document', on_delete=models.CASCADE)
-    # בתוך המחלקה DownloadLog:
-    download_date = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    # שינוי: auto_now_add=True הוא הסטנדרט של דג'נגו לשדות תאריך יצירה
+    download_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} הוריד את {self.document.title}"
-
 class Vote(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     document = models.ForeignKey('Document', on_delete=models.CASCADE, related_name='votes')
