@@ -8,6 +8,7 @@ import random
 import string
 import uuid
 from .utils import compress_to_webp, validate_file_size
+from django.utils import timezone
 
 # ==========================================
 # 0. מערכת המשתמשים (RBAC - Role Based Access Control)
@@ -496,7 +497,8 @@ class DownloadLog(models.Model):
     # משתמשים ב-CustomUser כי זה המודל שהגדרת בתחילת הקובץ
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     document = models.ForeignKey('Document', on_delete=models.CASCADE)
-    download_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    # בתוך המחלקה DownloadLog:
+    download_date = models.DateTimeField(default=timezone.now, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} הוריד את {self.document.title}"
