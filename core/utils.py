@@ -53,3 +53,47 @@ def validate_file_size(value):
     """
     if value.size > GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
         raise ValidationError(f"אופס! הקובץ גדול מדי ({GLOBAL_MAX_FILE_SIZE_MB}MB מקסימום). כדי לשמור על האתר מהיר לכולם, אנא כווץ את הקובץ ונסה שוב.")
+
+# ==============================================
+# 3. מוח ההרשאות - מערכת מחיקות חכמה
+# ==============================================
+def check_deletion_permission(user, obj, obj_type):
+    """
+    בודק האם למשתמש יש הרשאה למחוק את האובייקט הספציפי.
+    מחזיר טאפל: (True/False, "הודעת שגיאה במידת הצורך")
+    """
+    # 1. מנהלי מערכת יכולים למחוק הכל, תמיד.
+    if user.is_superuser or user.is_staff or getattr(user, 'role', '') in ['admin', 'moderator']:
+        return True, ""
+
+    # 2. חוקי מסמכים
+    if obj_type == 'document':
+        if getattr(obj, 'uploaded_by', None) == user:
+            return True, ""
+        return False, "אין לך הרשאה למחוק קובץ זה, מכיוון שמשתמש אחר העלה אותו."
+
+    # 3. חוקי פוסטים ותגובות (בפיד הקהילה)
+    elif obj_type in ['post', 'comment']:
+        if getattr(obj, 'user', None) == user:
+            return True, ""
+        return False, "אין לך הרשאה למחוק פריט זה."
+
+    # 4. חוקי תיקיות (הגנת קהילה מורחבת)
+    elif obj_type == 'folder':
+        # קודם כל, האם הסטודנט הזה בכלל יצר את התיקייה?
+        if getattr(obj, 'created_by', None) != user:
+            return False, "ניתן למחוק רק תיקיות שאתה יצרת בעצמך."
+
+        # הגנת תוכן: האם משתמשים אחרים העלו מסמכים לתיקייה הזו?
+        has_others_docs = obj.documents.exclude(uploaded_by=user).exists()
+        if has_others_docs:
+            return False, "לא ניתן למחוק את התיקייה מכיוון שסטודנטים אחרים כבר הוסיפו אליה חומרי לימוד."
+
+        # הגנת תוכן 2: האם משתמשים אחרים יצרו תתי-תיקיות בתוך התיקייה הזו?
+        has_others_folders = obj.subfolders.exclude(created_by=user).exists()
+        if has_others_folders:
+            return False, "לא ניתן למחוק את התיקייה מכיוון שסטודנטים אחרים פתחו בתוכה תתי-תיקיות."
+
+        return True, ""
+
+    return False, "סוג אובייקט לא מוכר למערכת המחיקות."

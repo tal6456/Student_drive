@@ -212,6 +212,9 @@
         <button class="context-action" id="ctx-folder-edit">
             <i class="fas fa-edit text-secondary"></i> ערוך / שייך מרצה
         </button>
+        <button class="context-action text-danger" id="ctx-folder-delete">
+            <i class="fas fa-trash-alt"></i> מחק תיקייה
+        </button>
     {% endif %}
 </div>
 
@@ -225,7 +228,10 @@
     </button>
     {% if user.is_authenticated %}
         <div class="context-divider"></div>
-        <button class="context-action text-danger" onclick="alert('כדי לדווח, השתמש באייקון הדגל ליד הקובץ.')">
+        <button class="context-action text-danger" id="ctx-file-delete">
+            <i class="fas fa-trash-alt"></i> מחק קובץ לצמיתות
+        </button>
+        <button class="context-action text-muted small" onclick="alert('כדי לדווח, השתמש באייקון הדגל ליד הקובץ.')">
             <i class="fas fa-flag"></i> דווח על בעיה
         </button>
     {% endif %}
@@ -574,11 +580,23 @@
 
                 const editBtn = document.getElementById('ctx-folder-edit');
                 if(editBtn) editBtn.onclick = function() { openEditFolderModal(folderId, folderName, lecturerId); hideAllMenus(); };
-
+                
+                const deleteBtn = document.getElementById('ctx-folder-delete');
+                if(deleteBtn) {
+                    const rawId = folderId.split('_')[1]; // חילוץ ה-ID המספרי
+                    deleteBtn.onclick = function() { globalDelete('folder', rawId); hideAllMenus(); };
+                }
+                
             } else if (fileCard) {
                 activeMenu = document.getElementById('menu-file');
                 const docName = fileCard.getAttribute('data-doc-name');
                 const downloadUrl = fileCard.getAttribute('data-download-url');
+                
+                const fileDeleteBtn = document.getElementById('ctx-file-delete');
+                if(fileDeleteBtn) {
+                    const docId = fileCard.getAttribute('data-doc-id');
+                    fileDeleteBtn.onclick = function() { globalDelete('document', docId); hideAllMenus(); };
+                }
 
                 document.getElementById('ctx-file-name').innerText = docName;
                 document.getElementById('ctx-file-download').href = downloadUrl;

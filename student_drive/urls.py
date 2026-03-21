@@ -40,6 +40,8 @@ urlpatterns = [
     path('download/<int:document_id>/', views.download_file, name='download_file'),
     path('document/<int:document_id>/like/', views.like_document, name='like_document'),
     path('report/<int:document_id>/', views.report_document, name='report_document'),
+    #  מחיקה של דברים שהמשתמש יצר
+    path('ajax/delete-item/', views.delete_item_ajax, name='delete_item_ajax'),
 
     # הוספת אוניברסיטה ופקולטה
     path('ajax/add-university/', views.add_university_ajax, name='add_university_ajax'),

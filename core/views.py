@@ -315,15 +315,9 @@ def course_detail(request, course_id):
 
             return redirect(redirect_url)
 
-
-
-
         elif action == 'quick_upload':
-
             uploaded_files = request.FILES.getlist('file')
-
             folder_id = request.POST.get('folder_id')
-
             parent_folder = None
 
             if folder_id and folder_id not in ['root', 'null']:
@@ -334,49 +328,31 @@ def course_detail(request, course_id):
             uploaded_count = 0
 
             for uploaded_file in uploaded_files:
-
                 ext = os.path.splitext(uploaded_file.name)[1].lower()
 
                 # בדיקת משקל מקסימלי (20MB)
-
                 if uploaded_file.size > GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
                     return JsonResponse({
-
                         'success': False,
-
                         'error': f'הקובץ "{uploaded_file.name}" שוקל מעל {GLOBAL_MAX_FILE_SIZE_MB}MB. אנא כווץ אותו ונסה שוב.'
-
                     })
 
                 # מוודא רק שזה קובץ חוקי מהרשימה שלנו (בלי מגבלת מינימום!)
-
                 if ext in GLOBAL_ALLOWED_DOCUMENTS:
                     assigned_staff = parent_folder.staff_member if parent_folder else None
-
                     Document.objects.create(
-
                         course=course, folder=parent_folder,
-
                         title=os.path.splitext(uploaded_file.name)[0],
-
                         file=uploaded_file, staff_member=assigned_staff,
-
                         uploaded_by=request.user
-
                     )
-
                     request.user.profile.earn_coins(1)
-
                     uploaded_count += 1
 
             if uploaded_count > 0:
-
                 return JsonResponse({'success': True, 'message': f'הועלו {uploaded_count} קבצים בהצלחה.'})
-
             else:
-
                 return JsonResponse(
-
                     {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק סוגי קבצים נתמכים.'})
 
     all_folders = Folder.objects.filter(course=course)
@@ -1053,3 +1029,54 @@ def add_major_ajax(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': 'אירעה שגיאה בשרת. נסה שוב.'})
+
+
+# ==========================================
+# מערכת מחיקות גלובלית (AJAX)
+# ==========================================
+@login_required
+@require_POST
+def delete_item_ajax(request):
+    """
+    נקודת קצה חכמה למחיקת פריטים מהאתר.
+    מקבלת את סוג הפריט וה-ID שלו, בודקת הרשאות מול utils.py, ומוחקת אם מותר.
+    """
+    try:
+        # תמיכה גם ב-JSON וגם ב-FormData
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            item_type = data.get('type')
+            item_id = data.get('id')
+        else:
+            item_type = request.POST.get('type')
+            item_id = request.POST.get('id')
+
+        if not item_type or not item_id:
+            return JsonResponse({'success': False, 'error': 'חסרים נתונים למחיקה.'})
+
+        # 1. משיכת האובייקט ממסד הנתונים
+        obj = None
+        if item_type == 'document':
+            obj = get_object_or_404(Document, id=item_id)
+        elif item_type == 'folder':
+            obj = get_object_or_404(Folder, id=item_id)
+        elif item_type == 'post':
+            obj = get_object_or_404(Post, id=item_id)
+        elif item_type == 'comment':
+            obj = get_object_or_404(Comment, id=item_id)
+        else:
+            return JsonResponse({'success': False, 'error': 'סוג פריט לא נתמך.'})
+
+        # 2. קריאה למוח ההרשאות המרכזי שלנו
+        from .utils import check_deletion_permission
+        is_allowed, error_msg = check_deletion_permission(request.user, obj, item_type)
+
+        # 3. ביצוע המחיקה
+        if is_allowed:
+            obj.delete()
+            return JsonResponse({'success': True, 'message': 'הפריט נמחק בהצלחה.'})
+        else:
+            return JsonResponse({'success': False, 'error': error_msg})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'אירעה שגיאה בשרת: {str(e)}'})
