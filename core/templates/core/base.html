@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/agent_style.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     {% block extra_css %}
@@ -99,7 +100,7 @@
 
         .nav-hover-wrapper {
             position: relative;
-            right: 50px;
+            right: 30px;
             display: flex;
             align-items: center;
         }
@@ -110,7 +111,7 @@
             top: calc(100% + 15px);
             left: 0;
             right: auto;
-            width: 260px;
+            width: 200px;
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
             box-shadow: 0 15px 35px rgba(0,0,0,0.15);
@@ -181,14 +182,14 @@
             box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2) !important;
             transform: scale(1.02);
         }
-        
+
 
         @keyframes coinFloat {
             0% { transform: translateY(-50%) translateX(0); }
             50% { transform: translateY(-58%) translateX(-3px); }
             100% { transform: translateY(-50%) translateX(0); }
         }
-        
+
         /* עיצוב הפוטר - כאן הוספתי את הנקודה שתקנה את המבנה */
         .footer-lang-bar {
             margin-bottom: 0px;
@@ -247,18 +248,24 @@
     <div id="search-focus-backdrop"></div>
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
-    
+
 <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
 
-        <!-- לוגו בצד שמאל -->
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate" href="{% url 'home' %}">
-            <div class="d-flex align-items-center justify-content-center bg-primary bg-gradient shadow-sm"
-                 style="width: 40px; height: 40px; border-radius: 12px; transform: rotate(-8deg);">
-                <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
-            </div>
-            <span style="color: #212529; font-size: 1.4rem;">בית הסטודנט</span>
-        </a>
+       <!-- לוגו בצד שמאל -->
+<a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate" href="{% url 'home' %}">
+    <div class="d-flex align-items-center justify-content-center shadow-sm"
+         style="width: 45px; height: 45px; border-radius: 12px; transform: rotate(-8deg); background: linear-gradient(135deg, #7b61ff, #34a853);">
+        <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
+    </div>
+    <span style="
+    color: #212529; 
+    font-size: 1.4rem; 
+    font-family: 'Heebo', sans-serif;
+">
+    בית הסטודנט
+</span>
+</a>
     <div class="d-flex align-items-center gap-2">
 
             {% if user.is_authenticated %}
@@ -271,17 +278,17 @@
                 </a>
             </div>
             {% endif %}
-    
-    
+
+
 
         <!-- wrapper חדש סביב המטבעות, המבורגר והתפריט -->
         <div class="nav-hover-wrapper d-flex align-items-center gap-3 position-relative">
-           
+
             <!-- כפתור המבורגר בלבד לפתיחת התפריט -->
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="fas fa-bars fs-2" style="color: var(--gd-text, #212529);"></i>
             </button>
-        
+
 
             <!-- תפריט נגלל -->
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -294,7 +301,7 @@
                                placeholder="חיפוש..." value="{{ request.GET.q }}" required>
                     </div>
                 </form>
-            
+
 
                 <ul class="navbar-nav flex-column">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> דף הבית</a></li>
