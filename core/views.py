@@ -979,6 +979,7 @@ def add_comment(request, post_id):
                 user_img = request.user.profile.profile_picture.url
             return JsonResponse({
                 'success': True,
+                'comment_id': comment.id,  # <--- הנה השורה שסוגרת לנו את הפינה!
                 'username': comment.user.username,
                 'text': comment.text,
                 'created_at': 'עכשיו',
