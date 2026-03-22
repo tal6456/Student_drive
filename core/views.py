@@ -38,6 +38,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse, FileResponse
 from .models import Course, UserCourseSelection
 from .models import Notification
+from .models import Document, DownloadLog, Vote
 
 # שימוש במודל המשתמש החדש בצורה בטוחה
 User = get_user_model()
@@ -380,20 +381,25 @@ def analytics_dashboard(request):
     }
 
     return render(request, 'core/analytics.html', context)
-
-
 @login_required
 def profile(request):
-    user_docs = Document.objects.filter(uploaded_by=request.user)
+    # 1. קבצים שהמשתמש העלה
+    uploaded_files = Document.objects.filter(uploaded_by=request.user).order_by('-upload_date')
+
+    # שליפת המסמכים עצמם שהמשתמש עשה להם לייק (ערך 1)
+    voted_files = Document.objects.filter(votes__user=request.user, votes__value=1).distinct()
+
+    # 3. היסטוריית הורדות (שימוש ב-order_by הנכון ושם השדה מהמודל שלך)
+    download_logs = DownloadLog.objects.filter(user=request.user).select_related('document').order_by('-download_date')
+
     context = {
-        'user_documents': user_docs,
-        'liked_documents': request.user.liked_documents.all(),
-        'total_downloads': user_docs.aggregate(Sum('download_count'))['download_count__sum'] or 0,
-        'total_likes_received': sum(d.total_likes for d in user_docs),
+        'uploaded_files': uploaded_files,
+        'voted_files': voted_files,
+        'download_logs': download_logs,
+        'total_downloads': uploaded_files.aggregate(Sum('download_count'))['download_count__sum'] or 0,
+        'total_likes_received': sum(d.total_likes for d in uploaded_files),
     }
-    return render(request, 'core/profile.html', context)
-
-
+    return render(request, 'core/personal_drive.html', context)
 @login_required
 def add_course(request):
     if request.method == 'POST':
@@ -479,9 +485,10 @@ def download_file(request, document_id):
     d.download_count += 1
     d.save()
 
-    # שימוש ב-FileResponse עם as_attachment=True מאלץ את הדפדפן להוריד את הקובץ
-    return FileResponse(d.file.open('rb'), as_attachment=True, filename=os.path.basename(d.file.name))
+    # יצירת רישום ההורדה בבסיס הנתונים
+    DownloadLog.objects.create(user=request.user, document=d)
 
+    return FileResponse(d.file.open('rb'), as_attachment=True, filename=os.path.basename(d.file.name))
 
 @login_required
 def document_viewer(request, document_id):
@@ -898,7 +905,7 @@ def complete_profile(request):
                         referrer_profile.earn_coins(50)
                         del request.session['referral_code']
                         messages.success(request,
-                                         f"איזה כיף! קיבלת 20 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
+                                         f"איזה כיף! קיבלת 5 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
                 except UserProfile.DoesNotExist:
                     pass
 

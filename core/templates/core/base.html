@@ -403,29 +403,37 @@
         {% block content %}{% endblock %}
     </main>
 
-<footer class="footer py-4 mt-auto border-top">
+<footer class="footer py-3 mt-auto border-top bg-white">
     <div class="container">
-        <div class="row align-items-center">
-
-            <div class="col-md-4 text-md-start d-flex align-items-center gap-2">
-                <span class="fw-bold fs-6 notranslate">בית הסטודנט</span>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold fs-6 notranslate text-dark">בית הסטודנט</span>
                 <small class="text-muted">© 2026</small>
             </div>
 
-            <div class="col-md-4 d-flex justify-content-center align-items-center gap-3">
-<div class="footer-lang-bar notranslate d-flex gap-2 m-0">
-    <a href="javascript:void(0)" onclick="forceTranslate('en')" class="lang-btn-footer">English</a>
-    <a href="javascript:void(0)" onclick="forceTranslate('he')" class="lang-btn-footer">עברית</a>
-</div>
-                <div style="border-left: 1px solid #dee2e6; height: 15px;" class="d-none d-md-block"></div>
+            <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                <div class="footer-lang-bar notranslate d-flex gap-2 m-0">
+                    <a href="javascript:void(0)" onclick="forceTranslate('en')" class="lang-btn-footer small text-decoration-none">English</a>
+                    <a href="javascript:void(0)" onclick="forceTranslate('he')" class="lang-btn-footer small text-decoration-none">עברית</a>
+                </div>
+                
+                <div style="border-left: 1px solid #dee2e6; height: 15px;"></div>
+                
                 <a href="{% url 'submit_feedback' %}" class="text-decoration-none fw-bold small">
-                    <i class="fas fa-comment-dots text-primary"></i> הצעות ייעול
+                    <i class="fas fa-comment-dots text-primary me-1"></i>הצעות ייעול
                 </a>
+
+                <div style="border-left: 1px solid #dee2e6; height: 15px;"></div>
+
+                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold small text-danger d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#supportModal">
+                    <i class="fas fa-heart me-1"></i>תמיכה ביוצר
+                </button>
             </div>
 
-            <div class="col-md-4 text-md-end">
-                <a href="{% url 'privacy' %}" class="text-muted small mx-2">פרטיות</a>
-                <a href="{% url 'terms' %}" class="text-muted small mx-2">תנאים</a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'privacy' %}" class="text-muted small text-decoration-none">פרטיות</a>
+                <a href="{% url 'terms' %}" class="text-muted small text-decoration-none">תנאים</a>
             </div>
 
         </div>
@@ -433,6 +441,26 @@
     <div id="google_translate_element" style="display:none;"></div>
 </footer>
 
+<div class="modal fade" id="supportModal" tabindex="-1" aria-labelledby="supportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0" dir="rtl">
+                <h5 class="modal-title fw-bold" id="supportModalLabel">אהבתם את האתר? ✨</h5>
+                <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4" dir="rtl">
+                <p class="text-muted mb-4 small">האתר נבנה עבור הסטודנטים. אם תרצו לתמוך בהמשך הפיתוח ובתחזוקת השרתים, נשמח לקפה בפיתוח ☕</p>
+                
+         
+                <div class="mt-2">
+                    <a href="https://links.payboxapp.com/gPGtQIuOr1b" target="_blank" class="btn btn-primary w-100 rounded-3 fw-bold py-2">
+                        <i class="fas fa-external-link-alt me-2"></i>מעבר לתשלום בפייבוקס
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="text/javascript">
