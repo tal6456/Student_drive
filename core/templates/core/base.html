@@ -376,7 +376,22 @@
                         </li>
                     {% else %}
                         <li class="nav-item border-top pt-3 mt-2">
-                            <a class="btn btn-primary rounded-pill w-100 mb-2" href="{% url 'account_login' %}">התחברות</a>
+                            {% if request.resolver_match.url_name == 'account_login' %}
+                                <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_signup' %}">
+                                    <i class="fas fa-user-plus ms-1"></i> יצירת חשבון
+                                </a>
+                            {% elif request.resolver_match.url_name == 'account_signup' %}
+                                <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_login' %}">
+                                    <i class="fas fa-sign-in-alt ms-1"></i> התחברות
+                                </a>
+                            {% else %}
+                                <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_login' %}">
+                                    <i class="fas fa-sign-in-alt ms-1"></i> התחברות
+                                </a>
+                                <a class="btn rounded-pill w-100 mb-2 fw-bold hover-scale" href="{% url 'account_signup' %}" style="background-color: var(--gd-card); border: 1px solid var(--gd-primary); color: var(--gd-primary);">
+                                    <i class="fas fa-user-plus ms-1"></i> יצירת חשבון
+                                </a>
+                            {% endif %}
                         </li>
                     {% endif %}
                 </ul>
