@@ -3,92 +3,107 @@
 {% block title %}השלמת פרטים - הדרייב הסטודנטיאלי{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5" dir="rtl">
+<div class="container mt-4 mt-md-5 mb-5" dir="rtl">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
 
             <div class="text-center mb-4 animate__animated animate__fadeInDown">
-                <div class="display-1 text-primary mb-3">🎓</div>
-                <h2 class="fw-bold">ברוך הבא לדרייב!</h2>
-                <p class="text-muted">כדי שנוכל להציג לך את החומרים שרלוונטיים בדיוק אליך, נשמח להכיר אותך קצת יותר.</p>
+                <div class="display-3 mb-3">🎓</div>
+                <h2 class="fw-bold" style="color: var(--gd-text);">ברוך הבא לדרייב!</h2>
+                <p class="small" style="color: var(--gd-text-muted);">כדי שנוכל להציג לך את החומרים שרלוונטיים בדיוק אליך, נשמח להכיר אותך קצת יותר.</p>
             </div>
 
-            <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeInUp">
-                <div class="card-body p-5 bg-white" style="background-color: var(--gd-card) !important;">
+            <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeInUp" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+                <div class="card-body p-4 p-md-5">
                     <form method="POST">
                         {% csrf_token %}
 
                         {# === חלק 1: פרטים אישיים (שם וטלפון) === #}
-                        <h5 class="fw-bold mb-3" style="color: var(--gd-text);">פרטים אישיים</h5>
+                        <h5 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--gd-text); border-color: var(--gd-border) !important;">פרטים אישיים</h5>
+                        
+                        <div class="row g-3 mb-4">
                         {% for field in form %}
-                            {% if field.name in 'first_name,last_name,phone_number' %}
-                                <div class="mb-4 text-end">
-                                    <label class="form-label fw-bold" style="color: var(--gd-text-muted);">{{ field.label }}</label>
+                            {% if field.name in 'first_name,last_name' %}
+                                <div class="col-sm-6 text-end">
+                                    <label class="form-label fw-bold small mb-1" style="color: var(--gd-text-muted);">{{ field.label }}</label>
                                     {{ field }}
                                     {% for error in field.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            {% if field.name == 'phone_number' %}
+                                <div class="col-12 text-end">
+                                    <label class="form-label fw-bold small mb-1" style="color: var(--gd-text-muted);">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         {% endfor %}
-
-                        <hr class="my-4" style="border-color: var(--gd-border);">
+                        </div>
 
                         {# === חלק 2: מתג הסטודנט (Toggle) === #}
-                        <div class="form-check form-switch d-flex align-items-center justify-content-between p-3 rounded-3 mb-4 shadow-sm" style="background-color: rgba(13, 110, 253, 0.05); border: 1px solid var(--gd-border);">
-                            <label class="form-check-label fw-bold fs-5 mb-0" for="isStudentToggle" style="color: var(--gd-text); cursor: pointer;">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 transition-all" id="student-toggle-wrapper" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                            <label class="form-check-label fw-bold fs-6 mb-0" for="isStudentToggle" style="color: var(--gd-text); cursor: pointer;">
                                 אני סטודנט/ית אקדמי 📚
                             </label>
-                            <input class="form-check-input fs-4 m-0" type="checkbox" id="isStudentToggle" style="cursor: pointer;">
+                            <input class="form-check-input fs-4 m-0" type="checkbox" id="isStudentToggle" style="cursor: pointer; width: 2.5em; height: 1.25em;">
                         </div>
 
                         {# === חלק 3: פרטים אקדמיים (מוסתר כברירת מחדל אם לא סומן) === #}
-                        <div id="academicSection" style="display: none; transition: all 0.3s ease;">
-                            <div class="p-4 rounded-4 mb-4" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                        <div id="academicSection" style="display: none;">
+                            <div class="p-3 p-md-4 rounded-4 mb-4" style="background-color: var(--gd-bg); border: 1px dashed var(--gd-primary);">
+                                
+                                <h6 class="fw-bold mb-3 small" style="color: var(--gd-primary);"><i class="fas fa-university me-1"></i> פרטי לימודים</h6>
+                                
                                 {% for field in form %}
                                     {% if field.name in 'university,major,year' %}
                                         <div class="mb-3 text-end">
-                                            <label class="form-label fw-bold" style="color: var(--gd-text-muted);">{{ field.label }}</label>
+                                            <label class="form-label fw-bold small mb-1" style="color: var(--gd-text-muted);">{{ field.label }}</label>
                                             {{ field }}
                                             
                                             {# תיבות נסתרות להוספת מוסד ומסלול שמופיעות רק בלחיצה #}
                                             {% if field.name == 'university' %}
                                             <div id="add-uni-wrapper" class="mt-2 animate__animated animate__fadeIn" style="display: none;">
-                                                <div class="d-flex gap-2">
-                                                    <input type="text" id="new-uni-input" class="form-control flex-grow-1 border-primary" placeholder="הקלד את שם המוסד המדויק...">
-                                                    <button type="button" id="save-uni-btn" class="btn btn-success fw-bold px-3 shadow-sm">הוסף</button>
-                                                    <button type="button" id="cancel-uni-btn" class="btn btn-light border shadow-sm">ביטול</button>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <input type="text" id="new-uni-input" class="form-control flex-grow-1 border-primary custom-input" placeholder="הקלד את שם המוסד המדויק...">
+                                                    <button type="button" id="save-uni-btn" class="btn btn-primary fw-bold px-3 shadow-sm flex-grow-1 flex-sm-grow-0">הוסף</button>
+                                                    <button type="button" id="cancel-uni-btn" class="btn btn-outline-secondary px-3 shadow-sm flex-grow-1 flex-sm-grow-0" style="color: var(--gd-text); border-color: var(--gd-border);">ביטול</button>
                                                 </div>
                                                 <div id="uni-error-msg" class="text-danger small mt-1 fw-bold" style="display: none;"></div>
                                             </div>
                                             {% elif field.name == 'major' %}
                                             <div id="add-major-wrapper" class="mt-2 animate__animated animate__fadeIn" style="display: none;">
-                                                <div class="d-flex gap-2">
-                                                    <input type="text" id="new-major-input" class="form-control flex-grow-1 border-primary" placeholder="הקלד את שם המסלול / פקולטה...">
-                                                    <button type="button" id="save-major-btn" class="btn btn-success fw-bold px-3 shadow-sm">הוסף</button>
-                                                    <button type="button" id="cancel-major-btn" class="btn btn-light border shadow-sm">ביטול</button>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <input type="text" id="new-major-input" class="form-control flex-grow-1 border-primary custom-input" placeholder="הקלד את שם המסלול / פקולטה...">
+                                                    <button type="button" id="save-major-btn" class="btn btn-primary fw-bold px-3 shadow-sm flex-grow-1 flex-sm-grow-0">הוסף</button>
+                                                    <button type="button" id="cancel-major-btn" class="btn btn-outline-secondary px-3 shadow-sm flex-grow-1 flex-sm-grow-0" style="color: var(--gd-text); border-color: var(--gd-border);">ביטול</button>
                                                 </div>
                                                 <div id="major-error-msg" class="text-danger small mt-1 fw-bold" style="display: none;"></div>
                                             </div>
                                             {% endif %}
 
                                             {% for error in field.errors %}
-                                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
                                             {% endfor %}
                                         </div>
                                     {% endif %}
                                 {% endfor %}
 
-                                <div class="alert alert-light border-warning border-start border-4 rounded-3 small text-muted p-3 mt-3 mb-0 text-end shadow-sm">
-                                    <i class="fas fa-info-circle text-warning me-1"></i> המוסד או התואר שלך חסר? <a href="{% url 'submit_feedback' %}" class="fw-bold text-decoration-none" style="color: var(--gd-primary);">שלח לנו הודעה</a>!
+                                <div class="alert mt-4 mb-0 border-0 p-3 small text-end" style="background-color: var(--gd-card); border-right: 4px solid var(--gd-primary) !important;">
+                                    <i class="fas fa-info-circle text-primary me-1"></i> המוסד או התואר שלך חסר? <a href="{% url 'submit_feedback' %}" class="fw-bold text-decoration-none hover-underline" style="color: var(--gd-primary);">שלח לנו הודעה</a>!
                                 </div>
                             </div>
                         </div>
+
                         {# === חלק 4: אישור תנאי שימוש === #}
-                        <div class="mb-4 mt-3 p-3 rounded-3" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
-                            <div class="form-check d-flex align-items-center gap-2 m-0 text-end">
+                        <div class="mb-4 p-3 rounded-4" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                            <div class="form-check d-flex align-items-center gap-2 m-0 p-0 ps-4 text-end">
                                 {{ form.terms_accepted }}
-                                <label class="form-check-label small mb-0" for="{{ form.terms_accepted.id_for_label }}" style="color: var(--gd-text);">
+                                <label class="form-check-label small mb-0 cursor-pointer" for="{{ form.terms_accepted.id_for_label }}" style="color: var(--gd-text);">
                                     {{ form.terms_accepted.label|safe }}
                                 </label>
                             </div>
@@ -98,8 +113,9 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow mt-2" style="background-color: var(--gd-primary); border: none;">
-                            שמור והמשך <i class="fas fa-arrow-left ms-1"></i>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow py-3 mt-2 hover-scale" style="background-color: var(--gd-primary); border: none;">
+                            שמור והמשך <i class="fas fa-arrow-left ms-2 small"></i>
                         </button>
                     </form>
                 </div>
@@ -110,29 +126,58 @@
 </div>
 
 <style>
-    /* עיצוב הטוגל של Bootstrap שייראה גדול ומזמין */
-    .form-switch .form-check-input { width: 3em; height: 1.5em; }
-
-    input[type=text], select {
+    /* עיצוב משופר לשדות הקלט, מותאם למצב לילה */
+    .custom-input, input[type=text], input[type=tel], select {
         width: 100%;
         padding: 0.8rem 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid var(--gd-border, #dee2e6);
-        background-color: var(--gd-bg, #f8f9fa);
-        transition: all 0.2s ease-in-out;
+        border-radius: 12px;
+        border: 1px solid var(--gd-border);
+        background-color: var(--gd-bg);
+        color: var(--gd-text);
+        transition: all 0.3s ease;
+        text-align: right;
     }
-    input[type=text]:focus, select:focus {
-        border-color: var(--gd-primary, #0d6efd);
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-        background-color: var(--gd-card, #fff);
+    .custom-input:focus, input[type=text]:focus, input[type=tel]:focus, select:focus {
+        border-color: var(--gd-primary);
+        background-color: var(--gd-card);
+        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.15);
+        outline: none;
     }
-    select:disabled { background-color: var(--gd-hover, #e9ecef); cursor: not-allowed; opacity: 0.7; }
+    select:disabled { 
+        background-color: var(--gd-hover); 
+        color: var(--gd-text-muted);
+        cursor: not-allowed; 
+        opacity: 0.7; 
+    }
+    
+    /* טיפול מיוחד ל-Select של Bootstrap במצב לילה */
+    select option {
+        background-color: var(--gd-card);
+        color: var(--gd-text);
+    }
+
+    /* עיצוב הצ'קבוקס של תנאי השימוש ויישור מימין לשמאל */
+    .form-check-input {
+        cursor: pointer;
+        margin-right: -1.5em; /* תיקון RTL ל-Bootstrap */
+    }
+    
+    /* אפקט לטוגל הסטודנט כשהוא דלוק */
+    #student-toggle-wrapper.active-toggle {
+        background-color: rgba(26, 115, 232, 0.05) !important;
+        border-color: var(--gd-primary) !important;
+    }
+
+    .cursor-pointer { cursor: pointer; }
+    .hover-scale { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-scale:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(26, 115, 232, 0.2) !important; }
+    .hover-underline:hover { text-decoration: underline !important; }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const studentToggle = document.getElementById('isStudentToggle');
+        const toggleWrapper = document.getElementById('student-toggle-wrapper');
         const academicSection = document.getElementById('academicSection');
         const uniSelect = document.getElementById('id_university');
         const majorSelect = document.getElementById('id_major');
@@ -149,7 +194,6 @@
 
         // --- 1. מוסד לימודים ---
         if (uniSelect) {
-            // הוספת אופציית יצירה בסוף הרשימה הקיימת
             const addNewOption = new Option("➕ הוסף מוסד לימודים אחר...", "ADD_NEW");
             addNewOption.style.fontWeight = "bold";
             addNewOption.style.color = "var(--gd-primary)";
@@ -169,10 +213,10 @@
         document.getElementById('cancel-uni-btn').addEventListener('click', () => {
             addUniWrapper.style.display = 'none';
             uniSelect.style.display = 'block';
-            uniSelect.value = ''; // איפוס
+            uniSelect.value = '';
             uniErrorMsg.style.display = 'none';
             newUniInput.value = '';
-            fetchMajors(''); // ניקוי מסלולים
+            fetchMajors('');
         });
 
         document.getElementById('save-uni-btn').addEventListener('click', async () => {
@@ -184,15 +228,18 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
             
             try {
-                // משתמש בפונקציית ה-Fetch המאובטחת של ג'אנגו
-                const response = await secureFetch('/ajax/add-university/', {
+                // משתמש בפונקציית ה-Fetch המאובטחת (צריך לוודא ש-secureFetch מוגדרת ב-base.html או להחליף ל-fetch רגיל עם headers)
+                const response = await fetch('/ajax/add-university/', {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
                     body: JSON.stringify({ name: name })
                 });
                 const data = await response.json();
                 
                 if (data.success) {
-                    // הצלחה! מוסיף את המוסד החדש לפני אופציית "הוסף חדש"
                     const newOption = new Option(data.name, data.id, true, true);
                     uniSelect.add(newOption, uniSelect.options.length - 1);
                     
@@ -200,10 +247,9 @@
                     uniSelect.style.display = 'block';
                     newUniInput.value = '';
                     
-                    // טעינת הפקולטות למוסד החדש (שיהיה ריק כמובן)
                     fetchMajors(data.id);
                 } else {
-                    uniErrorMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error}`;
+                    uniErrorMsg.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i> ${data.error}`;
                     uniErrorMsg.style.display = 'block';
                 }
             } catch (err) {
@@ -242,7 +288,6 @@
                         majorSelect.appendChild(option);
                     });
                     
-                    // הזרקת כפתור ההוספה תמיד בסוף הרשימה
                     const addNewOption = new Option("➕ הוסף מסלול לימודים אחר...", "ADD_NEW");
                     addNewOption.style.fontWeight = "bold";
                     addNewOption.style.color = "var(--gd-primary)";
@@ -288,8 +333,12 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
             
             try {
-                const response = await secureFetch('/ajax/add-major/', {
+                const response = await fetch('/ajax/add-major/', {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
                     body: JSON.stringify({ name: name, university_id: uniId })
                 });
                 const data = await response.json();
@@ -302,7 +351,7 @@
                     majorSelect.style.display = 'block';
                     newMajorInput.value = '';
                 } else {
-                    majorErrorMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error}`;
+                    majorErrorMsg.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i> ${data.error}`;
                     majorErrorMsg.style.display = 'block';
                 }
             } catch (err) {
@@ -318,11 +367,12 @@
             if (studentToggle.checked) {
                 academicSection.style.display = 'block';
                 academicSection.classList.add('animate__fadeIn');
+                toggleWrapper.classList.add('active-toggle');
             } else {
                 academicSection.style.display = 'none';
                 academicSection.classList.remove('animate__fadeIn');
+                toggleWrapper.classList.remove('active-toggle');
                 
-                // איפוס והסתרה של כל רכיבי ה-Inline במקרה של כיבוי
                 if(uniSelect) { uniSelect.value = ''; uniSelect.style.display = 'block'; }
                 if(majorSelect) { majorSelect.innerHTML = '<option value="">--- ללא מסלול ---</option>'; majorSelect.style.display = 'block'; }
                 if(yearInput) yearInput.value = '';

@@ -5,32 +5,36 @@
 {% block title %}הרשמה - הדרייב הסטודנטיאלי{% endblock %}
 
 {% block content %}
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;" dir="rtl">
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--card-bg);">
+<div class="container d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;" dir="rtl">
+    
+    <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
 
         <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
-            <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
+            <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3 shadow-sm">
                 <i class="fas fa-user-plus fa-2x text-warning"></i>
             </div>
-            <h2 class="fw-bold mb-1" style="color: var(--text-main);">יצירת חשבון</h2>
-            <p class="text-muted small">הצטרף לאלפי סטודנטים בדרייב</p>
+            <h2 class="fw-bold mb-1" style="color: var(--gd-text);">יצירת חשבון</h2>
+            <p class="small" style="color: var(--gd-text-muted);">הצטרף לאלפי סטודנטים בדרייב</p>
         </div>
 
         <div class="card-body p-4 p-md-5 pt-2">
 
             <div class="mb-4">
-                <a href="{% provider_login_url 'google' %}" class="btn-google-pro">
-                    <span class="google-icon-wrapper">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width: 20px;">
-                    </span>
-                    <span class="google-text">הרשמה מהירה עם Google</span>
-                </a>
+                <form method="post" action="{% provider_login_url 'google' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-google-pro w-100" style="font-family: inherit;">
+                        <span class="google-icon-wrapper">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 20px;">
+                        </span>
+                        <span class="google-text" style="color: var(--gd-text);">הרשמה מהירה עם Google</span>
+                    </button>
+                </form>
             </div>
 
             <div class="d-flex align-items-center my-4">
-                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
-                <span class="mx-3 text-muted small fw-bold">או בדרך המסורתית</span>
-                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
+                <hr class="flex-grow-1 opacity-25" style="border-color: var(--gd-text-muted);">
+                <span class="mx-3 small fw-bold" style="color: var(--gd-text-muted);">או בדרך המסורתית</span>
+                <hr class="flex-grow-1 opacity-25" style="border-color: var(--gd-text-muted);">
             </div>
 
             <form class="allauth-form" method="POST" action="{% url 'account_signup' %}" novalidate>
@@ -46,7 +50,7 @@
 
                 {% for field in form %}
                     <div class="mb-4 text-start">
-                        <label class="form-label small fw-bold text-muted mb-2 d-block text-end" for="{{ field.id_for_label }}">
+                        <label class="form-label small fw-bold mb-2 d-block text-end" for="{{ field.id_for_label }}" style="color: var(--gd-text-muted);">
                             {{ field.label }}
                         </label>
 
@@ -63,47 +67,49 @@
                         {% endif %}
 
                         {% if field.help_text %}
-                            <div class="form-text small opacity-50 mt-1 text-end" style="font-size: 0.7rem;">
+                            <div class="form-text small mt-1 text-end" style="color: var(--gd-text-muted); opacity: 0.7; font-size: 0.75rem;">
                                 {{ field.help_text|safe }}
                             </div>
                         {% endif %}
                     </div>
                 {% endfor %}
 
-                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-lg py-3 mt-3 hover-scale" type="submit" style="background-color: #1a73e8; border: none;">
+                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm py-3 mt-3 hover-scale" type="submit" style="background-color: var(--gd-primary); border: none;">
                     צור חשבון <i class="fas fa-arrow-left ms-2 small"></i>
                 </button>
             </form>
 
-            <div class="text-center mt-4 pt-2">
-                <p class="text-muted small">כבר חבר? <a href="{% url 'account_login' %}" class="text-primary fw-bold text-decoration-none">התחבר כאן</a></p>
+            <div class="text-center mt-4 pt-3 border-top" style="border-color: var(--gd-border) !important;">
+                <p class="small mb-0" style="color: var(--gd-text-muted);">
+                    כבר חבר? 
+                    <a href="{% url 'account_login' %}" class="text-primary fw-bold text-decoration-none ms-1 hover-underline">התחבר כאן</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* כפתור גוגל נקי */
+    /* כפתור גוגל פרימיום מותאם למצב לילה (זהה למסך ההתחברות) */
     .btn-google-pro {
         display: flex;
         align-items: center;
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
+        background-color: var(--gd-bg);
+        border: 1px solid var(--gd-border);
         border-radius: 50px;
-        color: var(--text-main);
         text-decoration: none;
         padding: 4px;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
     }
     .btn-google-pro:hover {
-        background-color: rgba(0,0,0,0.02);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transform: translateY(-1px);
+        background-color: var(--gd-hover);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
     }
     .google-icon-wrapper {
         background: #fff;
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -115,31 +121,38 @@
         text-align: center;
         font-weight: 600;
         padding-right: 12px;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
-    /* עיצוב שדות הקלט */
+    /* עיצוב שדות קלט למובייל - גודל נוח לאצבע ומצב לילה */
     .allauth-form input:not([type="checkbox"]) {
         width: 100%;
-        padding: 0.8rem 1.2rem;
+        padding: 0.9rem 1.2rem;
         border-radius: 12px;
-        border: 1px solid var(--border-color);
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        transition: 0.3s;
+        border: 1px solid var(--gd-border);
+        background-color: var(--gd-bg);
+        color: var(--gd-text);
+        transition: all 0.3s ease;
         text-align: right;
+        font-size: 1rem;
     }
     .allauth-form input:focus {
-        border-color: #1a73e8;
-        background-color: var(--card-bg);
-        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+        border-color: var(--gd-primary);
+        background-color: var(--gd-card);
+        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.15);
         outline: none;
     }
+    .allauth-form input::placeholder {
+        color: var(--gd-text-muted);
+        opacity: 0.6;
+    }
 
-    /* אפקטים */
-    .hover-scale { transition: 0.2s; }
-    .hover-scale:hover { transform: scale(1.02); }
+    /* אפקטים כלליים */
+    .hover-scale { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-scale:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(26, 115, 232, 0.2) !important; }
+    .hover-underline:hover { text-decoration: underline !important; }
 
-    [data-theme='dark'] .btn-google-pro:hover { background-color: rgba(255,255,255,0.05); }
+    /* תיקוני צלליות עדינים למצב לילה */
+    [data-theme='dark'] .btn-google-pro:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
 </style>
 {% endblock %}

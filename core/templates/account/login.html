@@ -5,15 +5,16 @@
 {% block title %}התחברות - הדרייב הסטודנטיאלי{% endblock %}
 
 {% block content %}
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;" dir="rtl">
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--card-bg);">
+<div class="container d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;" dir="rtl">
+    
+    <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
 
         <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
-            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3 shadow-sm">
                 <i class="fas fa-graduation-cap fa-2x text-primary"></i>
             </div>
-            <h2 class="fw-bold mb-1" style="color: var(--text-main);">ברוך שובך!</h2>
-            <p class="text-muted small">התחבר כדי לגשת לחומרי הלימוד שלך</p>
+            <h2 class="fw-bold mb-1" style="color: var(--gd-text);">ברוך שובך!</h2>
+            <p class="small" style="color: var(--gd-text-muted);">התחבר כדי לגשת לחומרי הלימוד שלך</p>
         </div>
 
         <div class="card-body p-4 p-md-5 pt-2">
@@ -21,19 +22,19 @@
             <div class="mb-4">
                 <form method="post" action="{% provider_login_url 'google' %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn-google-pro shadow-sm w-100" style="font-family: inherit;">
+                    <button type="submit" class="btn-google-pro w-100" style="font-family: inherit;">
                         <span class="google-icon-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width: 20px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 20px;">
                         </span>
-                        <span class="google-text">התחברות מהירה עם Google</span>
+                        <span class="google-text" style="color: var(--gd-text);">התחברות מהירה עם Google</span>
                     </button>
                 </form>
             </div>
 
             <div class="d-flex align-items-center my-4">
-                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
-                <span class="mx-3 text-muted small fw-bold">או באמצעות אימייל</span>
-                <hr class="flex-grow-1 opacity-25" style="color: var(--text-muted);">
+                <hr class="flex-grow-1 opacity-25" style="border-color: var(--gd-text-muted);">
+                <span class="mx-3 small fw-bold" style="color: var(--gd-text-muted);">או באמצעות אימייל</span>
+                <hr class="flex-grow-1 opacity-25" style="border-color: var(--gd-text-muted);">
             </div>
 
             <form class="allauth-form" method="POST" action="{% url 'account_login' %}" novalidate>
@@ -50,7 +51,7 @@
                 {% for field in form %}
                     {% if field.name != 'remember' %}
                     <div class="mb-4 text-start">
-                        <label class="form-label small fw-bold text-muted mb-2 d-block text-end" for="{{ field.id_for_label }}">
+                        <label class="form-label small fw-bold mb-2 d-block text-end" for="{{ field.id_for_label }}" style="color: var(--gd-text-muted);">
                             {{ field.label }}
                         </label>
 
@@ -68,47 +69,50 @@
                 {% endfor %}
 
                 <div class="d-flex justify-content-between align-items-center mb-4 px-1">
-                    <div class="form-check form-switch d-flex align-items-center gap-2">
+                    <div class="form-check form-switch d-flex align-items-center gap-2 m-0 p-0 ps-5">
                         {{ form.remember }}
-                        <label class="form-check-label small text-muted cursor-pointer" for="{{ form.remember.id_for_label }}">זכור אותי</label>
+                        <label class="form-check-label small cursor-pointer" for="{{ form.remember.id_for_label }}" style="color: var(--gd-text-muted);">זכור אותי</label>
                     </div>
                     <a href="{% url 'account_reset_password' %}" class="small text-primary text-decoration-none fw-bold hover-underline">שכחת סיסמה?</a>
                 </div>
 
-                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-lg py-3 mt-2 hover-scale" type="submit" style="background-color: #1a73e8; border: none;">
+                <button class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm py-3 mt-2 hover-scale" type="submit" style="background-color: var(--gd-primary); border: none;">
                     התחברות <i class="fas fa-sign-in-alt ms-2 small"></i>
                 </button>
             </form>
 
-            <div class="text-center mt-4 pt-2">
-                <p class="text-muted small">עדיין אין לך חשבון? <a href="{% url 'account_signup' %}" class="text-primary fw-bold text-decoration-none">הצטרף עכשיו</a></p>
+            <div class="text-center mt-4 pt-3 border-top" style="border-color: var(--gd-border) !important;">
+                <p class="small mb-0" style="color: var(--gd-text-muted);">
+                    עדיין אין לך חשבון? 
+                    <a href="{% url 'account_signup' %}" class="text-primary fw-bold text-decoration-none ms-1 hover-underline">הצטרף עכשיו</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* כפתור גוגל */
+    /* כפתור גוגל פרימיום מותאם למצב לילה */
     .btn-google-pro {
         display: flex;
         align-items: center;
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
+        background-color: var(--gd-bg);
+        border: 1px solid var(--gd-border);
         border-radius: 50px;
-        color: var(--text-main);
         text-decoration: none;
         padding: 4px;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
     }
     .btn-google-pro:hover {
-        background-color: rgba(0,0,0,0.02);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-        transform: translateY(-1px);
+        background-color: var(--gd-hover);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
     }
+    /* הרקע של האייקון תמיד לבן (הנחיות העיצוב של גוגל) */
     .google-icon-wrapper {
         background: #fff;
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -120,37 +124,48 @@
         text-align: center;
         font-weight: 600;
         padding-right: 12px;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
-    /* עיצוב שדות קלט */
+    /* עיצוב שדות קלט למובייל - גודל נוח לאצבע ומצב לילה */
     .allauth-form input:not([type="checkbox"]) {
         width: 100%;
-        padding: 0.8rem 1.2rem;
+        padding: 0.9rem 1.2rem;
         border-radius: 12px;
-        border: 1px solid var(--border-color);
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        transition: 0.3s;
+        border: 1px solid var(--gd-border);
+        background-color: var(--gd-bg);
+        color: var(--gd-text);
+        transition: all 0.3s ease;
         text-align: right;
+        font-size: 1rem;
     }
     .allauth-form input:focus {
-        border-color: #1a73e8;
-        background-color: var(--card-bg);
-        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+        border-color: var(--gd-primary);
+        background-color: var(--gd-card);
+        box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.15);
         outline: none;
     }
+    .allauth-form input::placeholder {
+        color: var(--gd-text-muted);
+        opacity: 0.6;
+    }
 
-    /* עיצוב Checkbox/Switch */
-    .form-check-input { cursor: pointer; width: 2.5em; height: 1.25em; }
+    /* עיצוב Checkbox/Switch (זכור אותי) */
+    .form-check-input { 
+        cursor: pointer; 
+        width: 2.5em !important; 
+        height: 1.25em; 
+        margin-right: -2.5em; /* תיקון RTL ליישור מתג Bootstrap */
+    }
     .cursor-pointer { cursor: pointer; }
 
-    /* אפקטים */
-    .hover-scale { transition: 0.2s; }
-    .hover-scale:hover { transform: scale(1.02); }
+    /* אפקטים כלליים */
+    .hover-scale { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-scale:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(26, 115, 232, 0.2) !important; }
     .hover-underline:hover { text-decoration: underline !important; }
 
-    [data-theme='dark'] .btn-google-pro:hover { background-color: rgba(255,255,255,0.05); }
-    [data-theme='dark'] .form-check-input { background-color: #444; border-color: #555; }
+    /* תיקוני צלליות עדינים למצב לילה */
+    [data-theme='dark'] .btn-google-pro:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    [data-theme='dark'] .form-check-input:not(:checked) { background-color: rgba(255,255,255,0.1); border-color: var(--gd-border); }
 </style>
 {% endblock %}
