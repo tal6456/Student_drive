@@ -37,7 +37,7 @@
     .search-icon { color: var(--gd-text-muted); margin-left: 15px; font-size: 1.1rem; }
     .search-input { border: none; outline: none; width: 100%; font-size: 1.1rem; background: transparent; color: var(--gd-text); }
     .search-input::placeholder { color: var(--gd-text-muted); opacity: 0.7; }
-    
+
     .creative-search-btn {
         background: var(--gd-bg);
         border: 1px solid var(--gd-border);
@@ -55,24 +55,24 @@
     .transition { transition: all 0.3s ease; }
     .hover-scale:hover { transform: translateY(-4px) scale(1.025); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
     [data-theme="dark"] .hover-scale:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.4) !important; }
-    
+
     .action-card-style { background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; }
     .nav-item-card { background-color: var(--gd-card) !important; border-color: var(--gd-border) !important; }
     .nav-item-card:hover { border-color: var(--gd-primary) !important; background: var(--gd-hover) !important; }
-    
+
     /* לוח שנה מותאם למצב לילה */
     .day-cell { width: 14.28%; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.8rem; position: relative; color: var(--gd-text); }
     .day-cell:hover { background: var(--gd-hover); color: var(--gd-primary); }
     .day-cell.today { background: var(--gd-primary); color: white; font-weight: bold; }
     .day-cell.has-event::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: #ff4757; border-radius: 50%; }
-    
+
     .tiny-icon { font-size: 0.65rem; }
     .tiny-text { font-size: 0.7rem; color: var(--gd-text-muted); display: block; }
     .year-selector-card { border: 1px solid var(--gd-border); background-color: var(--gd-card) !important; }
-    
+
     .folder-icon { color: white; transition: all 0.3s ease; }
     .folder-icon:hover { transform: rotate(360deg) scale(1.2); transition: transform 1.5s ease; }
-    
+
     #calendarWeekdays { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gd-text); margin-bottom: 5px; }
     #calendarWeekdays .weekday { width: 14.28%; text-align: center; }
 
@@ -168,26 +168,10 @@
             </a>
         </div>
     </div>
+    
+    ```
 
-    <!-- דרייב אישי (ימין) -->
-<div class="col-md-3">
-    <a href="{% url 'personal_drive' %}" class="text-decoration-none">
-        <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-
-            <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                 style="width: 55px; height: 55px; background: linear-gradient(135deg, #7b61ff, #34a853);">
-
-                <!-- אייקון יותר "דרייבי" -->
-                <i class="fab fa-google-drive text-white fs-3 folder-icon"></i>
-            </div>
-
-            <h6 class="fw-bold mb-1" style="color: var(--gd-text);">
-                דרייב אישי
-            </h6>
-
-        </div>
-    </a>
-</div>
+תשמור, תרענן את הפלאפון – והענק המיותר הזה ייעלם, והכל יישב יפה וצמוד! תעדכן אותי שעבד. הממשק נראה פשוט אש במצב לילה בתמונה ששלחת! 🔥
 
     <div class="row g-4">
         {# --- תוכן מרכזי --- #}
@@ -446,7 +430,7 @@
             </div>
             <div class="modal-body">
                 <input type="text" id="evTitle" class="form-control form-control-sm mb-2" placeholder="מה המשימה?" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
-                
+
                 <style>
                     /* התיקון לצ'קבוקס: מחיל את צבעי הרקע רק כשהוא לא מסומן! */
                     #evAllDay:not(:checked) {
@@ -454,7 +438,7 @@
                         border-color: var(--gd-border);
                     }
                 </style>
-                
+
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" value="" id="evAllDay">
                     <label class="form-check-label tiny-text" for="evAllDay" style="color: var(--gd-text-muted);">יום שלם</label>
