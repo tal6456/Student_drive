@@ -26,19 +26,19 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.http import JsonResponse
 from django.contrib import messages
 from django.db import models
-from .models import Course, Folder, Document, AcademicStaff, Lecturer, StaffReview
+from .models import Course, Folder, Document, AcademicStaff, Lecturer, StaffReview, DownloadLog, Vote, UserCourseSelection
 from django.conf import settings
 from django.shortcuts import render
 
 
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse, FileResponse
-from .models import Course, UserCourseSelection
+from django.http import JsonResponse, HttpResponse, Http404, FileResponse
 from .models import Notification
-from .models import Document, DownloadLog, Vote
+
+import mimetypes
+from urllib.parse import quote
 
 # שימוש במודל המשתמש החדש בצורה בטוחה
 User = get_user_model()
@@ -485,10 +485,40 @@ def download_file(request, document_id):
     d.download_count += 1
     d.save()
 
-    # יצירת רישום ההורדה בבסיס הנתונים
+    # רישום ההורדה במערכת (Log)
     DownloadLog.objects.create(user=request.user, document=d)
 
-    return FileResponse(d.file.open('rb'), as_attachment=True, filename=os.path.basename(d.file.name))
+    if not d.file:
+        raise Http404("הקובץ המבוקש לא נמצא בשרת.")
+
+    try:
+        # פתיחת הקובץ מהאחסון (יעבוד מול אחסון מקומי וגם AWS S3)
+        file_obj = d.file.open('rb')
+
+        # זיהוי סוג הקובץ כדי שהדפדפן ידע איך לטפל בו
+        content_type, encoding = mimetypes.guess_type(d.file.name)
+        content_type = content_type or 'application/octet-stream'
+
+        # יצירת התגובה
+        response = HttpResponse(file_obj, content_type=content_type)
+
+        # בניית שם הקובץ בעברית (חשוב כדי שלא ירד כג'יבריש)
+        safe_filename = quote(d.title.encode('utf-8'))
+
+        # בדיקה האם המשתמש הקליד את שם הקובץ עם סיומת. אם לא - נוסיף אותה.
+        file_ext = f".{d.file_extension}" if hasattr(d, 'file_extension') and d.file_extension else ""
+        if file_ext and not safe_filename.lower().endswith(file_ext.lower()):
+            safe_filename += file_ext
+
+        # שורת המחץ: פקודה ישירה לדפדפן *להוריד* ולא להציג!
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{safe_filename}"
+
+        return response
+
+    except Exception as e:
+        # במקרה של קריסה (למשל S3 לא זמין), נחזיר למשתמש שגיאה מסודרת
+        messages.error(request, f"אירעה שגיאה בהורדת הקובץ: {str(e)}")
+        return redirect('course_detail', course_id=d.course.id)
 
 @login_required
 def document_viewer(request, document_id):

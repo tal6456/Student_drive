@@ -18,13 +18,17 @@
             {% endif %}
         </div>
 
-        <div class="d-flex flex-column min-w-0" style="overflow: hidden;">
-            <a href="{% url 'document_viewer' doc.id %}" target="_blank" class="text-decoration-none fw-bold fs-6 hover-primary d-block mb-1 text-truncate" style="color: var(--gd-text);">
+        <div class="d-flex flex-column" style="min-width: 0; overflow: hidden;">
+            
+            <a href="{% url 'document_viewer' doc.id %}" target="_blank" class="d-none d-md-block text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">
+                {{ doc.title }}
+            </a>
+            
+            <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" class="d-block d-md-none text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">
                 {{ doc.title }}
             </a>
 
             <div class="d-flex flex-wrap align-items-center gap-2" style="font-size: 0.75rem; color: var(--gd-text-muted) !important;">
-                
                 <span class="text-nowrap"><i class="far fa-calendar-alt me-1"></i> {{ doc.upload_date|date:"d/m/Y" }}</span>
 
                 {% if doc.file_size_bytes %}
@@ -77,91 +81,41 @@
             </span>
         {% endif %}
 
-        <a href="{% url 'download_file' doc.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" download="{{ doc.title }}">
+        <a href="{% url 'download_file' doc.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ">
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
 
-        <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle mobile-menu-btn-responsive" 
-                onclick="event.stopPropagation(); if(typeof showMobileFileMenu === 'function') { showMobileFileMenu(this, '{{ doc.id }}', '{{ doc.title|escapejs }}', '{% url 'download_file' doc.id %}'); }"
-                style="color: var(--gd-text-muted) !important;">
-            <i class="fas fa-ellipsis-v fs-6"></i>
-        </button>
-
-    </div>
-</div> {% if user.is_authenticated %}
-<div class="modal fade" id="reportModal{{ doc.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
-            <div class="modal-header bg-danger text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle ms-2"></i> דיווח על קובץ</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'report_document' doc.id %}">
-                {% csrf_token %}
-                <div class="modal-body p-4 text-end">
-                    <p class="small text-muted mb-3" style="color: var(--gd-text-muted) !important;">דיווח על: <strong>"{{ doc.title }}"</strong></p>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small" style="color: var(--gd-text);">סיבת הדיווח:</label>
-                        <select name="reason" class="form-select" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);" required>
-                            <option value="">בחר סיבה...</option>
-                            <option value="broken">הקובץ פגום / לא נפתח</option>
-                            <option value="inappropriate">תוכן פוגעני / לא ראוי</option>
-                            <option value="irrelevant">לא קשור לקורס</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small" style="color: var(--gd-text);">פירוט נוסף:</label>
-                        <textarea name="description" class="form-control" rows="2" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill shadow-sm">שלח דיווח לחמ"ל</button>
-                </div>
-            </form>
+        <div class="dropdown">
+            <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle mobile-menu-btn-responsive" 
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    style="color: var(--gd-text-muted) !important;">
+                <i class="fas fa-ellipsis-v fs-6"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
+                        <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
+                    </a>
+                </li>
+                
+                {% if user.is_authenticated %}
+                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border);"></li>
+                    
+                    {% if user == doc.uploaded_by or user.is_staff %}
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onclick="globalDelete('document', {{ doc.id }})">
+                            <i class="fas fa-trash-alt text-center" style="width: 20px;"></i> מחק קובץ
+                        </button>
+                    </li>
+                    {% endif %}
+                    
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2 py-2" onclick="openGlobalReportModal({{ doc.id }}, '{{ doc.title|escapejs }}')" style="color: var(--gd-text-muted);">
+                            <i class="fas fa-flag text-secondary text-center" style="width: 20px;"></i> דווח על בעיה
+                        </button>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 </div>
-{% endif %}
-
-{# --- ה-CSS יצא החוצה כדי שיעבוד גם לאורחים --- #}
-<style>
-    /* הגדרות מיוחדות למובייל בלבד (מסך קטן מ-768px) */
-    @media (max-width: 767px) {
-        
-        .doc-row-responsive {
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-            gap: 8px !important; 
-        }
-
-        .doc-row-responsive .fas.fa-2x {
-            font-size: 1.5rem !important; 
-        }
-        .doc-row-responsive a.fw-bold.fs-6 {
-            font-size: 0.85rem !important; 
-            max-width: 140px; 
-        }
-
-        .doc-row-responsive div[style*="font-size: 0.75rem"] {
-            font-size: 0.65rem !important; 
-            gap: 4px !important; 
-        }
-
-        .doc-row-responsive .badge {
-            font-size: 0.6rem !important;
-            padding: 3px 6px !important;
-        }
-
-        .like-btn-responsive, .download-btn-responsive {
-            font-size: 0.7rem !important; 
-            padding: 5px 10px !important; 
-            min-width: unset !important; 
-        }
-        
-        .mobile-menu-btn-responsive i.fas.fa-ellipsis-v {
-            font-size: 0.9rem !important;
-        }
-
-        .doc-actions-group {
-            gap: 5px !important;
-        }
-    }
-</style>
