@@ -121,20 +121,21 @@
                 <p id="motivationQuote" class="mb-4 small" style="color: #888; font-style: italic; min-height: 20px;"></p>
             {% endif %}
 
-            <div class="search-container mx-auto" style="max-width: 700px;">
-                <form method="GET" action="{% url 'home' %}" class="creative-search-form">
-                    <div class="input-wrapper">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" name="search" class="search-input"
-                               placeholder="מה בא לך ללמוד היום?..."
-                               value="{{ search_query|default:'' }}">
-                    </div>
-                    <button type="submit" class="creative-search-btn">
-                        <span>חיפוש</span>
-                        <i class="fas fa-arrow-left ms-2 small"></i>
-                    </button>
-                </form>
-            </div>
+<div class="search-container mx-auto" style="max-width: 700px;">
+    <form method="GET" action="{% url 'global_search' %}" class="creative-search-form">
+        <div class="input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="q" class="search-input"
+                   placeholder="חפש קורסים, מוסדות, סיכומים או קבצים..."
+                   value="{{ request.GET.q|default:'' }}"
+                   autocomplete="off">
+        </div>
+        <button type="submit" class="creative-search-btn">
+            <span>חיפוש</span>
+            <i class="fas fa-arrow-left ms-2 small"></i>
+        </button>
+    </form>
+</div>
         </div>
     </div>
 

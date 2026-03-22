@@ -809,36 +809,47 @@ def reject_friend_request(request, request_id):
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 
+from django.contrib.auth import get_user_model
+from django.db.models import Q
+from .models import Course, University, Document, Lecturer, Folder
+
+
 @login_required
 def global_search(request):
+    User = get_user_model()  # פותר את השגיאה מהצילום מסך שלך
     query = request.GET.get('q', '').strip()
-    users, documents, courses, lecturers, folders = [], [], [], [], []
+
+    # אתחול רשימות ריקות
+    universities, courses, documents, lecturers, users = [], [], [], [], []
 
     if query:
-        if request.user.is_authenticated:
-            users = User.objects.filter(username__icontains=query).exclude(id=request.user.id)[:10]
-        else:
-            users = User.objects.filter(username__icontains=query)[:10]
+        # חיפוש מוסדות (אוניברסיטאות/מכללות) - זה מה שימצא את "בן גוריון"
+        universities = University.objects.filter(name__icontains=query)[:5]
 
+        # חיפוש קורסים - משופר למציאת מילים חלקיות
+        query_words = query.split()
+        course_q = Q()
+        for word in query_words:
+            course_q &= (Q(name__icontains=word) | Q(course_number__icontains=word))
+        courses = Course.objects.filter(course_q).select_related('major__university')[:15]
+
+        # חיפוש קבצים
         documents = Document.objects.filter(
-            Q(title__icontains=query) | Q(course__name__icontains=query)).select_related('course', 'uploaded_by')[:10]
-        courses = Course.objects.filter(Q(name__icontains=query) | Q(course_number__icontains=query)).select_related(
-            'major')[:10]
+            Q(title__icontains=query) | Q(course__name__icontains=query)
+        ).select_related('course')[:15]
+
+        # חיפוש מרצים
         lecturers = Lecturer.objects.filter(name__icontains=query)[:10]
-        folders = Folder.objects.filter(name__icontains=query).select_related('course')[:10]
 
     context = {
         'query': query,
-        'users': users,
-        'documents': documents,
+        'universities': universities,
         'courses': courses,
+        'documents': documents,
         'lecturers': lecturers,
-        'folders': folders,
-        'total_results': len(users) + len(documents) + len(courses) + len(lecturers) + len(folders)
+        'total_results': len(universities) + len(courses) + len(documents) + len(lecturers)
     }
     return render(request, 'core/search_results.html', context)
-
-
 @login_required
 def like_document(request, document_id):
     if request.method == 'POST':
