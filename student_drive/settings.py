@@ -35,7 +35,14 @@ ADMINS = [
 # המייל שממנו יישלחו ההודעות (יכול להיות אותו מייל)
 SERVER_EMAIL = 'student.drive10@gmail.com'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# תנאי חכם לשליחת מיילים
+if DEBUG:
+    # בפיתוח מקומי: המייל (כולל הלינק לאיפוס סיסמה) פשוט יודפס לך בחלון הטרמינל למטה
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # בשרת האמיתי: שליחת מיילים אמיתיים לתיבת הדואר של הסטודנט
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
