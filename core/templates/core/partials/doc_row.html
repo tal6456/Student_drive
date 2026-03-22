@@ -119,3 +119,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    // פתרון קסם לחיתוך התפריטים: מוצא את הכרטיסייה העוטפת ומבטל לה את החיתוך
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.doc-row-responsive').forEach(row => {
+            let parentCard = row.closest('.card');
+            if(parentCard) {
+                parentCard.classList.remove('overflow-hidden');
+                parentCard.style.overflow = 'visible';
+            }
+        });
+    });
+</script>
