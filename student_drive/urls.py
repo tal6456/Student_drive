@@ -17,12 +17,17 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
 
     # דפי ניווט וקורסים
+    # דפי ניווט וקורסים
     path('', views.home, name='home'),
-    path('course/<int:course_id>/', views.course_detail, name='course_detail'),
-    path('course/<int:course_id>/toggle_favorite/', views.toggle_favorite_course, name='toggle_favorite_course'),
-    path('add-course/', views.add_course, name='add_course'),
-    path('course/<int:course_id>/folder/<int:folder_id>/', views.course_detail, name='course_detail_folder'),
 
+    # שים לב לסדר: קודם הנתיב עם התיקייה, אחר כך הקורס הכללי
+    path('course/<int:course_id>/folder/<int:folder_id>/', views.course_detail, name='course_detail_folder'),
+    path('course/<int:course_id>/', views.course_detail, name='course_detail'),
+
+    # הנתיב שהיה חסר לך וגרם לשגיאה בדף הבית
+    path('course/<int:course_id>/toggle_favorite/', views.toggle_favorite_course, name='toggle_favorite_course'),
+
+    path('add-course/', views.add_course, name='add_course'),
     # ==========================================
     # הדרייב האישי החדש (מה שהוספנו עכשיו)
     # ==========================================
@@ -87,6 +92,10 @@ urlpatterns = [
 
     path('search/', views.global_search, name='global_search'),
     path('system-architecture-mirror/', views.agent_report, name='agent_report'),
+# ==========================================
+    # מערכת התראות
+    # ==========================================
+    path('notifications/', views.notifications_list, name='notifications_list'),
 
     # ==========================================
     # סוכן אישי (Personal AI Agent)

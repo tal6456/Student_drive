@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends "core/base.html" %}
+
+{% block title %}התראות - הדרייב הסטודנטיאלי{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold m-0" style="color: var(--gd-text);">
+                    <i class="fas fa-bell text-primary me-2"></i>המרכז לעדכונים
+                </h2>
+                <span class="badge bg-primary rounded-pill px-3 py-2">
+                    {{ notifications.count }} התראות
+                </span>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="list-group list-group-flush">
+                    {% for notification in notifications %}
+                        {# הקישור שולח את ה-ID של ההתראה ל-View כדי למחוק אותה בלחיצה #}
+                        <a href="?delete={{ notification.id }}" class="list-group-item list-group-item-action p-4 border-0 border-bottom transition hover-bg-light">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0" style="color: var(--gd-primary);">{{ notification.title }}</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">
+                                    <i class="far fa-clock me-1"></i>{{ notification.created_at|timesince }}
+                                </small>
+                            </div>
+                            <p class="mb-0 text-muted small" style="line-height: 1.6;">{{ notification.message }}</p>
+                            <div class="mt-2 text-primary small fw-bold">
+                                <i class="fas fa-external-link-alt me-1" style="font-size: 0.7rem;"></i> לחץ לצפייה בקובץ
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="text-center py-5">
+                            <div class="mb-3 opacity-25">
+                                <i class="fas fa-bell-slash fa-4x text-muted"></i>
+                            </div>
+                            <h5 class="fw-bold text-muted">הכל שקט כאן...</h5>
+                            <p class="text-muted small">אין לך התראות חדשות כרגע. כשמישהו יעלה קובץ לקורס שסימנת בכוכב, זה יופיע כאן.</p>
+                            <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm rounded-pill mt-3 px-4">חזרה לדף הבית</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% if notifications %}
+            <p class="text-center text-muted mt-3 small">
+                <i class="fas fa-info-circle me-1"></i> לחיצה על התראה תעביר אותך לקובץ ותסיר אותה מהרשימה.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* אפקטים של ריחוף ומעברים */
+    .hover-bg-light:hover { 
+        background-color: rgba(66, 133, 244, 0.05) !important; 
+        border-right: 4px solid var(--gd-primary) !important;
+    }
+    .transition { 
+        transition: all 0.2s ease-in-out; 
+    }
+    .list-group-item {
+        border-right: 4px solid transparent;
+    }
+</style>
+{% endblock %}
+</body>
+</html>

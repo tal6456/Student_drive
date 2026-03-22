@@ -806,17 +806,17 @@
     }
 </script>
 
-    <script>
-// פונקציית ה-AI המרכזית
+ <script>
+/**
+ * פונקציית ה-AI המרכזית לסיכום מסמכים
+ */
 function getAISummary(docId, event) {
     if (event) event.stopPropagation();
 
     const btn = event.currentTarget;
-    // מוצא את הקונטיינר הצהוב שנמצא בתוך doc_row.html
     const container = document.getElementById(`ai-summary-container-${docId}`);
     const textArea = container.querySelector('.summary-text');
 
-    // שינוי מצב הכפתור לטעינה
     const originalContent = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -834,10 +834,8 @@ function getAISummary(docId, event) {
     })
     .then(data => {
         if (data.success) {
-            // הזרקת הטקסט לתוך הדיב ופתיחת התיבה
             textArea.innerText = data.summary;
             container.classList.add('show');
-            // גלילה קלה שהמשתמש יראה את הסיכום
             container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
             alert("שגיאה מה-AI: " + data.error);
@@ -853,13 +851,18 @@ function getAISummary(docId, event) {
     });
 }
 
-// לוגיקה קיימת של הדרייב (המשך המיון שנקטע לך)
+/**
+ * לוגיקת רינדור הקבצים בדרייב
+ */
 function renderFiles() {
     const fileContainer = document.getElementById('drive-files');
+    if (!fileContainer) return;
+
     const files = Array.from(document.querySelectorAll('.file-card'));
     let visibleFiles = 0;
 
     files.forEach(el => {
+        // currentPath הוא משתנה גלובלי שאמור להיות מוגדר בשאר הקוד שלך
         if (el.getAttribute('data-parent') === currentPath) {
             el.classList.remove('d-none');
             visibleFiles++;
@@ -868,19 +871,60 @@ function renderFiles() {
         }
     });
 
-    // הצגת כותרות ומצב ריק
-    document.getElementById('folders-title').classList.toggle('d-none', document.querySelectorAll('.folder-card:not(.d-none)').length === 0);
-    document.getElementById('files-title').classList.toggle('d-none', visibleFiles === 0);
-    document.getElementById('empty-state').classList.toggle('d-none', visibleFiles > 0 || document.querySelectorAll('.folder-card:not(.d-none)').length > 0);
+    // ניהול תצוגת כותרות ומצב ריק
+    const foldersTitle = document.getElementById('folders-title');
+    const filesTitle = document.getElementById('files-title');
+    const emptyState = document.getElementById('empty-state');
+    const visibleFolders = document.querySelectorAll('.folder-card:not(.d-none)').length;
+
+    if (foldersTitle) foldersTitle.classList.toggle('d-none', visibleFolders === 0);
+    if (filesTitle) filesTitle.classList.toggle('d-none', visibleFiles === 0);
+    if (emptyState) emptyState.classList.toggle('d-none', visibleFiles > 0 || visibleFolders > 0);
 }
 
-// הפעלה ראשונית בטעינה
+/**
+ * פונקציה מרכזית להרענון הדרייב (במידה וקיימת אצלך)
+ */
+function refreshDriveUI() {
+    if (typeof renderDrive === 'function') renderDrive();
+    if (typeof renderFiles === 'function') renderFiles();
+}
+
+/**
+ * הפעלה ראשונית בטעינה - מאוחדת
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    let hashPath = window.location.hash ? window.location.hash.substring(1) : 'root';
-    rebuildHistoryFromPath(hashPath);
-    renderDrive();
+    console.log("🚀 הדרייב נטען. נתיב נוכחי:", currentPath);
+
+    // בניה מחדש של ה-Breadcrumbs (היסטוריית הניווט)
+    if (typeof rebuildHistoryFromPath === 'function') {
+        rebuildHistoryFromPath(currentPath);
+    }
+    
+    // הרצת הרינדור הראשוני
+    if (typeof renderDrive === 'function') renderDrive();
     renderFiles();
+
+    // אם אנחנו בתוך תיקייה ספציפית (לא root), נגלול אליה
+    if (currentPath !== 'root') {
+        const driveSection = document.getElementById('drive-files');
+        if (driveSection) {
+            driveSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 });
+
+/**
+ * 5. ניווט בתוך הדרייב (לחיצה על תיקיות)
+ */
+function navigateToFolder(folderId) {
+    currentPath = String(folderId);
+    // עדכון ה-URL בלי לרענן את הדף (אופציונלי, עוזר למשתמש להבין איפה הוא)
+    window.location.hash = folderId;
+    renderFiles();
+    if (typeof renderDrive === 'function') renderDrive();
+}
+
 </script>
 {% endblock %}
 

@@ -23,14 +23,21 @@ from .ai_utils import generate_smart_summary
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
-
+import os
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+from django.http import JsonResponse
+from django.contrib import messages
+from django.db import models
+from .models import Course, Folder, Document, AcademicStaff, Lecturer, StaffReview
 from django.conf import settings
 from django.shortcuts import render
 
 
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, FileResponse
-
+from .models import Course, UserCourseSelection
+from .models import Notification
 
 # שימוש במודל המשתמש החדש בצורה בטוחה
 User = get_user_model()
@@ -214,10 +221,16 @@ def change_password(request):
     })
 
 
-def course_detail(request, course_id):
+# הוספנו את folder_id=None כדי לתמוך בנתיב של התיקייה מההתראות
+
+
+def course_detail(request, course_id, folder_id=None):
     course = get_object_or_404(Course, id=course_id)
     course.view_count += 1
     course.save()
+
+    # בדיקה אם הגענו מהתראה (נתיב URL) או מפרמטר GET
+    open_this_folder = folder_id if folder_id else request.GET.get('open_folder')
 
     if request.method == 'POST':
         if not request.user.is_authenticated:
@@ -227,6 +240,7 @@ def course_detail(request, course_id):
 
         action = request.POST.get('action')
 
+        # --- יצירת תיקייה ---
         if action == 'create_folder':
             folder_name = request.POST.get('folder_name')
             parent_id = request.POST.get('parent_folder')
@@ -256,12 +270,12 @@ def course_detail(request, course_id):
                 )
                 messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
 
-                # --- הקוד החדש ---
-            redirect_url = reverse('course_detail', args=[course.id])
-            if parent_id and parent_id != 'root':
-                redirect_url += f"?open_folder={parent_id}"
-            return redirect(redirect_url)
+            # תיקון רידירקט: אם אנחנו בתוך תיקייה, נשאר בנתיב המלא של התיקייה
+            if open_this_folder:
+                return redirect('course_detail_folder', course_id=course.id, folder_id=open_this_folder)
+            return redirect('course_detail', course_id=course.id)
 
+        # --- עריכת תיקייה ---
         elif action == 'edit_folder':
             folder_id_raw = request.POST.get('folder_id')
             staff_id_select = request.POST.get('staff_member_id', '')
@@ -273,90 +287,62 @@ def course_detail(request, course_id):
             if folder_id_raw:
                 clean_id = folder_id_raw.replace('folder_', '')
                 folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
-                final_staff = None
 
+                # עדכון סגל
                 if new_staff_input and new_staff_input.strip():
                     new_lecturer, _ = Lecturer.objects.get_or_create(
                         name=new_staff_input.strip(),
                         university=course.major.university
                     )
-                    final_staff = new_lecturer
+                    folder_to_edit.staff_member = new_lecturer
                 elif staff_id_select and staff_id_select.strip().isdigit():
-                    final_staff = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
-                folder_to_edit.staff_member = final_staff
+                    folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
 
                 if folder_color:
                     folder_to_edit.color = folder_color
                 folder_to_edit.save()
 
-                if final_staff and rating_val.isdigit() and int(rating_val) > 0:
+                # עדכון דירוג
+                if folder_to_edit.staff_member and rating_val.isdigit() and int(rating_val) > 0:
                     rating_int = int(rating_val)
-                    if 1 <= rating_int <= 5:
-                        review, created = StaffReview.objects.update_or_create(
-                            staff_member=final_staff,
-                            user=request.user,
-                            defaults={'rating': rating_int, 'review_text': review_text.strip()}
-                        )
-                        avg = final_staff.reviews.aggregate(models.Avg('rating'))['rating__avg']
-                        final_staff.average_rating = round(avg, 1)
-                        final_staff.save()
+                    StaffReview.objects.update_or_create(
+                        staff_member=folder_to_edit.staff_member,
+                        user=request.user,
+                        defaults={'rating': rating_int, 'review_text': review_text.strip()}
+                    )
+                    messages.success(request, 'התיקייה והדירוג עודכנו!')
 
-                        if created:
-                            request.user.profile.earn_coins(2)
-                            messages.success(request, 'התיקייה עודכנה, וקיבלת 2 מטבעות על הדירוג! 🪙')
-                        else:
-                            messages.success(request, 'התיקייה והדירוג שלך עודכנו בהצלחה!')
-                else:
-                    messages.success(request, 'התיקייה עודכנה בהצלחה!')
-            # --- הקוד החדש והמתוקן ---
-            redirect_url = reverse('course_detail', args=[course.id])
+            if open_this_folder:
+                return redirect('course_detail_folder', course_id=course.id, folder_id=open_this_folder)
+            return redirect('course_detail', course_id=course.id)
 
-            # אנחנו אומרים לשרת: תחזור ל"אבא" של התיקייה שערכנו (כדי שנישאר באותו מסך ונראה את השינוי)
-            if folder_to_edit.parent:
-                redirect_url += f"?open_folder={folder_to_edit.parent.id}"
-
-            return redirect(redirect_url)
-
+        # --- העלאה מהירה ---
         elif action == 'quick_upload':
             uploaded_files = request.FILES.getlist('file')
-            folder_id = request.POST.get('folder_id')
-            parent_folder = None
+            f_id = request.POST.get('folder_id')
+            p_folder = None
 
-            if folder_id and folder_id not in ['root', 'null']:
-                parent_folder = get_object_or_404(Folder, id=folder_id, course=course)
+            # וידוא שהתיקייה קיימת ושייכת לקורס
+            if f_id and f_id not in ['root', 'null', 'None']:
+                p_folder = get_object_or_404(Folder, id=f_id, course=course)
 
             from .utils import GLOBAL_MAX_FILE_SIZE_MB, GLOBAL_ALLOWED_DOCUMENTS, GLOBAL_ALLOWED_IMAGES
-
             uploaded_count = 0
-
             for uploaded_file in uploaded_files:
-                ext = os.path.splitext(uploaded_file.name)[1].lower()
-
-                # בדיקת משקל מקסימלי (20MB)
-                if uploaded_file.size > GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
-                    return JsonResponse({
-                        'success': False,
-                        'error': f'הקובץ "{uploaded_file.name}" שוקל מעל {GLOBAL_MAX_FILE_SIZE_MB}MB. אנא כווץ אותו ונסה שוב.'
-                    })
-
-                # מוודא רק שזה קובץ חוקי מהרשימה שלנו (בלי מגבלת מינימום!)
-                if ext in GLOBAL_ALLOWED_DOCUMENTS or ext in GLOBAL_ALLOWED_IMAGES:
-                    assigned_staff = parent_folder.staff_member if parent_folder else None
+                if uploaded_file.size <= GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
+                    # הוספנו כאן את folder=p_folder - זה קריטי לסיגנל!
                     Document.objects.create(
-                        course=course, folder=parent_folder,
+                        course=course,
+                        folder=p_folder,  # כאן הקובץ משתייך לתיקייה
                         title=os.path.splitext(uploaded_file.name)[0],
-                        file=uploaded_file, staff_member=assigned_staff,
-                        uploaded_by=request.user
+                        file=uploaded_file,
+                        uploaded_by=request.user,
+                        staff_member=p_folder.staff_member if p_folder else None
                     )
                     request.user.profile.earn_coins(1)
                     uploaded_count += 1
-
-            if uploaded_count > 0:
-                return JsonResponse({'success': True, 'message': f'הועלו {uploaded_count} קבצים בהצלחה.'})
-            else:
-                return JsonResponse(
-                    {'success': False, 'error': 'הקובץ נדחה. אנא העלה רק סוגי קבצים נתמכים.'})
-
+            return JsonResponse({'success': True, 'count': uploaded_count})
+    # --- שליפת נתונים לתצוגה ---
     all_folders = Folder.objects.filter(course=course)
     all_documents = Document.objects.filter(course=course).order_by('-upload_date')
 
@@ -365,11 +351,11 @@ def course_detail(request, course_id):
         'folders': all_folders,
         'documents': all_documents,
         'uni_lecturers': AcademicStaff.objects.filter(university=course.major.university).order_by('name'),
+        'target_folder_id': open_this_folder,
     }
     return render(request, 'core/course_detail.html', context)
-
-
 @login_required
+
 def analytics_dashboard(request):
     if not request.user.is_staff:
         return redirect('home')
@@ -929,14 +915,30 @@ def toggle_favorite_course(request, course_id):
     if request.method == 'POST':
         course = get_object_or_404(Course, id=course_id)
         profile = request.user.profile
+
+        # 1. מציאת או יצירת הרישום בטבלת ההתראות (UserCourseSelection)
+        selection, created = UserCourseSelection.objects.get_or_create(
+            user=request.user,
+            course=course
+        )
+
+        # 2. עדכון המועדפים וההתראות במקביל
         if course in profile.favorite_courses.all():
             profile.favorite_courses.remove(course)
+            selection.is_starred = False  # כיבוי התראות
             is_favorite = False
         else:
             profile.favorite_courses.add(course)
+            selection.is_starred = True  # הפעלת התראות
             is_favorite = True
+
+        # שמירת המצב החדש בטבלת ההתראות
+        selection.save()
+
         return JsonResponse({'is_favorite': is_favorite})
+
     return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
+
 
 
 @login_required
@@ -1137,3 +1139,29 @@ def delete_item_ajax(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'אירעה שגיאה בשרת: {str(e)}'})
+
+
+@login_required
+def notifications_list(request):
+    """
+    מציג את רשימת ההתראות.
+    אם קיים פרמטר 'delete' ב-URL, מוחק את ההתראה ומפנה לקישור שלה.
+    """
+    # בדיקה אם המשתמש לחץ על התראה ספציפית (מחיקה והפניה)
+    delete_id = request.GET.get('delete')
+    if delete_id:
+        notification = Notification.objects.filter(id=delete_id, user=request.user).first()
+        if notification:
+            target_url = notification.link
+            notification.delete()  # מחיקת ההתראה מהרשימה
+            return redirect(target_url)  # הפניה ישירות לקובץ
+
+    # הצגת שאר ההתראות (למקרה שסתם נכנסו לדף)
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+    # אופציונלי: סימון כנקרא למי שרק צופה בדף בלי ללחוץ
+    notifications.filter(is_read=False).update(is_read=True)
+
+    return render(request, 'core/notifications.html', {
+        'notifications': notifications
+    })

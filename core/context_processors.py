@@ -1,11 +1,23 @@
-from .models import Report
+from .models import Report, Notification
 
-def pending_reports_count(request):
+def global_counts(request):
     """
-    פונקציה שמעבירה את מספר הדיווחים הפתוחים לכל ה-Templates.
-    מוצג רק למשתמשים שהם Staff (מנהלים).
+    מעביר את מספר הדיווחים (למנהלים) ואת מספר ההתראות (למשתמשים) לכל האתר.
     """
-    if request.user.is_authenticated and request.user.is_staff:
-        count = Report.objects.filter(is_resolved=False).count()
-        return {'pending_reports_count': count}
-    return {'pending_reports_count': 0}
+    data = {
+        'pending_reports_count': 0,
+        'unread_notifications_count': 0
+    }
+
+    if request.user.is_authenticated:
+        # ספירת התראות קבצים שלא נקראו לכל משתמש
+        data['unread_notifications_count'] = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).count()
+
+        # ספירת דיווחים פתוחים (רק למנהלים)
+        if request.user.is_staff:
+            data['pending_reports_count'] = Report.objects.filter(is_resolved=False).count()
+
+    return data

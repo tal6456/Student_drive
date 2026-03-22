@@ -544,3 +544,36 @@ class AgentKnowledge(models.Model):
 
     def __str__(self):
         return f"Agent Knowledge: {self.course_name} ({self.owner.username})"
+
+# ==========================================
+# 8. מערכת התראות ואוטומציה (חדש)
+# ==========================================
+
+class Notification(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255, verbose_name="כותרת")
+    message = models.TextField(verbose_name="הודעה")
+    link = models.CharField(max_length=500, blank=True, null=True, verbose_name="קישור")
+    is_read = models.BooleanField(default=False, verbose_name="נקרא?")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"התראה ל-{self.user.username}: {self.title}"
+
+
+class UserCourseSelection(models.Model):
+    """מודל שמחבר בין סטודנט לקורס ומסמן אם הוא במעקב (Star)"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='course_selections')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='selected_by_users')
+    is_starred = models.BooleanField(default=False, verbose_name="מסומן בכוכב")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'course') # מונע כפילויות
+
+    def __str__(self):
+        status = "⭐" if self.is_starred else "❌"
+        return f"{self.user.username} - {self.course.name} {status}"

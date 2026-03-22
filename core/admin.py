@@ -11,7 +11,7 @@ from .models import (
     University, Major, Course, Folder, Document,
     Community, Post, MarketplacePost, VideoPost, Comment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
-    Report, Feedback, AgentKnowledge
+    Report, Feedback, AgentKnowledge,Notification, UserCourseSelection
 )
 
 
@@ -161,7 +161,7 @@ admin.site.register([
     University, Major, Folder, Community, Post,
     MarketplacePost, VideoPost, Comment, Friendship,
     StaffReview, AcademicStaff, Lecturer, TeachingAssistant,
-    CourseSemesterStaff
+    CourseSemesterStaff,Notification, UserCourseSelection
 ], BaseAdmin)
 
 # עיצוב כותרות

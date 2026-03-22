@@ -337,14 +337,21 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
 
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center" href="#">
-                                <i class="fas fa-bell"></i> התראות
-                                {% if user.profile.pending_friend_requests.count > 0 %}
-                                    <span class="nav-notification-badge">{{ user.profile.pending_friend_requests.count }}</span>
-                                {% endif %}
-                            </a>
-                        </li>
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center position-relative" href="{% url 'notifications_list' %}">
+        <i class="fas fa-bell"></i> 
+        <span class="ms-2">התראות</span>
+        
+        {# חישוב סך ההתראות: בקשות חברות + התראות קבצים שלא נקראו #}
+        {% with total_notifications=user.profile.pending_friend_requests.count|add:unread_notifications_count %}
+            {% if total_notifications > 0 %}
+                <span class="badge bg-danger text-white rounded-pill px-2 ms-2" style="font-size: 0.7rem; min-width: 18px;">
+                    {{ total_notifications }}
+                </span>
+            {% endif %}
+        {% endwith %}
+    </a>
+</li>
 
                         <li class="nav-item border-top pt-3 mt-2">
                             <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> פרופיל</a>
