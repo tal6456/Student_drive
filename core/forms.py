@@ -110,7 +110,7 @@ class CustomSignupForm(forms.Form):
 
 # --- טופס להשלמת פרטי פרופיל (מותאם לכולם - סטודנטים וקהל רחב) ---
 class UserProfileForm(BaseStyledModelForm):
-    first_name = forms.CharField(max_length=30, required=True, label="שם פרטי (אפשר גם כינוי)")
+    first_name = forms.CharField(max_length=30, required=True, label="שם פרטי")
     last_name = forms.CharField(max_length=30, required=True, label="שם משפחה")
 
     terms_accepted = forms.BooleanField(
