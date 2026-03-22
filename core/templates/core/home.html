@@ -592,7 +592,27 @@ function updateEventList(key) {
         list.innerHTML = '<div class="text-muted small italic text-center py-2">אין אירועים ליום זה</div>';
     }
 }
+function updateEventList(key) {
+    const list = document.getElementById('eventList');
+    const header = document.getElementById('selectedDateHeader');
+    const parts = key.split('-');
+    header.innerText = `אירועים ל-${parts[2]}/${parts[1]}:`;
 
+    if (evs[key] && evs[key].length > 0) {
+        list.innerHTML = evs[key].map(ev => `
+            <div class="p-2 rounded-3 border-start border-primary border-3 shadow-sm mb-2 text-end" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                <div class="fw-bold small" style="color: var(--gd-text);">${ev.title}</div>
+                <div class="tiny-text">
+                    ${ev.allDay
+                        ? '<i class="far fa-calendar-alt"></i> יום שלם'
+                        : `<i class="far fa-clock"></i> ${ev.start} - ${ev.end}`}
+                </div>
+            </div>
+        `).join('');
+    } else {
+        list.innerHTML = '<div class="small fst-italic text-center py-2" style="color: var(--gd-text-muted);">אין אירועים ליום זה</div>';
+    }
+}
 // ניווט חודשים
 document.getElementById('prevMonth').onclick = () => { d.setMonth(d.getMonth() - 1); renderCal(); };
 document.getElementById('nextMonth').onclick = () => { d.setMonth(d.getMonth() + 1); renderCal(); };
