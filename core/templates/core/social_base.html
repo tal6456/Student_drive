@@ -8,30 +8,52 @@
     <div class="col-lg-3 d-none d-lg-block">
         <div class="position-sticky" style="top: 90px;">
             {% block social_sidebar %}
-                {% endblock %}
+            {% endblock %}
         </div>
     </div>
 
     <div class="col-lg-9 col-md-12">
+        
+        <div class="d-block d-lg-none mb-3">
+            {% block mobile_social_nav %}{% endblock %}
+        </div>
+
         {% block social_content %}{% endblock %}
     </div>
 
 </div>
 
 <style>
+    /* עיצוב פריט פעיל בתפריט */
     .active-social {
         background-color: rgba(26, 115, 232, 0.1) !important;
         color: var(--gd-primary) !important;
         font-weight: bold;
+        border-right: 4px solid var(--gd-primary); /* פס הדגשה יפה בצד */
+    }
+    
+    /* תמיכה במצב לילה לפריטי התפריט הצידי */
+    .list-group-item-action {
+        color: var(--gd-text) !important;
+        background-color: var(--gd-card) !important;
+        border-color: var(--gd-border) !important;
+        transition: all 0.2s ease;
     }
     .list-group-item-action:hover {
         background-color: var(--gd-hover) !important;
     }
+    
+    /* אנימציית ריחוף יוקרתית לפוסטים */
     .post-card {
-        transition: transform 0.2s;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .post-card:hover {
         transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+    }
+    /* צל מותאם למצב לילה כשרחפים מעל פוסט */
+    [data-theme="dark"] .post-card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4) !important;
     }
 </style>
 {% endblock %}
