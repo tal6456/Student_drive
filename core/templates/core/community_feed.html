@@ -4,41 +4,42 @@
     {% include "core/partials/community_sidebar.html" %}
 {% endblock %}
 
-{% block social_content %}
 {% block mobile_social_nav %}
-<div class="mobile-scroll-nav d-flex gap-2 pb-2 mb-3">
-    <a href="?community={{ current_community.id }}" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all {% if not request.GET.type %}btn-primary shadow-sm border-0{% else %}border{% endif %}" style="{% if request.GET.type %}background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;{% endif %}">
+<div class="mobile-scroll-nav d-flex flex-nowrap align-items-center gap-2 pb-2 mb-3">
+    <a href="?community={{ current_community.id }}" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all text-nowrap {% if not request.GET.type %}btn-primary shadow-sm border-0{% else %}border{% endif %}" style="{% if request.GET.type %}background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;{% endif %}">
         <i class="fas fa-stream me-1"></i> פיד
     </a>
-    <a href="?community={{ current_community.id }}&type=market" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all {% if request.GET.type == 'market' %}btn-success text-white shadow-sm border-0{% else %}border{% endif %}" style="{% if request.GET.type != 'market' %}background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;{% endif %}">
+    <a href="?community={{ current_community.id }}&type=market" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all text-nowrap {% if request.GET.type == 'market' %}btn-success text-white shadow-sm border-0{% else %}border{% endif %}" style="{% if request.GET.type != 'market' %}background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;{% endif %}">
         <i class="fas fa-tags me-1"></i> מרקט
     </a>
-    <a href="{% url 'my_friends' %}" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all border" style="background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;">
+    <a href="{% url 'my_friends' %}" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all border text-nowrap" style="background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;">
         <i class="fas fa-user-friends me-1"></i> חברים
     </a>
 
-    <div class="vr mx-1" style="color: var(--gd-border);"></div>
+    <div class="vr mx-1 flex-shrink-0" style="color: var(--gd-border); height: 25px;"></div>
 
     {% for comm in my_communities %}
-        <a href="?community={{ comm.id }}" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all border" style="{% if comm.id == current_community.id %}background-color: rgba(26, 115, 232, 0.1); color: var(--gd-primary); border-color: var(--gd-primary) !important;{% else %}background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;{% endif %}">
+        <a href="?community={{ comm.id }}" class="btn btn-sm rounded-pill fw-bold px-3 flex-shrink-0 transition-all border text-nowrap" style="{% if comm.id == current_community.id %}background-color: rgba(26, 115, 232, 0.1); color: var(--gd-primary); border-color: var(--gd-primary) !important;{% else %}background-color: var(--gd-card); color: var(--gd-text); border-color: var(--gd-border) !important;{% endif %}">
             {{ comm.name }}
         </a>
     {% endfor %}
 </div>
 
 <style>
-    /* הופך את השורה לנגללת אופקית במגע פלאפון ומעלים את פס הגלילה */
+    /* הגדרות קשיחות לגלילה אופקית (מניעת ירידת שורה) */
     .mobile-scroll-nav {
         overflow-x: auto;
-        white-space: nowrap;
+        white-space: nowrap !important;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* לפיירפוקס */
+        scrollbar-width: none;
     }
     .mobile-scroll-nav::-webkit-scrollbar {
-        display: none; /* לכרום / ספארי */
+        display: none;
     }
 </style>
 {% endblock %}
+
+{% block social_content %}
 <div class="d-flex align-items-center gap-3 mb-4 animate__animated animate__fadeIn">
      <div class="rounded-circle bg-primary bg-gradient shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; color: white;">
         <i class="fas fa-users fs-4"></i>
@@ -122,7 +123,7 @@
 <div id="feed-container">
     {% for post in posts %}
         {% include "core/partials/post_card.html" with post=post %}
-    {{% empty %}
+    {% empty %}
         <div class="text-center py-5 rounded-4 border-2 border-dashed" style="border-color: var(--gd-border); background-color: var(--gd-card);">
             <i class="fas fa-feather-alt fa-3x mb-3 opacity-25" style="color: var(--gd-text-muted);"></i>
             <h5 class="fw-bold" style="color: var(--gd-text-muted);">הקהילה הזו עדיין שקטה...</h5>

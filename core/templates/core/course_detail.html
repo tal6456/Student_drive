@@ -9,53 +9,66 @@
         <div class="col-12 col-md-4 col-lg-3 mb-4">
 
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden position-sticky" style="top: 80px;">
-                <div class="py-4 text-center border-bottom" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
-                    <div class="icon-circle shadow-sm mx-auto mb-3 text-primary d-flex align-items-center justify-content-center" style="width: 65px; height: 65px; font-size: 2rem; border-radius: 50%; background-color: var(--gd-card);">
-                        <i class="fas fa-graduation-cap"></i>
+                
+                <div class="py-3 py-md-4 text-center border-bottom d-flex flex-md-column align-items-center justify-content-between px-3 px-md-0" 
+                     style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;"
+                     data-bs-toggle="collapse" data-bs-target="#courseInfoCollapse" aria-expanded="false" aria-controls="courseInfoCollapse"
+                     id="course-info-header">
+                    
+                    <div class="d-flex align-items-center gap-3 gap-md-0 flex-md-column">
+                        <div class="icon-circle shadow-sm text-primary d-flex align-items-center justify-content-center mb-md-3" style="width: 50px; height: 50px; font-size: 1.5rem; border-radius: 50%; background-color: var(--gd-card);">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0 fs-5 fs-md-4 text-start text-md-center" style="color: var(--gd-text);">{{ course.name }}</h4>
                     </div>
-                    <h4 class="fw-bold px-3 mb-0" style="color: var(--gd-text);">{{ course.name }}</h4>
+                    
+                    <i class="fas fa-chevron-down d-md-none text-muted transition-transform" id="course-info-chevron"></i>
                 </div>
 
-                <div class="card-body p-4">
-                    <div class="d-flex flex-column gap-3 mb-4 small">
-                        <div class="d-flex align-items-start gap-3">
-                            <i class="fas fa-university text-danger mt-1 fs-6"></i>
-                            <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">{{ course.major.university.name }}</span>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <i class="fas fa-book-reader text-success mt-1 fs-6"></i>
-                            <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">{{ course.major.name }}</span>
-                        </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <i class="far fa-calendar-alt text-warning mt-1 fs-6"></i>
-                            <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">שנת לימוד: {{ course.year }}</span>
-                        </div>
-                    </div>
-
-                    <div class="row text-center g-2 mb-4">
-                        <div class="col-6">
-                            <div class="p-2 rounded-3 border" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
-                                <i class="fas fa-file-alt text-primary mb-1 d-block fs-5"></i>
-                                <span class="fw-bold" style="color: var(--gd-text);">{{ course.document_set.count }}</span>
-                                <div class="text-muted" style="font-size: 0.75rem;">קבצים</div>
+                <div class="collapse d-md-block" id="courseInfoCollapse">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column gap-3 mb-4 small">
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="fas fa-university text-danger mt-1 fs-6"></i>
+                                <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">{{ course.major.university.name }}</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="fas fa-book-reader text-success mt-1 fs-6"></i>
+                                <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">{{ course.major.name }}</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="far fa-calendar-alt text-warning mt-1 fs-6"></i>
+                                <span class="fw-bold lh-sm" style="color: var(--gd-text-muted);">שנת לימוד: {{ course.year }}</span>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="p-2 rounded-3 border" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
-                                <i class="fas fa-eye text-info mb-1 d-block fs-5"></i>
-                                <span class="fw-bold" style="color: var(--gd-text);">{{ course.view_count }}</span>
-                                <div class="text-muted" style="font-size: 0.75rem;">צפיות</div>
+
+                        <div class="row text-center g-2 mb-4">
+                            <div class="col-6">
+                                <div class="p-2 rounded-3 border" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                                    <i class="fas fa-file-alt text-primary mb-1 d-block fs-5"></i>
+                                    <span class="fw-bold" style="color: var(--gd-text);">{{ course.document_set.count }}</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">קבצים</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 rounded-3 border" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
+                                    <i class="fas fa-eye text-info mb-1 d-block fs-5"></i>
+                                    <span class="fw-bold" style="color: var(--gd-text);">{{ course.view_count }}</span>
+                                    <div class="text-muted" style="font-size: 0.75rem;">צפיות</div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <div class="p-3 border-top" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                     {% if user.is_authenticated %}
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary rounded-pill fw-bold shadow-sm py-2 hover-scale" onclick="triggerQuickUpload()">
-                            <i class="fas fa-cloud-upload-alt me-1"></i> העלאת קבצים
+                    <div class="d-flex d-md-grid gap-2 flex-wrap">
+                        <button class="btn btn-primary rounded-pill fw-bold shadow-sm py-2 px-3 hover-scale flex-grow-1" onclick="triggerQuickUpload()">
+                            <i class="fas fa-cloud-upload-alt me-1"></i> <span class="d-none d-sm-inline">העלאה</span>
                         </button>
-                        <button class="btn btn-outline-success rounded-pill fw-bold py-2 hover-scale" onclick="promptNewFolder()" style="border-width: 2px;">
-                            <i class="fas fa-folder-plus me-1"></i> תיקייה חדשה
+                        <button class="btn btn-outline-success rounded-pill fw-bold py-2 px-3 hover-scale flex-grow-1" onclick="promptNewFolder()" style="border-width: 2px;">
+                            <i class="fas fa-folder-plus me-1"></i> <span class="d-none d-sm-inline">תיקייה חדשה</span>
                         </button>
                     </div>
                     {% else %}
@@ -92,7 +105,7 @@
 
                     <div id="drive-folders" class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm mb-4" style="border-color: var(--gd-border) !important;">
                         {% for folder in folders %}
-                            <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
+                            <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-2 px-md-3 border-0 border-bottom cursor-pointer folder-card folder-ui hover-bg-light transition d-none"
                                  data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
                                  data-path="folder_{{ folder.id }}"
                                  data-name="{{ folder.name|escapejs }}"
@@ -106,12 +119,17 @@
                                     <div class="text-center" style="width: 40px;">
                                         <i class="fas fa-folder" style="font-size: 1.5rem; color: {{ folder.color|default:'#fbbc04' }};"></i>
                                     </div>
-                                    <span class="fw-bold text-truncate fs-6" style="color: var(--gd-text);">
-                                        {{ folder.name }}
-                                    </span>
+                                    <div class="d-flex flex-column text-truncate">
+                                        <span class="fw-bold text-truncate fs-6" style="color: var(--gd-text);">{{ folder.name }}</span>
+                                        {% if folder.staff_member %}
+                                            <span class="d-block d-sm-none small text-truncate mt-1" style="color: var(--gd-text-muted);">
+                                                <i class="fas fa-chalkboard-teacher me-1"></i>{{ folder.staff_member.name }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-3 text-nowrap">
+                                <div class="d-flex align-items-center gap-2 text-nowrap">
                                     {% if folder.staff_member %}
                                         <button class="badge rounded-pill border px-3 py-2 fw-normal shadow-sm text-decoration-none hover-bg-light d-none d-sm-flex align-items-center gap-2"
                                            onclick="event.stopPropagation(); openEditFolderModal('folder_{{ folder.id }}', '{{ folder.name|escapejs }}', '{{ folder.staff_member.id }}')"
@@ -138,7 +156,12 @@
                                         </button>
                                         {% endif %}
                                     {% endif %}
-                                    <i class="fas fa-chevron-left opacity-50 ms-2" style="color: var(--gd-text-muted); font-size: 0.85rem;"></i>
+                                    
+                                    <button class="btn btn-link p-2 text-muted shadow-none mobile-menu-btn" 
+                                            onclick="event.stopPropagation(); showMobileFolderMenu(this, 'folder_{{ folder.id }}', '{{ folder.name|escapejs }}', '{{ folder.staff_member.id|default:'' }}')"
+                                            style="color: var(--gd-text-muted) !important;">
+                                        <i class="fas fa-ellipsis-v fs-5"></i>
+                                    </button>
                                 </div>
                             </div>
                         {% endfor %}
@@ -398,6 +421,22 @@
 
     .hover-scale { transition: transform 0.2s; }
     .hover-scale:hover { transform: scale(1.03); }
+    
+    /* סגנונות חדשים למובייל */
+    .breadcrumb-wrapper {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .breadcrumb-wrapper::-webkit-scrollbar { display: none; }
+    
+    #course-info-chevron { transition: transform 0.3s ease; }
+    #course-info-header[aria-expanded="true"] #course-info-chevron { transform: rotate(180deg); }
+    
+    @media (max-width: 767px) {
+        #course-info-header { cursor: pointer; }
+    }
 </style>
 
 <script>
@@ -925,6 +964,75 @@ function navigateToFolder(folderId) {
     if (typeof renderDrive === 'function') renderDrive();
 }
 
+// פונקציה להצגת התפריט במובייל בלחיצה (כתחליף לקליק ימני)
+function showMobileFolderMenu(btnEl, folderId, folderName, lecturerId) {
+    const activeMenu = document.getElementById('menu-folder');
+    
+    // הגדרת הערכים בתפריט
+    document.getElementById('ctx-folder-name').innerText = folderName;
+    document.getElementById('ctx-folder-open').onclick = function() { navigateTo(folderId, folderName); activeMenu.classList.add('d-none'); };
+    
+    const uploadBtn = document.getElementById('ctx-folder-upload');
+    if(uploadBtn) uploadBtn.onclick = function() { triggerQuickUpload(folderId.split('_')[1]); activeMenu.classList.add('d-none'); };
+    
+    const editBtn = document.getElementById('ctx-folder-edit');
+    if(editBtn) editBtn.onclick = function() { openEditFolderModal(folderId, folderName, lecturerId); activeMenu.classList.add('d-none'); };
+    
+    const deleteBtn = document.getElementById('ctx-folder-delete');
+    if(deleteBtn) {
+        const rawId = folderId.split('_')[1];
+        deleteBtn.onclick = function() { globalDelete('folder', rawId); activeMenu.classList.add('d-none'); };
+    }
+
+    // מיקום התפריט ליד הכפתור
+    const rect = btnEl.getBoundingClientRect();
+    activeMenu.classList.remove('d-none');
+    
+    let x = rect.left;
+    let y = rect.bottom + window.scrollY;
+    
+    // מניעת גלישה מהמסך
+    if (x + activeMenu.offsetWidth > window.innerWidth) x = window.innerWidth - activeMenu.offsetWidth - 10;
+    
+    activeMenu.style.left = x + 'px'; 
+    activeMenu.style.top = y + 'px';
+}
+
+// פונקציה להצגת התפריט של מסמך במובייל (כתחליף לקליק ימני)
+function showMobileFileMenu(btnEl, docId, docName, downloadUrl) {
+    const activeMenu = document.getElementById('menu-file');
+    
+    // הגדרת הערכים בתפריט המסמך
+    document.getElementById('ctx-file-name').innerText = docName;
+    document.getElementById('ctx-file-download').href = downloadUrl;
+    
+    const linkBtn = document.getElementById('ctx-file-link');
+    if(linkBtn) {
+        linkBtn.onclick = function() {
+            const fullUrl = window.location.origin + downloadUrl;
+            navigator.clipboard.writeText(fullUrl).then(() => { alert('הקישור הועתק בהצלחה ללוח!'); });
+            activeMenu.classList.add('d-none');
+        };
+    }
+    
+    const deleteBtn = document.getElementById('ctx-file-delete');
+    if(deleteBtn) {
+        deleteBtn.onclick = function() { globalDelete('document', docId); activeMenu.classList.add('d-none'); };
+    }
+
+    // מיקום התפריט ליד הכפתור
+    const rect = btnEl.getBoundingClientRect();
+    activeMenu.classList.remove('d-none');
+    
+    let x = rect.left;
+    let y = rect.bottom + window.scrollY;
+    
+    // מניעת גלישה מהמסך
+    if (x + activeMenu.offsetWidth > window.innerWidth) x = window.innerWidth - activeMenu.offsetWidth - 10;
+    
+    activeMenu.style.left = x + 'px'; 
+    activeMenu.style.top = y + 'px';
+}
 </script>
 {% endblock %}
 
