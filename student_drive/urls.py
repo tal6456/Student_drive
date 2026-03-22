@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 # הוספתי כאן את personal_drive לייבוא
-from core import views, agent_views, personal_drive
+from core import views, personal_drive #agent_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -91,7 +91,7 @@ urlpatterns = [
     path('friend/remove/<str:friend_username>/', views.remove_friend, name='remove_friend'),
 
     path('search/', views.global_search, name='global_search'),
-    path('system-architecture-mirror/', views.agent_report, name='agent_report'),
+    #path('system-architecture-mirror/', views.agent_report, name='agent_report'),
 # ==========================================
     # מערכת התראות
     # ==========================================
@@ -100,8 +100,8 @@ urlpatterns = [
     # ==========================================
     # סוכן אישי (Personal AI Agent)
     # ==========================================
-    path('agent/upload/', agent_views.upload_agent_file, name='agent_upload_file'),
-    path('agent/ask/', agent_views.ask_agent_question, name='agent_ask_question'),
+    #path('agent/upload/', agent_views.upload_agent_file, name='agent_upload_file'),
+    #path('agent/ask/', agent_views.ask_agent_question, name='agent_ask_question'),
 ]
 
 if settings.DEBUG:

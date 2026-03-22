@@ -11,7 +11,7 @@ from .models import (
     University, Major, Course, Folder, Document,
     Community, Post, MarketplacePost, VideoPost, Comment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
-    Report, Feedback, AgentKnowledge,Notification, UserCourseSelection
+    Report, Feedback,Notification, UserCourseSelection
 )
 
 
@@ -84,26 +84,26 @@ class DocumentAdmin(BaseAdmin):
     get_file_type.short_description = 'סוג'
 
 
-@admin.register(AgentKnowledge)
-class AgentKnowledgeAdmin(BaseAdmin):
-    # שינינו את created_at ל-upload_date כדי שיתאים למודל
-    list_display = ('owner', 'course_name', 'get_text_stats', 'extraction_status', 'upload_date')
-    readonly_fields = ('extracted_text', 'upload_date')
-    search_fields = ('owner__username', 'course_name', 'extracted_text')
-
-    def get_text_stats(self, obj):
-        """מדד לכמה ידע ה-AI חילץ מהקובץ"""
-        if obj.extracted_text:
-            return f"{len(obj.extracted_text)} תווים"
-        return "ריק"
-    get_text_stats.short_description = 'נפח ידע'
-
-    def extraction_status(self, obj):
-        if obj.extracted_text and len(obj.extracted_text) > 10:
-            return format_html('<span style="color: green;">✔ עובד</span>')
-        return format_html('<span style="color: orange;">⏳ בהמתנה</span>')
-    extraction_status.short_description = 'סטטוס עיבוד'
-
+# @admin.register(AgentKnowledge)
+# class AgentKnowledgeAdmin(BaseAdmin):
+#     # שינינו את created_at ל-upload_date כדי שיתאים למודל
+#     list_display = ('owner', 'course_name', 'get_text_stats', 'extraction_status', 'upload_date')
+#     readonly_fields = ('extracted_text', 'upload_date')
+#     search_fields = ('owner__username', 'course_name', 'extracted_text')
+#
+#     def get_text_stats(self, obj):
+#         """מדד לכמה ידע ה-AI חילץ מהקובץ"""
+#         if obj.extracted_text:
+#             return f"{len(obj.extracted_text)} תווים"
+#         return "ריק"
+#     get_text_stats.short_description = 'נפח ידע'
+#
+#     def extraction_status(self, obj):
+#         if obj.extracted_text and len(obj.extracted_text) > 10:
+#             return format_html('<span style="color: green;">✔ עובד</span>')
+#         return format_html('<span style="color: orange;">⏳ בהמתנה</span>')
+#     extraction_status.short_description = 'סטטוס עיבוד'
+#
 
 # ==========================================
 # 3. משתמשים וכלכלה

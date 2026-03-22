@@ -19,7 +19,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% comment "הסוכן מושבת זמנית בגלל איטיות" %}
     <link rel="stylesheet" href="{% static 'css/agent_style.css' %}">
+{% endcomment %}
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -53,16 +55,16 @@
         .mobile-bottom-nav .nav-item i { font-size: 1.3rem; }
         .mobile-bottom-nav .nav-item.active { color: #1a73e8; }
         .mobile-bottom-nav .nav-item:active { transform: scale(0.9); }
-        
+
         /* התאמות מיוחדות למובייל */
         @media (max-width: 991px) {
             .footer { display: none !important; }
             #main-content { padding-bottom: 70px; }
-            
+
             /* ביטול הדחיפה של ה-50 פיקסלים כדי שההמבורגר לא יברח מהמסך */
             .navbar-brand { left: 0 !important; }
             .nav-hover-wrapper { right: 0 !important; }
-            
+
             /* נעילה הרמטית נגד גלילה אופקית (ימינה-שמאלה) */
             body, html { overflow-x: hidden; }
         }
@@ -267,8 +269,8 @@
     padding-right: 15px !important;
     transition: all 0.3s ease !important;
 }
-        
-        
+
+
     </style>
     {% endblock %}
 </head>
@@ -288,8 +290,8 @@
         <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
     </div>
     <span style="
-    color: #212529; 
-    font-size: 1.4rem; 
+    color: #212529;
+    font-size: 1.4rem;
     font-family: 'Heebo', sans-serif;
 ">
     בית הסטודנט
@@ -339,9 +341,9 @@
                     {% if user.is_authenticated %}
 <li class="nav-item">
     <a class="nav-link d-flex align-items-center position-relative" href="{% url 'notifications_list' %}">
-        <i class="fas fa-bell"></i> 
+        <i class="fas fa-bell"></i>
         <span class="ms-2">התראות</span>
-        
+
         {# חישוב סך ההתראות: בקשות חברות + התראות קבצים שלא נקראו #}
         {% with total_notifications=user.profile.pending_friend_requests.count|add:unread_notifications_count %}
             {% if total_notifications > 0 %}
@@ -359,7 +361,7 @@
                         <a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()">
     <i class="fas fa-user-plus"></i> הזמנת חברים
 </a>
-                        
+
 
                             {% if user.is_staff %}
                             <a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a>
@@ -423,7 +425,7 @@
     function forceTranslate(lang) {
     const domain = window.location.hostname;
     const cookieVal = (lang === 'he') ? "" : "/he/" + lang;
-    
+
     // 1. ניקוי אגרסיבי של קוקיז ישנים כדי למנוע התנגשויות
     const cookies = ["googtrans", "googtrans_"];
         cookies.forEach(c => {
@@ -431,12 +433,12 @@
             document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + domain + "; path=/;";
             document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=." + domain + "; path=/;";
         });
-    
+
         // 2. הגדרת הקוקי החדש
         document.cookie = "googtrans=" + cookieVal + "; path=/";
         document.cookie = "googtrans=" + cookieVal + "; domain=" + domain + "; path=/";
         document.cookie = "googtrans=" + cookieVal + "; domain=." + domain + "; path=/";
-        
+
         // 3. שמירה מקומית וריענון
         localStorage.setItem('user_lang', lang);
         window.location.reload();
@@ -467,7 +469,7 @@
         }
     });
 </script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>    
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script>
 function toggleFavorite(event, el) {
     event.preventDefault();
@@ -539,9 +541,10 @@ function createStarParticles(el) {
     }
 }
 </script>
+    {% comment "הסוכן מושבת זמנית " %}
 {% include 'core/agent_widget.html' %}
 <script src="{% static 'js/agent_logic.js' %}"></script>
-    
+{% endcomment %}
 <script>
 // ==========================================
 // פונקציית מחיקה גלובלית (AJAX + SweetAlert2)
@@ -788,7 +791,7 @@ function getAISummary(docId, event) {
 <script>
 function openInviteModal() {
     const inviteLink = "https://student-drive-8d8o9.ondigitalocean.app/"; // הקישור לאתר שלך
-    
+
     Swal.fire({
         title: 'שתפו את האתר!',
         iconHtml: '<i class="fas fa-gift text-primary"></i>', // אייקון מתנה במקום סימן שאלה
@@ -814,19 +817,19 @@ function copyInviteLink(event) {
     // השגת הכפתור מהאיבנט
     const btn = event.currentTarget;
     const copyText = document.getElementById("invite-link-input");
-    
+
     // ביצוע ההעתקה
     copyText.select();
     copyText.setSelectionRange(0, 99999); // למובייל
     navigator.clipboard.writeText(copyText.value).then(() => {
-        
+
         // --- סימן שהקישור הועתק ---
         const originalHTML = btn.innerHTML; // שמירת המצב המקורי
-        
+
         // שינוי תוכן וצבע הכפתור
         btn.innerHTML = '<i class="fas fa-check"></i> הועתק!';
         btn.classList.replace('btn-primary', 'btn-success');
-        
+
         // הוספת אנימציית קפיצה קטנה
         btn.animate([
             { transform: 'scale(1)' },
