@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.db.models import Count, Sum, Q
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404, FileResponse
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.utils import timezone
@@ -23,18 +23,13 @@ from .ai_utils import generate_smart_summary
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
-import os
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
-from django.contrib import messages
-from django.db import models
-from .models import Course, Folder, Document, AcademicStaff, Lecturer, StaffReview, DownloadLog, Vote, UserCourseSelection
+from .models import DownloadLog, Vote, UserCourseSelection
 from django.conf import settings
 from django.shortcuts import render
 
 
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse, HttpResponse, Http404, FileResponse
+
 from .models import Notification
 
 import mimetypes

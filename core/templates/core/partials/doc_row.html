@@ -1,4 +1,4 @@
-<div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between border-0 border-bottom py-3 hover-bg-light transition-all doc-row-responsive" style="background-color: transparent; border-color: var(--gd-border) !important;">
+<div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between border-0 border-bottom py-3 hover-bg-light transition-all doc-row-responsive custom-dropdown-container" style="background-color: transparent; border-color: var(--gd-border) !important; position: relative;">
 
     <div class="d-flex align-items-center gap-3" style="min-width: 0; flex-grow: 1;">
         
@@ -85,13 +85,14 @@
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
 
-        <div class="dropdown">
-            <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle mobile-menu-btn-responsive" 
-                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+        <div>
+            <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle mobile-menu-btn-responsive custom-dropdown-toggle" 
+                    onclick="toggleCustomMenu(event, 'customMenu{{ doc.id }}')"
                     style="color: var(--gd-text-muted) !important;">
-                <i class="fas fa-ellipsis-v fs-6"></i>
+                <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+            
+            <ul id="customMenu{{ doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
                 <li>
                     <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
                         <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
@@ -99,7 +100,7 @@
                 </li>
                 
                 {% if user.is_authenticated %}
-                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border);"></li>
+                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
                     
                     {% if user == doc.uploaded_by or user.is_staff %}
                     <li>
@@ -119,16 +120,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // פתרון קסם לחיתוך התפריטים: מוצא את הכרטיסייה העוטפת ומבטל לה את החיתוך
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.doc-row-responsive').forEach(row => {
-            let parentCard = row.closest('.card');
-            if(parentCard) {
-                parentCard.classList.remove('overflow-hidden');
-                parentCard.style.overflow = 'visible';
-            }
-        });
-    });
-</script>

@@ -946,22 +946,52 @@ function copyInviteLink(event) {
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
-    // הפונקציה שמעדכנת את המודל הגלובלי לפני פתיחתו
+    // --- 1. מודל דיווח ---
     function openGlobalReportModal(docId, docTitle) {
         document.getElementById('reportDocTitle').innerText = '"' + docTitle + '"';
         const form = document.getElementById('globalReportForm');
-        // מחליף את ה-0 מהכתובת המקורית ב-ID האמיתי של הקובץ שעליו לחצו
         form.action = form.action.replace('/0/', '/' + docId + '/');
         const modal = new bootstrap.Modal(document.getElementById('globalReportModal'));
         modal.show();
     }
+
+    // --- 2. פתיחה וסגירה של תפריט 3 הנקודות המותאם ---
+    function toggleCustomMenu(event, menuId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const menu = document.getElementById(menuId);
+        const isCurrentlyOpen = menu.classList.contains('show');
+        
+        // סגור את כל התפריטים הפתוחים
+        document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
+        
+        if (!isCurrentlyOpen) {
+            menu.classList.add('show');
+            // מוודא שהכרטיסייה העוטפת לא חותכת את התפריט
+            const parentCard = menu.closest('.card');
+            if(parentCard) {
+                parentCard.classList.remove('overflow-hidden');
+                parentCard.style.overflow = 'visible';
+            }
+        }
+    }
+
+    // סגירת תפריטים בלחיצה מחוץ אליהם
+    document.addEventListener('click', function(event) {
+        const isClickInsideMenu = event.target.closest('.custom-dropdown-menu');
+        const isClickOnToggle = event.target.closest('.custom-dropdown-toggle');
+        if (!isClickInsideMenu && !isClickOnToggle) {
+            document.querySelectorAll('.custom-dropdown-menu').forEach(menu => menu.classList.remove('show'));
+        }
+    });
 </script>
-{% endif %}
 
 <style>
-    /* ה-CSS הגלובלי לעיצוב השורות במובייל */
+    /* ה-CSS לעיצוב השורות במובייל (מה שהוספנו קודם) */
     @media (max-width: 767px) {
         .doc-row-responsive { padding-top: 10px !important; padding-bottom: 10px !important; gap: 8px !important; }
         .doc-row-responsive .fas.fa-2x { font-size: 1.5rem !important; }
@@ -972,6 +1002,24 @@ function copyInviteLink(event) {
         .mobile-menu-btn-responsive i.fas.fa-ellipsis-v { font-size: 0.9rem !important; }
         .doc-actions-group { gap: 5px !important; }
     }
+
+    /* --- ה-CSS של תפריט 3 הנקודות המותאם אישית --- */
+    .custom-dropdown-menu {
+        display: none; position: absolute; top: 100%; left: 0; z-index: 1050;
+        min-width: 160px; padding: 0.5rem 0; margin: 0.125rem 0 0;
+        list-style: none; background-clip: padding-box;
+    }
+    .custom-dropdown-menu.show { display: block; }
+    .custom-dropdown-menu .dropdown-item {
+        display: block; width: 100%; padding: 0.25rem 1rem; clear: both;
+        font-weight: 400; text-align: inherit; white-space: nowrap;
+        background-color: transparent; border: 0; cursor: pointer;
+    }
+    .custom-dropdown-menu .dropdown-item:hover { background-color: var(--gd-hover, #f8f9fa); }
+    .pointer-events-none { pointer-events: none; }
+    
+    /* מונע מהכרטיסייה לחתוך את התפריט */
+    .list-group-item.custom-dropdown-container { overflow: visible !important; }
 </style>
 </body>
 </html>
