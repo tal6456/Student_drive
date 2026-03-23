@@ -1144,5 +1144,140 @@ function copyInviteLink(event) {
         return "unknown";
     }
 </script>
+<div id="smart-app-banner" class="d-none align-items-center justify-content-between shadow-sm px-3 py-2" dir="rtl">
+    <div class="d-flex align-items-center gap-3">
+        <button onclick="dismissAppBanner()" class="btn btn-link p-0 text-muted shadow-none" style="font-size: 1.2rem;">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="app-banner-icon d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #7b61ff, #34a853);">
+            <i class="fas fa-graduation-cap text-white fs-6"></i>
+        </div>
+        <div class="d-flex flex-column">
+            <span class="fw-bold" style="font-size: 0.9rem; color: var(--gd-text); line-height: 1.2;">בית הסטודנט</span>
+            <span id="app-banner-desc" style="font-size: 0.75rem; color: var(--gd-text-muted);">התקן כאפליקציה למכשיר שלך</span>
+        </div>
+    </div>
+    <button id="app-banner-btn" class="btn btn-primary btn-sm rounded-pill fw-bold px-3 shadow-sm hover-scale" style="font-size: 0.85rem;" onclick="installPWA()">
+        <i class="fas fa-download me-1"></i> התקן
+    </button>
+</div>
+
+<style>
+    #smart-app-banner {
+        position: fixed; top: 0; left: 0; width: 100%;
+        background-color: var(--gd-card, #ffffff);
+        z-index: 1055; border-bottom: 1px solid var(--gd-border, #eeeeee);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(-100%);
+    }
+    #smart-app-banner.show-banner { display: flex !important; transform: translateY(0); }
+    body.banner-active { padding-top: 60px; }
+    body.banner-active .navbar.sticky-top { top: 60px !important; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+</style>
+
+<script>
+    let deferredPrompt;
+
+    // 1. תפיסת האירוע שבו הדפדפן מוכן להתקין את האפליקציה (עובד באנדרואיד/מחשב)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // מונע מהדפדפן להקפיץ את החלונית המכוערת שלו בתחתית המסך
+        e.preventDefault();
+        // שומרים את האירוע כדי שנוכל להפעיל אותו רק כשהמשתמש ילחץ על הכפתור שלנו
+        deferredPrompt = e;
+        
+        // עכשיו בטוח להציג את הבאנר שלנו
+        checkAndShowBanner();
+    });
+
+    // 2. עבור אייפון/אייפד שלא תומכים באיוונט אוטומטי, נציג את הבאנר בכוח (אם הוא לא באפליקציה כבר)
+    document.addEventListener('DOMContentLoaded', () => {
+        const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        // בודק האם אנחנו כבר גולשים מתוך האפליקציה המותקנת
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        
+        if (isApple && !isStandalone) {
+            checkAndShowBanner(true); // true = זה מכשיר של אפל
+        }
+    });
+
+    function checkAndShowBanner(isApple = false) {
+        // בדיקה האם סגרנו את הבאנר בשבוע האחרון
+        const bannerDismissed = localStorage.getItem('appBannerDismissed');
+        if (bannerDismissed) {
+            const dismissedDate = new Date(parseInt(bannerDismissed));
+            const now = new Date();
+            // 7 ימים = 604800000 מילישניות
+            if (now - dismissedDate < 604800000) return;
+        }
+        
+        // התאמת האייקון בכפתור לפי מערכת ההפעלה
+        const btn = document.getElementById('app-banner-btn');
+        if (isApple) {
+            btn.innerHTML = '<i class="fab fa-apple me-1"></i> התקן';
+        } else {
+            btn.innerHTML = '<i class="fab fa-android me-1"></i> התקן';
+        }
+
+        const banner = document.getElementById('smart-app-banner');
+        setTimeout(() => {
+            banner.classList.add('show-banner');
+            document.body.classList.add('banner-active');
+        }, 500);
+    }
+
+    function dismissAppBanner() {
+        const banner = document.getElementById('smart-app-banner');
+        banner.classList.remove('show-banner');
+        document.body.classList.remove('banner-active');
+        localStorage.setItem('appBannerDismissed', Date.now().toString());
+    }
+
+    // 3. הפונקציה שרצה כשלוחצים על הכפתור "התקן"
+    function installPWA() {
+        const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (deferredPrompt) {
+            // אם אנחנו באנדרואיד ויש לנו את ההרשאה מהדפדפן - נקפיץ את החלון של גוגל
+            deferredPrompt.prompt();
+            
+            // נמתין לתשובת המשתמש (אישר או ביטל)
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    dismissAppBanner(); // מעלים את הבאנר אם הוא אישר
+                }
+                deferredPrompt = null; // איפוס
+            });
+        } else if (isApple) {
+            // אייפון/אייפד - מקפיצים מודל יפה עם הסבר (נעזרים ב-SweetAlert2 שיש לך באתר)
+            Swal.fire({
+                title: 'התקנה באפל 🍏',
+                html: '<div style="text-align: right; font-size: 0.95rem;">' +
+                      'כדי להתקין את האפליקציה במכשיר שלך:<br><br>' +
+                      '1. לחץ על כפתור השיתוף <i class="fas fa-external-link-alt mx-1 border rounded p-1"></i> (בדרך כלל למטה או למעלה).<br><br>' +
+                      '2. גלול למטה ובחר ב-<b>"הוסף למסך הבית"</b> <i class="fas fa-plus-square mx-1 border rounded p-1"></i>.<br><br>' +
+                      'וזהו! האפליקציה תופיע במסך הבית שלך.' +
+                      '</div>',
+                icon: 'info',
+                confirmButtonText: 'הבנתי',
+                confirmButtonColor: '#1a73e8'
+            });
+        } else {
+            // אם המשתמש לוחץ ממחשב או ממכשיר שלא תומך
+            Swal.fire({
+                title: 'התקנת אפליקציה',
+                text: 'לא הצלחנו לזהות תמיכה אוטומטית במכשיר זה. חפש את סמל ההתקנה (המחשבון עם חץ) בשורת הכתובת למעלה.',
+                icon: 'info',
+                confirmButtonText: 'אישור',
+                confirmButtonColor: '#1a73e8'
+            });
+        }
+    }
+
+    // 4. מאזין לאירוע התקנה מוצלחת כדי להעלים את הבאנר
+    window.addEventListener('appinstalled', (evt) => {
+        dismissAppBanner();
+        console.log('App was successfully installed!');
+    });
+</script>
 </body>
 </html>
