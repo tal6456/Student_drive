@@ -962,13 +962,13 @@ function copyInviteLink(event) {
     function toggleCustomMenu(event, menuId) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         const menu = document.getElementById(menuId);
         const isCurrentlyOpen = menu.classList.contains('show');
-        
+
         // סגור את כל התפריטים הפתוחים
         document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
-        
+
         if (!isCurrentlyOpen) {
             menu.classList.add('show');
             // מוודא שהכרטיסייה העוטפת לא חותכת את התפריט
@@ -1017,9 +1017,132 @@ function copyInviteLink(event) {
     }
     .custom-dropdown-menu .dropdown-item:hover { background-color: var(--gd-hover, #f8f9fa); }
     .pointer-events-none { pointer-events: none; }
-    
+
     /* מונע מהכרטיסייה לחתוך את התפריט */
     .list-group-item.custom-dropdown-container { overflow: visible !important; }
 </style>
+<div id="smart-app-banner" class="d-none align-items-center justify-content-between shadow-sm px-3 py-2" dir="rtl">
+    <div class="d-flex align-items-center gap-3">
+        <button onclick="dismissAppBanner()" class="btn btn-link p-0 text-muted shadow-none" style="font-size: 1.2rem;">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="app-banner-icon d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #7b61ff, #34a853);">
+            <i class="fas fa-graduation-cap text-white fs-6"></i>
+        </div>
+        <div class="d-flex flex-column">
+            <span class="fw-bold" style="font-size: 0.9rem; color: var(--gd-text); line-height: 1.2;">בית הסטודנט</span>
+            <span id="app-banner-desc" style="font-size: 0.75rem; color: var(--gd-text-muted);">חוויה חלקה ומהירה יותר באפליקציה</span>
+        </div>
+    </div>
+    <a href="#" id="app-banner-btn" class="btn btn-primary btn-sm rounded-pill fw-bold px-3 shadow-sm hover-scale" style="font-size: 0.85rem;">
+        <i id="app-banner-icon-os" class="fas fa-download me-1"></i> פתח
+    </a>
+</div>
+
+<style>
+    /* עיצוב הבאנר שנדבק לראש המסך מתחת לניווט */
+    #smart-app-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: var(--gd-card, #ffffff);
+        z-index: 1055; /* מתחת ל-Navbar אבל מעל התוכן */
+        border-bottom: 1px solid var(--gd-border, #eeeeee);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(-100%); /* מוסתר בהתחלה למעלה */
+    }
+    
+    #smart-app-banner.show-banner {
+        display: flex !important;
+        transform: translateY(0); /* גולש למטה באנימציה */
+    }
+
+    /* דוחף את התוכן של האתר למטה כדי שהבאנר לא יסתיר את ה-Navbar */
+    body.banner-active {
+        padding-top: 60px; /* גובה הבאנר בערך */
+    }
+    body.banner-active .navbar.sticky-top {
+        top: 60px !important;
+        transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+</style>
+
+<script>
+    // --- הגדרות הקישורים שלך לחנויות (תעדכן אותם כשיהיו לך!) ---
+    const APP_STORE_LINK = "https://apps.apple.com/il/app/your-app-id";
+    const GOOGLE_PLAY_LINK = "https://play.google.com/store/apps/details?id=com.your.app";
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // בודק אם המשתמש כבר סגר את הבאנר בעבר (נשמר ל-7 ימים)
+        const bannerDismissed = localStorage.getItem('appBannerDismissed');
+        if (bannerDismissed) {
+            const dismissedDate = new Date(parseInt(bannerDismissed));
+            const now = new Date();
+            // אם עברו פחות מ-7 ימים (604800000 מילישניות), אל תציג
+            if (now - dismissedDate < 604800000) return;
+        }
+
+        const os = getMobileOperatingSystem();
+        const banner = document.getElementById('smart-app-banner');
+        const btn = document.getElementById('app-banner-btn');
+        const icon = document.getElementById('app-banner-icon-os');
+
+        if (os === 'iOS' || os === 'iPadOS') {
+            // התאמה לאייפון ולאייפד
+            btn.href = APP_STORE_LINK;
+            icon.className = "fab fa-apple me-1";
+            showBanner(banner);
+        } 
+        else if (os === 'Android') {
+            // התאמה לאנדרואיד
+            btn.href = GOOGLE_PLAY_LINK;
+            icon.className = "fab fa-google-play me-1";
+            showBanner(banner);
+        }
+        // אם זה מחשב רגיל - הבאנר פשוט לא יופיע.
+    });
+
+    function showBanner(banner) {
+        // השהיה קטנה (חצי שניה) כדי שהאנימציה תיראה טוב אחרי שהאתר עולה
+        setTimeout(() => {
+            banner.classList.add('show-banner');
+            document.body.classList.add('banner-active');
+        }, 500);
+    }
+
+    function dismissAppBanner() {
+        const banner = document.getElementById('smart-app-banner');
+        banner.classList.remove('show-banner');
+        document.body.classList.remove('banner-active');
+        
+        // שמירת זמן הסגירה כדי לא להציק לו שבוע
+        localStorage.setItem('appBannerDismissed', Date.now().toString());
+    }
+
+    /**
+     * פונקציה חכמה לזיהוי מערכת ההפעלה (כולל טריק לזיהוי אייפדים חדשים!)
+     */
+    function getMobileOperatingSystem() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+        // זיהוי אנדרואיד
+        if (/android/i.test(userAgent)) {
+            return "Android";
+        }
+
+        // זיהוי אייפון ואייפדים ישנים
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "iOS";
+        }
+
+        // **הטריק לאייפדים חדשים (iOS 13+) שמתחזים למאק**
+        if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) {
+            return "iPadOS";
+        }
+
+        return "unknown";
+    }
+</script>
 </body>
 </html>
