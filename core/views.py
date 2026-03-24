@@ -394,7 +394,7 @@ def profile(request):
         'total_downloads': uploaded_files.aggregate(Sum('download_count'))['download_count__sum'] or 0,
         'total_likes_received': sum(d.total_likes for d in uploaded_files),
     }
-    return render(request, 'core/personal_drive.html', context)
+    return render(request, 'core/profile.html', context)
 @login_required
 def add_course(request):
     if request.method == 'POST':

@@ -303,7 +303,7 @@ body.a11y-large-text, body.a11y-large-text * {
 body.a11y-high-contrast {
     --gd-bg: #000000 !important;
     --gd-card: #121212 !important;
-    --gd-text: #ffff00 !important;
+    --gd-text: #ee00ff !important;
     --gd-text-muted: #ffffff !important;
     --gd-border: #ffff00 !important;
     --gd-primary: #00ff00 !important;

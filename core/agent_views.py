@@ -8,8 +8,6 @@ import json
 from .agent_brain import StudentAgentBrain
 
 agent_brain = StudentAgentBrain()
-
-
 @login_required
 @csrf_exempt
 def upload_agent_file(request):
