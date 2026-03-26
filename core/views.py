@@ -378,21 +378,28 @@ def analytics_dashboard(request):
     return render(request, 'core/analytics.html', context)
 @login_required
 def profile(request):
-    # 1. קבצים שהמשתמש העלה
-    uploaded_files = Document.objects.filter(uploaded_by=request.user).order_by('-upload_date')
+    # 1. קבצים שהמשתמש העלה - הוספנו select_related לקורס לשיפור ביצועים
+    uploaded_files = Document.objects.filter(uploaded_by=request.user).select_related('course').order_by('-upload_date')
 
-    # שליפת המסמכים עצמם שהמשתמש עשה להם לייק (ערך 1)
-    voted_files = Document.objects.filter(votes__user=request.user, votes__value=1).distinct()
+    # 2. שליפת הקבצים שאהבתי - הוספנו שליפה מקדימה של הקורס והמעלה (חשוב לדרייב!)
+    voted_files = Document.objects.filter(
+        votes__user=request.user,
+        votes__value=1
+    ).distinct().select_related('course', 'uploaded_by')
 
-    # 3. היסטוריית הורדות (שימוש ב-order_by הנכון ושם השדה מהמודל שלך)
-    download_logs = DownloadLog.objects.filter(user=request.user).select_related('document').order_by('-download_date')
+    # 3. היסטוריית הורדות (הקוד המקורי שלך)
+    download_logs = DownloadLog.objects.filter(user=request.user).select_related('document__course').order_by('-download_date')
+
+    # חישוב סטטיסטיקות
+    total_downloads = uploaded_files.aggregate(Sum('download_count'))['download_count__sum'] or 0
+    total_likes_received = sum(d.total_likes for d in uploaded_files)
 
     context = {
         'uploaded_files': uploaded_files,
         'voted_files': voted_files,
         'download_logs': download_logs,
-        'total_downloads': uploaded_files.aggregate(Sum('download_count'))['download_count__sum'] or 0,
-        'total_likes_received': sum(d.total_likes for d in uploaded_files),
+        'total_downloads': total_downloads,
+        'total_likes_received': total_likes_received,
     }
     return render(request, 'core/profile.html', context)
 @login_required
