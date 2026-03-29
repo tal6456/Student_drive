@@ -7,6 +7,8 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
+    # בתוך קובץ urls.py
+    path('remove-from-history/<int:log_id>/', views.remove_from_history, name='remove_from_history'),
     # ממשק ניהול
     path('admin/', admin.site.urls),
 

@@ -85,38 +85,49 @@
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
 
-        <div>
-            <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle mobile-menu-btn-responsive custom-dropdown-toggle" 
-                    onclick="toggleCustomMenu(event, 'customMenu{{ doc.id }}')"
-                    style="color: var(--gd-text-muted) !important;">
-                <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
-            </button>
+<div>
+    <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle" 
+            onclick="toggleCustomMenu(event, 'customMenu{{ unique_id|default:doc.id }}')"
+            style="color: var(--gd-text-muted) !important;">
+        <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
+    </button>
+    
+    <ul id="customMenu{{ unique_id|default:doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+        <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
+                <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
+            </a>
+        </li>
+        
+        {% if user.is_authenticated %}
+            <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
             
-            <ul id="customMenu{{ doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
-                <li>
-                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
-                        <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
-                    </a>
-                </li>
-                
-                {% if user.is_authenticated %}
-                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
-                    
-                    {% if user == doc.uploaded_by or user.is_staff %}
-                    <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onclick="globalDelete('document', {{ doc.id }})">
-                            <i class="fas fa-trash-alt text-center" style="width: 20px;"></i> מחק קובץ
-                        </button>
-                    </li>
-                    {% endif %}
-                    
-                    <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2 py-2" onclick="openGlobalReportModal({{ doc.id }}, '{{ doc.title|escapejs }}')" style="color: var(--gd-text-muted);">
-                            <i class="fas fa-flag text-secondary text-center" style="width: 20px;"></i> דווח על בעיה
-                        </button>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+            {% if is_history %}
+            <li>
+                <form method="POST" action="{% url 'remove_from_history' log_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                        <i class="fas fa-history text-center" style="width: 20px;"></i> הסר מההיסטוריה
+                    </button>
+                </form>
+            </li>
+            {% endif %}
+
+            {% if user == doc.uploaded_by or user.is_staff %}
+            <li>
+                <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onclick="globalDelete('document', {{ doc.id }})">
+                    <i class="fas fa-trash-alt text-center" style="width: 20px;"></i> מחק לצמיתות
+                </button>
+            </li>
+            {% endif %}
+            
+            <li>
+                <button class="dropdown-item d-flex align-items-center gap-2 py-2" onclick="openGlobalReportModal({{ doc.id }}, '{{ doc.title|escapejs }}')" style="color: var(--gd-text-muted);">
+                    <i class="fas fa-flag text-secondary text-center" style="width: 20px;"></i> דווח על בעיה
+                </button>
+            </li>
+        {% endif %}
+    </ul>
+</div>
     </div>
 </div>

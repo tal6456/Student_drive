@@ -12,65 +12,89 @@
 
     <div class="d-flex justify-content-start mb-4 px-2">
         <ul class="nav nav-pills bg-white p-2 rounded-4 shadow-sm border" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button" role="tab">
+            <li class="nav-item">
+                <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button">
                     <i class="fas fa-file-upload ms-2"></i>העלאות שלי
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-bold" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button" role="tab">
+            <li class="nav-item">
+                <button class="nav-link rounded-3 fw-bold" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button">
                     <i class="fas fa-history ms-2"></i>היסטוריית הורדות
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 fw-bold" id="pills-liked-tab" data-bs-toggle="pill" data-bs-target="#pills-liked" type="button" role="tab">
+            <li class="nav-item">
+                <button class="nav-link rounded-3 fw-bold" id="pills-liked-tab" data-bs-toggle="pill" data-bs-target="#pills-liked" type="button">
                     <i class="fas fa-heart ms-2"></i>קבצים שאהבתי
                 </button>
             </li>
         </ul>
     </div>
 
-    <div class="tab-content border-0" id="pills-tabContent">
-        
+    <div class="tab-content" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-upload" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
                 <div class="list-group list-group-flush border-0">
                     {% for doc in uploaded_files %}
-                        {% include "core/partials/doc_row.html" with doc=doc %}
+                        {% include "core/partials/doc_row.html" with doc=doc unique_id="up_"|add:doc.id %}
                     {% empty %}
-                        <div class="text-center py-5 text-muted">עדיין לא העלית קבצים לאתר.</div>
+                        <div class="text-center py-5 text-muted">עדיין לא העלית קבצים.</div>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="list-group list-group-flush border-0">
-                    {% for log in download_logs %}
-                        {% include "core/partials/doc_row.html" with doc=log.document %}
-                    {% empty %}
-                        <div class="text-center py-5 text-muted">היסטוריית ההורדות שלך ריקה.</div>
-                    {% endfor %}
+            {% regroup download_logs by document.course.name as course_list %}
+
+            {% for course in course_list %}
+                <div class="course-group mb-3 shadow-sm border rounded-4 bg-white overflow-hidden">
+                    <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between cursor-pointer" 
+                         data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-university text-primary ms-3"></i>
+                            <h5 class="mb-0 fw-bold">{{ course.grouper }}</h5>
+                        </div>
+                        <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
+                    </div>
+
+                    <div class="collapse" id="course_{{ forloop.counter }}">
+                        <div class="p-3">
+                            {% regroup course.list by top_folder_name as type_list %}
+                            
+                            {% for type in type_list %}
+                                <div class="mb-3 border rounded-3 overflow-hidden">
+                                    <div class="p-2 bg-white d-flex align-items-center cursor-pointer border-bottom" 
+                                         data-bs-toggle="collapse" data-bs-target="#type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                        <i class="fas fa-folder text-warning ms-2"></i>
+                                        <span class="fw-bold">{{ type.grouper }}</span>
+                                        <span class="ms-auto badge bg-light text-dark border">{{ type.list|length }}</span>
+                                    </div>
+
+                                    <div class="collapse show" id="type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                        <div class="list-group list-group-flush">
+                                            {% for log in type.list %}
+                                                {# הוספת unique_id כדי שהשלוש נקודות יעבדו והוספת log_id למחיקה #}
+                                                {% include "core/partials/doc_row.html" with doc=log.document unique_id="dl_"|add:log.id is_history=True log_id=log.id %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {% empty %}
+                <div class="text-center py-5">אין היסטוריית הורדות.</div>
+            {% endfor %}
         </div>
 
         <div class="tab-pane fade" id="pills-liked" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
                 <div class="list-group list-group-flush border-0">
                     {% for doc in voted_files %}
-                        <div class="position-relative">
-                             <div class="position-absolute top-0 start-0 mt-2 ms-2 text-danger opacity-50">
-                                 <i class="fas fa-heart small"></i>
-                             </div>
-                             {% include "core/partials/doc_row.html" with doc=doc %}
-                        </div>
+                        {% include "core/partials/doc_row.html" with doc=doc.document unique_id="lk_"|add:doc.id %}
                     {% empty %}
-                        <div class="text-center py-5 text-muted">
-                            <i class="far fa-heart d-block mb-3 fs-2 opacity-25"></i>
-                            אין קבצים שסימנת בלייק.
-                        </div>
+                        <div class="text-center py-5 text-muted">אין קבצים שאהבת.</div>
                     {% endfor %}
                 </div>
             </div>
@@ -79,18 +103,9 @@
 </div>
 
 <style>
-    .nav-pills .nav-link {
-        color: #6c757d;
-        padding: 10px 20px;
-        transition: all 0.3s ease;
-    }
-    .nav-pills .nav-link.active {
-        background-color: #1e3a8a !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
-    }
-    .card { background: white; }
-    .list-group-item:hover { background-color: #f8f9fa; }
-    .opacity-50 { opacity: 0.5; }
+    .cursor-pointer { cursor: pointer; }
+    .nav-pills .nav-link.active { background-color: #1e3a8a !important; }
+    /* תיקון קטן לנראות ה-dropdown בתוך הדרייב */
+    .custom-dropdown-container { position: relative; }
 </style>
 {% endblock %}

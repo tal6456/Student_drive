@@ -1205,3 +1205,10 @@ def notifications_list(request):
     return render(request, 'core/notifications.html', {
         'notifications': notifications
     })
+@login_required
+def remove_from_history(request, log_id):
+    if request.method == 'POST':
+        # אנחנו מוחקים רק את הרישום של ההורדה של המשתמש הספציפי
+        log = get_object_or_404(DownloadLog, id=log_id, user=request.user)
+        log.delete()
+    return redirect('personal_drive') # מחזיר אותך חזרה לדרייב האישי
