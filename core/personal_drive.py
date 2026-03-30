@@ -104,3 +104,23 @@ def delete_my_upload(request, doc_id):
     doc = get_object_or_404(Document, id=doc_id, uploaded_by=request.user)
     doc.delete()
     return redirect('personal_drive')
+
+
+@login_required
+def update_resource_tag(request):
+    if request.method == 'POST':
+        res_type = request.POST.get('type')  # 'doc' או 'external'
+        res_id = request.POST.get('id')
+        new_tag = request.POST.get('tag')
+
+        if res_type == 'doc':
+            # מחפשים במסמכים הרגילים
+            obj = get_object_or_404(Document, id=res_id)
+        else:
+            # מחפשים במשאבים החיצוניים
+            obj = get_object_or_404(ExternalResource, id=res_id, user=request.user)
+
+        obj.personal_tag = new_tag
+        obj.save()
+
+    return redirect('personal_drive')

@@ -1,7 +1,9 @@
-<div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between border-0 border-bottom py-3 hover-bg-light transition-all doc-row-responsive custom-dropdown-container" style="background-color: transparent; border-color: var(--gd-border) !important; position: relative;">
+<div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between border-0 border-bottom py-3 hover-bg-light transition-all doc-row-responsive custom-dropdown-container"
+     style="background-color: transparent; border-color: var(--gd-border) !important; position: relative;"
+     data-personal-tag="{{ doc.personal_tag|default:'none' }}">
 
     <div class="d-flex align-items-center gap-3" style="min-width: 0; flex-grow: 1;">
-        
+
         <div class="text-center flex-shrink-0" style="width: 45px;">
             {% if doc.file.name|lower|slice:"-4:" == ".pdf" %}
                 <i class="fas fa-file-pdf fa-2x text-danger drop-shadow mt-1"></i>
@@ -19,14 +21,29 @@
         </div>
 
         <div class="d-flex flex-column" style="min-width: 0; overflow: hidden;">
-            
-            <a href="{% url 'document_viewer' doc.id %}" target="_blank" class="d-none d-md-block text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">
-                {{ doc.title }}
-            </a>
-            
-            <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" class="d-block d-md-none text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">
-                {{ doc.title }}
-            </a>
+            <div class="d-flex align-items-center flex-wrap">
+                <a href="{% url 'document_viewer' doc.id %}" target="_blank" class="d-none d-md-block text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">
+                    {{ doc.title }}
+                </a>
+
+                <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" class="d-block d-md-none text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">
+                    {{ doc.title }}
+                </a>
+
+                {# --- הצגת הצ'יפ הצבעוני - עם data-tag לגיבוי --- #}
+                {% if show_personal_tags and doc.personal_tag and doc.personal_tag != 'none' %}
+                    <span class="badge rounded-pill ms-2 mb-1" data-tag="{{ doc.personal_tag }}"
+                        style="font-size: 0.65rem; padding: 0.35em 0.65em;
+                        {% if doc.personal_tag == 'urgent' %} background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171;
+                        {% elif doc.personal_tag == 'exam' %} background-color: #fef9c3; color: #854d0e; border: 1px solid #facc15;
+                        {% elif doc.personal_tag == 'summary' %} background-color: #dcfce7; color: #166534; border: 1px solid #4ade80;
+                        {% elif doc.personal_tag == 'important' %} background-color: #dbeafe; color: #1e40af; border: 1px solid #60a5fa;
+                        {% endif %}">
+                        <i class="fas fa-tag me-1"></i>
+                        {{ doc.get_personal_tag_display }}
+                    </span>
+                {% endif %}
+            </div>
 
             <div class="d-flex flex-wrap align-items-center gap-2" style="font-size: 0.75rem; color: var(--gd-text-muted) !important;">
                 <span class="text-nowrap"><i class="far fa-calendar-alt me-1"></i> {{ doc.upload_date|date:"d/m/Y" }}</span>
@@ -64,15 +81,15 @@
             </div>
         </div>
     </div>
-        
+
     <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2 doc-actions-group">
-        
+
         {% if user.is_authenticated %}
-            <button onclick="handleDocumentLike({{ doc.id }}, this)" 
-                    class="btn btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-1 transition-all like-btn-responsive" 
+            <button onclick="handleDocumentLike({{ doc.id }}, this)"
+                    class="btn btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-1 transition-all like-btn-responsive"
                     style="border: 1px solid {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-border){% endif %}; background-color: {% if user in doc.likes.all %}rgba(26, 115, 232, 0.1){% else %}var(--gd-bg){% endif %}; color: {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-text-muted){% endif %};"
                     title="אהבתי">
-                <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i> 
+                <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i>
                 <span class="like-count-{{ doc.id }} fw-bold">{{ doc.total_likes }}</span>
             </button>
         {% else %}
@@ -85,49 +102,68 @@
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
 
-<div>
-    <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle" 
-            onclick="toggleCustomMenu(event, 'customMenu{{ unique_id|default:doc.id }}')"
-            style="color: var(--gd-text-muted) !important;">
-        <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
-    </button>
-    
-    <ul id="customMenu{{ unique_id|default:doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
-        <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
-                <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
-            </a>
-        </li>
-        
-        {% if user.is_authenticated %}
-            <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
-            
-            {% if is_history %}
-            <li>
-                <form method="POST" action="{% url 'remove_from_history' log_id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
-                        <i class="fas fa-history text-center" style="width: 20px;"></i> הסר מההיסטוריה
-                    </button>
-                </form>
-            </li>
-            {% endif %}
+        <div>
+            <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle"
+                    onclick="toggleCustomMenu(event, 'customMenu{{ unique_id|default:doc.id }}')"
+                    style="color: var(--gd-text-muted) !important;">
+                <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
+            </button>
 
-            {% if user == doc.uploaded_by or user.is_staff %}
-            <li>
-                <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onclick="globalDelete('document', {{ doc.id }})">
-                    <i class="fas fa-trash-alt text-center" style="width: 20px;"></i> מחק לצמיתות
-                </button>
-            </li>
-            {% endif %}
-            
-            <li>
-                <button class="dropdown-item d-flex align-items-center gap-2 py-2" onclick="openGlobalReportModal({{ doc.id }}, '{{ doc.title|escapejs }}')" style="color: var(--gd-text-muted);">
-                    <i class="fas fa-flag text-secondary text-center" style="width: 20px;"></i> דווח על בעיה
-                </button>
-            </li>
-        {% endif %}
-    </ul>
-</div>
+            <ul id="customMenu{{ unique_id|default:doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
+                        <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                    {% if show_personal_tags %}
+                        <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+                        <li><h6 class="dropdown-header text-dark fw-bold"><i class="fas fa-thumbtack me-1 text-primary"></i> תיוג אישי</h6></li>
+                        <li class="px-3 py-1">
+                            <form action="{% url 'update_resource_tag' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ doc.id }}">
+                                <input type="hidden" name="type" value="doc">
+                                <select name="tag" class="form-select form-select-sm border-primary" onchange="this.form.submit()" style="font-size: 0.8rem; cursor: pointer;">
+                                    <option value="none" {% if doc.personal_tag == 'none' %}selected{% endif %}>ללא תיוג</option>
+                                    <option value="urgent" {% if doc.personal_tag == 'urgent' %}selected{% endif %}>🔴 חומר עזר</option>
+                                    <option value="exam" {% if doc.personal_tag == 'exam' %}selected{% endif %}>🟡 למבחן</option>
+                                    <option value="summary" {% if doc.personal_tag == 'summary' %}selected{% endif %}>🟢 סיכום</option>
+                                    <option value="important" {% if doc.personal_tag == 'important' %}selected{% endif %}>🔵 חשוב</option>
+                                </select>
+                            </form>
+                        </li>
+                    {% endif %}
+
+                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+
+                    {% if is_history %}
+                    <li>
+                        <form method="POST" action="{% url 'remove_from_history' log_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                                <i class="fas fa-history text-center" style="width: 20px;"></i> הסר מההיסטוריה
+                            </button>
+                        </form>
+                    </li>
+                    {% endif %}
+
+                    {% if user == doc.uploaded_by or user.is_staff %}
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onclick="globalDelete('document', {{ doc.id }})">
+                            <i class="fas fa-trash-alt text-center" style="width: 20px;"></i> מחק לצמיתות
+                        </button>
+                    </li>
+                    {% endif %}
+
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2 py-2" onclick="openGlobalReportModal({{ doc.id }}, '{{ doc.title|escapejs }}')" style="color: var(--gd-text-muted);">
+                            <i class="fas fa-flag text-secondary text-center" style="width: 20px;"></i> דווח על בעיה
+                        </button>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
 </div>

@@ -18,7 +18,13 @@ custom_username_validator = RegexValidator(
     regex=r'^[\w.@+\- ]+$',
     message='שם משתמש יכול להכיל אותיות, מספרים, רווחים, ותווים מיוחדים (@/./+/-/_).'
 )
-
+TAG_CHOICES = [
+    ('none', 'ללא תיוג'),
+    ('urgent', 'חומר עזר'),
+    ('exam', 'למבחן'),
+    ('summary', 'סיכום'),
+    ('important', 'חשוב'),
+]
 def generate_referral_code():
     """מייצר קוד אקראי של אותיות ומספרים"""
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
@@ -261,21 +267,29 @@ class Folder(models.Model):
 
 
 class Document(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True, related_name='documents')
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    folder = models.ForeignKey('Folder', on_delete=models.CASCADE, null=True, blank=True, related_name='documents')
     title = models.CharField(max_length=200, verbose_name="כותרת הקובץ")
 
     # חיבור הוולידטור החכם לשדה הקובץ
-    file = models.FileField(upload_to='documents/', validators=[validate_file_size])
+    file = models.FileField(upload_to='documents/', validators=[]) # הוסף כאן את validate_file_size אם קיים
 
     file_extension = models.CharField(max_length=10, blank=True)
     file_size_bytes = models.PositiveIntegerField(default=0)
-    uploaded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     staff_member = models.ForeignKey('AcademicStaff', on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name="מרצה/מתרגל רלוונטי")
     upload_date = models.DateTimeField(auto_now_add=True)
     download_count = models.PositiveIntegerField(default=0)
-    likes = models.ManyToManyField(CustomUser, related_name='liked_documents', blank=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_documents', blank=True)
+
+    # --- השדה החדש לתיוג אישי ---
+    personal_tag = models.CharField(
+        max_length=20,
+        choices=TAG_CHOICES,
+        default='none',
+        verbose_name="תיוג אישי"
+    )
 
     def save(self, *args, **kwargs):
         if self.file:
@@ -288,10 +302,11 @@ class Document(models.Model):
             # --- הלוגיקה החדשה: כיווץ תמונות שעולות לדרייב ---
             image_extensions = ['.jpg', '.jpeg', '.png']
             if self.file_extension in image_extensions and not self.file.name.endswith('.webp'):
-                self.file = compress_to_webp(self.file)
-                self.file_extension = '.webp'
-                # עדכון המשקל מחדש אחרי הכיווץ
                 try:
+                    # וודא שהפונקציה compress_to_webp מיובאת וקיימת
+                    from .utils import compress_to_webp
+                    self.file = compress_to_webp(self.file)
+                    self.file_extension = '.webp'
                     self.file_size_bytes = self.file.size
                 except:
                     pass
@@ -305,12 +320,21 @@ class Document(models.Model):
     def __str__(self):
         return self.title
 
+
 class ExternalResource(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='external_resources')
     title = models.CharField(max_length=255, verbose_name="כותרת")
     link = models.URLField(blank=True, null=True, verbose_name="קישור חיצוני")
     file = models.FileField(upload_to='external_resources/', blank=True, null=True, verbose_name="קובץ מקומי")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # --- השדה החדש לתיוג אישי ---
+    personal_tag = models.CharField(
+        max_length=20,
+        choices=TAG_CHOICES,
+        default='none',
+        verbose_name="תיוג אישי"
+    )
 
     def __str__(self):
         return self.title

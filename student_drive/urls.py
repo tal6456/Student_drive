@@ -12,6 +12,7 @@ urlpatterns = [
     # ==========================================
     path('drive/add-external/', personal_drive.add_external_resource, name='add_external_resource'),
     path('drive/delete-external/<int:resource_id>/', personal_drive.delete_external_resource, name='delete_external_resource'),
+    path('drive/update-tag/', personal_drive.update_resource_tag, name='update_resource_tag'),
     # בתוך קובץ urls.py
     path('remove-from-history/<int:log_id>/', views.remove_from_history, name='remove_from_history'),
     # ממשק ניהול
