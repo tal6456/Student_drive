@@ -5,121 +5,124 @@
 
 {% block social_content %}
 <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden animate__animated animate__fadeIn">
-    <div style="height: 120px; background: linear-gradient(135deg, var(--gd-primary), #64b5f6);"></div>
-    <div class="card-body p-4 text-center" style="margin-top: -60px;">
+    <div style="height: 100px; background: linear-gradient(135deg, var(--gd-primary), #1a73e8);"></div>
+    <div class="card-body p-4 text-center" style="margin-top: -50px;">
         <div class="position-relative d-inline-block mb-3">
             {% if target_profile.profile_picture %}
-                <img src="{{ target_profile.profile_picture.url }}" class="rounded-circle border border-4 border-white shadow" style="width: 120px; height: 120px; object-fit: cover;">
+                <img src="{{ target_profile.profile_picture.url }}" class="rounded-circle border border-4 border-white shadow" style="width: 110px; height: 110px; object-fit: cover;">
             {% else %}
-                <div class="rounded-circle bg-secondary border border-4 border-white shadow d-flex align-items-center justify-content-center text-white mx-auto" style="width: 120px; height: 120px; font-size: 3rem;">
+                <div class="rounded-circle bg-primary text-white border border-4 border-white shadow d-flex align-items-center justify-content-center mx-auto" style="width: 110px; height: 110px; font-size: 2.5rem;">
                     <i class="fas fa-user"></i>
                 </div>
-            {% endif %}
-
-            {% if target_user == user %}
-                <a href="{% url 'settings' %}" class="btn btn-sm btn-light rounded-circle position-absolute bottom-0 end-0 shadow-sm" title="ערוך פרופיל">
-                    <i class="fas fa-camera"></i>
-                </a>
             {% endif %}
         </div>
 
         <h3 class="fw-bold mb-1">{{ target_user.username }}</h3>
-        <p class="text-muted mb-2">
+        <p class="text-muted mb-3">
             <i class="fas fa-university ms-1"></i> {{ target_profile.university.name }} | {{ target_profile.major.name }}
         </p>
 
-        <div class="d-flex justify-content-center gap-2 mb-3">
-            <span class="badge rounded-pill px-3 py-2" style="background-color: rgba(26, 115, 232, 0.1); color: var(--gd-primary);">
-                {{ target_profile.rank_name }}
-            </span>
-            <span class="badge rounded-pill px-3 py-2 bg-warning bg-opacity-10 text-dark">
-                <i class="fas fa-coins text-warning ms-1"></i> {{ target_profile.drive_coins }} מטבעות
-            </span>
+        <div class="d-flex justify-content-center gap-3 mb-4">
+            <div class="text-center px-3 border-start">
+                <div class="fw-bold fs-5 text-primary">{{ documents.count }}</div>
+                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">קבצים ששותפו</small>
+            </div>
+            <div class="text-center px-3 border-start">
+                <div class="fw-bold fs-5 text-warning">{{ target_profile.drive_coins }}</div>
+                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">נקודות זכות</small>
+            </div>
+            <div class="text-center px-3">
+                <div class="fw-bold fs-5 text-success">{{ target_profile.rank_name }}</div>
+                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">דירוג סטודנט</small>
+            </div>
         </div>
 
-        {% if target_profile.bio %}
-            <p class="max-w-600 mx-auto px-4" style="color: var(--gd-text);">{{ target_profile.bio }}</p>
-        {% endif %}
-
-        <div class="d-flex justify-content-center gap-2 mt-4">
+        <div class="d-flex justify-content-center gap-2">
             {% if target_user != user %}
-
                 {% if friendship_status == 'friends' %}
-                    <button class="btn btn-outline-secondary rounded-pill px-4 fw-bold disabled" style="opacity: 0.8;">
-                        <i class="fas fa-check ms-1"></i> חברים
+                    <button class="btn btn-light rounded-pill px-4 fw-bold disabled border">
+                        <i class="fas fa-check text-success ms-1"></i> חברים ברשת
                     </button>
-
+                    <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="fas fa-paper-plane ms-1"></i> שלח קובץ
+                    </button>
                 {% elif friendship_status == 'request_sent' %}
                     <button class="btn btn-secondary rounded-pill px-4 fw-bold disabled opacity-75">
-                        <i class="fas fa-clock ms-1"></i> בקשה נשלחה
+                        <i class="fas fa-clock ms-1"></i> בקשה ממתינה
                     </button>
-
                 {% elif friendship_status == 'request_received' %}
                     <a href="{% url 'accept_friend_request' friend_request_id %}" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm animate__animated animate__pulse animate__infinite">
                         <i class="fas fa-check ms-1"></i> אשר חברות
                     </a>
-
                 {% else %}
                     <a href="{% url 'send_friend_request' target_user.username %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                        <i class="fas fa-user-plus ms-1"></i> הוסף כחבר
+                        <i class="fas fa-user-plus ms-1"></i> הוסף לרשת שלי
                     </a>
                 {% endif %}
-
-                <button class="btn btn-outline-primary rounded-pill px-4 fw-bold">
-                    <i class="fas fa-envelope ms-1"></i> הודעה
-                </button>
-
             {% else %}
-                <a href="{% url 'settings' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">ערוך פרופיל</a>
+                <a href="{% url 'settings' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">ערוך פרופיל ציבורי</a>
             {% endif %}
         </div>
+    </div>
 </div>
 
-<ul class="nav nav-pills nav-fill bg-white p-2 rounded-pill shadow-sm mb-4 border" id="profileTabs" role="tablist">
-    <li class="nav-item">
-        <button class="nav-link active rounded-pill fw-bold" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts-content">
-            <i class="fas fa-stream ms-1"></i> פוסטים
-        </button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link rounded-pill fw-bold" id="files-tab" data-bs-toggle="tab" data-bs-target="#files-content">
-            <i class="fas fa-file-alt ms-1"></i> קבצים ששותפו ({{ documents.count }})
-        </button>
-    </li>
-</ul>
-
-<div class="tab-content" id="profileTabsContent">
-    <div class="tab-pane fade show active" id="posts-content">
-        {% for post in posts %}
-            {% include "core/partials/post_card.html" with post=post %}
-        {% empty %}
-            <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
-                <i class="fas fa-pencil-alt fa-3x text-muted opacity-25 mb-3"></i>
-                <h6 class="text-muted fw-bold">אין עדיין פוסטים להצגה.</h6>
-            </div>
-        {% endfor %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0" style="color: var(--gd-text);">
+            <i class="fas fa-share-alt text-primary ms-2"></i>מאגר קבצים משותף
+        </h5>
+        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ documents.count }} קבצים</span>
     </div>
 
-    <div class="tab-pane fade" id="files-content">
-        <div class="list-group rounded-4 shadow-sm overflow-hidden border">
-            {% for doc in documents %}
-                <a href="{% url 'download_file' doc.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="fas fa-file-pdf fs-4 text-danger"></i>
-                        <div>
-                            <div class="fw-bold">{{ doc.title }}</div>
-                            <small class="text-muted">{{ doc.course.name }} | {{ doc.upload_date|date:"d/m/Y" }}</small>
+    <div class="card-body p-0">
+        {% if friendship_status == 'friends' or target_user == user %}
+            <div class="list-group list-group-flush">
+                {% for doc in documents %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-4 border-bottom-0 transition-hover">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-danger bg-opacity-10 p-2 rounded-3">
+                                <i class="fas fa-file-pdf fs-4 text-danger"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ doc.title }}</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-book-open ms-1"></i> {{ doc.course.name }} 
+                                    <span class="mx-2">|</span> 
+                                    <i class="fas fa-calendar-alt ms-1"></i> {{ doc.upload_date|date:"d/m/Y" }}
+                                </small>
+                            </div>
                         </div>
+                        <a href="{% url 'download_file' doc.id %}" class="btn btn-sm btn-outline-primary rounded-circle shadow-sm" title="הורד קובץ">
+                            <i class="fas fa-download"></i>
+                        </a>
                     </div>
-                    <i class="fas fa-download text-muted"></i>
-                </a>
-            {% empty %}
-                <div class="p-5 text-center bg-white">
-                    <i class="fas fa-file-upload fa-3x text-muted opacity-25 mb-3"></i>
-                    <h6 class="text-muted fw-bold">המשתמש עדיין לא שיתף קבצים.</h6>
+                {% empty %}
+                    <div class="p-5 text-center bg-white">
+                        <div class="mb-3 opacity-25">
+                            <i class="fas fa-folder-open fa-4x text-muted"></i>
+                        </div>
+                        <h6 class="text-muted fw-bold">אין קבצים זמינים להעברה כרגע.</h6>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-5 text-center bg-light">
+                <div class="bg-white d-inline-flex align-items-center justify-content-center rounded-circle shadow-sm mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-lock fa-2x text-warning"></i>
                 </div>
-            {% endfor %}
-        </div>
+                <h5 class="fw-bold mb-2">הגישה לקבצים חסומה</h5>
+                <p class="text-muted mb-4 px-md-5">עליך להיות חבר של <strong>{{ target_user.username }}</strong> כדי שתוכלו להחליף מידע אקדמי ולהוריד קבצים אחד מהשני.</p>
+                <a href="{% url 'send_friend_request' target_user.username %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    שלח בקשת הצטרפות לרשת
+                </a>
+            </div>
+        {% endif %}
     </div>
 </div>
+
+<style>
+    .transition-hover:hover {
+        background-color: rgba(0,0,0,0.01);
+    }
+</style>
 {% endblock %}

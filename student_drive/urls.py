@@ -97,6 +97,7 @@ urlpatterns = [
     path('friend/reject/<int:request_id>/', views.reject_friend_request, name='reject_friend_request'),
     path('my-friends/', views.my_friends, name='my_friends'),
     path('friend/remove/<str:friend_username>/', views.remove_friend, name='remove_friend'),
+    path('search-friends/', views.search_users, name='search_users'),
 
     path('search/', views.global_search, name='global_search'),
     #path('system-architecture-mirror/', views.agent_report, name='agent_report'),

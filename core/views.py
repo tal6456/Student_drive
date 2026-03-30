@@ -1212,3 +1212,26 @@ def remove_from_history(request, log_id):
         log = get_object_or_404(DownloadLog, id=log_id, user=request.user)
         log.delete()
     return redirect('personal_drive') # מחזיר אותך חזרה לדרייב האישי
+
+
+@login_required
+def search_users(request):
+    User = get_user_model()
+    # אנחנו הופכים את השאילתה לאותיות קטנות ליתר ביטחון
+    query = request.GET.get('q', '').strip()
+
+    users = []
+    if query:
+        # שימוש ב-Q כדי לחפש בכמה שדות במקביל
+        users = User.objects.filter(
+            Q(username__iexact=query) |  # חיפוש מדויק לא רגיש לאותיות (Kozo == kozo)
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).exclude(id=request.user.id).select_related('profile')[:20]
+
+    context = {
+        'query': query,
+        'friends': users,  # חשוב להשאיר 'friends' בשביל ה-HTML שלך
+    }
+    return render(request, 'core/friends_list.html', context)
