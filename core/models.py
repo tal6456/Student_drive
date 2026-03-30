@@ -9,7 +9,7 @@ import string
 import uuid
 from .utils import compress_to_webp, validate_file_size
 from django.utils import timezone
-
+from django.conf import settings
 # ==========================================
 # 0. מערכת המשתמשים (RBAC - Role Based Access Control)
 # ==========================================
@@ -305,7 +305,15 @@ class Document(models.Model):
     def __str__(self):
         return self.title
 
+class ExternalResource(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='external_resources')
+    title = models.CharField(max_length=255, verbose_name="כותרת")
+    link = models.URLField(blank=True, null=True, verbose_name="קישור חיצוני")
+    file = models.FileField(upload_to='external_resources/', blank=True, null=True, verbose_name="קובץ מקומי")
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.title
 # ==========================================
 # 4. מערכת הקהילה (הפיד החברתי)
 # ==========================================

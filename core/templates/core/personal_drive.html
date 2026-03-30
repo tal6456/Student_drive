@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-start mb-4 px-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
         <ul class="nav nav-pills bg-white p-2 rounded-4 shadow-sm border" id="pills-tab" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button">
@@ -23,11 +23,15 @@
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link rounded-3 fw-bold" id="pills-liked-tab" data-bs-toggle="pill" data-bs-target="#pills-liked" type="button">
-                    <i class="fas fa-heart ms-2"></i>קבצים שאהבתי
+                <button class="nav-link rounded-3 fw-bold" id="pills-external-tab" data-bs-toggle="pill" data-bs-target="#pills-external" type="button">
+                    <i class="fas fa-link ms-2"></i>משאבים חיצוניים
                 </button>
             </li>
         </ul>
+
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addExternalModal">
+            <i class="fas fa-plus me-2"></i>הוסף משאב
+        </button>
     </div>
 
     <div class="tab-content" id="pills-tabContent">
@@ -45,7 +49,6 @@
 
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
-
             {% for course in course_list %}
                 <div class="course-group mb-3 shadow-sm border rounded-4 bg-white overflow-hidden">
                     <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between cursor-pointer" 
@@ -60,7 +63,6 @@
                     <div class="collapse" id="course_{{ forloop.counter }}">
                         <div class="p-3">
                             {% regroup course.list by top_folder_name as type_list %}
-                            
                             {% for type in type_list %}
                                 <div class="mb-3 border rounded-3 overflow-hidden">
                                     <div class="p-2 bg-white d-flex align-items-center cursor-pointer border-bottom" 
@@ -69,11 +71,9 @@
                                         <span class="fw-bold">{{ type.grouper }}</span>
                                         <span class="ms-auto badge bg-light text-dark border">{{ type.list|length }}</span>
                                     </div>
-
                                     <div class="collapse show" id="type_{{ parentloop.counter }}_{{ forloop.counter }}">
                                         <div class="list-group list-group-flush">
                                             {% for log in type.list %}
-                                                {# הוספת unique_id כדי שהשלוש נקודות יעבדו והוספת log_id למחיקה #}
                                                 {% include "core/partials/doc_row.html" with doc=log.document unique_id="dl_"|add:log.id is_history=True log_id=log.id %}
                                             {% endfor %}
                                         </div>
@@ -88,13 +88,41 @@
             {% endfor %}
         </div>
 
-        <div class="tab-pane fade" id="pills-liked" role="tabpanel">
+        <div class="tab-pane fade" id="pills-external" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
                 <div class="list-group list-group-flush border-0">
-                    {% for doc in voted_files %}
-                        {% include "core/partials/doc_row.html" with doc=doc.document unique_id="lk_"|add:doc.id %}
+                    {% for item in external_resources %}
+                        <div class="list-group-item d-flex align-items-center justify-content-between py-3 border-0 border-bottom">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box text-center" style="width: 40px;">
+                                    {% if item.link %}
+                                        <i class="fas fa-external-link-alt fa-lg text-primary"></i>
+                                    {% else %}
+                                        <i class="fas fa-file-alt fa-lg text-success"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">
+                                        {% if item.link %}
+                                            <a href="{{ item.link }}" target="_blank" class="text-decoration-none text-dark">{{ item.title }}</a>
+                                        {% else %}
+                                            <a href="{{ item.file.url }}" target="_blank" class="text-decoration-none text-dark">{{ item.title }}</a>
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">{{ item.created_at|date:"d/m/Y" }}</small>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <form method="POST" action="{% url 'delete_external_resource' item.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link text-danger p-0 shadow-none">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     {% empty %}
-                        <div class="text-center py-5 text-muted">אין קבצים שאהבת.</div>
+                        <div class="text-center py-5 text-muted">אין משאבים חיצוניים. הוסף קישור או קובץ מעלה.</div>
                     {% endfor %}
                 </div>
             </div>
@@ -102,10 +130,42 @@
     </div>
 </div>
 
+<div class="modal fade" id="addExternalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="{% url 'add_external_resource' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">הוספת משאב חיצוני</h5>
+                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">כותרת</label>
+                        <input type="text" name="title" class="form-control rounded-3" placeholder="למשל: סיכום בדרייב של המרצה" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">קישור (URL)</label>
+                        <input type="url" name="link" class="form-control rounded-3" placeholder="https://...">
+                    </div>
+                    <div class="text-center my-2 text-muted">-- או --</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">העלאת קובץ</label>
+                        <input type="file" name="file" class="form-control rounded-3">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="submit" class="btn btn-primary w-100 rounded-3 py-2 fw-bold">שמור בדרייב</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
     .cursor-pointer { cursor: pointer; }
     .nav-pills .nav-link.active { background-color: #1e3a8a !important; }
-    /* תיקון קטן לנראות ה-dropdown בתוך הדרייב */
+    .nav-link { color: #64748b; }
     .custom-dropdown-container { position: relative; }
 </style>
 {% endblock %}

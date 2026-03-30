@@ -7,6 +7,11 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
+# ==========================================
+    # משאבים חיצוניים בדרייב
+    # ==========================================
+    path('drive/add-external/', personal_drive.add_external_resource, name='add_external_resource'),
+    path('drive/delete-external/<int:resource_id>/', personal_drive.delete_external_resource, name='delete_external_resource'),
     # בתוך קובץ urls.py
     path('remove-from-history/<int:log_id>/', views.remove_from_history, name='remove_from_history'),
     # ממשק ניהול
