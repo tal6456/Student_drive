@@ -25,10 +25,14 @@
                                 
                                 {% if notification.notification_type == 'friend_request' and notification.sender %}
                                     <div class="flex-shrink-0">
-                                        {% if notification.sender.profile.profile_image %}
-                                            <img src="{{ notification.sender.profile.profile_image.url }}" class="rounded-circle border shadow-sm" style="width: 55px; height: 55px; object-fit: cover;">
+                                        {# שימוש בשדה profile_picture מהמודל שלך #}
+                                        {% if notification.sender.profile.profile_picture %}
+                                            <img src="{{ notification.sender.profile.profile_picture.url }}" 
+                                                 class="rounded-circle border shadow-sm" 
+                                                 style="width: 55px; height: 55px; object-fit: cover;">
                                         {% else %}
-                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center border" 
+                                                 style="width: 55px; height: 55px;">
                                                 <i class="fas fa-user fs-4"></i>
                                             </div>
                                         {% endif %}
@@ -61,7 +65,7 @@
                                         </div>
                                         <p class="mb-0 text-muted small" style="line-height: 1.5;">{{ notification.message }}</p>
                                         <div class="mt-2 text-primary small fw-bold">
-                                            <i class="fas fa-external-link-alt me-1" style="font-size: 0.7rem;"></i> לחץ לצפייה בקובץ
+                                            <i class="fas fa-external-link-alt me-1" style="font-size: 0.7rem;"></i> לחץ לפרטים
                                         </div>
                                     </div>
                                 {% endif %}
@@ -91,6 +95,7 @@
 </div>
 
 <style>
+    /* אפקטים של ריחוף ומעברים */
     .hover-bg-light:hover { 
         background-color: rgba(66, 133, 244, 0.05) !important; 
         border-right: 4px solid var(--gd-primary) !important;
@@ -105,4 +110,4 @@
         border-radius: 1rem !important;
     }
 </style>
-{% endblock %}ד
+{% endblock %}
