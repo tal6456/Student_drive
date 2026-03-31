@@ -29,7 +29,6 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '.ondigitalocean.app', 
 # רשימת המנהלים שיקבלו מייל בכל פעם שיש שגיאת 500
 ADMINS = [
     ('Tal', 'student.drive10@gmail.com'),
-    ('KOZO', 'amitkozo5528@gmail.com') # קוזו תעדכן את המייל הרישמי שלך
 ]
 
 # המייל שממנו יישלחו ההודעות (יכול להיות אותו מייל)
