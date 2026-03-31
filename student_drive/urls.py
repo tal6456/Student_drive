@@ -5,6 +5,9 @@ from core import views, personal_drive #agent_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from django.urls import path
+# וגם
+from core import views
 
 urlpatterns = [
 # ==========================================
@@ -111,6 +114,13 @@ urlpatterns = [
     # ==========================================
     #path('agent/upload/', agent_views.upload_agent_file, name='agent_upload_file'),
     #path('agent/ask/', agent_views.ask_agent_question, name='agent_ask_question'),
+
+       # ==========================================
+    # צאט 
+    # ==========================================
+    path('chat/start/<str:username>/', views.get_or_create_chat, name='get_or_create_chat'),
+    path('chat/<int:room_id>/', views.chat_room, name='chat_room'),
+    path('file/copy/<int:document_id>/', views.copy_file_to_my_drive, name='copy_file_to_my_drive'),
 ]
 
 if settings.DEBUG:

@@ -267,7 +267,9 @@ class Folder(models.Model):
 
 
 class Document(models.Model):
-    course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    # שינוי קריטי: הוספת null=True ו-blank=True כדי שיהיה אפשר להעלות קובץ ללא קורס (למשל בצאט)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, null=True, blank=True)
+    
     folder = models.ForeignKey('Folder', on_delete=models.CASCADE, null=True, blank=True, related_name='documents')
     title = models.CharField(max_length=200, verbose_name="כותרת הקובץ")
 
@@ -293,23 +295,25 @@ class Document(models.Model):
 
     def save(self, *args, **kwargs):
         if self.file:
+            # עדכון סיומת הקובץ
             self.file_extension = os.path.splitext(self.file.name)[1].lower()
             try:
                 self.file_size_bytes = self.file.size
             except:
                 pass
 
-            # --- הלוגיקה החדשה: כיווץ תמונות שעולות לדרייב ---
+            # --- לוגיקה לכיווץ תמונות ל-WebP ---
             image_extensions = ['.jpg', '.jpeg', '.png']
             if self.file_extension in image_extensions and not self.file.name.endswith('.webp'):
                 try:
-                    # וודא שהפונקציה compress_to_webp מיובאת וקיימת
                     from .utils import compress_to_webp
-                    self.file = compress_to_webp(self.file)
-                    self.file_extension = '.webp'
-                    self.file_size_bytes = self.file.size
-                except:
-                    pass
+                    compressed_image = compress_to_webp(self.file)
+                    if compressed_image:
+                        self.file = compressed_image
+                        self.file_extension = '.webp'
+                        self.file_size_bytes = self.file.size
+                except Exception as e:
+                    print(f"Image compression failed: {e}")
 
         super().save(*args, **kwargs)
 
@@ -319,7 +323,6 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
-
 
 class ExternalResource(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='external_resources')
@@ -616,3 +619,22 @@ class UserCourseSelection(models.Model):
     def __str__(self):
         status = "⭐" if self.is_starred else "❌"
         return f"{self.user.username} - {self.course.name} {status}"
+
+class ChatRoom(models.Model):
+    participants = models.ManyToManyField(CustomUser, related_name='chat_rooms')
+    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name="שם קבוצה (אופציונלי)")
+
+    def __str__(self):
+        return f"שיחה בין {', '.join([p.username for p in self.participants.all()])}"
+
+class ChatMessage(models.Model):
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    content = models.TextField(blank=True)
+    # קישור לקובץ קיים מהדרייב
+    attached_file = models.ForeignKey('Document', on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['timestamp']   

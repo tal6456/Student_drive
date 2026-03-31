@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -14,28 +14,27 @@ import json
 import re
 from django.db import models
 
-from .models import (University, Major, Course, Document, UserProfile,
-                     Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
-                     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, Community)
+# ייבוא המודלים - הוספתי את ChatRoom ו-ChatMessage לסוף הרשימה
+from .models import (
+    University, Major, Course, Document, UserProfile,
+    Report, Feedback, Folder, Post, MarketplacePost, VideoPost, Comment, Friendship,
+    AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff, 
+    Community, Notification, DownloadLog, Vote, UserCourseSelection,
+    ChatRoom, ChatMessage  # <-- הוספתי את אלו
+)
 
 from .forms import CourseForm, UserProfileForm
 from .ai_utils import generate_smart_summary
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import DownloadLog, Vote, UserCourseSelection
 from django.conf import settings
-from django.shortcuts import render
-
-
 from django.views.decorators.http import require_POST
-
-from .models import Notification
 
 import mimetypes
 from urllib.parse import quote
 
-# שימוש במודל המשתמש החדש בצורה בטוחה
+# הגדרת User בצורה דינמית כדי למנוע NameError ב-Views
 User = get_user_model()
 
 
@@ -1307,3 +1306,96 @@ def search_users(request):
         'pending_requests': pending_requests,
     }
     return render(request, 'core/friends_list.html', context)
+
+@login_required
+def get_or_create_chat(request, username):
+    target_user = get_object_or_404(User, username=username)
+    
+    # בדיקה אם כבר יש חדר צאט פרטי בין השניים
+    room = ChatRoom.objects.filter(participants=request.user).filter(participants=target_user).first()
+    
+    if not room:
+        room = ChatRoom.objects.create()
+        room.participants.add(request.user, target_user)
+    
+    return redirect('chat_room', room_id=room.id)
+
+@login_required
+def chat_room(request, room_id):
+    # שליפת החדר ואימות שהמשתמש משתתף בו
+    room = get_object_or_404(ChatRoom, id=room_id, participants=request.user)
+    
+    # שליפת הודעות בסדר כרונולוגי
+    all_chat_messages = room.messages.all().order_by('timestamp')
+    
+    # שליפת קבצים מהדרייב האישי של המשתמש בלבד
+    my_documents = Document.objects.filter(uploaded_by=request.user)
+    
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        drive_file_id = request.POST.get('drive_file_id')
+        local_file = request.FILES.get('local_file')
+        
+        if content or drive_file_id or local_file:
+            # יצירת ההודעה
+            msg = ChatMessage.objects.create(
+                room=room,
+                sender=request.user,
+                content=content
+            )
+            
+            # אפשרות 1: שיתוף קובץ קיים מהדרייב
+            if drive_file_id:
+                try:
+                    # מוודאים שהקובץ אכן שייך למשתמש
+                    msg.attached_file = Document.objects.get(id=drive_file_id, uploaded_by=request.user)
+                except Document.DoesNotExist:
+                    pass
+            
+            # אפשרות 2: העלאת קובץ חדש מהמחשב
+            elif local_file:
+                # יצירת אובייקט Document חדש ללא שיוך לקורס
+                # זה גורם לכך שהקובץ יהיה פרטי בדרייב ולא יופיע בדפי קורסים
+                new_doc = Document.objects.create(
+                    uploaded_by=request.user,
+                    title=local_file.name,
+                    file=local_file,
+                    course=None  # <--- התיקון הקריטי: אין קורס אקראי!
+                )
+                msg.attached_file = new_doc
+            
+            msg.save()
+            return redirect('chat_room', room_id=room.id)
+
+    return render(request, 'core/chat_room.html', {
+        'room': room,
+        'chat_messages': all_chat_messages,
+        'my_documents': my_documents
+    })
+
+@login_required
+def copy_file_to_my_drive(request, document_id):
+    # שליפת הקובץ המקורי לפי ה-ID
+    original_doc = get_object_or_404(Document, id=document_id)
+    
+    # בדיקה אם המשתמש כבר מחזיק בעותק של הקובץ הזה בדרייב שלו
+    # (מוודאים שהקובץ הפיזי והמשתמש זהים)
+    already_exists = Document.objects.filter(
+        uploaded_by=request.user, 
+        file=original_doc.file
+    ).exists()
+
+    if not already_exists:
+        # יצירת עותק חדש - הסרנו את description כי הוא לא קיים במודל שלך
+        Document.objects.create(
+            uploaded_by=request.user,
+            title=f"עותק של {original_doc.title}",
+            file=original_doc.file,
+            course=original_doc.course  # שימוש בקורס המקורי כדי למנוע IntegrityError
+        )
+        messages.success(request, f"הקובץ '{original_doc.title}' נוסף לדרייב שלך!")
+    else:
+        messages.info(request, "הקובץ כבר קיים בדרייב האישי שלך.")
+
+    # חזרה לדף שממנו המשתמש הגיע
+    return redirect(request.META.get('HTTP_REFERER', 'home'))

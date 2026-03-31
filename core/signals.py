@@ -9,12 +9,20 @@ def notify_students_on_new_file(sender, instance, created, **kwargs):
     """
     הסיגנל הזה רץ בכל פעם שנוצר אובייקט Document חדש.
     הוא יוצר התראה עם לינק שכולל Hash כדי לפתוח את התיקייה ב-Frontend.
+    כעת הוא תומך גם בקבצים ללא קורס (כמו בצ'אט) ופשוט מתעלם מהם.
     """
     # 1. פועלים רק ביצירה של קובץ חדש
     if not created:
         return
 
+    # --- התיקון הקריטי כאן ---
+    # אם הקובץ עלה ללא קורס (למשל בצ'אט), אנחנו לא רוצים לשלוח התראות ולא רוצים לקרוס
     course = instance.course
+    if not course:
+        print(f"DEBUG: קובץ '{instance.title}' עלה ללא קורס (צ'אט/פרטי). לא נשלחה התראה.")
+        return
+    # -------------------------
+
     uploader = instance.uploaded_by
     uploader_name = uploader.username if uploader else "סטודנט"
 

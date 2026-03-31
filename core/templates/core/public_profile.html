@@ -40,11 +40,12 @@
         <div class="d-flex justify-content-center gap-2">
             {% if target_user != user %}
                 {% if friendship_status == 'friends' %}
+                    <a href="{% url 'get_or_create_chat' target_user.username %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="fas fa-comment-dots ms-1"></i> צור חדר למידה
+                    </a>
+                    
                     <button class="btn btn-light rounded-pill px-4 fw-bold disabled border">
                         <i class="fas fa-check text-success ms-1"></i> חברים ברשת
-                    </button>
-                    <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                        <i class="fas fa-paper-plane ms-1"></i> שלח קובץ
                     </button>
                 {% elif friendship_status == 'request_sent' %}
                     <button class="btn btn-secondary rounded-pill px-4 fw-bold disabled opacity-75">
