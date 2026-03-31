@@ -739,36 +739,58 @@ def community_feed(request):
     }
     return render(request, 'core/community_feed.html', context)
 
-
+@login_required
 def public_profile(request, username):
+    # שליפת המשתמש והפרופיל שלו
     target_user = get_object_or_404(User, username=username)
     target_profile = target_user.profile
 
+    # --- לוגיקת מחיקת התראות ---
+    # 1. מחיקה לפי ID ספציפי (כשלוחצים על התראה במרכז העדכונים)
+    notification_id = request.GET.get('delete')
+    if notification_id:
+        Notification.objects.filter(id=notification_id, user=request.user).delete()
+
+    # בדיקת פרטיות הפרופיל
     if target_profile.profile_visibility == 'private' and request.user != target_user:
         messages.warning(request, "פרופיל זה הוא פרטי.")
         return redirect('home')
 
+    # שליפת הפוסטים והמסמכים של המשתמש
     user_posts = Post.objects.filter(user=target_user).order_by('-created_at')
     user_documents = Document.objects.filter(uploaded_by=target_user).order_by('-upload_date')
 
+    # הגדרת ברירת מחדל לסטטוס חברות
     friendship_status = 'none'
     friend_request_id = None
 
-    if request.user.is_authenticated and request.user != target_user:
+    # לוגיקה לבדיקת קשר חברות (רק אם זה לא המשתמש המחובר עצמו)
+    if request.user != target_user:
         relation = Friendship.objects.filter(
             models.Q(user_from=request.user, user_to=target_user) |
             models.Q(user_from=target_user, user_to=request.user)
         ).first()
 
         if relation:
-            friend_request_id = relation.id
             if relation.status == 'accepted':
                 friendship_status = 'friends'
+                friend_request_id = relation.id
+                
+                # 2. ניקוי אוטומטי: אם אנחנו כבר חברים, אין טעם להשאיר התראת "בקשת חברות" פתוחה
+                Notification.objects.filter(
+                    user=request.user, 
+                    sender=target_user, 
+                    notification_type='friend_request'
+                ).delete()
+
             elif relation.status == 'pending':
                 if relation.user_from == request.user:
                     friendship_status = 'request_sent'
+                    friend_request_id = relation.id
                 else:
+                    # כאן אנחנו מגדירים את ה-ID כדי שכפתור "אשר חברות" ב-HTML יעבוד
                     friendship_status = 'request_received'
+                    friend_request_id = relation.id
 
     context = {
         'target_user': target_user,
@@ -779,7 +801,6 @@ def public_profile(request, username):
         'friend_request_id': friend_request_id,
     }
     return render(request, 'core/public_profile.html', context)
-
 
 @login_required
 def like_post(request, post_id):
@@ -793,7 +814,12 @@ def like_post(request, post_id):
             liked = True
         return JsonResponse({'liked': liked, 'total_likes': post.likes.count()})
     return JsonResponse({'error': 'בקשה לא חוקית. נדרש POST.'}, status=400)
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db import models
+from django.urls import reverse
+from .models import Friendship, Notification, CustomUser # וודא שהייבוא תואם לשמות המודלים שלך
 
 @login_required
 def send_friend_request(request, username):
@@ -809,35 +835,71 @@ def send_friend_request(request, username):
 
     if not existing_relation:
         Friendship.objects.create(user_from=request.user, user_to=user_to, status='pending')
+        
+        # יצירת התראה
+        Notification.objects.get_or_create(
+            user=user_to,
+            sender=request.user, 
+            notification_type='friend_request', 
+            title="בקשת חברות חדשה",
+            defaults={
+                'message': f"{request.user.username} שלח לך בקשת חברות!",
+                # תיקון: עכשיו הקישור שולח לפרופיל של מי שביקש (request.user)
+                'link': reverse('public_profile', kwargs={'username': request.user.username})
+            }
+        )
         messages.success(request, f"בקשת חברות נשלחה אל {username}!")
-    elif existing_relation.status == 'pending':
-        messages.info(request, "כבר קיימת בקשת חברות בהמתנה.")
-    else:
-        messages.info(request, "אתם כבר חברים!")
+    
     return redirect('public_profile', username=username)
-
 
 @login_required
 def accept_friend_request(request, request_id):
+    # שליפת הבקשה הרלוונטית
     friend_req = get_object_or_404(Friendship, id=request_id, user_to=request.user, status='pending')
+    
+    # עדכון סטטוס לחברים
     friend_req.status = 'accepted'
     friend_req.save()
+    
+    # --- ניקוי התראות אצל המשתמש הנוכחי ---
+    # ברגע שאישרנו, אנחנו מוחקים את ההתראה שבישרה לנו על הבקשה הזו
+    Notification.objects.filter(
+        user=request.user,
+        sender=friend_req.user_from,
+        notification_type='friend_request'
+    ).delete()
+    
+    # יצירת התראה לשולח המקורי שהבקשה שלו אושרה
+    Notification.objects.create(
+        user=friend_req.user_from,
+        sender=request.user, # הוספת השולח כדי שיוכל לראות תמונה בהתראה
+        notification_type='system', # התראה שהחברות אושרה היא התראת מערכת/עדכון
+        title="בקשת החברות אושרה!",
+        message=f"{request.user.username} אישר את בקשת החברות שלך. עכשיו אתם חברים!",
+        link=reverse('public_profile', kwargs={'username': request.user.username})
+    )
+    
     messages.success(request, f"איזה כיף! אתה ו-{friend_req.user_from.username} עכשיו חברים.")
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 
 @login_required
 def reject_friend_request(request, request_id):
+    # מחיקת הבקשה במקרה של דחייה
     friend_req = get_object_or_404(Friendship, id=request_id, user_to=request.user, status='pending')
+    
+    # --- ניקוי התראות אצל המשתמש הנוכחי ---
+    # גם אם דחינו, ההתראה כבר לא רלוונטית וצריכה להימחק
+    Notification.objects.filter(
+        user=request.user,
+        sender=friend_req.user_from,
+        notification_type='friend_request'
+    ).delete()
+    
     friend_req.delete()
+    
     messages.info(request, "בקשת החברות נמחקה.")
     return redirect(request.META.get('HTTP_REFERER', 'home'))
-
-
-from django.contrib.auth import get_user_model
-from django.db.models import Q
-from .models import Course, University, Document, Lecturer, Folder
-
 
 @login_required
 def global_search(request):
@@ -1217,21 +1279,31 @@ def remove_from_history(request, log_id):
 @login_required
 def search_users(request):
     User = get_user_model()
-    # אנחנו הופכים את השאילתה לאותיות קטנות ליתר ביטחון
     query = request.GET.get('q', '').strip()
+
+    # שליפת בקשות חברות שמחכות למשתמש המחובר
+    pending_requests = Friendship.objects.filter(user_to=request.user, status='pending')
 
     users = []
     if query:
-        # שימוש ב-Q כדי לחפש בכמה שדות במקביל
         users = User.objects.filter(
-            Q(username__iexact=query) |  # חיפוש מדויק לא רגיש לאותיות (Kozo == kozo)
+            Q(username__iexact=query) |
             Q(username__icontains=query) |
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query)
         ).exclude(id=request.user.id).select_related('profile')[:20]
+    else:
+        # תיקון: במקום profile.friends (שלא קיים), נשלוף את החברים מתוך מודל Friendship
+        friendships = Friendship.objects.filter(
+            (Q(user_from=request.user) | Q(user_to=request.user)),
+            status='accepted'
+        )
+        # הופכים את החברויות לרשימה של משתמשים (User objects)
+        users = [f.user_to if f.user_from == request.user else f.user_from for f in friendships]
 
     context = {
         'query': query,
-        'friends': users,  # חשוב להשאיר 'friends' בשביל ה-HTML שלך
+        'friends': users,
+        'pending_requests': pending_requests,
     }
     return render(request, 'core/friends_list.html', context)

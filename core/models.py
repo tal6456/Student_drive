@@ -582,7 +582,15 @@ class Vote(models.Model):
 # ==========================================
 
 class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('friend_request', 'בקשת חברות'),
+        ('system', 'התראת מערכת'),
+    )
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='system')
+    
     title = models.CharField(max_length=255, verbose_name="כותרת")
     message = models.TextField(verbose_name="הודעה")
     link = models.CharField(max_length=500, blank=True, null=True, verbose_name="קישור")
@@ -594,7 +602,6 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"התראה ל-{self.user.username}: {self.title}"
-
 
 class UserCourseSelection(models.Model):
     """מודל שמחבר בין סטודנט לקורס ומסמן אם הוא במעקב (Star)"""
