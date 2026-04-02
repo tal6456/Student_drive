@@ -946,79 +946,6 @@ function copyInviteLink(event) {
 </div>
 {% endif %}
 
-<script>
-    // --- 1. מודל דיווח ---
-    function openGlobalReportModal(docId, docTitle) {
-        document.getElementById('reportDocTitle').innerText = '"' + docTitle + '"';
-        const form = document.getElementById('globalReportForm');
-        form.action = form.action.replace('/0/', '/' + docId + '/');
-        const modal = new bootstrap.Modal(document.getElementById('globalReportModal'));
-        modal.show();
-    }
-
-    // --- 2. פתיחה וסגירה של תפריט 3 הנקודות המותאם ---
-    function toggleCustomMenu(event, menuId) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const menu = document.getElementById(menuId);
-        const isCurrentlyOpen = menu.classList.contains('show');
-
-        // סגור את כל התפריטים הפתוחים
-        document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
-
-        if (!isCurrentlyOpen) {
-            menu.classList.add('show');
-            // מוודא שהכרטיסייה העוטפת לא חותכת את התפריט
-            const parentCard = menu.closest('.card');
-            if(parentCard) {
-                parentCard.classList.remove('overflow-hidden');
-                parentCard.style.overflow = 'visible';
-            }
-        }
-    }
-
-    // סגירת תפריטים בלחיצה מחוץ אליהם
-    document.addEventListener('click', function(event) {
-        const isClickInsideMenu = event.target.closest('.custom-dropdown-menu');
-        const isClickOnToggle = event.target.closest('.custom-dropdown-toggle');
-        if (!isClickInsideMenu && !isClickOnToggle) {
-            document.querySelectorAll('.custom-dropdown-menu').forEach(menu => menu.classList.remove('show'));
-        }
-    });
-</script>
-
-<style>
-    /* ה-CSS לעיצוב השורות במובייל (מה שהוספנו קודם) */
-    @media (max-width: 767px) {
-        .doc-row-responsive { padding-top: 10px !important; padding-bottom: 10px !important; gap: 8px !important; }
-        .doc-row-responsive .fas.fa-2x { font-size: 1.5rem !important; }
-        .doc-row-responsive a.fw-bold.fs-6 { font-size: 0.85rem !important; max-width: 140px; }
-        .doc-row-responsive div[style*="font-size: 0.75rem"] { font-size: 0.65rem !important; gap: 4px !important; }
-        .doc-row-responsive .badge { font-size: 0.6rem !important; padding: 3px 6px !important; }
-        .like-btn-responsive, .download-btn-responsive { font-size: 0.7rem !important; padding: 5px 10px !important; min-width: unset !important; }
-        .mobile-menu-btn-responsive i.fas.fa-ellipsis-v { font-size: 0.9rem !important; }
-        .doc-actions-group { gap: 5px !important; }
-    }
-
-    /* --- ה-CSS של תפריט 3 הנקודות המותאם אישית --- */
-    .custom-dropdown-menu {
-        display: none; position: absolute; top: 100%; left: 0; z-index: 1050;
-        min-width: 160px; padding: 0.5rem 0; margin: 0.125rem 0 0;
-        list-style: none; background-clip: padding-box;
-    }
-    .custom-dropdown-menu.show { display: block; }
-    .custom-dropdown-menu .dropdown-item {
-        display: block; width: 100%; padding: 0.25rem 1rem; clear: both;
-        font-weight: 400; text-align: inherit; white-space: nowrap;
-        background-color: transparent; border: 0; cursor: pointer;
-    }
-    .custom-dropdown-menu .dropdown-item:hover { background-color: var(--gd-hover, #f8f9fa); }
-    .pointer-events-none { pointer-events: none; }
-
-    /* מונע מהכרטיסייה לחתוך את התפריט */
-    .list-group-item.custom-dropdown-container { overflow: visible !important; }
-</style>
 {% if user.is_authenticated %}
 <div class="modal fade" id="globalReportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1052,80 +979,6 @@ function copyInviteLink(event) {
 </div>
 {% endif %}
 
-<script>
-    // --- 1. מודל דיווח ---
-    function openGlobalReportModal(docId, docTitle) {
-        document.getElementById('reportDocTitle').innerText = '"' + docTitle + '"';
-        const form = document.getElementById('globalReportForm');
-        form.action = form.action.replace('/0/', '/' + docId + '/');
-        const modal = new bootstrap.Modal(document.getElementById('globalReportModal'));
-        modal.show();
-    }
-
-    // --- 2. פתיחה וסגירה של תפריט 3 הנקודות המותאם ---
-    function toggleCustomMenu(event, menuId) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const menu = document.getElementById(menuId);
-        const isCurrentlyOpen = menu.classList.contains('show');
-
-        // סגור את כל התפריטים הפתוחים
-        document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
-
-        if (!isCurrentlyOpen) {
-            menu.classList.add('show');
-            // מוודא שהכרטיסייה העוטפת לא חותכת את התפריט
-            const parentCard = menu.closest('.card');
-            if(parentCard) {
-                parentCard.classList.remove('overflow-hidden');
-                parentCard.style.overflow = 'visible';
-            }
-        }
-    }
-
-    // סגירת תפריטים בלחיצה מחוץ אליהם
-    document.addEventListener('click', function(event) {
-        const isClickInsideMenu = event.target.closest('.custom-dropdown-menu');
-        const isClickOnToggle = event.target.closest('.custom-dropdown-toggle');
-        if (!isClickInsideMenu && !isClickOnToggle) {
-            document.querySelectorAll('.custom-dropdown-menu').forEach(menu => menu.classList.remove('show'));
-        }
-    });
-</script>
-
-<style>
-    /* ה-CSS לעיצוב השורות במובייל (מה שהוספנו קודם) */
-    @media (max-width: 767px) {
-        .doc-row-responsive { padding-top: 10px !important; padding-bottom: 10px !important; gap: 8px !important; }
-        .doc-row-responsive .fas.fa-2x { font-size: 1.5rem !important; }
-        .doc-row-responsive a.fw-bold.fs-6 { font-size: 0.85rem !important; max-width: 140px; }
-        .doc-row-responsive div[style*="font-size: 0.75rem"] { font-size: 0.65rem !important; gap: 4px !important; }
-        .doc-row-responsive .badge { font-size: 0.6rem !important; padding: 3px 6px !important; }
-        .like-btn-responsive, .download-btn-responsive { font-size: 0.7rem !important; padding: 5px 10px !important; min-width: unset !important; }
-        .mobile-menu-btn-responsive i.fas.fa-ellipsis-v { font-size: 0.9rem !important; }
-        .doc-actions-group { gap: 5px !important; }
-    }
-
-    /* --- ה-CSS של תפריט 3 הנקודות המותאם אישית --- */
-    .custom-dropdown-menu {
-        display: none; position: absolute; top: 100%; left: 0; z-index: 1050;
-        min-width: 160px; padding: 0.5rem 0; margin: 0.125rem 0 0;
-        list-style: none; background-clip: padding-box;
-    }
-    .custom-dropdown-menu.show { display: block; }
-    .custom-dropdown-menu .dropdown-item {
-        display: block; width: 100%; padding: 0.25rem 1rem; clear: both;
-        font-weight: 400; text-align: inherit; white-space: nowrap;
-        background-color: transparent; border: 0; cursor: pointer;
-    }
-    .custom-dropdown-menu .dropdown-item:hover { background-color: var(--gd-hover, #f8f9fa); }
-    .pointer-events-none { pointer-events: none; }
-
-    /* מונע מהכרטיסייה לחתוך את התפריט */
-    .list-group-item.custom-dropdown-container { overflow: visible !important; }
-</style>
-
 <div id="smart-app-banner" class="d-none align-items-center justify-content-between shadow-sm px-3 py-2" dir="rtl">
     <div class="d-flex align-items-center gap-3">
         <button onclick="dismissAppBanner()" class="btn btn-link p-0 text-muted shadow-none" style="font-size: 1.2rem;">
@@ -1145,7 +998,37 @@ function copyInviteLink(event) {
 </div>
 
 <style>
-    /* עיצוב הבאנר שנדבק לראש המסך מתחת לניווט */
+    /* --- עיצוב תפריט 3 הנקודות --- */
+    .custom-dropdown-menu {
+        display: none; 
+        position: absolute; 
+        top: 100%; 
+        left: 0; 
+        z-index: 9999 !important; /* מוודא שהתפריט מעל הכל */
+        min-width: 160px; 
+        padding: 0.5rem 0; 
+        margin: 0.125rem 0 0;
+        background-color: var(--gd-card, #fff);
+        border: 1px solid var(--gd-border, #ccc);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        list-style: none;
+        background-clip: padding-box;
+    }
+    .custom-dropdown-menu.show { display: block !important; }
+    .custom-dropdown-menu .dropdown-item {
+        display: block; width: 100%; padding: 0.5rem 1rem; clear: both;
+        font-weight: 400; text-align: inherit; white-space: nowrap;
+        background-color: transparent; border: 0; cursor: pointer;
+        color: var(--gd-text);
+    }
+    .custom-dropdown-menu .dropdown-item:hover { background-color: var(--gd-hover, #f8f9fa); }
+    
+    /* מניעת חיתוך התפריט על ידי כרטיסיות או שורות */
+    .list-group-item.custom-dropdown-container, .card { overflow: visible !important; }
+    .pointer-events-none { pointer-events: none; }
+
+    /* --- עיצוב הבאנר למובייל --- */
     #smart-app-banner {
         position: fixed; top: 0; left: 0; width: 100%;
         background-color: var(--gd-card, #ffffff);
@@ -1153,121 +1036,164 @@ function copyInviteLink(event) {
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         transform: translateY(-100%);
     }
-    /* מציג את הבאנר רק במסכים קטנים מ-992px (מובייל וטאבלט/אייפד ברוב המקרים) */
     @media (max-width: 991px) {
         #smart-app-banner.show-banner { display: flex !important; transform: translateY(0); }
         body.banner-active { padding-top: 60px; }
         body.banner-active .navbar.sticky-top { top: 60px !important; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     }
+
+    /* --- התאמות מובייל לשורות קבצים (doc-row) --- */
+    @media (max-width: 767px) {
+        .doc-row-responsive { padding-top: 10px !important; padding-bottom: 10px !important; gap: 8px !important; }
+        .doc-row-responsive .fas.fa-2x { font-size: 1.5rem !important; }
+        .doc-row-responsive a.fw-bold.fs-6 { font-size: 0.85rem !important; max-width: 140px; }
+        .doc-row-responsive div[style*="font-size: 0.75rem"] { font-size: 0.65rem !important; gap: 4px !important; }
+        .doc-row-responsive .badge { font-size: 0.6rem !important; padding: 3px 6px !important; }
+        .like-btn-responsive, .download-btn-responsive { font-size: 0.7rem !important; padding: 5px 10px !important; min-width: unset !important; }
+        .mobile-menu-btn-responsive i.fas.fa-ellipsis-v { font-size: 0.9rem !important; }
+        .doc-actions-group { gap: 5px !important; }
+    }
 </style>
 
 <script>
+    // --- 1. פונקציית Toggle לתפריט (מתוקנת ללא כפילות) ---
+    function toggleCustomMenu(event, menuId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // במקום לחפש לפי ID, אנחנו מחפשים את התפריט שנמצא "ליד" הכפתור שנלחץ
+    const btn = event.currentTarget;
+    const container = btn.closest('.custom-dropdown-container') || btn.parentElement;
+    const menu = container.querySelector('.custom-dropdown-menu');
+
+    if (!menu) {
+        console.error("לא נמצא תפריט בתוך הקונטיינר!");
+        return;
+    }
+
+    const isCurrentlyOpen = menu.classList.contains('show');
+
+    // סגירת תפריטים אחרים
+    document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
+
+    if (!isCurrentlyOpen) {
+        menu.classList.add('show');
+        
+        // תיקון ה-overflow
+        const parentCard = menu.closest('.card');
+        if(parentCard) {
+            parentCard.style.overflow = 'visible';
+            parentCard.style.zIndex = '100'; // מעלה את הכרטיסייה מעל אחרות
+        }
+    }
+}
+
+    // --- 2. ניהול מודל דיווח ---
+    function openGlobalReportModal(docId, docTitle) {
+        const titleElement = document.getElementById('reportDocTitle');
+        if (titleElement) titleElement.innerText = '"' + docTitle + '"';
+        
+        const form = document.getElementById('globalReportForm');
+        if (form) {
+            // עדכון ה-URL בצורה בטוחה
+            form.action = form.action.replace(/\/0\//, '/' + docId + '/');
+        }
+        
+        const modalElement = document.getElementById('globalReportModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    }
+
+    // --- 3. סגירת תפריטים בלחיצה מחוץ אליהם ---
+    document.addEventListener('click', function(event) {
+        const isClickInsideMenu = event.target.closest('.custom-dropdown-menu');
+        const isClickOnToggle = event.target.closest('.custom-dropdown-toggle') || event.target.closest('.mobile-menu-btn-responsive');
+        
+        if (!isClickInsideMenu && !isClickOnToggle) {
+            document.querySelectorAll('.custom-dropdown-menu').forEach(menu => menu.classList.remove('show'));
+        }
+    });
+
+    // --- 4. ניהול התקנת PWA (אנדרואיד ו-iOS) ---
     let deferredPrompt;
 
-    // 1. תפיסת האירוע שבו הדפדפן מוכן להתקין את האפליקציה (אנדרואיד)
     window.addEventListener('beforeinstallprompt', (e) => {
-        // מונע מהדפדפן להקפיץ את החלונית המכוערת שלו בתחתית המסך
         e.preventDefault();
-        // שומרים את האירוע
         deferredPrompt = e;
-        
-        // עכשיו בטוח להציג את הבאנר שלנו
         checkAndShowBanner();
     });
 
-    // 2. עבור אייפון/אייפד נציג את הבאנר בכוח (אם הוא לא באפליקציה כבר)
     document.addEventListener('DOMContentLoaded', () => {
-        // מונע מהבאנר להופיע במחשב שולחני גם אם זה נטען בטעות
         if (window.innerWidth > 991) return;
 
         const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        // בודק האם אנחנו כבר גולשים מתוך האפליקציה המותקנת
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         
         if (isApple && !isStandalone) {
-            checkAndShowBanner(true); // true = זה מכשיר של אפל
+            checkAndShowBanner(true);
         }
     });
 
     function checkAndShowBanner(isApple = false) {
-        if (window.innerWidth > 991) return; // הגנה נוספת למחשבים
+        if (window.innerWidth > 991) return;
 
-        // בדיקה האם סגרנו את הבאנר בשבוע האחרון
         const bannerDismissed = localStorage.getItem('appBannerDismissed');
         if (bannerDismissed) {
-            const dismissedDate = new Date(parseInt(bannerDismissed));
-            const now = new Date();
-            // 7 ימים
-            if (now - dismissedDate < 604800000) return;
+            const now = new Date().getTime();
+            if (now - parseInt(bannerDismissed) < 604800000) return; // שבוע
         }
         
-        // התאמת האייקון בכפתור
         const btn = document.getElementById('app-banner-btn');
-        if (isApple) {
-            btn.innerHTML = '<i class="fab fa-apple me-1"></i> התקן';
-        } else {
-            btn.innerHTML = '<i class="fab fa-android me-1"></i> התקן';
+        if (btn) {
+            btn.innerHTML = isApple ? '<i class="fab fa-apple me-1"></i> התקן' : '<i class="fab fa-android me-1"></i> התקן';
         }
 
         const banner = document.getElementById('smart-app-banner');
-        setTimeout(() => {
-            banner.classList.add('show-banner');
-            document.body.classList.add('banner-active');
-        }, 500);
+        if (banner) {
+            setTimeout(() => {
+                banner.classList.add('show-banner');
+                document.body.classList.add('banner-active');
+            }, 500);
+        }
     }
 
     function dismissAppBanner() {
         const banner = document.getElementById('smart-app-banner');
-        banner.classList.remove('show-banner');
-        document.body.classList.remove('banner-active');
-        localStorage.setItem('appBannerDismissed', Date.now().toString());
+        if (banner) {
+            banner.classList.remove('show-banner');
+            document.body.classList.remove('banner-active');
+            localStorage.setItem('appBannerDismissed', new Date().getTime().toString());
+        }
     }
 
-    // 3. הפונקציה שרצה כשלוחצים על הכפתור "התקן"
     function installPWA() {
         const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
         if (deferredPrompt) {
-            // נקפיץ את החלון של גוגל
             deferredPrompt.prompt();
-            
-            // נמתין לתשובת המשתמש
             deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    dismissAppBanner(); 
-                }
+                if (choiceResult.outcome === 'accepted') dismissAppBanner();
                 deferredPrompt = null; 
             });
         } else if (isApple) {
-            // אייפון/אייפד - מודל הסבר
             Swal.fire({
                 title: 'התקנה באפל 🍏',
                 html: '<div style="text-align: right; font-size: 0.95rem;">' +
                       'כדי להתקין את האפליקציה במכשיר שלך:<br><br>' +
-                      '1. לחץ על כפתור השיתוף <i class="fas fa-external-link-alt mx-1 border rounded p-1"></i> (בדרך כלל למטה או למעלה).<br><br>' +
-                      '2. גלול למטה ובחר ב-<b>"הוסף למסך הבית"</b> <i class="fas fa-plus-square mx-1 border rounded p-1"></i>.<br><br>' +
-                      'וזהו! האפליקציה תופיע במסך הבית שלך.' +
-                      '</div>',
+                      '1. לחץ על כפתור השיתוף <i class="fas fa-external-link-alt mx-1 border rounded p-1"></i>.<br><br>' +
+                      '2. בחר ב-<b>"הוסף למסך הבית"</b> <i class="fas fa-plus-square mx-1 border rounded p-1"></i>.<br></div>',
                 icon: 'info',
                 confirmButtonText: 'הבנתי',
-                confirmButtonColor: '#1a73e8'
-            });
-        } else {
-            // מחשב או מכשיר לא נתמך
-            Swal.fire({
-                title: 'התקנת אפליקציה',
-                text: 'לא הצלחנו לזהות תמיכה אוטומטית במכשיר זה. חפש את סמל ההתקנה (המחשבון עם חץ) בשורת הכתובת למעלה.',
-                icon: 'info',
-                confirmButtonText: 'אישור',
                 confirmButtonColor: '#1a73e8'
             });
         }
     }
 
-    // 4. מאזין לאירוע התקנה מוצלחת כדי להעלים את הבאנר
-    window.addEventListener('appinstalled', (evt) => {
+    window.addEventListener('appinstalled', () => {
         dismissAppBanner();
-        console.log('App was successfully installed!');
+        console.log('App installed successfully');
     });
 </script>
 </body>
