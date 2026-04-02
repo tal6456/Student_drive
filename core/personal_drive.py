@@ -7,31 +7,46 @@ from .models import Document, DownloadLog, Vote, ExternalResource
 @login_required
 def personal_drive(request):
     user = request.user
-    uploaded_files = Document.objects.filter(uploaded_by=user).order_by('-upload_date')
+    
+    # 1. שליפת כל הקבצים שהמשתמש העלה עם select_related לביצועים
+    uploaded_files_queryset = Document.objects.filter(uploaded_by=user).select_related('course', 'folder').order_by('-upload_date')
 
-    # הוספת ייחודיות להעלאות
-    for doc in uploaded_files:
+    CONTENT_TYPES = ['הרצאות', 'תרגולים', 'מטלות', 'מבחני עבר', 'חומרי עזר נוספים', 'עמית']
+    
+    processed_uploads = []
+    for doc in uploaded_files_queryset:
+        # מזהה ייחודי ל-HTML
         doc.unique_row_id = f"up_{doc.id}"
+        
+        # לוגיקת זיהוי התיקייה (בדיוק כמו בהיסטוריה!)
+        doc.top_folder_name = "קבצים כלליים"
+        if doc.folder:
+            current = doc.folder
+            while current:
+                if current.name in CONTENT_TYPES:
+                    doc.top_folder_name = current.name
+                    break
+                current = getattr(current, 'parent', None)
+        
+        processed_uploads.append(doc)
 
-    # שימוש ב-select_related לשיפור ביצועים
+    # מיון כדי ש-regroup ב-HTML יעבוד נכון (לפי קורס ואז לפי תיקייה)
+    processed_uploads.sort(key=lambda x: (
+        x.course.name if x.course else "ללא קורס",
+        x.top_folder_name
+    ))
+
+    # 2. טיפול בהיסטוריית הורדות (הקוד הקיים שלך - נשאר ללא שינוי)
     logs_queryset = DownloadLog.objects.filter(user=user).select_related(
         'document__course',
         'document__folder',
         'document__uploaded_by'
     )
 
-    # רשימת הסוגים שמופיעים אצלך בתפריט הקורס
-    CONTENT_TYPES = ['הרצאות', 'תרגולים', 'מטלות', 'מבחני עבר', 'חומרי עזר נוספים', 'עמית']
-
     processed_logs = []
     for log in logs_queryset:
-        # יצירת מזהה ייחודי לכל שורה כדי שה-3 נקודות יעבדו
         log.unique_row_id = f"hist_{log.id}"
-
-        # ברירת מחדל אם לא מצאנו סוג ספציפי
         log.top_folder_name = "קבצים כלליים"
-
-        # בדיקת שרשרת התיקיות מלמטה למעלה עם הגנה מ-None
         if log.document and log.document.folder:
             current = log.document.folder
             while current:
@@ -39,25 +54,22 @@ def personal_drive(request):
                     log.top_folder_name = current.name
                     break
                 current = getattr(current, 'parent', None)
-
         processed_logs.append(log)
 
-    # מיון חובה עם הגנה מ-None כדי ש-regroup ב-HTML יעבוד
     processed_logs.sort(key=lambda x: (
         x.document.course.name if x.document and x.document.course else "ללא קורס",
         x.top_folder_name
     ))
 
-    # שליפת המשאבים החיצוניים עבור הטאב החדש
+    # משאבים חיצוניים והצבעות
     external_resources = ExternalResource.objects.filter(user=user).order_by('-created_at')
-
     voted_files = Vote.objects.filter(user=user).select_related('document').order_by('-created_at')
 
     context = {
-        'uploaded_files': uploaded_files,
+        'uploaded_files': processed_uploads, # עכשיו הם מעובדים וממוינים!
         'download_logs': processed_logs,
         'voted_files': voted_files,
-        'external_resources': external_resources,  # זה מה שמאפשר לטאב להציג נתונים
+        'external_resources': external_resources,
     }
     return render(request, 'core/personal_drive.html', context)
 

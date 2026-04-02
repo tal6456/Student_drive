@@ -46,21 +46,50 @@
 
     <div class="tab-content" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-upload" role="tabpanel">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="list-group list-group-flush border-0">
-                    {% for doc in uploaded_files %}
-                        {% include "core/partials/doc_row.html" with doc=doc unique_id="up_"|add:doc.id show_personal_tags=True %}
-                    {% empty %}
-                        <div class="text-center py-5 text-muted">עדיין לא העלית קבצים.</div>
-                    {% endfor %}
+            {% regroup uploaded_files by course.name as upload_course_list %}
+            {% for course in upload_course_list %}
+                <div class="course-group mb-3 shadow-sm border rounded-4 bg-white">
+                    <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between cursor-pointer"
+                         data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-university text-primary ms-3"></i>
+                            <h5 class="mb-0 fw-bold">{{ course.grouper|default:"ללא קורס" }}</h5>
+                        </div>
+                        <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
+                    </div>
+
+                    <div class="collapse" id="up_course_{{ forloop.counter }}">
+                        <div class="p-3">
+                            {% regroup course.list by top_folder_name as upload_type_list %}
+                            {% for type in upload_type_list %}
+                                <div class="mb-3 border rounded-3 type-folder-container">
+                                    <div class="p-2 bg-white d-flex align-items-center cursor-pointer border-bottom"
+                                         data-bs-toggle="collapse" data-bs-target="#up_type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                        <i class="fas fa-folder text-warning ms-2"></i>
+                                        <span class="fw-bold">{{ type.grouper }}</span>
+                                        <span class="ms-auto badge bg-light text-dark border">{{ type.list|length }}</span>
+                                    </div>
+                                    <div class="collapse" id="up_type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                        <div class="list-group list-group-flush">
+                                            {% for doc in type.list %}
+                                                {% include "core/partials/doc_row.html" with doc=doc unique_id="up_"|add:doc.id show_personal_tags=True %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {% empty %}
+                <div class="text-center py-5 text-muted">עדיין לא העלית קבצים.</div>
+            {% endfor %}
         </div>
 
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
             {% for course in course_list %}
-                <div class="course-group mb-3 shadow-sm border rounded-4 bg-white overflow-hidden">
+                <div class="course-group mb-3 shadow-sm border rounded-4 bg-white">
                     <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between cursor-pointer"
                          data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}">
                         <div class="d-flex align-items-center">
@@ -74,14 +103,14 @@
                         <div class="p-3">
                             {% regroup course.list by top_folder_name as type_list %}
                             {% for type in type_list %}
-                                <div class="mb-3 border rounded-3 overflow-hidden type-folder-container">
+                                <div class="mb-3 border rounded-3 type-folder-container">
                                     <div class="p-2 bg-white d-flex align-items-center cursor-pointer border-bottom"
                                          data-bs-toggle="collapse" data-bs-target="#type_{{ parentloop.counter }}_{{ forloop.counter }}">
                                         <i class="fas fa-folder text-warning ms-2"></i>
                                         <span class="fw-bold">{{ type.grouper }}</span>
                                         <span class="ms-auto badge bg-light text-dark border">{{ type.list|length }}</span>
                                     </div>
-                                    <div class="collapse show" id="type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                    <div class="collapse" id="type_{{ parentloop.counter }}_{{ forloop.counter }}">
                                         <div class="list-group list-group-flush">
                                             {% for log in type.list %}
                                                 {% include "core/partials/doc_row.html" with doc=log.document unique_id="dl_"|add:log.id is_history=True log_id=log.id show_personal_tags=True %}
@@ -164,7 +193,7 @@
     </div>
 </div>
 
-{# Modal... #}
+{# Modal #}
 <div class="modal fade" id="addExternalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow">
@@ -212,11 +241,24 @@
     .nav-pills .nav-link.active { background-color: #1e3a8a !important; }
     .nav-link { color: #64748b; }
     .filter-btn.active { background-color: #1e3a8a !important; color: white !important; border-color: #1e3a8a !important; }
+
+    /* תיקון השלוש נקודות: ביטול חיתוך תוכן בתוך אלמנטים נפתחים */
+    .course-group, .type-folder-container {
+        overflow: visible !important;
+    }
+    
+    .collapse.show {
+        overflow: visible !important;
+    }
+
+    /* הבטחת עדיפות לתפריט הנפתח */
+    .dropdown-menu {
+        z-index: 2000 !important;
+    }
 </style>
 
 <script>
 function filterByTag(tagName, btnElement) {
-    // 1. עדכון כפתורים
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active', 'btn-primary');
         btn.classList.add('btn-outline-secondary');
@@ -224,8 +266,6 @@ function filterByTag(tagName, btnElement) {
     btnElement.classList.add('active', 'btn-primary');
     btnElement.classList.remove('btn-outline-secondary');
 
-    // 2. סינון גלובלי של כל שורה שיש לה data-personal-tag
-    // זה יתפוס גם את doc_row וגם את השורות של המשאבים החיצוניים
     const items = document.querySelectorAll('[data-personal-tag]');
     
     items.forEach(item => {
@@ -240,23 +280,18 @@ function filterByTag(tagName, btnElement) {
         }
     });
 
-    // 3. תיקון תצוגה לקבוצות (קורסים ותיקיות בטאב הורדות)
     document.querySelectorAll('.course-group').forEach(group => {
-        // אם הכל מוצג, פשוט תראה את הקבוצה
         if (tagName === 'all') {
             group.classList.remove('d-none');
             group.querySelectorAll('.type-folder-container').forEach(f => f.classList.remove('d-none'));
             return;
         }
 
-        // בדוק אם יש קבצים גלויים בתוך הקורס
         const hasVisibleFiles = Array.from(group.querySelectorAll('[data-personal-tag]'))
                                      .some(el => !el.classList.contains('d-none'));
 
-        // הסתר קורס שלם אם אין בו קבצים מתאימים
         if (hasVisibleFiles) {
             group.classList.remove('d-none');
-            // הסתר תיקיות ריקות בתוך הקורס
             group.querySelectorAll('.type-folder-container').forEach(folder => {
                 const hasVisibleInFolder = Array.from(folder.querySelectorAll('[data-personal-tag]'))
                                                 .some(el => !el.classList.contains('d-none'));
