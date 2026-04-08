@@ -109,7 +109,8 @@ def home(request):
             context['step'] = 'select_year'
             context['major_id'] = major_id
         else:
-            courses = Course.objects.filter(major_id=major_id, year=year_id)
+            # מניעת N+1 בהצגת הקורסים לפי סמסטר
+            courses = Course.objects.filter(major_id=major_id, year=year_id).select_related('major__university')
             context['selected_major'] = get_object_or_404(Major, id=major_id)
             context['sem_a'] = courses.filter(semester='A')
             context['sem_b'] = courses.filter(semester='B')
@@ -220,7 +221,7 @@ def change_password(request):
 
 
 def course_detail(request, course_id, folder_id=None):
-    course = get_object_or_404(Course, id=course_id)
+    course = get_object_or_404(Course.objects.select_related('major__university'), id=course_id)
     course.view_count += 1
     course.save()
 
@@ -337,9 +338,13 @@ def course_detail(request, course_id, folder_id=None):
                     request.user.profile.earn_coins(1)
                     uploaded_count += 1
             return JsonResponse({'success': True, 'count': uploaded_count})
-    # --- שליפת נתונים לתצוגה ---
-    all_folders = Folder.objects.filter(course=course)
-    all_documents = Document.objects.filter(course=course).order_by('-upload_date')
+        # --- שליפת נתונים לתצוגה (מותאם לביצועים - מניעת N+1) ---
+        all_folders = Folder.objects.filter(course=course).select_related('staff_member')
+
+        # הבאת כל המסמכים + המשתמשים שהעלו + אנשי הסגל + הלייקים שלהם במכה אחת!
+        all_documents = Document.objects.filter(course=course).select_related(
+            'uploaded_by', 'staff_member'
+        ).prefetch_related('likes').order_by('-upload_date')
 
     context = {
         'course': course,
@@ -680,8 +685,10 @@ def community_feed(request):
         if current_community not in my_communities:
             current_community.members.add(request.user)
 
-    posts = Post.objects.filter(community=current_community).select_related('user',
-                                                                            'user__profile') if current_community else Post.objects.none()
+        # אופטימיזציה עצומה לפיד: הבאת כל הפוסטים + המשתמשים + הלייקים + התגובות בשאילתה אחת בודדת!
+        posts = Post.objects.filter(community=current_community).select_related(
+            'user', 'user__profile', 'university', 'community'
+        ).prefetch_related('likes', 'comments') if current_community else Post.objects.none()
 
     post_filter = request.GET.get('type')
     if post_filter == 'market':

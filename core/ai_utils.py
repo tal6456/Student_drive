@@ -22,7 +22,12 @@ def extract_text_from_pdf(file_field):
 def generate_smart_summary(document):
     """שולח את הטקסט ל-Gemini ומחזיר סיכום בעברית"""
 
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    api_key = getattr(settings, 'GEMINI_API_KEY', None)
+
+    if not api_key:
+        return "מערכת ה-AI כרגע בטיפול ותחזור בקרוב."
+
+    client = genai.Client(api_key=api_key)
 
     # 🔥 לוקחים את הקובץ מתוך ה-Document (מתאים ל-S3)
     file_field = document.file

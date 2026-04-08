@@ -137,13 +137,25 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
+            // 1. נסיון חכם לחלץ את שם הקורס מהעמוד הנוכחי
+            // מחפש את כותרת העמוד (h1). אם זה לא קורס, זה יעביר "כללי"
+            let currentCourseName = 'כללי';
+            const pageTitle = document.querySelector('h1');
+            if (pageTitle) {
+                currentCourseName = pageTitle.innerText.trim();
+            }
+
+            // 2. השליחה לשרת (מוסיפים את current_course לגוף הבקשה)
             const response = await fetch('/agent/ask/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCSRFToken()
                 },
-                body: JSON.stringify({ question: question })
+                body: JSON.stringify({
+                    question: question,
+                    current_course: currentCourseName // <--- הקונטקסט!
+                })
             });
             const data = await response.json();
             messagesContainer.removeChild(loadingDiv);

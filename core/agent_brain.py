@@ -8,8 +8,16 @@ from google import genai  # ה-SDK החדש שאתה משתמש בו
 
 class StudentAgentBrain:
     def __init__(self):
-        # אתחול הלקוח עם המפתח מה-Settings
-        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        # משיכת המפתח בצורה בטוחה
+        api_key = getattr(settings, 'GEMINI_API_KEY', None)
+
+        # אתחול רק אם יש מפתח, אחרת נשמור כ-None ונטפל בזה בפונקציות
+        if api_key:
+            self.client = genai.Client(api_key=api_key)
+        else:
+            self.client = None
+            print("WARNING: GEMINI_API_KEY is missing! Agent will not work.")
+
         self.model_name = 'gemini-2.5-flash'
 
     def extract_text_from_agent_file(self, agent_file_obj):
@@ -53,6 +61,9 @@ class StudentAgentBrain:
 
     def get_summary(self, text_content):
         """מייצר סיכום נקי ללא תווים מיוחדים"""
+        if not self.client:
+            return "מערכת ה-AI כרגע לא מוגדרת. אנא פנה למנהל האתר."
+
         if not text_content or len(text_content) < 10:
             return "לא נמצא טקסט מספיק לסיכום. וודא שהקובץ אינו סרוק כתמונה."
 
@@ -77,6 +88,9 @@ class StudentAgentBrain:
 
     def answer_question(self, question, context_text):
         """מענה על שאלות הסטודנט על בסיס החומר שהועלה"""
+        if not self.client:
+            return "מערכת ה-AI כרגע לא מוגדרת. אנא פנה למנהל האתר."
+
         if not context_text:
             context_text = "אין חומר לימוד זמין כרגע. ענה מהידע הכללי שלך."
 

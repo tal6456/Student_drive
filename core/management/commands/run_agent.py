@@ -137,6 +137,7 @@ class Command(BaseCommand):
         if not api_key:
             self.stdout.write(self.style.ERROR("❌ GEMINI_API_KEY is missing!"))
             return
+        self.stdout.write(self.style.WARNING(f"🔑 DEBUG: Using API Key starting with: {str(api_key)[:15]}..."))
 
         self.stdout.write(
             self.style.NOTICE("🧠 Generating Flowcharts, Trees and Deep Analysis... (This might take a minute)"))

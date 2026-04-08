@@ -9,7 +9,7 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 # --- אבטחה: מפתח סודי ---
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט

@@ -123,13 +123,30 @@ def ask_agent_question(request):
                 answer = agent_brain.answer_question(general_quiz_instruction, "")
                 return JsonResponse({'type': 'text', 'answer': answer})
 
-            # --- שלב 4: שאלה רגילה (RAG) ---
-            all_knowledge = AgentKnowledge.objects.filter(owner=request.user).values_list('extracted_text', flat=True)
-            full_context = "\n".join(filter(None, all_knowledge))
+                # --- שלב 4: שאלה רגילה (RAG חכם מבוסס קונטקסט) ---
+                # 1. מנסים למשוך את שם הקורס הנוכחי מתוך הבקשה (אם קיים)
+                current_course = data.get('current_course', None)
 
-            answer = agent_brain.answer_question(user_question,
-                                                 full_context or "אין חומר זמין כרגע. העלה קובץ כדי שנתחיל!")
-            return JsonResponse({'type': 'text', 'answer': answer})
+                # 2. מתחילים את השאילתה - רק קבצים של המשתמש הזה
+                knowledge_query = AgentKnowledge.objects.filter(owner=request.user)
+
+                if current_course and current_course != 'כללי':
+                    # סופר-פוקוס: המשתמש שואל מתוך עמוד של קורס! נמשוך רק חומר של הקורס הזה
+                    knowledge_query = knowledge_query.filter(course_name__icontains=current_course)
+                else:
+                    # רשת ביטחון: המשתמש שואל ממסך הבית או קורס כללי. כדי לא להקריס, ניקח רק את ה-3 האחרונים
+                    knowledge_query = knowledge_query.order_by('-id')[:3]
+
+                # 3. שולפים את הטקסט ומאחדים אותו
+                relevant_knowledge = knowledge_query.values_list('extracted_text', flat=True)
+                full_context = "\n".join(filter(None, relevant_knowledge))
+
+                # 4. שולחים לג'מיני בצירוף הטקסט המסונן
+                answer = agent_brain.answer_question(
+                    user_question,
+                    full_context or "אין לי כרגע חומר רלוונטי בנושא זה. העלה קובץ כדי שנתחיל!"
+                )
+                return JsonResponse({'type': 'text', 'answer': answer})
 
         except Exception as e:
             return JsonResponse({'answer': f'שגיאה בעיבוד הבקשה: {str(e)}'}, status=500)
