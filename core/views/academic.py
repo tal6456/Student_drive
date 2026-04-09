@@ -1,0 +1,386 @@
+import os
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q, Avg
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+
+# ייבוא רק של המודלים והטפסים הרלוונטיים לאקדמיה
+from core.models import (
+    University, Major, Course, Folder, Document,
+    AcademicStaff, Lecturer, StaffReview, CourseSemesterStaff,
+    UserProfile, UserCourseSelection
+)
+from core.forms import CourseForm
+
+User = get_user_model()
+
+# ==========================================
+# 1. דפי בית וחיפוש (Home & Search)
+# ==========================================
+
+def home(request):
+    search_query = request.GET.get('search', '').strip()
+    uni_id = request.GET.get('university')
+    major_id = request.GET.get('major')
+    year_id = request.GET.get('year')
+    browse_all = request.GET.get('browse')
+
+    if not request.user.is_authenticated and not any([search_query, uni_id, major_id, year_id, browse_all]):
+        return redirect('account_login')
+
+    ref_code = request.GET.get('ref')
+    if ref_code:
+        request.session['referral_code'] = ref_code
+
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        has_completed_profile = bool(request.user.first_name or profile.university)
+        if not has_completed_profile and not request.session.get('onboarding_complete'):
+            request.session['onboarding_complete'] = True
+            return redirect('complete_profile')
+
+    year_names = {1: "שנה א'", 2: "שנה ב'", 3: "שנה ג'", 4: "שנה ד'", 5: "תואר שני"}
+
+    top_users = UserProfile.objects.filter(
+        lifetime_coins__gt=0,
+        show_coins_publicly=True
+    ).order_by('-lifetime_coins')[:5]
+
+    context = {
+        'search_query': search_query,
+        'top_users': top_users,
+        'years': year_names,
+    }
+    if request.user.is_authenticated:
+        context['favorite_ids'] = request.user.profile.favorite_courses.values_list('id', flat=True)
+
+    if search_query:
+        courses_results = Course.objects.filter(
+            Q(name__icontains=search_query) | Q(course_number__icontains=search_query)
+        ).select_related('major__university')
+
+        context['courses_results'] = courses_results
+        context['step'] = 'search_results'
+        return render(request, 'core/home.html', context)
+
+    if any([uni_id, major_id, year_id, browse_all]):
+        if uni_id:
+            context['selected_uni'] = get_object_or_404(University, id=uni_id)
+            context['uni_id'] = uni_id
+
+        if not uni_id:
+            context['universities'] = University.objects.all()
+            context['step'] = 'select_uni'
+        elif uni_id and not major_id:
+            context['majors'] = Major.objects.filter(university_id=uni_id)
+            context['step'] = 'select_major'
+        elif major_id and not year_id:
+            context['selected_major'] = get_object_or_404(Major, id=major_id)
+            context['step'] = 'select_year'
+            context['major_id'] = major_id
+        else:
+            courses = Course.objects.filter(major_id=major_id, year=year_id).select_related('major__university')
+            context['selected_major'] = get_object_or_404(Major, id=major_id)
+            context['sem_a'] = courses.filter(semester='A')
+            context['sem_b'] = courses.filter(semester='B')
+            context['step'] = 'show_courses'
+            context['major_id'] = major_id
+            context['year'] = year_id
+    else:
+        if request.user.is_authenticated:
+            context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
+                'major__university').all()
+
+    return render(request, 'core/home.html', context)
+
+def live_search(request):
+    query = request.GET.get('q', '')
+    if len(query) >= 2:
+        courses = Course.objects.select_related('major__university').filter(name__icontains=query)[:8]
+        results = []
+        for course in courses:
+            uni = course.major.university
+            results.append({
+                'id': course.id,
+                'name': course.name,
+                'major': course.major.name,
+                'university': uni.name,
+                'brand_color': uni.brand_color,
+                'logo_url': uni.logo.url if uni.logo else None,
+                'url': reverse('course_detail', args=[course.id])
+            })
+        return JsonResponse({'results': results})
+    return JsonResponse({'results': []})
+
+@login_required
+def global_search(request):
+    query = request.GET.get('q', '').strip()
+    universities, courses, documents, lecturers, users = [], [], [], [], []
+
+    if query:
+        universities = University.objects.filter(name__icontains=query)[:5]
+        query_words = query.split()
+        course_q = Q()
+        for word in query_words:
+            course_q &= (Q(name__icontains=word) | Q(course_number__icontains=word))
+        courses = Course.objects.filter(course_q).select_related('major__university')[:15]
+        documents = Document.objects.filter(
+            Q(title__icontains=query) | Q(course__name__icontains=query)
+        ).select_related('course')[:15]
+        lecturers = Lecturer.objects.filter(name__icontains=query)[:10]
+
+    context = {
+        'query': query,
+        'universities': universities,
+        'courses': courses,
+        'documents': documents,
+        'lecturers': lecturers,
+        'total_results': len(universities) + len(courses) + len(documents) + len(lecturers)
+    }
+    return render(request, 'core/search_results.html', context)
+
+# ==========================================
+# 2. ניהול קורסים (Courses)
+# ==========================================
+
+def course_detail(request, course_id, folder_id=None):
+    course = get_object_or_404(Course.objects.select_related('major__university'), id=course_id)
+    course.view_count += 1
+    course.save()
+
+    open_this_folder = folder_id if folder_id else request.GET.get('open_folder')
+
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'אנא התחבר למערכת'})
+            return redirect('account_login')
+
+        action = request.POST.get('action')
+
+        if action == 'create_folder':
+            folder_name = request.POST.get('folder_name')
+            parent_id = request.POST.get('parent_folder')
+            staff_id = request.POST.get('staff_member_id')
+            new_staff_name = request.POST.get('new_lecturer_name')
+
+            parent_folder = None
+            if parent_id and parent_id != 'root':
+                parent_folder = get_object_or_404(Folder, id=parent_id, course=course)
+
+            assigned_staff = None
+            if new_staff_name and new_staff_name.strip():
+                assigned_staff, _ = Lecturer.objects.get_or_create(
+                    name=new_staff_name.strip(),
+                    university=course.major.university
+                )
+            elif staff_id:
+                assigned_staff = get_object_or_404(AcademicStaff, id=staff_id)
+
+            if folder_name:
+                Folder.objects.create(
+                    course=course,
+                    name=folder_name.strip(),
+                    parent=parent_folder,
+                    staff_member=assigned_staff,
+                    created_by=request.user
+                )
+                messages.success(request, f'התיקייה "{folder_name}" נוצרה בהצלחה!')
+
+            if open_this_folder:
+                return redirect('course_detail_folder', course_id=course.id, folder_id=open_this_folder)
+            return redirect('course_detail', course_id=course.id)
+
+        elif action == 'edit_folder':
+            folder_id_raw = request.POST.get('folder_id')
+            staff_id_select = request.POST.get('staff_member_id', '')
+            new_staff_input = request.POST.get('new_lecturer_name', '')
+            folder_color = request.POST.get('folder_color')
+            rating_val = request.POST.get('rating', '0')
+            review_text = request.POST.get('review_text', '')
+
+            if folder_id_raw:
+                clean_id = folder_id_raw.replace('folder_', '')
+                folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
+
+                if new_staff_input and new_staff_input.strip():
+                    new_lecturer, _ = Lecturer.objects.get_or_create(
+                        name=new_staff_input.strip(),
+                        university=course.major.university
+                    )
+                    folder_to_edit.staff_member = new_lecturer
+                elif staff_id_select and staff_id_select.strip().isdigit():
+                    folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
+
+                if folder_color:
+                    folder_to_edit.color = folder_color
+                folder_to_edit.save()
+
+                if folder_to_edit.staff_member and rating_val.isdigit() and int(rating_val) > 0:
+                    rating_int = int(rating_val)
+                    StaffReview.objects.update_or_create(
+                        staff_member=folder_to_edit.staff_member,
+                        user=request.user,
+                        defaults={'rating': rating_int, 'review_text': review_text.strip()}
+                    )
+                    messages.success(request, 'התיקייה והדירוג עודכנו!')
+
+            if open_this_folder:
+                return redirect('course_detail_folder', course_id=course.id, folder_id=open_this_folder)
+            return redirect('course_detail', course_id=course.id)
+
+        elif action == 'quick_upload':
+            uploaded_files = request.FILES.getlist('file')
+            f_id = request.POST.get('folder_id')
+            p_folder = None
+
+            if f_id and f_id not in ['root', 'null', 'None']:
+                p_folder = get_object_or_404(Folder, id=f_id, course=course)
+
+            from core.utils import GLOBAL_MAX_FILE_SIZE_MB
+            uploaded_count = 0
+            for uploaded_file in uploaded_files:
+                if uploaded_file.size <= GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
+                    Document.objects.create(
+                        course=course,
+                        folder=p_folder,
+                        title=os.path.splitext(uploaded_file.name)[0],
+                        file=uploaded_file,
+                        uploaded_by=request.user,
+                        staff_member=p_folder.staff_member if p_folder else None
+                    )
+                    request.user.profile.earn_coins(1)
+                    uploaded_count += 1
+            return JsonResponse({'success': True, 'count': uploaded_count})
+
+    all_folders = Folder.objects.filter(course=course).select_related('staff_member')
+    all_documents = Document.objects.filter(course=course).select_related(
+        'uploaded_by', 'staff_member'
+    ).prefetch_related('likes').order_by('-upload_date')
+
+    context = {
+        'course': course,
+        'folders': all_folders,
+        'documents': all_documents,
+        'uni_lecturers': AcademicStaff.objects.filter(university=course.major.university).order_by('name'),
+        'target_folder_id': open_this_folder,
+    }
+    return render(request, 'core/course_detail.html', context)
+
+@login_required
+def add_course(request):
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            c = form.save()
+            request.user.profile.earn_coins(5)
+            messages.success(request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
+            return redirect('course_detail', course_id=c.id)
+    else:
+        form = CourseForm(initial={'major': request.GET.get('major_id'), 'year': request.GET.get('year')})
+    return render(request, 'core/add_course.html', {'form': form})
+
+@login_required
+def toggle_favorite_course(request, course_id):
+    if request.method == 'POST':
+        course = get_object_or_404(Course, id=course_id)
+        profile = request.user.profile
+
+        selection, created = UserCourseSelection.objects.get_or_create(
+            user=request.user,
+            course=course
+        )
+
+        if course in profile.favorite_courses.all():
+            profile.favorite_courses.remove(course)
+            selection.is_starred = False
+            is_favorite = False
+        else:
+            profile.favorite_courses.add(course)
+            selection.is_starred = True
+            is_favorite = True
+
+        selection.save()
+        return JsonResponse({'is_favorite': is_favorite})
+    return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)
+
+@login_required
+def set_semester_lecturer(request, course_id):
+    if request.method == 'POST':
+        c = get_object_or_404(Course, id=course_id)
+        y, s = request.POST.get('academic_year'), request.POST.get('semester')
+        lid, nln = request.POST.get('lecturer_id'), request.POST.get('new_lecturer_name')
+        lec = None
+        if nln:
+            lec, _ = Lecturer.objects.get_or_create(name=nln.strip(), university=c.major.university)
+        elif lid:
+            lec = get_object_or_404(Lecturer, id=lid)
+        if lec:
+            CourseSemesterStaff.objects.update_or_create(course=c, academic_year=y, semester=s,
+                                                         defaults={'staff_member': lec})
+            messages.success(request, 'המרצה שויך בהצלחה לסמסטר!')
+    return redirect('course_detail', course_id=course_id)
+
+# ==========================================
+# 3. סגל אקדמי (Staff)
+# ==========================================
+
+def lecturers_index(request):
+    uid = request.GET.get('university')
+    staff_members = AcademicStaff.objects.filter(university_id=uid) if uid else AcademicStaff.objects.all()
+    staff_members = staff_members.order_by('-average_rating')
+
+    for staff in staff_members:
+        staff.display_name = staff.privacy_name
+
+    return render(request, 'core/lecturers_index.html', {
+        'staff_members': staff_members,
+        'universities': University.objects.all(),
+        'selected_uni': get_object_or_404(University, id=uid) if uid else None
+    })
+
+def staff_detail(request, staff_id):
+    staff = get_object_or_404(AcademicStaff, id=staff_id)
+    reviews = staff.reviews.all().order_by('-created_at')
+
+    total = reviews.count()
+    ratings_dist = {i: {'count': reviews.filter(rating=i).count(),
+                        'percentage': (reviews.filter(rating=i).count() / total * 100 if total > 0 else 0)}
+                    for i in range(1, 6)}
+
+    courses = Course.objects.filter(
+        Q(semester_staff__staff_member=staff) | Q(folders__staff_member=staff)
+    ).distinct()
+
+    return render(request, 'core/staff_detail.html', {
+        'staff': staff,
+        'display_name': staff.privacy_name,
+        'reviews': reviews,
+        'ratings_dist': ratings_dist,
+        'courses': courses,
+    })
+
+@login_required
+def rate_staff(request, staff_id):
+    if request.method == 'POST':
+        staff = get_object_or_404(AcademicStaff, id=staff_id)
+        rating = int(request.POST.get('rating', 0))
+        text = request.POST.get('review_text', '')
+
+        if 1 <= rating <= 5:
+            review, created = StaffReview.objects.update_or_create(
+                staff_member=staff, user=request.user,
+                defaults={'rating': rating, 'review_text': text}
+            )
+            from django.db.models import Avg
+            avg = staff.reviews.aggregate(Avg('rating'))['rating__avg']
+            staff.average_rating = round(avg, 1)
+            staff.save()
+
+            if created:
+                request.user.profile.earn_coins(2)
+            messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
+    return redirect('staff_detail', staff_id=staff.id)

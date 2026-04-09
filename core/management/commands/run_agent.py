@@ -50,7 +50,7 @@ class DjangoCoreScanner(BaseScanner):
     def __init__(self, base_dir, app_name='core'):
         super().__init__(base_dir)
         self.app_dir = self.base_dir / app_name
-        self.target_files = ['models.py', 'views.py', 'urls.py', 'forms.py']
+        self.target_files = ['models.py', 'views_legacy.py', 'urls.py', 'forms.py']
 
     def scan(self):
         for file_name in self.target_files:
@@ -155,7 +155,7 @@ class Command(BaseCommand):
             ## 🌳 1. עץ הפרויקט ותפקידי הקבצים
             First, display the project tree layout using a markdown code block. 
             Then, provide a categorized list of the files (e.g., Configuration, Models, Views, Templates, Scripts). 
-            For each file, explain its specific role, what it is responsible for, and how it inherits from or connects to other files (e.g., "views.py imports forms from forms.py and models from models.py to render the logic").
+            For each file, explain its specific role, what it is responsible for, and how it inherits from or connects to other files (e.g., "views_legacy.py imports forms from forms.py and models from models.py to render the logic").
 
             ## 📈 2. תמונת מצב וציון בריאות
             Give a brief overview of the project state. Give a 'Health Score' out of 100 based on code cleanliness, security, and structure.
