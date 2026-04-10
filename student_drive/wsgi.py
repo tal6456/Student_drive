@@ -1,4 +1,8 @@
 """
+מאד דומה לקובץ ASGI.
+"""
+
+"""
 WSGI config for student_drive project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.

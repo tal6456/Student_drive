@@ -1,3 +1,7 @@
+"""
+סקריפט לייבוא נתונים.
+"""
+
 import os
 import django
 

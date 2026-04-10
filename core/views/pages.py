@@ -1,3 +1,14 @@
+
+"""
+הקובץ מטפל ב:
+1. דפים משפטיים וסטטיים: תנאי שימוש, פרטיות ונגישות.
+2. דף תרומות: ניהול הקשר הכלכלי עם המשתמשים.
+3. מערכת משוב (Feedback): איסוף תקלות והצעות מהמשתמשים (כולל צילומי מסך).
+4. לוח בקרה למנהלים (Analytics Dashboard): ניתוח נתונים בזמן אמת על שימוש בקבצים, 
+   הורדות, והתפלגות משתמשים לפי פקולטות.
+5. ניהול שגיאות: דפי 404 ו-500 מעוצבים לחוויית משתמש טובה יותר.
+"""
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
