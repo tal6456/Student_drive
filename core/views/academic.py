@@ -132,18 +132,25 @@ def live_search(request):
 @login_required
 def global_search(request):
     query = request.GET.get('q', '').strip()
-    universities, courses, documents, lecturers, users = [], [], [], [], []
+    universities, courses, documents, lecturers = [], [], [], []
 
     if query:
+        # חיפוש מוסדות וקורסים (הקוד הקיים שלך)
         universities = University.objects.filter(name__icontains=query)[:5]
         query_words = query.split()
         course_q = Q()
         for word in query_words:
             course_q &= (Q(name__icontains=word) | Q(course_number__icontains=word))
         courses = Course.objects.filter(course_q).select_related('major__university')[:15]
+        
+        # --- השדרוג שלנו: חיפוש בתוך תוכן הקבצים ---
         documents = Document.objects.filter(
-            Q(title__icontains=query) | Q(course__name__icontains=query)
-        ).select_related('course')[:15]
+            Q(title__icontains=query) | 
+            Q(file_content__icontains=query) | # חיפוש בתוך הטקסט שחילצנו מה-PDF
+            Q(course__name__icontains=query)
+        ).select_related('course').distinct()[:15]
+        # ------------------------------------------
+
         lecturers = Lecturer.objects.filter(name__icontains=query)[:10]
 
     context = {

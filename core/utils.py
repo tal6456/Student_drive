@@ -126,3 +126,53 @@ def check_deletion_permission(user, obj, obj_type):
         return True, ""
 
     return False, "סוג אובייקט לא מוכר למערכת המחיקות."
+
+# ==============================================
+# 4. חילוץ טקסט מקבצי PDF (עבור החיפוש החכם)
+# ==============================================
+def extract_text_from_pdf(file_field):
+    """
+    פותחת קובץ PDF, שואבת ממנו את הטקסט הנקי ומחזירה אותו כסטרינג.
+    מוגבל ל-20 עמודים כדי לשמור על ביצועים מהירים.
+    """
+    import PyPDF2 # שמתי פה את הספרייה שלא יכביד על כל האתר אם לא נכנסו לזה.
+    text = ""
+    try:
+        # פתיחת הקובץ לקריאה
+        pdf_reader = PyPDF2.PdfReader(file_field)
+        
+        # בדיקה כמה עמודים יש (מקסימום 20)
+        num_pages = min(len(pdf_reader.pages), 20)
+        
+        for page_num in range(num_pages):
+            page = pdf_reader.pages[page_num]
+            # חילוץ הטקסט מהעמוד והוספה למחרוזת
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + " "
+                
+    except Exception as e:
+        # הדפסת השגיאה ללוג של השרת לצורך דיבוג
+        print(f"Error extracting text from PDF: {e}")
+    
+    return text.strip()
+
+# ==============================================
+# 5. חילוץ טקסט מקבצי Word (.docx) (עבור החיפוש החכם)
+# ==============================================        
+
+from docx import Document as DocxReader
+
+def extract_text_from_docx(file_field):
+    """מחלץ טקסט מקובץ Word (.docx)"""
+    try:
+        # פותח את הקובץ ישירות מהשדה של ג'נגו
+        doc = DocxReader(file_field)
+        full_text = []
+        for para in doc.paragraphs:
+            if para.text:
+                full_text.append(para.text)
+        return '\n'.join(full_text)
+    except Exception as e:
+        print(f"Error extracting word text: {e}")
+        return ""

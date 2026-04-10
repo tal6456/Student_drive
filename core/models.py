@@ -291,6 +291,7 @@ class Document(models.Model):
 
     # חיבור הוולידטור החכם לשדה הקובץ
     file = models.FileField(upload_to='documents/', validators=[validate_file_size])
+    file_content = models.TextField(blank=True, null=True, verbose_name="תוכן הקובץ לחיפוש")
 
     file_extension = models.CharField(max_length=10, blank=True)
     file_size_bytes = models.PositiveIntegerField(default=0)
@@ -308,17 +309,29 @@ class Document(models.Model):
         default='none',
         verbose_name="תיוג אישי"
     )
-
     def save(self, *args, **kwargs):
         if self.file:
-            # עדכון סיומת הקובץ
+            # 1. עדכון סיומת וגודל הקובץ (הקוד המקורי שלך)
             self.file_extension = os.path.splitext(self.file.name)[1].lower()
             try:
                 self.file_size_bytes = self.file.size
             except:
                 pass
 
-            # --- לוגיקה לכיווץ תמונות ל-WebP ---
+            # 2. חילוץ טקסט לחיפוש חכם - (PDF + Word)
+            if not self.file_content:
+                try:
+                    if self.file_extension == '.pdf':
+                        from .utils import extract_text_from_pdf
+                        self.file_content = extract_text_from_pdf(self.file)
+                    
+                    elif self.file_extension == '.docx':
+                        from .utils import extract_text_from_docx
+                        self.file_content = extract_text_from_docx(self.file)
+                except Exception as e:
+                    print(f"Text extraction failed: {e}")
+
+            # 3. לוגיקה לכיווץ תמונות ל-WebP (הקוד המקורי שלך)
             image_extensions = ['.jpg', '.jpeg', '.png']
             if self.file_extension in image_extensions and not self.file.name.endswith('.webp'):
                 try:
@@ -333,6 +346,7 @@ class Document(models.Model):
 
         super().save(*args, **kwargs)
 
+        
     @property
     def total_likes(self):
         return self.likes.count()
