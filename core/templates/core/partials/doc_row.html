@@ -85,6 +85,13 @@
     <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2 doc-actions-group">
 
         {% if user.is_authenticated %}
+            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-1 transition-all"
+                    style="border: 1px solid var(--gd-border); background-color: var(--gd-bg); color: var(--gd-text-muted);"
+                    data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" title="שאלות והערות">
+                <i class="far fa-comment-dots"></i>
+                <span class="fw-bold">{{ doc.comments.count }}</span>
+            </button>
+
             <button onclick="handleDocumentLike({{ doc.id }}, this)"
                     class="btn btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-1 transition-all like-btn-responsive"
                     style="border: 1px solid {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-border){% endif %}; background-color: {% if user in doc.likes.all %}rgba(26, 115, 232, 0.1){% else %}var(--gd-bg){% endif %}; color: {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-text-muted){% endif %};"
@@ -167,3 +174,117 @@
         </div>
     </div>
 </div>
+
+{% if user.is_authenticated %}
+<div class="modal fade" id="commentModal{{ doc.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ doc.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text);">
+            <div class="modal-header border-bottom" style="border-color: var(--gd-border) !important;">
+                <h5 class="modal-title fw-bold" id="commentModalLabel{{ doc.id }}">
+                    <i class="far fa-comments me-2 text-primary"></i> שאלות על: {{ doc.title|truncatechars:30 }}
+                </h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--gd-icon-filter);"></button>
+            </div>
+            <div class="modal-body">
+                <div id="comments-list-{{ doc.id }}" class="comments-container mb-3 px-1" style="max-height: 350px; overflow-y: auto;">
+                    {% for comment in doc.comments.all %}
+                        <div class="d-flex gap-2 mb-3">
+                            {% if comment.user.profile.profile_picture %}
+                                <img src="{{ comment.user.profile.profile_picture.url }}" class="rounded-circle flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    {{ comment.user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold" style="font-size: 0.85rem;">{{ comment.user.username }}</span>
+                                    <small class="text-muted" style="font-size: 0.7rem;">{{ comment.created_at|timesince }}</small>
+                                </div>
+                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">{{ comment.text }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 opacity-50">
+                            <i class="far fa-comment-dots fa-3x mb-2"></i>
+                            <p>אין עדיין שאלות על הקובץ הזה. תהיה הראשון לשאול!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <form action="{% url 'add_comment_doc' doc.id %}" method="POST" class="mt-3 ajax-comment-form">
+                    {% csrf_token %}
+                    <div class="input-group shadow-sm rounded-pill overflow-hidden border" style="border-color: var(--gd-border) !important;">
+                        <input type="text" name="comment_text" class="form-control border-0 px-3 shadow-none" 
+                               placeholder="כתוב שאלה או הערה..." required 
+                               style="background-color: var(--gd-bg); color: var(--gd-text);">
+                        <button class="btn btn-primary border-0 px-3" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+// השימוש ב-off מבטיח שהאירוע לא יירשם פעמיים אם הדף נטען מחדש חלקית
+$(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form', function(e) {
+    e.preventDefault(); 
+    
+    var form = $(this);
+    var commentsList = form.closest('.modal-content').find('.comments-container');
+    var submitBtn = form.find('button[type="submit"]');
+    var inputText = form.find('input[name="comment_text"]');
+    
+    // בדיקה שהכפתור לא כבר בתהליך שליחה
+    if (submitBtn.prop('disabled')) return;
+
+    submitBtn.prop('disabled', true).css('opacity', '0.7'); 
+
+    $.ajax({
+        type: 'POST',
+        url: form.attr('action'),
+        data: form.serialize(),
+        success: function(response) {
+            if (response.status === 'success') {
+                // בניית ה-HTML של התגובה החדשה
+                var newComment = `
+                    <div class="d-flex gap-2 mb-3">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                            ${response.user.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="font-size: 0.85rem;">${response.user}</span>
+                                <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
+                            </div>
+                            <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${response.text}</p>
+                        </div>
+                    </div>`;
+                
+                // הזרקה לרשימה וגלילה אוטומטית למטה
+                commentsList.append(newComment);
+                commentsList.animate({ scrollTop: commentsList[0].scrollHeight }, 300);
+                
+                // ניקוי תיבת הטקסט
+                inputText.val('');
+                
+                // הסרת הודעת ה-"אין תגובות" במידה וזו התגובה הראשונה
+                commentsList.find('.text-center.py-4').fadeOut(200);
+            }
+        },
+        error: function() {
+            alert('שגיאה בשליחת התגובה. נסה שוב.');
+        },
+        complete: function() {
+            // החזרת הכפתור למצב פעיל בכל מקרה (הצלחה או שגיאה)
+            submitBtn.prop('disabled', false).css('opacity', '1');
+        }
+    });
+});
+</script>
+{% endif %}

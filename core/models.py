@@ -26,6 +26,7 @@ import uuid
 from .utils import compress_to_webp, validate_file_size
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
 # ==========================================
 # 0. מערכת המשתמשים (RBAC - Role Based Access Control)
 # ==========================================
@@ -346,7 +347,7 @@ class Document(models.Model):
 
         super().save(*args, **kwargs)
 
-        
+
     @property
     def total_likes(self):
         return self.likes.count()
@@ -668,3 +669,18 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ['timestamp']   
+
+
+class Comment(models.Model):
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')
+    # כאן השינוי - במקום User כותבים settings.AUTH_USER_MODEL
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        # שים לב: אם במודל המשתמש שלך אין username אלא email, תשנה פה ל-self.user.email
+        return f"Comment by {self.user} on {self.document.title}"

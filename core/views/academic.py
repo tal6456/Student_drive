@@ -25,9 +25,10 @@ from django.contrib.auth import get_user_model
 from core.models import (
     University, Major, Course, Folder, Document,
     AcademicStaff, Lecturer, StaffReview, CourseSemesterStaff,
-    UserProfile, UserCourseSelection
+    UserProfile, UserCourseSelection, Comment
 )
 from core.forms import CourseForm
+
 
 User = get_user_model()
 
@@ -405,3 +406,24 @@ def rate_staff(request, staff_id):
                 request.user.profile.earn_coins(2)
             messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
     return redirect('staff_detail', staff_id=staff.id)
+
+
+@login_required
+def add_comment_doc(request, document_id):
+    if request.method == "POST":
+        text = request.POST.get('comment_text')
+        if text:
+            document = get_object_or_404(Document, id=document_id)
+            comment = Comment.objects.create(
+                document=document,
+                user=request.user,
+                text=text
+            )
+            # במקום redirect, אנחנו מחזירים תשובה שה-JavaScript יודע לקרוא
+            return JsonResponse({
+                'status': 'success',
+                'user': request.user.username,
+                'text': comment.text
+            })
+    
+    return JsonResponse({'status': 'error'}, status=400)

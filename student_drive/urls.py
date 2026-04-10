@@ -30,7 +30,6 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.urls import path
 # וגם
-from core import views
 
 urlpatterns = [
 # ==========================================
@@ -76,6 +75,8 @@ urlpatterns = [
     path('community/<int:community_id>/join/', views.join_community, name='join_community'),
     path('communities/discover/', views.discover_communities, name='discover_communities'),
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
+    #הוספת תגובה לקובץ
+    path('document/<int:document_id>/comment/', views.add_comment_doc, name='add_comment_doc'),
 
     # חיפושים דינמיים ו-API
     path('search/live/', views.live_search, name='live_search'),
