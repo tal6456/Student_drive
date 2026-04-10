@@ -25,7 +25,7 @@ from django.contrib.auth import get_user_model
 from core.models import (
     University, Major, Course, Folder, Document,
     AcademicStaff, Lecturer, StaffReview, CourseSemesterStaff,
-    UserProfile, UserCourseSelection, Comment
+    UserProfile, UserCourseSelection, Comment, DocumentComment
 )
 from core.forms import CourseForm
 
@@ -414,7 +414,7 @@ def add_comment_doc(request, document_id):
         text = request.POST.get('comment_text')
         if text:
             document = get_object_or_404(Document, id=document_id)
-            comment = Comment.objects.create(
+            comment = DocumentComment.objects.create(
                 document=document,
                 user=request.user,
                 text=text

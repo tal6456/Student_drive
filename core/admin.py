@@ -22,7 +22,7 @@ from django.http import HttpResponse
 from .models import (
     CustomUser, UserProfile, Friendship,
     University, Major, Course, Folder, Document,
-    Community, Post, MarketplacePost, VideoPost, Comment,
+    Community, Post, MarketplacePost, VideoPost, Comment,DocumentComment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
     Report, Feedback,Notification, UserCourseSelection
 )
@@ -174,7 +174,7 @@ class FeedbackAdmin(ModerationAdmin):
 # מודלים שמשתמשים ב-BaseAdmin ללא לוגיקה מיוחדת
 admin.site.register([
     University, Major, Folder, Community, Post,
-    MarketplacePost, VideoPost, Comment, Friendship,
+    MarketplacePost, VideoPost, Comment, Friendship,DocumentComment,
     StaffReview, AcademicStaff, Lecturer, TeachingAssistant,
     CourseSemesterStaff,Notification, UserCourseSelection
 ], BaseAdmin)

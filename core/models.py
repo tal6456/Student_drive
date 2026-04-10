@@ -671,7 +671,7 @@ class ChatMessage(models.Model):
         ordering = ['timestamp']   
 
 
-class Comment(models.Model):
+class DocumentComment(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')
     # כאן השינוי - במקום User כותבים settings.AUTH_USER_MODEL
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
