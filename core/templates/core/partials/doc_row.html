@@ -85,7 +85,8 @@
     <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2 doc-actions-group">
 
         {% if user.is_authenticated %}
-            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-1 transition-all"
+            {# כפתור הערות למחשב בלבד - d-none d-md-flex #}
+            <button type="button" class="btn btn-sm rounded-pill px-3 shadow-none d-none d-md-flex align-items-center gap-1 transition-all"
                     style="border: 1px solid var(--gd-border); background-color: var(--gd-bg); color: var(--gd-text-muted);"
                     data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" title="שאלות והערות">
                 <i class="far fa-comment-dots"></i>
@@ -117,6 +118,16 @@
             </button>
 
             <ul id="customMenu{{ unique_id|default:doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+                {# כפתור הערות לאפליקציה בלבד בתוך ה-Menu - d-md-none #}
+                {% if user.is_authenticated %}
+                <li class="d-md-none">
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" style="color: var(--gd-text);">
+                        <i class="far fa-comment-dots text-primary text-center" style="width: 20px;"></i> שאלות והערות ({{ doc.comments.count }})
+                    </a>
+                </li>
+                <li class="d-md-none"><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+                {% endif %}
+
                 <li>
                     <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;" style="color: var(--gd-text);">
                         <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
@@ -231,7 +242,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-// השימוש ב-off מבטיח שהאירוע לא יירשם פעמיים אם הדף נטען מחדש חלקית
 $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form', function(e) {
     e.preventDefault(); 
     
@@ -240,7 +250,6 @@ $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form
     var submitBtn = form.find('button[type="submit"]');
     var inputText = form.find('input[name="comment_text"]');
     
-    // בדיקה שהכפתור לא כבר בתהליך שליחה
     if (submitBtn.prop('disabled')) return;
 
     submitBtn.prop('disabled', true).css('opacity', '0.7'); 
@@ -251,7 +260,6 @@ $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form
         data: form.serialize(),
         success: function(response) {
             if (response.status === 'success') {
-                // בניית ה-HTML של התגובה החדשה
                 var newComment = `
                     <div class="d-flex gap-2 mb-3">
                         <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
@@ -266,14 +274,9 @@ $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form
                         </div>
                     </div>`;
                 
-                // הזרקה לרשימה וגלילה אוטומטית למטה
                 commentsList.append(newComment);
                 commentsList.animate({ scrollTop: commentsList[0].scrollHeight }, 300);
-                
-                // ניקוי תיבת הטקסט
                 inputText.val('');
-                
-                // הסרת הודעת ה-"אין תגובות" במידה וזו התגובה הראשונה
                 commentsList.find('.text-center.py-4').fadeOut(200);
             }
         },
@@ -281,7 +284,6 @@ $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form
             alert('שגיאה בשליחת התגובה. נסה שוב.');
         },
         complete: function() {
-            // החזרת הכפתור למצב פעיל בכל מקרה (הצלחה או שגיאה)
             submitBtn.prop('disabled', false).css('opacity', '1');
         }
     });
