@@ -16,7 +16,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.utils import timezone
 from django.contrib.auth import logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
@@ -38,7 +38,7 @@ def profile(request):
     download_logs = DownloadLog.objects.filter(user=request.user).select_related('document__course').order_by('-download_date')
 
     total_downloads = uploaded_files.aggregate(Sum('download_count'))['download_count__sum'] or 0
-    total_likes_received = sum(d.total_likes for d in uploaded_files)
+    total_likes_received = uploaded_files.annotate(num_likes=Count('likes')).aggregate(total=Sum('num_likes'))['total'] or 0
 
     context = {
         'uploaded_files': uploaded_files,
@@ -132,17 +132,6 @@ def change_password(request):
         'has_password': has_password
     })
 
-
-@login_required
-def request_user_data(request):
-    if request.method == 'POST':
-        profile = request.user.profile
-        profile.last_data_request = timezone.now()
-        profile.save()
-        messages.success(request, 'בקשתך התקבלה! נרכז עבורך את כל המידע ונשלח לך עותק למייל תוך 48 שעות.')
-    return redirect('settings')
-
-
 @login_required
 def delete_account(request):
     if request.method == 'POST':
@@ -164,7 +153,7 @@ def notifications_list(request):
             notification.delete()
             return redirect(target_url)
 
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    notifications = Notification.objects.filter(user=request.user).select_related('sender').order_by('-created_at')
     notifications.filter(is_read=False).update(is_read=True)
 
     return render(request, 'core/notifications.html', {
