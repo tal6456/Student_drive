@@ -29,7 +29,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 # ייבוא רק של המודלים הקשורים לקהילה
 from core.models import Community, Post, MarketplacePost, VideoPost, Comment
@@ -72,8 +72,13 @@ def community_feed(request):
     # --- התיקון הקריטי להזחות ולמניעת N+1 ---
     if current_community:
         posts = Post.objects.filter(community=current_community).select_related(
-            'user', 'user__profile', 'university', 'community'
-        ).prefetch_related('likes', 'comments')
+            'user', 'user__profile', 'university', 'community',
+            'marketplacepost', 'videopost'  # מונע שאילתות בדיקת סוג פוסט בטמפלייט
+        ).prefetch_related(
+            'likes',
+            # מביא את התגובות יחד עם המשתמשים והפרופילים שכתבו אותן!
+            Prefetch('comments', queryset=Comment.objects.select_related('user', 'user__profile'))
+        )
     else:
         posts = Post.objects.none()
 

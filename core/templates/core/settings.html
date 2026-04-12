@@ -29,122 +29,105 @@
             </div>
         </div>
 
-        <div class="col-md-8 col-lg-9 ps-lg-5 pt-3">
+        <div class="col-md-8 col-lg-9 ps-lg-4">
+            
+            <div class="card border-0 shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+                <div class="card-body p-4 p-md-5">
 
-            <form method="post" action="{% url 'settings' %}" enctype="multipart/form-data">
-                {% csrf_token %}
+                    <form method="post" action="{% url 'settings' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
 
-                <div id="profile-section" class="mb-5 pb-4 border-bottom" style="border-color: var(--border-color) !important;">
-                    <h4 class="fw-bold mb-4" style="color: var(--text-main);"><i class="fas fa-camera text-primary me-2"></i> תמונת פרופיל</h4>
+                        <div id="profile-section" class="mb-5 pb-4 border-bottom" style="border-color: var(--gd-border) !important;">
+                            <h5 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-camera text-primary ms-2"></i> תמונת פרופיל</h5>
 
-                    <div class="d-flex align-items-center gap-4 flex-wrap">
-                        <div class="position-relative">
-                            {% if user.profile.profile_picture %}
-                                <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle shadow-sm border" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid var(--card-bg) !important;">
-                            {% else %}
-                                <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center border" style="width: 120px; height: 120px;">
-                                    <i class="fas fa-user fa-4x text-primary opacity-50"></i>
+                            <div class="d-flex align-items-center gap-4 flex-wrap flex-sm-nowrap">
+                                <div class="position-relative flex-shrink-0">
+                                    {% if user.profile.profile_picture %}
+                                        <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle shadow-sm" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid var(--gd-bg);">
+                                    {% else %}
+                                        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center border" style="width: 100px; height: 100px; border-color: var(--gd-border) !important;">
+                                            <i class="fas fa-user fa-3x text-primary opacity-50"></i>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            {% endif %}
-                        </div>
 
-                        <div class="flex-grow-1" style="min-width: 250px;">
-                            <label class="form-label fw-bold text-muted small">העלאת תמונה</label>
-                            <input type="file" name="profile_picture" class="form-control rounded-pill border-secondary border-opacity-25 bg-light dark-input" accept="image/*">
-                            <div class="form-text mt-2 text-muted small">התמונה תופיע לצד הקבצים והפוסטים שלך.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="display" class="mb-5 pb-4 border-bottom" style="border-color: var(--border-color) !important;">
-                    <h4 class="fw-bold mb-4" style="color: var(--text-main);"><i class="fas fa-paint-roller text-primary me-2"></i> תצוגה ושפה</h4>
-
-                    <div class="row align-items-center mb-4">
-                        <div class="col-sm-4">
-                            <label class="fw-bold text-muted mb-2 mb-sm-0">ערכת נושא (Theme):</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <div class="d-flex flex-wrap gap-2">
-                                <div>
-                                    <input type="radio" class="btn-check" name="theme_preference" id="theme-light" value="light" {% if user.profile.theme_preference == 'light' or not user.profile.theme_preference %}checked{% endif %}>
-                                    <label class="btn btn-outline-secondary rounded-pill px-3 py-2 gd-btn d-flex align-items-center gap-2" for="theme-light">
-                                        <i class="fas fa-sun text-warning"></i> יום
+                                <div class="flex-grow-1">
+                                    <label for="profile_upload" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold cursor-pointer transition-all hover-scale" style="background-color: var(--gd-bg);">
+                                        <i class="fas fa-upload ms-2"></i> בחר תמונה חדשה
                                     </label>
-                                </div>
-                                <div>
-                                    <input type="radio" class="btn-check" name="theme_preference" id="theme-dark" value="dark" {% if user.profile.theme_preference == 'dark' %}checked{% endif %}>
-                                    <label class="btn btn-outline-secondary rounded-pill px-3 py-2 gd-btn d-flex align-items-center gap-2" for="theme-dark">
-                                        <i class="fas fa-moon text-info"></i> לילה
-                                    </label>
+                                    <input type="file" name="profile_picture" id="profile_upload" class="d-none" accept="image/*">
+                                    <div class="form-text mt-2 small" style="color: var(--gd-text-muted);">מומלץ להעלות תמונה מרובעת (JPG, PNG).</div>
                                 </div>
                             </div>
-                                <div>
-                                    <input type="radio" class="btn-check" name="theme_preference" id="theme-dark" value="dark" {% if user.profile.theme_preference == 'dark' %}checked{% endif %}>
-                                    <label class="btn btn-outline-secondary rounded-pill px-3 py-2 gd-btn d-flex align-items-center gap-2" for="theme-dark">
-                                        <i class="fas fa-moon text-info"></i> לילה
-                                    </label>
+                        </div>
+
+                        <div id="display" class="mb-5 pb-4 border-bottom" style="border-color: var(--gd-border) !important;">
+                            <h5 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-paint-roller text-warning ms-2"></i> תצוגת המערכת</h5>
+
+                            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+                                <label class="fw-bold mb-0" style="color: var(--gd-text-muted); min-width: 120px;">ערכת נושא:</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div>
+                                        <input type="radio" class="btn-check" name="theme_preference" id="theme-light" value="light" {% if user.profile.theme_preference == 'light' or not user.profile.theme_preference %}checked{% endif %}>
+                                        <label class="btn btn-outline-secondary rounded-pill px-4 py-2 gd-btn d-flex align-items-center gap-2" for="theme-light">
+                                            <i class="fas fa-sun text-warning"></i> יום
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="btn-check" name="theme_preference" id="theme-dark" value="dark" {% if user.profile.theme_preference == 'dark' %}checked{% endif %}>
+                                        <label class="btn btn-outline-secondary rounded-pill px-4 py-2 gd-btn d-flex align-items-center gap-2" for="theme-dark">
+                                            <i class="fas fa-moon text-info"></i> לילה
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-text mt-2 text-muted small">במצב "אוטומטי" האתר יתאים את עצמו להגדרות המערכת שלך.</div>
                         </div>
-                    </div>
-                </div>
 
-                <div id="privacy" class="mb-5 pb-4 border-bottom" style="border-color: var(--border-color) !important;">
-                    <h4 class="fw-bold mb-4" style="color: var(--text-main);"><i class="fas fa-user-shield text-success me-2"></i> פרטיות ואבטחה</h4>
+                        <div id="privacy" class="mb-5 pb-4 border-bottom" style="border-color: var(--gd-border) !important;">
+                            <h5 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-user-shield text-success ms-2"></i> פרטיות ואבטחה</h5>
 
-                    <div class="row align-items-center mb-4">
-                        <div class="col-sm-4">
-                            <label class="fw-bold text-muted mb-2 mb-sm-0">מי יכול לראות את הפרופיל שלי?</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <select name="profile_visibility" class="form-select rounded-3 py-2 px-3 border-secondary border-opacity-25 dark-input" style="max-width: 350px;">
-                                <option value="public" {% if user.profile.profile_visibility == 'public' %}selected{% endif %}>🌐 כולם (ציבורי)</option>
-                                <option value="users_only" {% if user.profile.profile_visibility == 'users_only' %}selected{% endif %}>🎓 רק סטודנטים מחוברים</option>
-                                <option value="private" {% if user.profile.profile_visibility == 'private' %}selected{% endif %}>🔒 רק אני (פרטי)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row align-items-start mb-4">
-                        <div class="col-sm-4"><label class="fw-bold text-muted small">טבלת האלופים</label></div>
-                        <div class="col-sm-8 d-flex align-items-start gap-3">
-                            <div class="form-check form-switch m-0 p-0">
-                                <input class="form-check-input mx-3 mt-1" type="checkbox" role="switch" name="show_coins_publicly" {% if user.profile.show_coins_publicly %}checked{% endif %} style="transform: scale(1.3);">
+                            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-4">
+                                <label class="fw-bold mb-0" style="color: var(--gd-text-muted); min-width: 180px;">מי יכול לראות אותי?</label>
+                                <select name="profile_visibility" class="form-select rounded-pill py-2 px-3 shadow-sm border-0" style="max-width: 300px; background-color: var(--gd-bg); color: var(--gd-text);">
+                                    <option value="public" {% if user.profile.profile_visibility == 'public' %}selected{% endif %}>🌐 כולם (ציבורי)</option>
+                                    <option value="users_only" {% if user.profile.profile_visibility == 'users_only' %}selected{% endif %}>🎓 רק סטודנטים מחוברים</option>
+                                    <option value="private" {% if user.profile.profile_visibility == 'private' %}selected{% endif %}>🔒 רק אני (פרטי)</option>
+                                </select>
                             </div>
-                            <span class="text-muted small">הצג את המוניטין שלי לציבור (מומלץ כדי לקבל הכרה).</span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="text-start mb-5 pb-5">
-                    <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg hover-scale" style="background-color: #1a73e8; border: none; font-size: 1.1rem;">
-                        <i class="fas fa-save me-2"></i> שמור את כל ההגדרות
-                    </button>
-                </div>
-            </form>
-
-            <div id="gdpr" class="mt-5 pt-4">
-                <h4 class="fw-bold text-danger mb-4"><i class="fas fa-database me-2"></i> ניהול נתונים וחשבון</h4>
-
-                <div class="d-flex flex-column gap-4">
-                    
-                    <div class="card border-danger border-opacity-25 rounded-4 shadow-sm gdpr-card" style="background-color: rgba(220, 53, 69, 0.03);">
-                        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-4">
-                            <div class="flex-grow-1">
-                                <h6 class="fw-bold text-danger mb-2 fs-5"><i class="fas fa-user-slash me-2"></i> מחיקת חשבון לצמיתות</h6>
-                                <p class="text-muted small mb-0">פעולה זו תמחק לחלוטין את החשבון שלך. הקבצים יישארו כאנונימיים.</p>
+                            <div class="d-flex align-items-center p-3 rounded-4 shadow-sm" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                <div class="form-check form-switch m-0 p-0 d-flex align-items-center gap-3 w-100">
+                                    <input class="form-check-input ms-3 mt-0 flex-shrink-0 cursor-pointer" type="checkbox" role="switch" id="show_coins" name="show_coins_publicly" {% if user.profile.show_coins_publicly %}checked{% endif %} style="width: 2.5em; height: 1.25em; margin-right: 0 !important;">
+                                    <div class="flex-grow-1 text-end">
+                                        <label class="form-check-label fw-bold cursor-pointer mb-1 d-block" for="show_coins" style="color: var(--gd-text);">טבלת האלופים</label>
+                                        <span class="small" style="color: var(--gd-text-muted);">הצג את המוניטין והמטבעות שלי לציבור.</span>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-danger rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                                מחק חשבון
+                        </div>
+
+                        <div class="text-end mt-2">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm hover-scale w-100 w-sm-auto" style="border: none; font-size: 1.1rem;">
+                                שמור את כל ההגדרות <i class="fas fa-check ms-2"></i>
                             </button>
                         </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="gdpr" class="card border-danger border-opacity-25 rounded-4 shadow-sm animate__animated animate__fadeInUp mb-4" style="background-color: rgba(220, 53, 69, 0.03);">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-4">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold text-danger mb-1 fs-5"><i class="fas fa-user-slash ms-2"></i> מחיקת חשבון לצמיתות</h6>
+                        <p class="small mb-0 text-danger opacity-75">פעולה בלתי הפיכה. הקבצים יישארו כאנונימיים.</p>
                     </div>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale flex-shrink-0" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        מחק חשבון
+                    </button>
                 </div>
             </div>
 
         </div>
-    </div>
 </div>
 
 <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
