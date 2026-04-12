@@ -67,6 +67,25 @@
         .action-cards-wrapper { justify-content: center; }
         .action-cards-wrapper > div { width: 25%; }
     }
+   /* תיקוני פרימיום למצב לילה - Welcome Section */
+    [data-theme="dark"] .welcome-badge {
+        background: rgba(123, 97, 255, 0.15) !important;
+        border-color: rgba(123, 97, 255, 0.3) !important;
+    }
+    [data-theme="dark"] .welcome-badge span {
+        color: #a594ff !important; /* סגול בהיר קריא */
+    }
+    [data-theme="dark"] .welcome-description {
+        color: #cbd5e1 !important; /* אפור בהיר לקריאות מקסימלית */
+    }
+    [data-theme="dark"] .welcome-title span {
+        background: linear-gradient(90deg, #9f8dff, #4ade80) !important; /* גרדיאנט זוהר בלילה */
+        -webkit-background-clip: text !important;
+    }
+    [data-theme="dark"] #motivationQuote {
+        color: #4ade80 !important; /* ירוק רענן למוטיבציה */
+        opacity: 1 !important;
+    } 
 </style>
 
 <div class="container mt-4 mb-5 home-container" dir="rtl">
@@ -76,7 +95,7 @@
         <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
                 <div class="welcome-section mb-5 animate__animated animate__fadeIn">
-                    <div class="d-inline-block px-3 py-1 rounded-pill mb-3 shadow-sm" 
+                    <div class="welcome-badge d-inline-block px-3 py-1 rounded-pill mb-3 shadow-sm" 
                          style="background: rgba(26, 115, 232, 0.1); border: 1px solid rgba(26, 115, 232, 0.2);">
                         <span class="small fw-bold text-primary">הבית של הסטודנטים 🎓</span>
                     </div>
@@ -86,7 +105,7 @@
                         <span style="background: linear-gradient(90deg, #7b61ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">מקום אחד.</span>
                     </h1>
                 
-                    <p class="fs-5 mx-auto mb-4" style="color: var(--gd-text-muted); max-width: 750px; line-height: 1.7; font-weight: 400;">
+                    <p class="welcome-description fs-5 mx-auto mb-4" style="color: var(--gd-text-muted); max-width: 750px; line-height: 1.7; font-weight: 400;">
                         מהיום, אף סטודנט לא לומד לבד. ב-<span class="fw-bold text-primary">Student Drive</span> כל לייק הוא עזרה וכל סיכום הוא כוח לקהילה. 
                         הנתינה שלכם צוברת נקודות, והיחד שלנו צובר הצלחות בדרך לתואר.
                     </p>
@@ -95,7 +114,6 @@
                         <p id="motivationQuote" class="fst-italic small mb-0" style="color: var(--gd-primary); letter-spacing: 0.5px; opacity: 0.9;"></p>
                     </div>
                 </div>
-                <p id="motivationQuote" class="mb-4 small" style="color: #888; font-style: italic; min-height: 20px;"></p>
             {% endif %}
 
 <div class="search-container mx-auto" style="max-width: 700px;">
