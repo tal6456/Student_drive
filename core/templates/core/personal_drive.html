@@ -265,74 +265,64 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// פונקציה חסינה שנצמדת לטופס ולא משנה איפה הוא נמצא במסך
+window.submitCommentForm = function(e, form) {
+    e.preventDefault(); // השורת קסם שעוצרת את המעבר לדף הלבן!
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const inputText = form.querySelector('input[name="comment_text"]');
+    const commentsList = form.closest('.modal-content').querySelector('.comments-container');
+
+    if (submitBtn.disabled) return;
     
-    // 1. העברת כל החלונות הקופצים החוצה כדי שיעבדו במובייל
-    document.querySelectorAll('.modal').forEach(function(modal) {
-        document.body.appendChild(modal);
-    });
+    // מניעת לחיצות כפולות
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
 
-    // 2. מאזין שליחת תגובות (AJAX נקי)
-    document.body.addEventListener('submit', function(e) {
-        if (e.target && e.target.classList.contains('ajax-comment-form')) {
-            e.preventDefault();
+    const formData = new FormData(form);
 
-            const form = e.target;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const inputText = form.querySelector('input[name="comment_text"]');
-            const commentsList = form.closest('.modal-content').querySelector('.comments-container');
-
-            if (submitBtn.disabled) return;
-            
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.7';
-
-            const formData = new FormData(form);
-
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const newComment = `
-                        <div class="d-flex gap-2 mb-3 animate__animated animate__fadeIn">
-                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                ${data.user.charAt(0).toUpperCase()}
-                            </div>
-                            <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold" style="font-size: 0.85rem;">${data.user}</span>
-                                    <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
-                                </div>
-                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${data.text}</p>
-                            </div>
-                        </div>`;
-                    
-                    commentsList.insertAdjacentHTML('beforeend', newComment);
-                    commentsList.scrollTop = commentsList.scrollHeight;
-                    inputText.value = '';
-                    
-                    const emptyMsg = commentsList.querySelector('.text-center.py-4');
-                    if (emptyMsg) emptyMsg.style.display = 'none';
-                } else {
-                    alert('שגיאה: ' + (data.error || 'משהו השתבש'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('שגיאה בתקשורת עם השרת.');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-            });
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
         }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const newComment = `
+                <div class="d-flex gap-2 mb-3 animate__animated animate__fadeIn">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        ${data.user.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold" style="font-size: 0.85rem;">${data.user}</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
+                        </div>
+                        <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${data.text}</p>
+                    </div>
+                </div>`;
+            
+            commentsList.insertAdjacentHTML('beforeend', newComment);
+            commentsList.scrollTop = commentsList.scrollHeight; // גלילה למטה
+            inputText.value = ''; // ניקוי השורה
+            
+            const emptyMsg = commentsList.querySelector('.text-center.py-4');
+            if (emptyMsg) emptyMsg.style.display = 'none'; // העלמת הערת ה"אין תגובות"
+        } else {
+            alert('שגיאה: ' + (data.error || 'משהו השתבש'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('שגיאה בתקשורת עם השרת.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
     });
-});
+};
 </script>
 {% endblock %}
