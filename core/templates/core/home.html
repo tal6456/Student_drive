@@ -106,7 +106,7 @@
             letter-spacing: -0.5px !important;
             line-height: 1.1 !important;
         }
-        
+
         .welcome-description {
             font-size: 1rem !important; /* פונט קצת יותר קטן וקריא למובייל */
             padding: 0 10px; /* מוסיף רווח מהצדדים שהטקסט לא ייגע בקצוות המסך */
@@ -122,7 +122,7 @@
         .welcome-section {
             margin-bottom: 30px !important; /* מקטין מרווחים מיותרים */
         }
-        
+
         /* תיקון לגרדיאנט במובייל שלא ייחתך בקיפול שורה */
         .welcome-title span {
             display: inline-block;
@@ -154,7 +154,7 @@
                     </p>
 
                     <div class="mt-4 pt-3 border-top mx-auto" style="max-width: 400px; border-color: var(--gd-border) !important;">
-                        <p id="motivationQuote" class="fst-italic small mb-0" style="color: var(--gd-primary); letter-spacing: 0.5px; opacity: 0.9;"></p>
+                        <p id="motivationQuote" class="fst-italic mb-0" style="color: var(--gd-primary); font-size: 1.1rem; font-weight: 500; letter-spacing: 0.3px;"></p></p>
                     </div>
                 </div>
             {% endif %}
@@ -485,7 +485,24 @@
 </div>
 <script>
     function renderMotivation() {
-        const quotes = ["הדרך לתואר מתחילה בסיכום אחד טוב.", "היום הוא הזדמנות נוספת להיות טוב יותר מאתמול.", "אל תפסיק עד שתהיה גאה בעצמך.", "השקעה בלימודים היא ההשקעה עם הריבית הכי גבוהה.", "סיכום טוב חוסך לילה לבן.", "אתה הרבה יותר קרוב לסוף ממה שהיית אתמול."];
+        const quotes = [
+            "הדרך לתואר מתחילה בסיכום אחד טוב", 
+            "היום הוא הזדמנות נוספת להיות טוב יותר מאתמול", 
+            "אל תפסיק עד שתהיה גאה בעצמך", 
+            "השקעה בלימודים היא ההשקעה עם הריבית הכי גבוהה", 
+            "סיכום טוב חוסך לילה לבן", 
+            "אתה הרבה יותר קרוב לסוף ממה שהיית אתמול",
+            "שהגלים מתחזקים החזקים מתגלים"
+            "עוד לא קם המניאק שיעצור את התואר",
+            "מי שמשקיע בסיכומים היום - נח בתקופת המבחנים",
+            "גם המשוואה הכי מסובכת מתחילה בצעד קטן",
+            "הצלחה היא סך כל המאמצים הקטנים שחוזרים על עצמם יום יום",
+            "סיכום איכותי הוא חצי דרך ל-100",
+            "אל תסתכל על כל המדרגות, פשוט תעלה את המדרגה הראשונה",
+            "קח נשימה, תעבור על הסיכום, קטן עליך!",
+            "ההשקעה של היום היא השקט הנפשי של מחר"
+        ];
+        // בחירת משפט לפי היום בחודש כדי שזה יתחלף כל יום
         const day = new Date().getDate();
         const q = document.getElementById('motivationQuote');
         if (q) q.innerText = `"${quotes[day % quotes.length]}"`;
