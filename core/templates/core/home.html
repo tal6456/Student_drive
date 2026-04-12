@@ -12,90 +12,56 @@
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* הגדרות עיצוב חדשות ל-Header */
+    /* הגדרות עיצוב חדשות ל-Header ולטיפוגרפיה */
     .home-container { font-family: 'Assistant', sans-serif !important; }
     
-    .welcome-title {
-        font-weight: 600;
-        color: var(--gd-text);
-        font-size: 3rem;
-        letter-spacing: -1px;
-    }
+    .welcome-title { font-weight: 800; color: var(--gd-text); font-size: 3.2rem; letter-spacing: -1.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    [data-theme="dark"] .welcome-title { text-shadow: 0 4px 30px rgba(255,255,255,0.05); }
 
-    /* תיבת חיפוש יוקרתית שמתאימה גם למצב לילה */
-    .creative-search-form {
-        display: flex;
-        align-items: center;
-        background: var(--gd-card);
-        padding: 8px 8px 8px 18px;
-        border-radius: 100px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-        transition: 0.4s;
-        border: 1px solid var(--gd-border);
-    }
-    .creative-search-form:focus-within {
-        box-shadow: 0 15px 40px rgba(26, 115, 232, 0.12);
-        transform: translateY(-2px);
-        border-color: var(--gd-primary);
-    }
+    /* תיבת חיפוש יוקרתית */
+    .creative-search-form { display: flex; align-items: center; background: var(--gd-card); padding: 8px 8px 8px 20px; border-radius: 100px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--gd-border); }
+    [data-theme="dark"] .creative-search-form { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .creative-search-form:focus-within { box-shadow: 0 15px 40px rgba(26, 115, 232, 0.15); transform: translateY(-3px); border-color: var(--gd-primary); }
     .input-wrapper { display: flex; align-items: center; flex-grow: 1; }
-    .search-icon { color: var(--gd-text-muted); margin-left: 15px; font-size: 1.1rem; }
-    .search-input { border: none; outline: none; width: 100%; font-size: 1.1rem; background: transparent; color: var(--gd-text); }
-    .search-input::placeholder { color: var(--gd-text-muted); opacity: 0.7; }
+    .search-icon { color: var(--gd-text-muted); margin-left: 15px; font-size: 1.2rem; }
+    .search-input { border: none; outline: none; width: 100%; font-size: 1.15rem; background: transparent; color: var(--gd-text); }
+    .search-input::placeholder { color: var(--gd-text-muted); opacity: 0.6; }
 
-    .creative-search-btn {
-        background: var(--gd-bg);
-        border: 1px solid var(--gd-border);
-        color: var(--gd-primary);
-        padding: 10px 25px;
-        border-radius: 100px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        transition: 0.3s;
-    }
+    .creative-search-btn { background: var(--gd-bg); border: 1px solid var(--gd-border); color: var(--gd-primary); padding: 12px 30px; border-radius: 100px; font-weight: 700; display: flex; align-items: center; transition: 0.3s; }
     .creative-search-btn:hover { background: var(--gd-primary); color: #fff; border-color: var(--gd-primary); }
 
-    /* סטייל מקורי שנשמר ומשופר */
-    .transition { transition: all 0.3s ease; }
-    .hover-scale:hover { transform: translateY(-4px) scale(1.025); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
-    [data-theme="dark"] .hover-scale:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.4) !important; }
+    /* כרטיסיות פעולה מרחפות - Premium Hover */
+    .premium-action-card { background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    [data-theme="dark"] .premium-action-card { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .premium-action-card:hover { transform: translateY(-8px); border-color: var(--gd-primary) !important; box-shadow: 0 15px 35px rgba(26, 115, 232, 0.15) !important; }
 
-    .action-card-style { background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; }
-    .nav-item-card { background-color: var(--gd-card) !important; border-color: var(--gd-border) !important; }
-    .nav-item-card:hover { border-color: var(--gd-primary) !important; background: var(--gd-hover) !important; }
+    /* שורות פרימיום צפות לקורסים */
+    .premium-list-row { background-color: var(--gd-card); border: 1px solid var(--gd-border); transition: all 0.3s ease; }
+    .premium-list-row:hover { border-color: var(--gd-primary); background-color: var(--gd-bg); transform: translateX(-6px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+    [data-theme="dark"] .premium-list-row:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
 
     /* לוח שנה מותאם למצב לילה */
-    .day-cell { width: 14.28%; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.8rem; position: relative; color: var(--gd-text); }
+    .day-cell { width: 14.28%; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.85rem; position: relative; color: var(--gd-text); font-weight: 600; }
     .day-cell:hover { background: var(--gd-hover); color: var(--gd-primary); }
-    .day-cell.today { background: var(--gd-primary); color: white; font-weight: bold; }
-    .day-cell.has-event::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: #ff4757; border-radius: 50%; }
+    .day-cell.today { background: var(--gd-primary); color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); }
+    .day-cell.has-event::after { content: ''; position: absolute; bottom: 3px; width: 5px; height: 5px; background: #ff4757; border-radius: 50%; }
 
     .tiny-icon { font-size: 0.65rem; }
-    .tiny-text { font-size: 0.7rem; color: var(--gd-text-muted); display: block; }
+    .tiny-text { font-size: 0.75rem; color: var(--gd-text-muted); display: block; }
     .year-selector-card { border: 1px solid var(--gd-border); background-color: var(--gd-card) !important; }
 
-    .folder-icon { color: white; transition: all 0.3s ease; }
-    .folder-icon:hover { transform: rotate(360deg) scale(1.2); transition: transform 1.5s ease; }
+    .folder-icon { color: white; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .premium-action-card:hover .folder-icon { transform: rotate(360deg) scale(1.15); }
 
-    #calendarWeekdays { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gd-text); margin-bottom: 5px; }
+    #calendarWeekdays { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gd-text-muted); margin-bottom: 8px; }
     #calendarWeekdays .weekday { width: 14.28%; text-align: center; }
 
-    /* --- התוספת החשובה: הפיכת 3 הכפתורים לסטוריז נגלל במובייל --- */
-    .action-cards-wrapper { display: flex; gap: 1rem; }
+    /* סטוריז נגלל לכפתורים במובייל */
+    .action-cards-wrapper { display: flex; gap: 1.25rem; }
     @media (max-width: 767px) {
-        .action-cards-wrapper {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
+        .action-cards-wrapper { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .action-cards-wrapper::-webkit-scrollbar { display: none; }
-        .action-cards-wrapper > div {
-            flex: 0 0 42%; /* גודל מושלם לכרטיסיה במובייל */
-            min-width: 130px;
-        }
+        .action-cards-wrapper > div { flex: 0 0 45%; min-width: 140px; }
     }
     @media (min-width: 768px) {
         .action-cards-wrapper { justify-content: center; }
@@ -137,38 +103,35 @@
     </div>
 
 {# --- שלוש קוביות הפעולה - שודרג לנגלל במובייל --- #}
-    <div class="action-cards-wrapper mb-4 mb-md-5">
-
+    <div class="action-cards-wrapper mb-5 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
         <div>
             <a href="{% url 'community_feed' %}" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(40, 167, 69, 0.1);">
+                <div class="card h-100 rounded-4 p-4 text-center premium-action-card">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 65px; height: 65px; background: rgba(40, 167, 69, 0.1);">
                         <i class="fas fa-users text-success fs-3"></i>
                     </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">הקהילה שלי</h6>
+                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);">הקהילה שלי</h5>
                 </div>
             </a>
         </div>
-
         <div>
             <a href="?browse=true" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; background: rgba(13, 110, 253, 0.1);">
+                <div class="card h-100 rounded-4 p-4 text-center premium-action-card">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 65px; height: 65px; background: rgba(13, 110, 253, 0.1);">
                         <i class="fas fa-university text-primary fs-3"></i>
                     </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">חיפוש מוסד</h6>
+                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);">חיפוש מוסד</h5>
                 </div>
             </a>
         </div>
-
         <div>
             <a href="{% url 'personal_drive' %}" class="text-decoration-none">
-                <div class="card h-100 border-0 shadow-sm rounded-4 transition hover-scale p-3 text-center action-card-style">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                         style="width: 55px; height: 55px; background: linear-gradient(135deg, #7b61ff, #34a853);">
+                <div class="card h-100 rounded-4 p-4 text-center premium-action-card">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                         style="width: 65px; height: 65px; background: linear-gradient(135deg, #7b61ff, #34a853); box-shadow: 0 4px 15px rgba(123, 97, 255, 0.3);">
                         <i class="fab fa-google-drive text-white fs-3 folder-icon"></i>
                     </div>
-                    <h6 class="fw-bold mb-1" style="color: var(--gd-text);">דרייב אישי</h6>
+                    <h5 class="fw-bold mb-1" style="color: var(--gd-text);">דרייב אישי</h5>
                 </div>
             </a>
         </div>
@@ -279,51 +242,36 @@
                     <div class="d-flex flex-column">
                         {% if favorite_courses %}
                             {% for course in favorite_courses %}
-<div class="d-flex align-items-center border-bottom hover-bg-light transition" style="background-color: transparent; border-color: var(--gd-border) !important;">
+                            <div class="premium-list-row rounded-4 d-flex align-items-center px-2 mb-2">
+                                {% if user.is_authenticated %}
+                                <div onclick="toggleFavorite(event, this)" data-url="{% url 'toggle_favorite_course' course.id %}" class="favorite-btn p-3" style="cursor: pointer; z-index: 20; position: relative;" title="הוסף/הסר ממועדפים">
+                                    {% if course.id in favorite_ids %}
+                                        <i class="fas fa-star fs-5 text-warning star-icon-{{ course.id }} hover-scale" style="filter: drop-shadow(0 0 5px rgba(255,193,7,0.5));"></i>
+                                    {% else %}
+                                        <i class="far fa-star fs-5 star-icon-{{ course.id }} hover-scale" style="color: var(--gd-text-muted);"></i>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
 
-    {% if user.is_authenticated %}
-    <div onclick="toggleFavorite(event, this)"
-         data-url="{% url 'toggle_favorite_course' course.id %}"
-         class="favorite-btn p-3"
-         style="cursor: pointer; z-index: 20; position: relative;"
-         title="הוסף/הסר ממועדפים">
-
-        {% if course.id in favorite_ids %}
-            <i class="fas fa-star fs-5 text-warning star-icon-{{ course.id }} hover-scale"></i>
-        {% else %}
-            <i class="far fa-star fs-5 opacity-50 star-icon-{{ course.id }} hover-scale" style="color: var(--gd-text-muted);"></i>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <a href="{% url 'course_detail' course.id %}"
-       class="list-group-item-action d-flex align-items-center justify-content-between py-3 pe-3 flex-grow-1 text-decoration-none"
-       style="min-width: 0; background: transparent;">
-
-        <div class="d-flex align-items-center gap-3" style="min-width: 0;">
-            <div class="text-center" style="width: 40px;">
-                <i class="fas fa-folder" style="font-size: 1.5rem; color: var(--gd-primary);"></i>
-            </div>
-            <span class="fw-bold text-truncate fs-6" style="color: var(--gd-text);">
-                {{ course.name }}
-            </span>
-        </div>
-
-        <div class="d-flex align-items-center gap-4 text-nowrap">
-            <div class="d-none d-sm-flex align-items-center gap-3 small" style="color: var(--gd-text-muted) !important;">
-                {% if course.course_number %}
-                    <span dir="ltr">#{{ course.course_number }}</span>
-                    <span class="opacity-50">|</span>
-                {% endif %}
-                <span class="d-flex align-items-center gap-1">
-                    <i class="far fa-file-alt"></i> {{ course.document_set.count|default:"0" }} קבצים
-                </span>
-            </div>
-            <i class="fas fa-chevron-left opacity-50 ms-2" style="color: var(--gd-text-muted); font-size: 0.85rem;"></i>
-        </div>
-    </a>
-</div>
-{% endfor %}
+                                <a href="{% url 'course_detail' course.id %}" class="d-flex align-items-center justify-content-between py-3 pe-3 flex-grow-1 text-decoration-none" style="min-width: 0;">
+                                    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+                                        <div class="text-center" style="width: 40px;">
+                                            <i class="fas fa-folder" style="font-size: 1.5rem; color: var(--gd-primary);"></i>
+                                        </div>
+                                        <span class="fw-bold text-truncate fs-6" style="color: var(--gd-text);">{{ course.name }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-4 text-nowrap ms-3">
+                                        <div class="d-none d-sm-flex align-items-center gap-3 small" style="color: var(--gd-text-muted);">
+                                            {% if course.course_number %}<span dir="ltr">#{{ course.course_number }}</span><span class="opacity-50">|</span>{% endif %}
+                                            <span class="d-flex align-items-center gap-1"><i class="far fa-file-alt"></i> {{ course.document_set.count|default:"0" }} קבצים</span>
+                                        </div>
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                            <i class="fas fa-chevron-left" style="color: var(--gd-text-muted); font-size: 0.85rem;"></i>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
                         {% else %}
                             <div class="text-center py-5 opacity-25 w-100">
                                 <i class="fas fa-book-reader mb-3" style="font-size: 3.5rem;"></i>
@@ -386,32 +334,32 @@
                     <hr class="text-muted opacity-25 mb-0">
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover align-middle mb-0" dir="rtl">
-                        <thead class="bg-light">
-                            <tr class="text-muted" style="font-size: 0.75rem;">
-                                <th class="ps-3">#</th>
-                                <th>סטודנט</th>
-                                <th class="text-center">מטבעות</th>
+                    <table class="table align-middle mb-0" dir="rtl" style="--bs-table-bg: transparent;">
+                        <thead style="background-color: var(--gd-bg); border-top: 1px solid var(--gd-border); border-bottom: 2px solid var(--gd-border);">
+                            <tr style="font-size: 0.8rem; color: var(--gd-text-muted);">
+                                <th class="ps-3 border-0">#</th>
+                                <th class="border-0">סטודנט</th>
+                                <th class="text-center border-0">מטבעות</th>
                             </tr>
                         </thead>
-                        <tbody style="font-size: 0.85rem;">
+                        <tbody style="font-size: 0.9rem;">
                             {% for profile in top_users %}
-                            <tr>
-                                <td class="ps-3">
-                                    {% if forloop.counter == 1 %}<span class="badge bg-warning text-dark rounded-pill">1</span>
-                                    {% elif forloop.counter == 2 %}<span class="badge bg-secondary text-white rounded-pill">2</span>
-                                    {% elif forloop.counter == 3 %}<span class="badge bg-danger bg-opacity-75 text-white rounded-pill">3</span>
-                                    {% else %}<span class="text-muted ms-1">{{ forloop.counter }}</span>{% endif %}
+                            <tr style="border-bottom: 1px solid var(--gd-border); transition: 0.2s;" onmouseover="this.style.backgroundColor='var(--gd-hover)'" onmouseout="this.style.backgroundColor='transparent'">
+                                <td class="ps-3 border-0">
+                                    {% if forloop.counter == 1 %}<span class="badge bg-warning text-dark rounded-pill shadow-sm">1</span>
+                                    {% elif forloop.counter == 2 %}<span class="badge bg-secondary text-white rounded-pill shadow-sm">2</span>
+                                    {% elif forloop.counter == 3 %}<span class="badge bg-danger text-white rounded-pill shadow-sm">3</span>
+                                    {% else %}<span class="ms-1 fw-bold" style="color: var(--gd-text-muted);">{{ forloop.counter }}</span>{% endif %}
                                 </td>
-                                <td class="fw-bold text-dark text-end">{{ profile.user.username }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2">
-                                        {{ profile.lifetime_coins }} <i class="fas fa-star ms-1 tiny-icon"></i>
+                                <td class="fw-bold border-0 text-end" style="color: var(--gd-text);">{{ profile.user.username }}</td>
+                                <td class="text-center border-0">
+                                    <span class="badge rounded-pill px-2 py-1" style="background-color: rgba(26, 115, 232, 0.1); color: var(--gd-primary); border: 1px solid rgba(26, 115, 232, 0.2);">
+                                        {{ profile.lifetime_coins }} <i class="fas fa-star ms-1" style="font-size: 0.6rem;"></i>
                                     </span>
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="3" class="text-center py-3 text-muted small">אין נתונים</td></tr>
+                            <tr><td colspan="3" class="text-center py-4 small" style="color: var(--gd-text-muted); border-0">אין נתונים</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -502,6 +450,7 @@ function renderCal() {
 }
 
 function openModal(day, month, year) {
+    document.body.appendChild(document.getElementById('eventModal'));
     const key = `${year}-${month}-${day}`;
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
     modal.show();
@@ -571,27 +520,6 @@ function openModal(day, month, year) {
     };
 
     updateEventList(key);
-}
-function updateEventList(key) {
-    const list = document.getElementById('eventList');
-    const header = document.getElementById('selectedDateHeader');
-    const parts = key.split('-');
-    header.innerText = `אירועים ל-${parts[2]}/${parts[1]}:`;
-
-    if (evs[key]) {
-        list.innerHTML = evs[key].map(ev => `
-            <div class="p-2 bg-light rounded-3 border-start border-primary border-3 shadow-sm mb-2 text-end">
-                <div class="fw-bold small">${ev.title}</div>
-                <div class="tiny-text">
-                    ${ev.allDay
-                        ? '<i class="far fa-calendar-alt"></i> כל היום'
-                        : `<i class="far fa-clock"></i> ${ev.start} - ${ev.end}`}
-                </div>
-            </div>
-        `).join('');
-    } else {
-        list.innerHTML = '<div class="text-muted small italic text-center py-2">אין אירועים ליום זה</div>';
-    }
 }
 function updateEventList(key) {
     const list = document.getElementById('eventList');
