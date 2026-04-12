@@ -264,103 +264,87 @@
     .dropdown-menu { z-index: 2000 !important; }
 </style>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-function filterByTag(tagName, btnElement) {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active', 'btn-primary');
-        btn.classList.add('btn-outline-secondary');
-        btn.style.backgroundColor = 'var(--gd-bg)';
-        btn.style.color = 'var(--gd-text)';
+document.addEventListener('DOMContentLoaded', function() {
+    // שליפת כל המודלים (חלונות קופצים) ל-body כדי שהמסך לא יחסום אותם
+    document.querySelectorAll('.modal').forEach(function(modal) {
+        document.body.appendChild(modal);
     });
-    btnElement.classList.add('active', 'btn-primary');
-    btnElement.style.backgroundColor = '';
-    btnElement.style.color = '';
+    // ----------------------------
 
-    const items = document.querySelectorAll('[data-personal-tag]');
-    
-    items.forEach(item => {
-        const itemTag = item.getAttribute('data-personal-tag') || 'none';
+    // מאזין גלובלי לכל טופס תגובה... (הקוד שכבר יש לך שם נשאר אותו דבר)
+    document.body.addEventListener('submit', function(e) {
+    // מאזין גלובלי לכל טופס תגובה, גם אם הוא נטען אחרי שהדף עלה
+    document.body.addEventListener('submit', function(e) {
         
-        if (tagName === 'all' || itemTag === tagName) {
-            item.classList.remove('d-none');
-            item.classList.add('d-flex');
-        } else {
-            item.classList.remove('d-flex');
-            item.classList.add('d-none');
-        }
-    });
+        // בודקים אם הטופס שנשלח הוא טופס תגובה
+        if (e.target && e.target.classList.contains('ajax-comment-form')) {
+            e.preventDefault(); // השורת קסם שעוצרת את מעבר הדף השחור!
 
-    document.querySelectorAll('.course-group').forEach(group => {
-        if (tagName === 'all') {
-            group.classList.remove('d-none');
-            group.querySelectorAll('.type-folder-container').forEach(f => f.classList.remove('d-none'));
-            return;
-        }
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const inputText = form.querySelector('input[name="comment_text"]');
+            const commentsList = form.closest('.modal-content').querySelector('.comments-container');
 
-        const hasVisibleFiles = Array.from(group.querySelectorAll('[data-personal-tag]'))
-                                     .some(el => !el.classList.contains('d-none'));
+            if (submitBtn.disabled) return;
+            
+            // מכבים את הכפתור זמנית כדי למנוע לחיצות כפולות
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
 
-        if (hasVisibleFiles) {
-            group.classList.remove('d-none');
-            group.querySelectorAll('.type-folder-container').forEach(folder => {
-                const hasVisibleInFolder = Array.from(folder.querySelectorAll('[data-personal-tag]'))
-                                                .some(el => !el.classList.contains('d-none'));
-                folder.style.display = hasVisibleInFolder ? '' : 'none';
-            });
-        } else {
-            group.classList.add('d-none');
-        }
-    });
-}
+            const formData = new FormData(form);
 
-// לוגיקת ה-AJAX של התגובות שמטפלת בכל המסמכים בצורה חכמה ויעילה
-$(document).ready(function() {
-    $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form', function(e) {
-        e.preventDefault(); 
-        
-        var form = $(this);
-        var commentsList = form.closest('.modal-content').find('.comments-container');
-        var submitBtn = form.find('button[type="submit"]');
-        var inputText = form.find('input[name="comment_text"]');
-        
-        if (submitBtn.prop('disabled')) return;
-
-        submitBtn.prop('disabled', true).css('opacity', '0.7'); 
-
-        $.ajax({
-            type: 'POST',
-            url: form.attr('action'),
-            data: form.serialize(),
-            success: function(response) {
-                if (response.status === 'success') {
-                    var newComment = `
-                        <div class="d-flex gap-2 mb-3">
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // אומר לשרת שזה AJAX
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 1. יצירת ה-HTML של התגובה החדשה
+                    const newComment = `
+                        <div class="d-flex gap-2 mb-3 animate__animated animate__fadeIn">
                             <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                ${response.user.charAt(0).toUpperCase()}
+                                ${data.user.charAt(0).toUpperCase()}
                             </div>
                             <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold" style="font-size: 0.85rem;">${response.user}</span>
+                                    <span class="fw-bold" style="font-size: 0.85rem;">${data.user}</span>
                                     <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
                                 </div>
-                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${response.text}</p>
+                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${data.text}</p>
                             </div>
                         </div>`;
                     
-                    commentsList.append(newComment);
-                    commentsList.animate({ scrollTop: commentsList[0].scrollHeight }, 300);
-                    inputText.val('');
-                    commentsList.find('.text-center.py-4').fadeOut(200);
+                    // 2. הוספת התגובה למסך
+                    commentsList.insertAdjacentHTML('beforeend', newComment);
+                    
+                    // 3. גלילה אוטומטית למטה כדי לראות את התגובה
+                    commentsList.scrollTop = commentsList.scrollHeight;
+                    
+                    // 4. ניקוי שורת הטקסט
+                    inputText.value = '';
+                    
+                    // 5. העלמת ההודעה של "אין תגובות" (אם זה היה ריק קודם)
+                    const emptyMsg = commentsList.querySelector('.text-center.py-4');
+                    if (emptyMsg) emptyMsg.style.display = 'none';
+                } else {
+                    alert('שגיאה: ' + (data.error || 'משהו השתבש'));
                 }
-            },
-            error: function() {
-                alert('שגיאה בשליחת התגובה. נסה שוב.');
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).css('opacity', '1');
-            }
-        });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('שגיאה בתקשורת עם השרת.');
+            })
+            .finally(() => {
+                // החזרת הכפתור למצב פעיל
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            });
+        }
     });
 });
 </script>
