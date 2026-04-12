@@ -336,13 +336,13 @@
                 <div class="card-body p-0">
                     <table class="table align-middle mb-0" dir="rtl" style="--bs-table-bg: transparent;">
                         <thead style="background-color: var(--gd-bg); border-top: 1px solid var(--gd-border); border-bottom: 2px solid var(--gd-border);">
-                            <tr style="font-size: 0.85rem; color: var(--gd-text); font-weight: bold;">
-                                <th class="ps-3 border-0">#</th>
-                                <th class="border-0">סטודנט</th>
-                                <th class="text-center border-0">מטבעות</th>
+                            <tr style="font-size: 0.85rem;">
+                                <th class="ps-3 border-0" style="color: var(--gd-text) !important;">#</th>
+                                <th class="border-0" style="color: var(--gd-text) !important;">סטודנט</th>
+                                <th class="text-center border-0" style="color: var(--gd-text) !important;">מטבעות</th>
                             </tr>
                         </thead>
-                        <tbody style="font-size: 0.9rem;">
+                                                <tbody style="font-size: 0.9rem;">
                             {% for profile in top_users %}
                             <tr style="border-bottom: 1px solid var(--gd-border); transition: 0.2s;" onmouseover="this.style.backgroundColor='var(--gd-hover)'" onmouseout="this.style.backgroundColor='transparent'">
                                 <td class="ps-3 border-0">
