@@ -14,7 +14,7 @@
 <style>
     /* הגדרות עיצוב חדשות ל-Header ולטיפוגרפיה */
     .home-container { font-family: 'Assistant', sans-serif !important; }
-    
+
     .welcome-title { font-weight: 800; color: var(--gd-text); font-size: 3.2rem; letter-spacing: -1.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     [data-theme="dark"] .welcome-title { text-shadow: 0 4px 30px rgba(255,255,255,0.05); }
 
@@ -75,11 +75,25 @@
     <div class="row justify-content-center mb-5 animate__animated animate__fadeIn">
         <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
-                <div class="welcome-section mb-3">
-                    <h1 class="welcome-title mb-2"> כל המוסדות. כל הקורסים. מקום אחד.</h1>
-                    <p class="fs-5 text-muted mb-1">
-                        מהיום, אף סטודנט לא לומד לבד. ב-Student Drive כל לייק הוא עזרה וכל סיכום הוא כוח לקהילה. הנתינה שלכם צוברת נקודות בחנות, והיחד שלנו צובר הצלחות בדרך לתואר. נתראה בפנים!
+                <div class="welcome-section mb-5 animate__animated animate__fadeIn">
+                    <div class="d-inline-block px-3 py-1 rounded-pill mb-3 shadow-sm" 
+                         style="background: rgba(26, 115, 232, 0.1); border: 1px solid rgba(26, 115, 232, 0.2);">
+                        <span class="small fw-bold text-primary">הבית של הסטודנטים 🎓</span>
+                    </div>
+                
+                    <h1 class="welcome-title mb-3" style="line-height: 1.2;">
+                        כל המוסדות. כל הקורסים. <br>
+                        <span style="background: linear-gradient(90deg, #7b61ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">מקום אחד.</span>
+                    </h1>
+                
+                    <p class="fs-5 mx-auto mb-4" style="color: var(--gd-text-muted); max-width: 750px; line-height: 1.7; font-weight: 400;">
+                        מהיום, אף סטודנט לא לומד לבד. ב-<span class="fw-bold text-primary">Student Drive</span> כל לייק הוא עזרה וכל סיכום הוא כוח לקהילה. 
+                        הנתינה שלכם צוברת נקודות, והיחד שלנו צובר הצלחות בדרך לתואר.
                     </p>
+                
+                    <div class="mt-4 pt-3 border-top mx-auto" style="max-width: 400px; border-color: var(--gd-border) !important;">
+                        <p id="motivationQuote" class="fst-italic small mb-0" style="color: var(--gd-primary); letter-spacing: 0.5px; opacity: 0.9;"></p>
+                    </div>
                 </div>
                 <p id="motivationQuote" class="mb-4 small" style="color: #888; font-style: italic; min-height: 20px;"></p>
             {% endif %}
@@ -555,7 +569,7 @@ renderCal();
         }
         const url = element.getAttribute('data-url');
         const icon = element.querySelector('i');
-        
+
         // הוספת אנימציית קליק קטנה
         icon.style.transform = 'scale(0.8)';
         icon.style.transition = 'transform 0.15s ease';
