@@ -101,7 +101,6 @@ urlpatterns = [
     # הגדרות, פרטיות ונגישות
     path('settings/', views.settings_view, name='settings'),
     path('settings/password/', views.change_password, name='change_password'),
-    path('settings/request-data/', views.request_user_data, name='request_user_data'),
     path('settings/delete-account/', views.delete_account, name='delete_account'),
     path('accessibility/', views.accessibility_view, name='accessibility'),
     path('privacy/', views.privacy_view, name='privacy'),
