@@ -547,7 +547,7 @@ document.getElementById('prevMonth').onclick = () => { d.setMonth(d.getMonth() -
 document.getElementById('nextMonth').onclick = () => { d.setMonth(d.getMonth() + 1); renderCal(); };
 
 renderCal();
-    // הפונקציה החדשה להוספה לסמסטר שלי
+    // הפונקציה החדשה להוספה לסמסטר שלי (עם אנימציית קליק!)
     function toggleFavorite(event, element) {
         if (event) {
             event.preventDefault();
@@ -555,6 +555,12 @@ renderCal();
         }
         const url = element.getAttribute('data-url');
         const icon = element.querySelector('i');
+        
+        // הוספת אנימציית קליק קטנה
+        icon.style.transform = 'scale(0.8)';
+        icon.style.transition = 'transform 0.15s ease';
+        setTimeout(() => icon.style.transform = 'scale(1)', 150);
+
         fetch(url, {
             method: 'POST',
             headers: {
@@ -567,9 +573,13 @@ renderCal();
             if (data.status === 'added' || data.is_favorite) {
                 icon.classList.remove('far', 'opacity-50');
                 icon.classList.add('fas', 'text-warning');
+                icon.style.filter = 'drop-shadow(0 0 5px rgba(255,193,7,0.5))';
+                icon.style.color = '';
             } else {
                 icon.classList.remove('fas', 'text-warning');
                 icon.classList.add('far', 'opacity-50');
+                icon.style.filter = '';
+                icon.style.color = 'var(--gd-text-muted)';
             }
         })
         .catch(error => console.error('Error:', error));
