@@ -68,7 +68,7 @@
         .action-cards-wrapper > div { width: 25%; }
     }
    /* --- תיקוני פרימיום למצב לילה - גרסה כחולה עקבית --- */
-    
+
     /* 1. התג (Badge) - כחול עדין */
     [data-theme="dark"] .welcome-badge {
         background: rgba(26, 115, 232, 0.15) !important;
@@ -77,14 +77,14 @@
     [data-theme="dark"] .welcome-badge span {
         color: #bfdbfe !important; /* כחול-לבן בהיר מאוד */
     }
-    
+
     /* 2. הכותרת - גרדיאנט כחול-ציאן בהיר ויוקרתי */
     [data-theme="dark"] .welcome-title span {
         background: linear-gradient(90deg, #60a5fa, #38bdf8) !important; /* כחול בהיר -> ציאן בהיר */
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
     }
-    
+
     /* 3. התיאור - אפור בהיר לקריאות, עם שמירה על הדגשות כחולות */
     [data-theme="dark"] .welcome-description {
         color: #cbd5e1 !important; /* Slateבהיר לקריאות */
@@ -93,11 +93,41 @@
     [data-theme="dark"] .welcome-description .text-primary {
         color: #3b82f6 !important; /* כחול בוהק */
     }
-    
+
     /* 4. הציטוט - ציאן בהיר */
     [data-theme="dark"] #motivationQuote {
         color: #38bdf8 !important;
         opacity: 1 !important;
+    }
+    /* --- התאמות רספונסיביות לאפליקציה (מובייל) --- */
+    @media (max-width: 767px) {
+        .welcome-title {
+            font-size: 2.2rem !important; /* מקטין את הכותרת הענקית שלא תימרח */
+            letter-spacing: -0.5px !important;
+            line-height: 1.1 !important;
+        }
+        
+        .welcome-description {
+            font-size: 1rem !important; /* פונט קצת יותר קטן וקריא למובייל */
+            padding: 0 10px; /* מוסיף רווח מהצדדים שהטקסט לא ייגע בקצוות המסך */
+            line-height: 1.5 !important;
+            margin-bottom: 20px !important;
+        }
+
+        .welcome-badge {
+            font-size: 0.8rem !important;
+            padding: 6px 15px !important;
+        }
+
+        .welcome-section {
+            margin-bottom: 30px !important; /* מקטין מרווחים מיותרים */
+        }
+        
+        /* תיקון לגרדיאנט במובייל שלא ייחתך בקיפול שורה */
+        .welcome-title span {
+            display: inline-block;
+            padding-bottom: 5px;
+        }
     }
 </style>
 
@@ -108,21 +138,21 @@
         <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
                 <div class="welcome-section mb-5 animate__animated animate__fadeIn">
-                    <div class="welcome-badge d-inline-block px-3 py-1 rounded-pill mb-3 shadow-sm" 
+                    <div class="welcome-badge d-inline-block px-3 py-1 rounded-pill mb-3 shadow-sm"
                          style="background: rgba(26, 115, 232, 0.1); border: 1px solid rgba(26, 115, 232, 0.2);">
                         <span class="small fw-bold text-primary">הבית של הסטודנטים 🎓</span>
                     </div>
-                
+
                     <h1 class="welcome-title mb-3" style="line-height: 1.2;">
                         כל המוסדות. כל הקורסים. <br>
-                        <span style="background: linear-gradient(90deg, #7b61ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">מקום אחד.</span>
+                        <span class="d-inline-block" style="background: linear-gradient(90deg, #7b61ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">מקום אחד.</span>
                     </h1>
-                
+
                     <p class="welcome-description fs-5 mx-auto mb-4" style="color: var(--gd-text-muted); max-width: 750px; line-height: 1.7; font-weight: 400;">
-                        מהיום, אף סטודנט לא לומד לבד. ב-<span class="fw-bold text-primary">Student Drive</span> כל לייק הוא עזרה וכל סיכום הוא כוח לקהילה. 
+                        מהיום, אף סטודנט לא לומד לבד. ב-<span class="fw-bold text-primary">Student Drive</span> כל לייק הוא עזרה וכל סיכום הוא כוח לקהילה.
                         הנתינה שלכם צוברת נקודות, והיחד שלנו צובר הצלחות בדרך לתואר.
                     </p>
-                
+
                     <div class="mt-4 pt-3 border-top mx-auto" style="max-width: 400px; border-color: var(--gd-border) !important;">
                         <p id="motivationQuote" class="fst-italic small mb-0" style="color: var(--gd-primary); letter-spacing: 0.5px; opacity: 0.9;"></p>
                     </div>
