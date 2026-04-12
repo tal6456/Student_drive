@@ -67,25 +67,38 @@
         .action-cards-wrapper { justify-content: center; }
         .action-cards-wrapper > div { width: 25%; }
     }
-   /* תיקוני פרימיום למצב לילה - Welcome Section */
+   /* --- תיקוני פרימיום למצב לילה - גרסה כחולה עקבית --- */
+    
+    /* 1. התג (Badge) - כחול עדין */
     [data-theme="dark"] .welcome-badge {
-        background: rgba(123, 97, 255, 0.15) !important;
-        border-color: rgba(123, 97, 255, 0.3) !important;
+        background: rgba(26, 115, 232, 0.15) !important;
+        border-color: rgba(26, 115, 232, 0.3) !important;
     }
     [data-theme="dark"] .welcome-badge span {
-        color: #a594ff !important; /* סגול בהיר קריא */
+        color: #bfdbfe !important; /* כחול-לבן בהיר מאוד */
     }
-    [data-theme="dark"] .welcome-description {
-        color: #cbd5e1 !important; /* אפור בהיר לקריאות מקסימלית */
-    }
+    
+    /* 2. הכותרת - גרדיאנט כחול-ציאן בהיר ויוקרתי */
     [data-theme="dark"] .welcome-title span {
-        background: linear-gradient(90deg, #9f8dff, #4ade80) !important; /* גרדיאנט זוהר בלילה */
+        background: linear-gradient(90deg, #60a5fa, #38bdf8) !important; /* כחול בהיר -> ציאן בהיר */
         -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
     }
+    
+    /* 3. התיאור - אפור בהיר לקריאות, עם שמירה על הדגשות כחולות */
+    [data-theme="dark"] .welcome-description {
+        color: #cbd5e1 !important; /* Slateבהיר לקריאות */
+    }
+    /* וודא שהדגשות 'text-primary' נשמרות כחולות גם בלילה */
+    [data-theme="dark"] .welcome-description .text-primary {
+        color: #3b82f6 !important; /* כחול בוהק */
+    }
+    
+    /* 4. הציטוט - ציאן בהיר */
     [data-theme="dark"] #motivationQuote {
-        color: #4ade80 !important; /* ירוק רענן למוטיבציה */
+        color: #38bdf8 !important;
         opacity: 1 !important;
-    } 
+    }
 </style>
 
 <div class="container mt-4 mb-5 home-container" dir="rtl">
