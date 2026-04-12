@@ -50,7 +50,7 @@
     .tiny-text { font-size: 0.75rem; color: var(--gd-text-muted); display: block; }
     .year-selector-card { border: 1px solid var(--gd-border); background-color: var(--gd-card) !important; }
 
-    .folder-icon { color: white; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .folder-icon { color: white; transition: all 2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .premium-action-card:hover .folder-icon { transform: rotate(360deg) scale(1.15); }
 
     #calendarWeekdays { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gd-text-muted); margin-bottom: 8px; }
@@ -178,7 +178,7 @@
     </div>
 
 {# --- שלוש קוביות הפעולה - שודרג לנגלל במובייל --- #}
-    <div class="action-cards-wrapper mb-5 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+    <div class="action-cards-wrapper mb-5 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
         <div>
             <a href="{% url 'community_feed' %}" class="text-decoration-none">
                 <div class="card h-100 rounded-4 p-4 text-center premium-action-card">
