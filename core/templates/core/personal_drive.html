@@ -4,56 +4,58 @@
 {% block content %}
 <div class="container mt-5" dir="rtl">
     <div class="row mb-5">
-        <div class="col-12 text-center">
-            <h1 class="fw-bold display-5 mb-1 text-dark">הדרייב האישי שלי</h1>
-            <p class="text-muted">כל החומר הלימודי שלך במקום אחד</p>
+        <div class="col-12 text-center animate__animated animate__fadeInDown">
+            <h1 class="fw-bold display-5 mb-1" style="color: var(--gd-text);">הדרייב האישי שלי</h1>
+            <p style="color: var(--gd-text-muted);">כל החומר הלימודי שלך במקום אחד</p>
         </div>
     </div>
 
     {# --- שורת סינון לפי תיוגים --- #}
-    <div class="tag-filters mb-4 d-flex flex-wrap gap-2 px-2 border-bottom pb-3">
-        <span class="text-muted ms-2 align-self-center small fw-bold">סנן לפי תיוג:</span>
+    <div class="tag-filters mb-4 d-flex flex-wrap gap-2 px-2 border-bottom pb-3 animate__animated animate__fadeIn" style="border-color: var(--gd-border) !important;">
+        <span class="ms-2 align-self-center small fw-bold" style="color: var(--gd-text-muted);">סנן לפי תיוג:</span>
         <button class="btn btn-sm btn-primary rounded-pill px-3 active filter-btn" onclick="filterByTag('all', this)">הכל</button>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 filter-btn" onclick="filterByTag('urgent', this)">🔴 חומרי עזר</button>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 filter-btn" onclick="filterByTag('exam', this)">🟡 למבחן</button>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 filter-btn" onclick="filterByTag('summary', this)">🟢 סיכומים</button>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 filter-btn" onclick="filterByTag('important', this)">🔵 חשוב</button>
+        <button class="btn btn-sm rounded-pill px-3 filter-btn" style="background-color: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);" onclick="filterByTag('urgent', this)">🔴 חומרי עזר</button>
+        <button class="btn btn-sm rounded-pill px-3 filter-btn" style="background-color: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);" onclick="filterByTag('exam', this)">🟡 למבחן</button>
+        <button class="btn btn-sm rounded-pill px-3 filter-btn" style="background-color: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);" onclick="filterByTag('summary', this)">🟢 סיכומים</button>
+        <button class="btn btn-sm rounded-pill px-3 filter-btn" style="background-color: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);" onclick="filterByTag('important', this)">🔵 חשוב</button>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
-        <ul class="nav nav-pills bg-white p-2 rounded-4 shadow-sm border" id="pills-tab" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button">
-                    <i class="fas fa-file-upload ms-2"></i>העלאות שלי
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link rounded-3 fw-bold" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button">
-                    <i class="fas fa-history ms-2"></i>היסטוריית הורדות
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link rounded-3 fw-bold" id="pills-external-tab" data-bs-toggle="pill" data-bs-target="#pills-external" type="button">
-                    <i class="fas fa-link ms-2"></i>משאבים חיצוניים
-                </button>
-            </li>
-        </ul>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 px-2 animate__animated animate__fadeIn">
+        <div class="mobile-scroll-nav">
+            <ul class="nav nav-pills p-2 rounded-4 shadow-sm border flex-nowrap" id="pills-tab" role="tablist" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+                <li class="nav-item flex-shrink-0">
+                    <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button">
+                        <i class="fas fa-file-upload ms-2"></i>העלאות שלי
+                    </button>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <button class="nav-link rounded-3 fw-bold" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button">
+                        <i class="fas fa-history ms-2"></i>היסטוריית הורדות
+                    </button>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <button class="nav-link rounded-3 fw-bold" id="pills-external-tab" data-bs-toggle="pill" data-bs-target="#pills-external" type="button">
+                        <i class="fas fa-link ms-2"></i>משאבים חיצוניים
+                    </button>
+                </li>
+            </ul>
+        </div>
 
-        <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addExternalModal">
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addExternalModal">
             <i class="fas fa-plus me-2"></i>הוסף משאב
         </button>
     </div>
 
-    <div class="tab-content" id="pills-tabContent">
+    <div class="tab-content animate__animated animate__fadeInUp" id="pills-tabContent">
         <div class="tab-pane fade show active" id="pills-upload" role="tabpanel">
             {% regroup uploaded_files by course.name as upload_course_list %}
             {% for course in upload_course_list %}
-                <div class="course-group mb-3 shadow-sm border rounded-4 bg-white">
-                    <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between cursor-pointer"
-                         data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}">
+                <div class="course-group mb-3 shadow-sm border rounded-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer"
+                         data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-university text-primary ms-3"></i>
-                            <h5 class="mb-0 fw-bold">{{ course.grouper|default:"ללא קורס" }}</h5>
+                            <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
                         </div>
                         <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
                     </div>
@@ -62,12 +64,12 @@
                         <div class="p-3">
                             {% regroup course.list by top_folder_name as upload_type_list %}
                             {% for type in upload_type_list %}
-                                <div class="mb-3 border rounded-3 type-folder-container">
-                                    <div class="p-2 bg-white d-flex align-items-center cursor-pointer border-bottom"
-                                         data-bs-toggle="collapse" data-bs-target="#up_type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                <div class="mb-3 border rounded-3 type-folder-container" style="border-color: var(--gd-border) !important;">
+                                    <div class="p-2 d-flex align-items-center cursor-pointer border-bottom"
+                                         data-bs-toggle="collapse" data-bs-target="#up_type_{{ parentloop.counter }}_{{ forloop.counter }}" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                                         <i class="fas fa-folder text-warning ms-2"></i>
-                                        <span class="fw-bold">{{ type.grouper }}</span>
-                                        <span class="ms-auto badge bg-light text-dark border">{{ type.list|length }}</span>
+                                        <span class="fw-bold" style="color: var(--gd-text);">{{ type.grouper }}</span>
+                                        <span class="ms-auto badge border" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">{{ type.list|length }}</span>
                                     </div>
                                     <div class="collapse" id="up_type_{{ parentloop.counter }}_{{ forloop.counter }}">
                                         <div class="list-group list-group-flush">
@@ -82,19 +84,19 @@
                     </div>
                 </div>
             {% empty %}
-                <div class="text-center py-5 text-muted">עדיין לא העלית קבצים.</div>
+                <div class="text-center py-5" style="color: var(--gd-text-muted);">עדיין לא העלית קבצים.</div>
             {% endfor %}
         </div>
 
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
             {% for course in course_list %}
-                <div class="course-group mb-3 shadow-sm border rounded-4 bg-white">
-                    <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between cursor-pointer"
-                         data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}">
+                <div class="course-group mb-3 shadow-sm border rounded-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer"
+                         data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-university text-primary ms-3"></i>
-                            <h5 class="mb-0 fw-bold">{{ course.grouper }}</h5>
+                            <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper }}</h5>
                         </div>
                         <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
                     </div>
@@ -103,12 +105,12 @@
                         <div class="p-3">
                             {% regroup course.list by top_folder_name as type_list %}
                             {% for type in type_list %}
-                                <div class="mb-3 border rounded-3 type-folder-container">
-                                    <div class="p-2 bg-white d-flex align-items-center cursor-pointer border-bottom"
-                                         data-bs-toggle="collapse" data-bs-target="#type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                <div class="mb-3 border rounded-3 type-folder-container" style="border-color: var(--gd-border) !important;">
+                                    <div class="p-2 d-flex align-items-center cursor-pointer border-bottom"
+                                         data-bs-toggle="collapse" data-bs-target="#type_{{ parentloop.counter }}_{{ forloop.counter }}" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                                         <i class="fas fa-folder text-warning ms-2"></i>
-                                        <span class="fw-bold">{{ type.grouper }}</span>
-                                        <span class="ms-auto badge bg-light text-dark border">{{ type.list|length }}</span>
+                                        <span class="fw-bold" style="color: var(--gd-text);">{{ type.grouper }}</span>
+                                        <span class="ms-auto badge border" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">{{ type.list|length }}</span>
                                     </div>
                                     <div class="collapse" id="type_{{ parentloop.counter }}_{{ forloop.counter }}">
                                         <div class="list-group list-group-flush">
@@ -123,15 +125,15 @@
                     </div>
                 </div>
             {% empty %}
-                <div class="text-center py-5">אין היסטוריית הורדות.</div>
+                <div class="text-center py-5" style="color: var(--gd-text-muted);">אין היסטוריית הורדות.</div>
             {% endfor %}
         </div>
 
         <div class="tab-pane fade" id="pills-external" role="tabpanel">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card shadow-sm border rounded-4 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                 <div class="list-group list-group-flush border-0">
                     {% for item in external_resources %}
-                        <div class="list-group-item d-flex align-items-center justify-content-between py-3 border-0 border-bottom external-row" data-personal-tag="{{ item.personal_tag|default:'none' }}">
+                        <div class="list-group-item d-flex align-items-center justify-content-between py-3 border-0 border-bottom external-row" data-personal-tag="{{ item.personal_tag|default:'none' }}" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="icon-box text-center" style="width: 40px;">
                                     {% if item.link %}
@@ -143,23 +145,23 @@
                                 <div>
                                     <h6 class="mb-0 fw-bold">
                                         {% if item.link %}
-                                            <a href="{{ item.link }}" target="_blank" class="text-decoration-none text-dark">{{ item.title }}</a>
+                                            <a href="{{ item.link }}" target="_blank" class="text-decoration-none" style="color: var(--gd-text);">{{ item.title }}</a>
                                         {% else %}
-                                            <a href="{{ item.file.url }}" target="_blank" class="text-decoration-none text-dark">{{ item.title }}</a>
+                                            <a href="{{ item.file.url }}" target="_blank" class="text-decoration-none" style="color: var(--gd-text);">{{ item.title }}</a>
                                         {% endif %}
                                         
                                         {% if item.personal_tag and item.personal_tag != 'none' %}
                                             <span class="badge rounded-pill ms-2 tag-badge"
-                                                {% if item.personal_tag == 'urgent' %}style="background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171;"
-                                                {% elif item.personal_tag == 'exam' %}style="background-color: #fef9c3; color: #854d0e; border: 1px solid #facc15;"
-                                                {% elif item.personal_tag == 'summary' %}style="background-color: #dcfce7; color: #166534; border: 1px solid #4ade80;"
-                                                {% elif item.personal_tag == 'important' %}style="background-color: #dbeafe; color: #1e40af; border: 1px solid #60a5fa;"
+                                                {% if item.personal_tag == 'urgent' %}style="background-color: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.5);"
+                                                {% elif item.personal_tag == 'exam' %}style="background-color: rgba(255,193,7,0.1); color: #d39e00; border: 1px solid rgba(255,193,7,0.5);"
+                                                {% elif item.personal_tag == 'summary' %}style="background-color: rgba(25,135,84,0.1); color: #198754; border: 1px solid rgba(25,135,84,0.5);"
+                                                {% elif item.personal_tag == 'important' %}style="background-color: rgba(13,110,253,0.1); color: #0d6efd; border: 1px solid rgba(13,110,253,0.5);"
                                                 {% endif %}>
                                                 {{ item.get_personal_tag_display }}
                                             </span>
                                         {% endif %}
                                     </h6>
-                                    <small class="text-muted">{{ item.created_at|date:"d/m/Y" }}</small>
+                                    <small style="color: var(--gd-text-muted);">{{ item.created_at|date:"d/m/Y" }}</small>
                                 </div>
                             </div>
                             <div class="actions d-flex align-items-center gap-2">
@@ -167,7 +169,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{ item.id }}">
                                     <input type="hidden" name="type" value="external">
-                                    <select name="tag" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size: 0.75rem; width: auto;">
+                                    <select name="tag" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size: 0.75rem; width: auto; background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
                                         <option value="none" {% if item.personal_tag == 'none' %}selected{% endif %}>תיוג</option>
                                         <option value="urgent" {% if item.personal_tag == 'urgent' %}selected{% endif %}>חומר עזר</option>
                                         <option value="exam" {% if item.personal_tag == 'exam' %}selected{% endif %}>למבחן</option>
@@ -178,14 +180,14 @@
 
                                 <form method="POST" action="{% url 'delete_external_resource' item.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-link text-danger p-0 shadow-none">
+                                    <button type="submit" class="btn btn-link text-danger p-0 shadow-none hover-scale">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
                             </div>
                         </div>
                     {% empty %}
-                        <div class="text-center py-5 text-muted">אין משאבים חיצוניים.</div>
+                        <div class="text-center py-5" style="color: var(--gd-text-muted);">אין משאבים חיצוניים.</div>
                     {% endfor %}
                 </div>
             </div>
@@ -196,30 +198,30 @@
 {# Modal #}
 <div class="modal fade" id="addExternalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text);">
             <form method="POST" action="{% url 'add_external_resource' %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="modal-header border-bottom-0">
+                <div class="modal-header border-bottom" style="border-color: var(--gd-border) !important;">
                     <h5 class="modal-title fw-bold">הוספת משאב חיצוני</h5>
-                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close ms-0 me-auto shadow-none" data-bs-dismiss="modal" style="filter: var(--gd-icon-filter);"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">כותרת</label>
-                        <input type="text" name="title" class="form-control rounded-3" placeholder="למשל: סיכום בדרייב של המרצה" required>
+                        <input type="text" name="title" class="form-control rounded-3" placeholder="למשל: סיכום בדרייב של המרצה" required style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">קישור (URL)</label>
-                        <input type="url" name="link" class="form-control rounded-3" placeholder="https://...">
+                        <input type="url" name="link" class="form-control rounded-3" placeholder="https://..." style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
                     </div>
-                    <div class="text-center my-2 text-muted">-- או --</div>
+                    <div class="text-center my-2" style="color: var(--gd-text-muted);">-- או --</div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">העלאת קובץ</label>
-                        <input type="file" name="file" class="form-control rounded-3">
+                        <input type="file" name="file" class="form-control rounded-3" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">תיוג ראשוני</label>
-                        <select name="personal_tag" class="form-select rounded-3">
+                        <select name="personal_tag" class="form-select rounded-3" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
                             <option value="none">ללא תיוג</option>
                             <option value="urgent">חומר עזר</option>
                             <option value="exam">למבחן</option>
@@ -238,33 +240,42 @@
 
 <style>
     .cursor-pointer { cursor: pointer; }
-    .nav-pills .nav-link.active { background-color: #1e3a8a !important; }
-    .nav-link { color: #64748b; }
-    .filter-btn.active { background-color: #1e3a8a !important; color: white !important; border-color: #1e3a8a !important; }
+    
+    /* עיצוב טאבים מותאם אישית למצב לילה */
+    .nav-pills .nav-link { color: var(--gd-text-muted); transition: all 0.3s ease; }
+    .nav-pills .nav-link:hover { color: var(--gd-primary); background-color: rgba(26, 115, 232, 0.05); }
+    .nav-pills .nav-link.active { background-color: var(--gd-primary) !important; color: white !important; }
+    
+    .filter-btn { transition: all 0.3s ease; }
+    .filter-btn.active { background-color: var(--gd-primary) !important; color: white !important; border-color: var(--gd-primary) !important; box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); }
+
+    /* פתרון מעולה לטאבים במובייל */
+    .mobile-scroll-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        width: 100%;
+    }
+    .mobile-scroll-nav::-webkit-scrollbar { display: none; }
 
     /* תיקון השלוש נקודות: ביטול חיתוך תוכן בתוך אלמנטים נפתחים */
-    .course-group, .type-folder-container {
-        overflow: visible !important;
-    }
-    
-    .collapse.show {
-        overflow: visible !important;
-    }
-
-    /* הבטחת עדיפות לתפריט הנפתח */
-    .dropdown-menu {
-        z-index: 2000 !important;
-    }
+    .course-group, .type-folder-container { overflow: visible !important; }
+    .collapse.show { overflow: visible !important; }
+    .dropdown-menu { z-index: 2000 !important; }
 </style>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 function filterByTag(tagName, btnElement) {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active', 'btn-primary');
         btn.classList.add('btn-outline-secondary');
+        btn.style.backgroundColor = 'var(--gd-bg)';
+        btn.style.color = 'var(--gd-text)';
     });
     btnElement.classList.add('active', 'btn-primary');
-    btnElement.classList.remove('btn-outline-secondary');
+    btnElement.style.backgroundColor = '';
+    btnElement.style.color = '';
 
     const items = document.querySelectorAll('[data-personal-tag]');
     
@@ -302,5 +313,55 @@ function filterByTag(tagName, btnElement) {
         }
     });
 }
+
+// לוגיקת ה-AJAX של התגובות שמטפלת בכל המסמכים בצורה חכמה ויעילה
+$(document).ready(function() {
+    $(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form', function(e) {
+        e.preventDefault(); 
+        
+        var form = $(this);
+        var commentsList = form.closest('.modal-content').find('.comments-container');
+        var submitBtn = form.find('button[type="submit"]');
+        var inputText = form.find('input[name="comment_text"]');
+        
+        if (submitBtn.prop('disabled')) return;
+
+        submitBtn.prop('disabled', true).css('opacity', '0.7'); 
+
+        $.ajax({
+            type: 'POST',
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function(response) {
+                if (response.status === 'success') {
+                    var newComment = `
+                        <div class="d-flex gap-2 mb-3">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                ${response.user.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold" style="font-size: 0.85rem;">${response.user}</span>
+                                    <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
+                                </div>
+                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${response.text}</p>
+                            </div>
+                        </div>`;
+                    
+                    commentsList.append(newComment);
+                    commentsList.animate({ scrollTop: commentsList[0].scrollHeight }, 300);
+                    inputText.val('');
+                    commentsList.find('.text-center.py-4').fadeOut(200);
+                }
+            },
+            error: function() {
+                alert('שגיאה בשליחת התגובה. נסה שוב.');
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).css('opacity', '1');
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

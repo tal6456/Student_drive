@@ -39,14 +39,13 @@ The template also includes a modal for viewing and adding comments related to th
                     {{ doc.title }}
                 </a>
 
-                {# --- הצגת הצ'יפ הצבעוני - עם data-tag לגיבוי --- #}
                 {% if show_personal_tags and doc.personal_tag and doc.personal_tag != 'none' %}
                     <span class="badge rounded-pill ms-2 mb-1" data-tag="{{ doc.personal_tag }}"
                         style="font-size: 0.65rem; padding: 0.35em 0.65em;
-                        {% if doc.personal_tag == 'urgent' %} background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171;
-                        {% elif doc.personal_tag == 'exam' %} background-color: #fef9c3; color: #854d0e; border: 1px solid #facc15;
-                        {% elif doc.personal_tag == 'summary' %} background-color: #dcfce7; color: #166534; border: 1px solid #4ade80;
-                        {% elif doc.personal_tag == 'important' %} background-color: #dbeafe; color: #1e40af; border: 1px solid #60a5fa;
+                        {% if doc.personal_tag == 'urgent' %} background-color: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.5);
+                        {% elif doc.personal_tag == 'exam' %} background-color: rgba(255,193,7,0.1); color: #d39e00; border: 1px solid rgba(255,193,7,0.5);
+                        {% elif doc.personal_tag == 'summary' %} background-color: rgba(25,135,84,0.1); color: #198754; border: 1px solid rgba(25,135,84,0.5);
+                        {% elif doc.personal_tag == 'important' %} background-color: rgba(13,110,253,0.1); color: #0d6efd; border: 1px solid rgba(13,110,253,0.5);
                         {% endif %}">
                         <i class="fas fa-tag me-1"></i>
                         {{ doc.get_personal_tag_display }}
@@ -67,7 +66,7 @@ The template also includes a modal for viewing and adding comments related to th
 
                 {% if doc.staff_member %}
                     <span class="opacity-50 mx-1 d-none d-md-inline">|</span>
-                    <a href="{% url 'staff_detail' doc.staff_member.id %}" class="text-decoration-none text-nowrap d-none d-md-inline-flex align-items-center" style="color: #4285f4; font-weight: 600;">
+                    <a href="{% url 'staff_detail' doc.staff_member.id %}" class="text-decoration-none text-nowrap d-none d-md-inline-flex align-items-center" style="color: var(--gd-primary); font-weight: 600;">
                         <i class="fas fa-user-tie me-1" style="font-size: 0.8rem;"></i>
                         {{ doc.staff_member.name.split.0|slice:":1" }}. {{ doc.staff_member.name.split|slice:"1:"|join:" " }}
                     </a>
@@ -92,9 +91,7 @@ The template also includes a modal for viewing and adding comments related to th
     </div>
 
     <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2 doc-actions-group">
-
         {% if user.is_authenticated %}
-            {# כפתור הערות למחשב בלבד - d-none d-md-flex #}
             <button type="button" class="btn btn-sm rounded-pill px-3 shadow-none d-none d-md-flex align-items-center gap-1 transition-all"
                     style="border: 1px solid var(--gd-border); background-color: var(--gd-bg); color: var(--gd-text-muted);"
                     data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" title="שאלות והערות">
@@ -107,11 +104,11 @@ The template also includes a modal for viewing and adding comments related to th
                     style="border: 1px solid {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-border){% endif %}; background-color: {% if user in doc.likes.all %}rgba(26, 115, 232, 0.1){% else %}var(--gd-bg){% endif %}; color: {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-text-muted){% endif %};"
                     title="אהבתי">
                 <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i>
-                <span class="like-count-{{ doc.id }} fw-bold">{{ doc.total_likes }}</span>
+                <span class="like-count-{{ doc.id }} fw-bold">{{ doc.likes.count }}</span>
             </button>
         {% else %}
             <span class="badge rounded-pill d-flex align-items-center gap-1 px-3 py-2 fw-normal like-btn-responsive" style="background-color: var(--gd-bg); color: var(--gd-text-muted); border: 1px solid var(--gd-border) !important;">
-                <i class="far fa-thumbs-up"></i> {{ doc.total_likes }}
+                <i class="far fa-thumbs-up"></i> {{ doc.likes.count }}
             </span>
         {% endif %}
 
@@ -127,7 +124,6 @@ The template also includes a modal for viewing and adding comments related to th
             </button>
 
             <ul id="customMenu{{ unique_id|default:doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
-                {# כפתור הערות לאפליקציה בלבד בתוך ה-Menu - d-md-none #}
                 {% if user.is_authenticated %}
                 <li class="d-md-none">
                     <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" style="color: var(--gd-text);">
@@ -146,13 +142,13 @@ The template also includes a modal for viewing and adding comments related to th
                 {% if user.is_authenticated %}
                     {% if show_personal_tags %}
                         <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
-                        <li><h6 class="dropdown-header text-dark fw-bold"><i class="fas fa-thumbtack me-1 text-primary"></i> תיוג אישי</h6></li>
+                        <li><h6 class="dropdown-header fw-bold" style="color: var(--gd-text);"><i class="fas fa-thumbtack me-1 text-primary"></i> תיוג אישי</h6></li>
                         <li class="px-3 py-1">
                             <form action="{% url 'update_resource_tag' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{ doc.id }}">
                                 <input type="hidden" name="type" value="doc">
-                                <select name="tag" class="form-select form-select-sm border-primary" onchange="this.form.submit()" style="font-size: 0.8rem; cursor: pointer;">
+                                <select name="tag" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size: 0.8rem; cursor: pointer; background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-primary);">
                                     <option value="none" {% if doc.personal_tag == 'none' %}selected{% endif %}>ללא תיוג</option>
                                     <option value="urgent" {% if doc.personal_tag == 'urgent' %}selected{% endif %}>🔴 חומר עזר</option>
                                     <option value="exam" {% if doc.personal_tag == 'exam' %}selected{% endif %}>🟡 למבחן</option>
@@ -201,7 +197,7 @@ The template also includes a modal for viewing and adding comments related to th
         <div class="modal-content border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text);">
             <div class="modal-header border-bottom" style="border-color: var(--gd-border) !important;">
                 <h5 class="modal-title fw-bold" id="commentModalLabel{{ doc.id }}">
-                    <i class="far fa-comments me-2 text-primary"></i> שאלות על: {{ doc.title|truncatechars:30 }}
+                    <i class="far fa-comments me-2 text-primary"></i> שאלות על הקובץ
                 </h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--gd-icon-filter);"></button>
             </div>
@@ -247,55 +243,4 @@ The template also includes a modal for viewing and adding comments related to th
         </div>
     </div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script>
-$(document).off('submit', '.ajax-comment-form').on('submit', '.ajax-comment-form', function(e) {
-    e.preventDefault(); 
-    
-    var form = $(this);
-    var commentsList = form.closest('.modal-content').find('.comments-container');
-    var submitBtn = form.find('button[type="submit"]');
-    var inputText = form.find('input[name="comment_text"]');
-    
-    if (submitBtn.prop('disabled')) return;
-
-    submitBtn.prop('disabled', true).css('opacity', '0.7'); 
-
-    $.ajax({
-        type: 'POST',
-        url: form.attr('action'),
-        data: form.serialize(),
-        success: function(response) {
-            if (response.status === 'success') {
-                var newComment = `
-                    <div class="d-flex gap-2 mb-3">
-                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                            ${response.user.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-bold" style="font-size: 0.85rem;">${response.user}</span>
-                                <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
-                            </div>
-                            <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${response.text}</p>
-                        </div>
-                    </div>`;
-                
-                commentsList.append(newComment);
-                commentsList.animate({ scrollTop: commentsList[0].scrollHeight }, 300);
-                inputText.val('');
-                commentsList.find('.text-center.py-4').fadeOut(200);
-            }
-        },
-        error: function() {
-            alert('שגיאה בשליחת התגובה. נסה שוב.');
-        },
-        complete: function() {
-            submitBtn.prop('disabled', false).css('opacity', '1');
-        }
-    });
-});
-</script>
 {% endif %}

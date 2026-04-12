@@ -20,8 +20,9 @@ def personal_drive(request):
     user = request.user
     
     # 1. שליפת כל הקבצים שהמשתמש העלה עם select_related לביצועים
-    uploaded_files_queryset = Document.objects.filter(uploaded_by=user).select_related('course', 'folder').order_by('-upload_date')
-
+    uploaded_files_queryset = Document.objects.filter(uploaded_by=user).select_related('course',
+                                                                                       'folder').prefetch_related(
+        'likes', 'comments').order_by('-upload_date')
     CONTENT_TYPES = ['הרצאות', 'תרגולים', 'מטלות', 'מבחני עבר', 'חומרי עזר נוספים', 'עמית']
     
     processed_uploads = []
@@ -52,7 +53,7 @@ def personal_drive(request):
         'document__course',
         'document__folder',
         'document__uploaded_by'
-    )
+    ).prefetch_related('document__likes', 'document__comments')
 
     processed_logs = []
     for log in logs_queryset:
