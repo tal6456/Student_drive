@@ -266,20 +266,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // שליפת כל המודלים (חלונות קופצים) ל-body כדי שהמסך לא יחסום אותם
+    
+    // 1. העברת כל החלונות הקופצים החוצה כדי שיעבדו במובייל
     document.querySelectorAll('.modal').forEach(function(modal) {
         document.body.appendChild(modal);
     });
-    // ----------------------------
 
-    // מאזין גלובלי לכל טופס תגובה... (הקוד שכבר יש לך שם נשאר אותו דבר)
+    // 2. מאזין שליחת תגובות (AJAX נקי)
     document.body.addEventListener('submit', function(e) {
-    // מאזין גלובלי לכל טופס תגובה, גם אם הוא נטען אחרי שהדף עלה
-    document.body.addEventListener('submit', function(e) {
-        
-        // בודקים אם הטופס שנשלח הוא טופס תגובה
         if (e.target && e.target.classList.contains('ajax-comment-form')) {
-            e.preventDefault(); // השורת קסם שעוצרת את מעבר הדף השחור!
+            e.preventDefault();
 
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
@@ -288,7 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (submitBtn.disabled) return;
             
-            // מכבים את הכפתור זמנית כדי למנוע לחיצות כפולות
             submitBtn.disabled = true;
             submitBtn.style.opacity = '0.7';
 
@@ -298,13 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // אומר לשרת שזה AJAX
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // 1. יצירת ה-HTML של התגובה החדשה
                     const newComment = `
                         <div class="d-flex gap-2 mb-3 animate__animated animate__fadeIn">
                             <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
@@ -319,16 +313,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>`;
                     
-                    // 2. הוספת התגובה למסך
                     commentsList.insertAdjacentHTML('beforeend', newComment);
-                    
-                    // 3. גלילה אוטומטית למטה כדי לראות את התגובה
                     commentsList.scrollTop = commentsList.scrollHeight;
-                    
-                    // 4. ניקוי שורת הטקסט
                     inputText.value = '';
                     
-                    // 5. העלמת ההודעה של "אין תגובות" (אם זה היה ריק קודם)
                     const emptyMsg = commentsList.querySelector('.text-center.py-4');
                     if (emptyMsg) emptyMsg.style.display = 'none';
                 } else {
@@ -340,7 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('שגיאה בתקשורת עם השרת.');
             })
             .finally(() => {
-                // החזרת הכפתור למצב פעיל
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
             });
