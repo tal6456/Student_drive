@@ -162,3 +162,34 @@ def copy_file_to_my_drive(request, document_id):
         messages.info(request, "הקובץ כבר קיים בדרייב האישי שלך.")
 
     return redirect(request.META.get('HTTP_REFERER', 'home'))
+
+@login_required
+def delete_entire_course_folder(request):
+    if request.method == 'POST':
+        course_name = request.POST.get('course_name')
+        
+        # מחיקת כל המסמכים שאתה העלית ושייכים לקורס הזה
+        if course_name == "ללא קורס":
+            Document.objects.filter(uploaded_by=request.user, course__isnull=True).delete()
+        else:
+            # אנחנו מחפשים לפי שם הקורס כי זה מה שיש לנו ב-grouper ב-HTML
+            Document.objects.filter(uploaded_by=request.user, course__name=course_name).delete()
+            
+        messages.success(request, f"התיקייה '{course_name}' נמחקה בהצלחה מהדרייב שלך.")
+    
+    return redirect('personal_drive')
+
+@login_required
+def delete_download_history_folder(request):
+    if request.method == 'POST':
+        course_name = request.POST.get('course_name')
+        from core.models import DownloadLog  # וודא שהמודל מיובא
+        
+        if course_name == "ללא קורס":
+            DownloadLog.objects.filter(user=request.user, document__course__isnull=True).delete()
+        else:
+            DownloadLog.objects.filter(user=request.user, document__course__name=course_name).delete()
+            
+        messages.success(request, f"היסטוריית ההורדות של '{course_name}' נמחקה.")
+    
+    return redirect('personal_drive')

@@ -47,17 +47,28 @@
     </div>
 
     <div class="tab-content animate__animated animate__fadeInUp" id="pills-tabContent">
+        {# --- טאב העלאות שלי --- #}
         <div class="tab-pane fade show active" id="pills-upload" role="tabpanel">
             {% regroup uploaded_files by course.name as upload_course_list %}
             {% for course in upload_course_list %}
                 <div class="course-group mb-3 shadow-sm border rounded-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
-                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer"
-                         data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
-                        <div class="d-flex align-items-center">
+                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
+                        <div class="d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}">
                             <i class="fas fa-university text-primary ms-3"></i>
                             <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
                         </div>
-                        <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
+                            
+                            <form action="{% url 'delete_entire_course_folder' %}" method="POST" class="delete-folder-form" onsubmit="return confirm('האם אתה בטוח שברצונך למחוק את כל התיקייה מהעלאות שלך?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="course_name" value="{{ course.grouper|default:'ללא קורס' }}">
+                                <button type="submit" class="btn btn-link text-danger p-1 shadow-none hover-scale" title="מחק תיקייה">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="collapse" id="up_course_{{ forloop.counter }}">
@@ -88,22 +99,35 @@
             {% endfor %}
         </div>
 
+        {# --- טאב היסטוריית הורדות (מעודכן עם אפשרות מחיקה) --- #}
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
             {% for course in course_list %}
                 <div class="course-group mb-3 shadow-sm border rounded-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                     <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer"
-                         data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
-                        <div class="d-flex align-items-center">
+                         style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
+                        <div class="d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}">
                             <i class="fas fa-university text-primary ms-3"></i>
-                            <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper }}</h5>
+                            <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
                         </div>
-                        <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
+                            
+                            {# --- כפתור מחיקה לטאב הורדות --- #}
+                            <form action="{% url 'delete_download_history_folder' %}" method="POST" class="delete-folder-form" onsubmit="return confirm('האם אתה בטוח שברצונך לנקות את היסטוריית ההורדות עבור קורס זה?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="course_name" value="{{ course.grouper|default:'ללא קורס' }}">
+                                <button type="submit" class="btn btn-link text-danger p-1 shadow-none hover-scale" title="נקה היסטוריית תיקייה">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="collapse" id="course_{{ forloop.counter }}">
                         <div class="p-3">
-                            {% regroup course.list by top_folder_name as type_list %}
+                            {% regroup course.list by document.top_folder_name as type_list %}
                             {% for type in type_list %}
                                 <div class="mb-3 border rounded-3 type-folder-container" style="border-color: var(--gd-border) !important;">
                                     <div class="p-2 d-flex align-items-center cursor-pointer border-bottom"
@@ -129,6 +153,7 @@
             {% endfor %}
         </div>
 
+        {# --- טאב משאבים חיצוניים --- #}
         <div class="tab-pane fade" id="pills-external" role="tabpanel">
             <div class="card shadow-sm border rounded-4 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                 <div class="list-group list-group-flush border-0">
@@ -240,42 +265,37 @@
 
 <style>
     .cursor-pointer { cursor: pointer; }
-    
-    /* עיצוב טאבים מותאם אישית למצב לילה */
     .nav-pills .nav-link { color: var(--gd-text-muted); transition: all 0.3s ease; }
     .nav-pills .nav-link:hover { color: var(--gd-primary); background-color: rgba(26, 115, 232, 0.05); }
     .nav-pills .nav-link.active { background-color: var(--gd-primary) !important; color: white !important; }
-    
     .filter-btn { transition: all 0.3s ease; }
     .filter-btn.active { background-color: var(--gd-primary) !important; color: white !important; border-color: var(--gd-primary) !important; box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); }
-
-    /* פתרון מעולה לטאבים במובייל */
-    .mobile-scroll-nav {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        width: 100%;
-    }
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: scale(1.2); }
+    .mobile-scroll-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; width: 100%; }
     .mobile-scroll-nav::-webkit-scrollbar { display: none; }
-
-    /* תיקון השלוש נקודות: ביטול חיתוך תוכן בתוך אלמנטים נפתחים */
     .course-group, .type-folder-container { overflow: visible !important; }
     .collapse.show { overflow: visible !important; }
     .dropdown-menu { z-index: 2000 !important; }
 </style>
 
 <script>
-// פונקציה חסינה שנצמדת לטופס ולא משנה איפה הוא נמצא במסך
-window.submitCommentForm = function(e, form) {
-    e.preventDefault(); // השורת קסם שעוצרת את המעבר לדף הלבן!
+function filterByTag(tag, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+    btn.classList.add('active', 'btn-primary');
+    document.querySelectorAll('.doc-row-container, .external-row').forEach(row => {
+        if (tag === 'all' || row.dataset.personalTag === tag) row.style.display = 'flex';
+        else row.style.display = 'none';
+    });
+}
 
+window.submitCommentForm = function(e, form) {
+    e.preventDefault(); 
     const submitBtn = form.querySelector('button[type="submit"]');
     const inputText = form.querySelector('input[name="comment_text"]');
     const commentsList = form.closest('.modal-content').querySelector('.comments-container');
 
     if (submitBtn.disabled) return;
-    
-    // מניעת לחיצות כפולות
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.7';
 
@@ -284,9 +304,7 @@ window.submitCommentForm = function(e, form) {
     fetch(form.action, {
         method: 'POST',
         body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())
     .then(data => {
@@ -304,21 +322,16 @@ window.submitCommentForm = function(e, form) {
                         <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${data.text}</p>
                     </div>
                 </div>`;
-            
             commentsList.insertAdjacentHTML('beforeend', newComment);
-            commentsList.scrollTop = commentsList.scrollHeight; // גלילה למטה
-            inputText.value = ''; // ניקוי השורה
-            
+            commentsList.scrollTop = commentsList.scrollHeight;
+            inputText.value = '';
             const emptyMsg = commentsList.querySelector('.text-center.py-4');
-            if (emptyMsg) emptyMsg.style.display = 'none'; // העלמת הערת ה"אין תגובות"
+            if (emptyMsg) emptyMsg.style.display = 'none';
         } else {
             alert('שגיאה: ' + (data.error || 'משהו השתבש'));
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('שגיאה בתקשורת עם השרת.');
-    })
+    .catch(error => { alert('שגיאה בתקשורת עם השרת.'); })
     .finally(() => {
         submitBtn.disabled = false;
         submitBtn.style.opacity = '1';

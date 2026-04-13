@@ -63,6 +63,8 @@ urlpatterns = [
     # הדרייב האישי החדש (מה שהוספנו עכשיו)
     # ==========================================
     path('drive/', personal_drive.personal_drive, name='personal_drive'),
+    path('delete-folder/', views.delete_entire_course_folder, name='delete_entire_course_folder'),
+    path('delete-download-history/', views.delete_download_history_folder, name='delete_download_history_folder'),
 
     # ==========================================
     # קהילה ורשת חברתית
