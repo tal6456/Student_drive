@@ -24,17 +24,17 @@
         <div class="mobile-scroll-nav">
             <ul class="nav nav-pills p-2 rounded-4 shadow-sm border flex-nowrap" id="pills-tab" role="tablist" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                 <li class="nav-item flex-shrink-0">
-                    <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button">
+                    <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button" role="tab">
                         <i class="fas fa-file-upload ms-2"></i>העלאות שלי
                     </button>
                 </li>
                 <li class="nav-item flex-shrink-0">
-                    <button class="nav-link rounded-3 fw-bold" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button">
+                    <button class="nav-link rounded-3 fw-bold" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button" role="tab">
                         <i class="fas fa-history ms-2"></i>היסטוריית הורדות
                     </button>
                 </li>
                 <li class="nav-item flex-shrink-0">
-                    <button class="nav-link rounded-3 fw-bold" id="pills-external-tab" data-bs-toggle="pill" data-bs-target="#pills-external" type="button">
+                    <button class="nav-link rounded-3 fw-bold" id="pills-external-tab" data-bs-toggle="pill" data-bs-target="#pills-external" type="button" role="tab">
                         <i class="fas fa-link ms-2"></i>משאבים חיצוניים
                     </button>
                 </li>
@@ -60,7 +60,6 @@
                         
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
-                            
                             <form action="{% url 'delete_entire_course_folder' %}" method="POST" class="delete-folder-form" onsubmit="return confirm('האם אתה בטוח שברצונך למחוק את כל התיקייה מהעלאות שלך?');">
                                 {% csrf_token %}
                                 <input type="hidden" name="course_name" value="{{ course.grouper|default:'ללא קורס' }}">
@@ -99,7 +98,7 @@
             {% endfor %}
         </div>
 
-        {# --- טאב היסטוריית הורדות (מעודכן עם אפשרות מחיקה) --- #}
+        {# --- טאב היסטוריית הורדות --- #}
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
             {% for course in course_list %}
@@ -113,8 +112,6 @@
                         
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge rounded-pill bg-primary px-3">{{ course.list|length }} קבצים</span>
-                            
-                            {# --- כפתור מחיקה לטאב הורדות --- #}
                             <form action="{% url 'delete_download_history_folder' %}" method="POST" class="delete-folder-form" onsubmit="return confirm('האם אתה בטוח שברצונך לנקות את היסטוריית ההורדות עבור קורס זה?');">
                                 {% csrf_token %}
                                 <input type="hidden" name="course_name" value="{{ course.grouper|default:'ללא קורס' }}">
@@ -265,10 +262,10 @@
 
 <style>
     .cursor-pointer { cursor: pointer; }
-    .nav-pills .nav-link { color: var(--gd-text-muted); transition: all 0.3s ease; }
+    .nav-pills .nav-link { color: var(--gd-text-muted); transition: all 0.3s ease; border: 1px solid transparent; }
     .nav-pills .nav-link:hover { color: var(--gd-primary); background-color: rgba(26, 115, 232, 0.05); }
     .nav-pills .nav-link.active { background-color: var(--gd-primary) !important; color: white !important; }
-    .filter-btn { transition: all 0.3s ease; }
+    .filter-btn { transition: all 0.3s ease; border: 1px solid var(--gd-border); }
     .filter-btn.active { background-color: var(--gd-primary) !important; color: white !important; border-color: var(--gd-primary) !important; box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); }
     .hover-scale { transition: transform 0.2s; }
     .hover-scale:hover { transform: scale(1.2); }
@@ -277,15 +274,59 @@
     .course-group, .type-folder-container { overflow: visible !important; }
     .collapse.show { overflow: visible !important; }
     .dropdown-menu { z-index: 2000 !important; }
+    .tag-badge { font-size: 0.7rem; padding: 0.25rem 0.6rem; vertical-align: middle; }
 </style>
 
 <script>
 function filterByTag(tag, btn) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+    // 1. ניקוי ויזואלי של הכפתורים
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('active', 'btn-primary');
+        b.style.backgroundColor = 'var(--gd-bg)';
+        b.style.color = 'var(--gd-text)';
+    });
+    
+    // 2. הדגשת הכפתור הנבחר
     btn.classList.add('active', 'btn-primary');
-    document.querySelectorAll('.doc-row-container, .external-row').forEach(row => {
-        if (tag === 'all' || row.dataset.personalTag === tag) row.style.display = 'flex';
-        else row.style.display = 'none';
+    btn.style.backgroundColor = ''; 
+    btn.style.color = '';
+
+    // 3. סינון הקבצים (שורות)
+    const rows = document.querySelectorAll('.doc-row-container');
+    rows.forEach(row => {
+        const rowTag = row.getAttribute('data-personal-tag') || 'none';
+        if (tag === 'all' || rowTag === tag) {
+            row.style.setProperty('display', 'flex', 'important');
+        } else {
+            row.style.setProperty('display', 'none', 'important');
+        }
+    });
+
+    // 4. הסתרת תיקיות ריקות (סוגי קבצים וקורסים)
+    // נרוץ על כל תיקיית "סוג" (הדרג הפנימי)
+    document.querySelectorAll('.type-folder-container').forEach(typeFolder => {
+        // בודקים אם יש בתוך התיקייה הזו לפחות קובץ אחד שמוצג
+        const hasVisibleFiles = Array.from(typeFolder.querySelectorAll('.doc-row-container'))
+                                     .some(row => row.style.display !== 'none');
+        
+        if (hasVisibleFiles || tag === 'all') {
+            typeFolder.style.setProperty('display', 'block', 'important');
+        } else {
+            typeFolder.style.setProperty('display', 'none', 'important');
+        }
+    });
+
+    // נרוץ על כל קבוצת "קורס" (הדרג החיצוני)
+    document.querySelectorAll('.course-group').forEach(courseGroup => {
+        // בודקים אם יש בתוך הקורס לפחות תיקיית סוג אחת שמוצגת
+        const hasVisibleTypes = Array.from(courseGroup.querySelectorAll('.type-folder-container'))
+                                     .some(type => type.style.display !== 'none');
+        
+        if (hasVisibleTypes || tag === 'all') {
+            courseGroup.style.setProperty('display', 'block', 'important');
+        } else {
+            courseGroup.style.setProperty('display', 'none', 'important');
+        }
     });
 }
 
@@ -295,9 +336,11 @@ window.submitCommentForm = function(e, form) {
     const inputText = form.querySelector('input[name="comment_text"]');
     const commentsList = form.closest('.modal-content').querySelector('.comments-container');
 
-    if (submitBtn.disabled) return;
+    if (!inputText.value.trim() || submitBtn.disabled) return;
+    
     submitBtn.disabled = true;
-    submitBtn.style.opacity = '0.7';
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
     const formData = new FormData(form);
 
@@ -306,7 +349,10 @@ window.submitCommentForm = function(e, form) {
         body: formData,
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
     .then(data => {
         if (data.status === 'success') {
             const newComment = `
@@ -331,10 +377,13 @@ window.submitCommentForm = function(e, form) {
             alert('שגיאה: ' + (data.error || 'משהו השתבש'));
         }
     })
-    .catch(error => { alert('שגיאה בתקשורת עם השרת.'); })
+    .catch(error => { 
+        console.error('Error:', error);
+        alert('שגיאה בתקשורת עם השרת.'); 
+    })
     .finally(() => {
         submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
+        submitBtn.innerHTML = originalBtnText;
     });
 };
 </script>
