@@ -449,9 +449,17 @@
 <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true" dir="rtl">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--gd-card);">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="fw-bold mb-0" style="color: var(--gd-text);">אירוע ליום <span id="modalDate"></span></h6>
-                <button type="button" class="btn-close ms-0 me-auto" style="filter: var(--gd-invert-icons);" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0 pb-0 position-relative">
+                <h6 id="eventModalTitle" class="fw-bold mb-0 w-100 text-center" style="color: var(--gd-text);">
+                    אירוע ליום <span id="modalDate"></span>
+                </h6>
+                <button
+                    type="button"
+                    class="btn-close position-absolute start-0 top-0 mt-2 ms-2"
+                    style="filter: var(--gd-invert-icons);"
+                    data-bs-dismiss="modal"
+                    aria-label="Close">
+                </button>
             </div>
             <div class="modal-body">
                 <input type="text" id="evTitle" class="form-control form-control-sm mb-2" placeholder="מה המשימה?" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
@@ -547,6 +555,10 @@ function openModal(day, month, year) {
     const key = `${year}-${month}-${day}`;
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
     modal.show();
+    const modalDate = document.getElementById('modalDate');
+    const dd = String(day).padStart(2, '0');
+    const mm = String(month).padStart(2, '0');
+    modalDate.innerText = `${dd}.${mm}`;
 
     // אלמנטים
     const titleInput = document.getElementById('evTitle');
