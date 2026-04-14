@@ -159,7 +159,15 @@
     /* עיצוב הצ'קבוקס של תנאי השימוש ויישור מימין לשמאל */
     .form-check-input {
         cursor: pointer;
-        margin-right: -1.5em; /* תיקון RTL ל-Bootstrap */
+        margin-right: 0;
+        margin-left: 0.6rem;
+        width: 1.2em;
+        height: 1.2em;
+        min-width: 1.2em;
+    }
+    .form-check-input:checked {
+        background-color: var(--gd-primary) !important;
+        border-color: var(--gd-primary) !important;
     }
     
     /* אפקט לטוגל הסטודנט כשהוא דלוק */
