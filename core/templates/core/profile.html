@@ -94,7 +94,7 @@
                         {% if user.profile.university %}
                             <span class="info-tag"><i class="fas fa-university ms-1 text-primary"></i> {{ user.profile.university.name }}</span>
                             <span class="info-tag"><i class="fas fa-graduation-cap ms-1 text-success"></i> {{ user.profile.major.name }}</span>
-                            <span class="info-tag"><i class="fas fa-calendar-alt ms-1 text-muted"></i> שנה {{ user.profile.get_year_display }}</span>
+                            <span class="info-tag"><i class="fas fa-calendar-alt ms-1 text-muted"></i> שנה {{ user.profile.year }}</span>
                         {% else %}
                             <span class="info-tag"><i class="fas fa-user-graduate ms-1"></i> לומד באופן עצמאי</span>
                         {% endif %}
@@ -136,13 +136,15 @@
                     </div>
                 </div>
                 
-                {# פוטר עדין להשפעה בקהילה #}
+                {# פוטר עדין להשפעה בקהילה - מוצג רק אם יש הורדות #}
+                {% if total_downloads > 0 %}
                 <div class="bg-light p-3 text-center border-top">
                     <p class="text-muted small mb-0">
                         <i class="fas fa-fire-alt text-danger ms-1"></i>
                         הקבצים שלך הורידו <strong>{{ total_downloads }}</strong> פעמים. כבוד!
                     </p>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
