@@ -24,6 +24,8 @@
 עלינו לדאוג שבקובץ הזה מאוחסנים נושא הטפסים מול המשתמש באתר!!
 """
 
+import re
+
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Document, Course, UserProfile, Folder
@@ -169,7 +171,28 @@ class UserProfileForm(BaseStyledModelForm):
         self.fields['year'].required = False
         self.fields['year'].empty_label = "--- לא רלוונטי ---"
         self.fields['phone_number'].required = False
-        self.fields['phone_number'].widget.attrs.update({'placeholder': 'לדוגמה: 0501234567'})
+        self.fields['phone_number'].widget.attrs.update({
+            'placeholder': 'לדוגמה: 0501234567',
+            'type': 'tel',
+            'autocomplete': 'tel',
+            'inputmode': 'tel',
+        })
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if not phone_number:
+            return phone_number
+
+        # Normalize number by stripping spaces, dashes and parentheses.
+        normalized = re.sub(r'[\s\-()]+', '', phone_number)
+
+        valid_pattern = re.compile(r'^(?:\+9725\d{8}|05\d{8}|\+972[23489]\d{7}|0[23489]\d{7})$')
+        if not valid_pattern.match(normalized):
+            raise forms.ValidationError(
+                'המספר שהוזן לא תקין. אנא הקלד מספר ישראלי תקין כמו 0501234567 או +972501234567.'
+            )
+
+        return normalized
 
     def clean(self):
         cleaned_data = super().clean()
