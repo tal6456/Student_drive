@@ -187,11 +187,11 @@
                                 </div>
                             </div>
                             <div class="actions d-flex align-items-center gap-2">
-                                <form action="{% url 'update_resource_tag' %}" method="POST" class="me-2">
+                                <form action="{% url 'update_resource_tag' %}" method="POST" class="me-2 external-tag-form">
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{ item.id }}">
                                     <input type="hidden" name="type" value="external">
-                                    <select name="tag" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size: 0.75rem; width: auto; background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
+                                    <select name="tag" class="form-select form-select-sm" style="font-size: 0.75rem; width: auto; background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
                                         <option value="none" {% if item.personal_tag == 'none' %}selected{% endif %}>תיוג</option>
                                         <option value="urgent" {% if item.personal_tag == 'urgent' %}selected{% endif %}>חומר עזר</option>
                                         <option value="exam" {% if item.personal_tag == 'exam' %}selected{% endif %}>למבחן</option>
@@ -200,7 +200,7 @@
                                     </select>
                                 </form>
 
-                                <form method="POST" action="{% url 'delete_external_resource' item.id %}" style="display: inline;">
+                                <form method="POST" action="{% url 'delete_external_resource' item.id %}" class="external-delete-form" style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-link text-danger p-0 shadow-none hover-scale">
                                         <i class="fas fa-trash-alt"></i>
@@ -268,6 +268,72 @@
 </style>
 
 <script>
+function getCSRFToken() {
+    const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    return tokenElement ? tokenElement.value : '';
+}
+
+function updateExternalResourceTag(form, row, newTag) {
+    const data = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) return;
+        row.dataset.personalTag = newTag;
+
+        const existingBadge = row.querySelector('.tag-badge');
+        if (newTag === 'none') {
+            if (existingBadge) existingBadge.remove();
+            return;
+        }
+
+        const tagLabelMap = {
+            urgent: 'חומרי עזר',
+            exam: 'למבחן',
+            summary: 'סיכומים',
+            important: 'חשוב'
+        };
+
+        const badgeText = tagLabelMap[newTag] || 'תיוג';
+        const badgeStyleMap = {
+            urgent: 'background-color: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.5);',
+            exam: 'background-color: rgba(255,193,7,0.1); color: #d39e00; border: 1px solid rgba(255,193,7,0.5);',
+            summary: 'background-color: rgba(25,135,84,0.1); color: #198754; border: 1px solid rgba(25,135,84,0.5);',
+            important: 'background-color: rgba(13,110,253,0.1); color: #0d6efd; border: 1px solid rgba(13,110,253,0.5);'
+        };
+
+        if (existingBadge) {
+            existingBadge.textContent = badgeText;
+            existingBadge.style = badgeStyleMap[newTag] || '';
+        } else {
+            const badge = document.createElement('span');
+            badge.className = 'badge rounded-pill ms-2 tag-badge';
+            badge.textContent = badgeText;
+            badge.style = badgeStyleMap[newTag] || '';
+            form.closest('.actions').insertBefore(badge, form);
+        }
+    });
+}
+
+function deleteExternalResourceRow(form) {
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const row = form.closest('.external-row');
+            if (row) row.remove();
+        }
+    });
+}
+
 function filterByTag(tag, btn) {
     // 1. ניקוי ויזואלי של הכפתורים
     document.querySelectorAll('.filter-btn').forEach(b => {
@@ -282,8 +348,19 @@ function filterByTag(tag, btn) {
     btn.style.color = '';
 
     // 3. סינון הקבצים (שורות)
-    const rows = document.querySelectorAll('.doc-row-container');
-    rows.forEach(row => {
+    const docRows = document.querySelectorAll('.doc-row-container');
+    const externalRows = document.querySelectorAll('.external-row');
+
+    docRows.forEach(row => {
+        const rowTag = row.getAttribute('data-personal-tag') || 'none';
+        if (tag === 'all' || rowTag === tag) {
+            row.style.setProperty('display', 'flex', 'important');
+        } else {
+            row.style.setProperty('display', 'none', 'important');
+        }
+    });
+
+    externalRows.forEach(row => {
         const rowTag = row.getAttribute('data-personal-tag') || 'none';
         if (tag === 'all' || rowTag === tag) {
             row.style.setProperty('display', 'flex', 'important');
@@ -293,9 +370,7 @@ function filterByTag(tag, btn) {
     });
 
     // 4. הסתרת תיקיות ריקות (סוגי קבצים וקורסים)
-    // נרוץ על כל תיקיית "סוג" (הדרג הפנימי)
     document.querySelectorAll('.type-folder-container').forEach(typeFolder => {
-        // בודקים אם יש בתוך התיקייה הזו לפחות קובץ אחד שמוצג
         const hasVisibleFiles = Array.from(typeFolder.querySelectorAll('.doc-row-container'))
                                      .some(row => row.style.display !== 'none');
         
@@ -306,9 +381,7 @@ function filterByTag(tag, btn) {
         }
     });
 
-    // נרוץ על כל קבוצת "קורס" (הדרג החיצוני)
     document.querySelectorAll('.course-group').forEach(courseGroup => {
-        // בודקים אם יש בתוך הקורס לפחות תיקיית סוג אחת שמוצגת
         const hasVisibleTypes = Array.from(courseGroup.querySelectorAll('.type-folder-container'))
                                      .some(type => type.style.display !== 'none');
         
@@ -319,6 +392,24 @@ function filterByTag(tag, btn) {
         }
     });
 }
+
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.external-tag-form select[name="tag"]').forEach(select => {
+        select.addEventListener('change', function() {
+            const form = this.closest('form');
+            const row = form.closest('.external-row');
+            updateExternalResourceTag(form, row, this.value);
+        });
+    });
+
+    document.querySelectorAll('.external-delete-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (!confirm('האם אתה בטוח שברצונך למחוק את המשאב החיצוני?')) return;
+            deleteExternalResourceRow(form);
+        });
+    });
+});
 
 window.submitCommentForm = function(e, form) {
     e.preventDefault(); 

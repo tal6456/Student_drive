@@ -11,6 +11,7 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 # ייבוא המודלים - ב-models.py
 from .models import Document, DownloadLog, Vote, ExternalResource
 
@@ -96,12 +97,26 @@ def add_external_resource(request):
         file = request.FILES.get('file')
 
         if title:
-            ExternalResource.objects.create(
+            resource = ExternalResource.objects.create(
                 user=request.user,
                 title=title,
                 link=link,
                 file=file
             )
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'id': resource.id,
+                    'title': resource.title,
+                    'link': resource.link,
+                    'file_url': resource.file.url if resource.file else '',
+                    'personal_tag': resource.personal_tag,
+                    'created_at': resource.created_at.strftime('%d/%m/%Y')
+                })
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'Missing title or invalid submission.'}, status=400)
+
     return redirect('personal_drive')
 
 
@@ -109,6 +124,8 @@ def add_external_resource(request):
 def delete_external_resource(request, resource_id):
     resource = get_object_or_404(ExternalResource, id=resource_id, user=request.user)
     resource.delete()
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'success': True, 'resource_id': resource_id})
     return redirect('personal_drive')
 
 
@@ -146,5 +163,13 @@ def update_resource_tag(request):
 
         obj.personal_tag = new_tag
         obj.save()
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'id': res_id,
+                'type': res_type,
+                'new_tag': new_tag
+            })
 
     return redirect('personal_drive')

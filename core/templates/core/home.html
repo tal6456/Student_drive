@@ -191,7 +191,7 @@
             </a>
         </div>
         <div>
-            <a href="?browse=true" class="text-decoration-none">
+            <a href="?browse=true" class="text-decoration-none browse-link" data-url="?browse=true">
                 <div class="card h-100 rounded-4 p-4 text-center premium-action-card">
                     <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 65px; height: 65px; background: rgba(13, 110, 253, 0.1);">
                         <i class="fas fa-university text-primary fs-3"></i>
@@ -254,8 +254,8 @@
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0 fw-bold">
-                                <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none text-primary">מוסדות</a></li>
-                                {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}&browse=true" class="text-decoration-none text-muted">{{ selected_uni.name }}</a></li>{% endif %}
+                                <li class="breadcrumb-item"><a href="{% url 'home' %}?browse=true" class="text-decoration-none text-primary browse-link" data-url="?browse=true">מוסדות</a></li>
+                                {% if selected_uni %}<li class="breadcrumb-item"><a href="?university={{ selected_uni.id }}&browse=true" class="text-decoration-none text-muted browse-link" data-url="?university={{ selected_uni.id }}&browse=true">{{ selected_uni.name }}</a></li>{% endif %}
                                 {% if selected_major %}<li class="breadcrumb-item active">{{ selected_major.name }}</li>{% endif %}
                             </ol>
                         </nav>
@@ -266,7 +266,7 @@
                         <div class="row g-3">
                             {% for uni in universities %}
                             <div class="col-md-6">
-                                <a href="?university={{ uni.id }}&browse=true" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
+                                <a href="?university={{ uni.id }}&browse=true" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale browse-link" data-url="?university={{ uni.id }}&browse=true">
                                     <span class="fw-bold text-dark">{{ uni.name }}</span>
                                     <i class="fas fa-chevron-left ms-auto text-muted"></i>
                                 </a>
@@ -277,7 +277,7 @@
                         <div class="row g-3">
                             {% for major in majors %}
                             <div class="col-md-6">
-                                <a href="?university={{ uni_id }}&major={{ major.id }}&browse=true" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale">
+                                <a href="?university={{ uni_id }}&major={{ major.id }}&browse=true" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale browse-link" data-url="?university={{ uni_id }}&major={{ major.id }}&browse=true">
                                     <span class="fw-bold text-dark">{{ major.name }}</span>
                                     <i class="fas fa-chevron-left ms-auto text-muted"></i>
                                 </a>
@@ -288,7 +288,7 @@
                         <div class="row g-4">
                             {% for y_val, y_name in years.items %}
                             <div class="col-md-4 text-center">
-                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white shadow-sm">
+                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white shadow-sm browse-link" data-url="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true">
                                     <div class="display-6 fw-bold text-primary">{{ y_val }}</div>
                                     <div class="fw-bold text-dark">{{ y_name }}</div>
                                 </a>
@@ -689,6 +689,74 @@ renderCal();
         })
         .catch(error => console.error('Error:', error));
     }
+
+    // AJAX navigation for browse links to prevent page jumping
+    function handleBrowseNavigation(url) {
+        // Show loading state
+        const mainContent = document.querySelector('.col-lg-8 .card');
+        if (mainContent) {
+            mainContent.style.opacity = '0.7';
+            mainContent.style.pointerEvents = 'none';
+        }
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.html) {
+                // Parse the HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.html, 'text/html');
+                
+                // Find the main content area in the response
+                const newContent = doc.querySelector('.col-lg-8 .card');
+                if (newContent && mainContent) {
+                    // Replace the content
+                    mainContent.innerHTML = newContent.innerHTML;
+                    
+                    // Update URL without page reload
+                    window.history.pushState({}, '', url);
+                    
+                    // Re-initialize any dynamic elements if needed
+                    // (add any initialization code here if components need re-binding)
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Navigation error:', error);
+        })
+        .finally(() => {
+            // Remove loading state
+            if (mainContent) {
+                mainContent.style.opacity = '';
+                mainContent.style.pointerEvents = '';
+            }
+        });
+    }
+
+    // Bind click handlers to browse links
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('click', function(e) {
+            const browseLink = e.target.closest('.browse-link');
+            if (browseLink) {
+                e.preventDefault();
+                const url = browseLink.getAttribute('data-url');
+                if (url) {
+                    handleBrowseNavigation(url);
+                }
+            }
+        });
+
+        // Handle browser back/forward navigation
+        window.addEventListener('popstate', function(event) {
+            // Reload the page content when user uses back/forward buttons
+            window.location.reload();
+        });
+    });
 </script>
 
 {% endblock %}

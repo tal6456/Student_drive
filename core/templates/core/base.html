@@ -1150,6 +1150,11 @@ function copyInviteLink(event) {
 
     // --- 3. סגירת תפריטים בלחיצה מחוץ אליהם ---
     document.addEventListener('click', function(event) {
+        const anchor = event.target.closest('a[href="#"], a[href="javascript:void(0)"], a[href="javascript:void(0);"]');
+        if (anchor) {
+            event.preventDefault();
+        }
+
         const isClickInsideMenu = event.target.closest('.custom-dropdown-menu');
         const isClickOnToggle = event.target.closest('.custom-dropdown-toggle') || event.target.closest('.mobile-menu-btn-responsive');
         

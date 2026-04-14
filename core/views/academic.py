@@ -18,6 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q, Avg
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
@@ -108,6 +109,11 @@ def home(request):
         if request.user.is_authenticated:
             context['favorite_courses'] = request.user.profile.favorite_courses.select_related(
                 'major__university').all()
+
+    # Handle AJAX requests for browse navigation
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html_content = render_to_string('core/home.html', context, request)
+        return JsonResponse({'html': html_content})
 
     return render(request, 'core/home.html', context)
 
