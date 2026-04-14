@@ -15,7 +15,7 @@
 
             <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeInUp" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
                 <div class="card-body p-4 p-md-5">
-                    <form method="POST">
+                    <form id="completeProfileForm" method="POST">
                         {% csrf_token %}
 
                         {# === חלק 1: פרטים אישיים (שם וטלפון) === #}
@@ -169,7 +169,20 @@
         background-color: var(--gd-primary) !important;
         border-color: var(--gd-primary) !important;
     }
-    
+
+    /* יישור תוויות ל-RTL: למעלה לימין בכל שדות ההשלים פרופיל */
+    #completeProfileForm .form-label,
+    #completeProfileForm .form-check-label {
+        display: block;
+        text-align: right;
+        width: 100%;
+        margin-bottom: 0.35rem;
+    }
+
+    #completeProfileForm .text-end {
+        text-align: right !important;
+    }
+
     /* אפקט לטוגל הסטודנט כשהוא דלוק */
     #student-toggle-wrapper.active-toggle {
         background-color: rgba(26, 115, 232, 0.05) !important;
