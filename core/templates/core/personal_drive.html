@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    {# --- שורת סינון לפי תיוגים --- #}
+    {# --- Filter row by tags --- #}
     <div class="tag-filters mb-4 d-flex flex-wrap gap-2 px-2 border-bottom pb-3 animate__animated animate__fadeIn" style="border-color: var(--gd-border) !important;">
         <span class="ms-2 align-self-center small fw-bold" style="color: var(--gd-text-muted);">סנן לפי תיוג:</span>
         <button class="btn btn-sm btn-primary rounded-pill px-3 active filter-btn" onclick="filterByTag('all', this)">הכל</button>
@@ -47,7 +47,7 @@
     </div>
 
     <div class="tab-content animate__animated animate__fadeInUp" id="pills-tabContent">
-        {# --- טאב העלאות שלי --- #}
+        {# --- My uploads tab --- #}
         <div class="tab-pane fade show active" id="pills-upload" role="tabpanel">
             {% regroup uploaded_files by course.name as upload_course_list %}
             {% for course in upload_course_list %}
@@ -98,7 +98,7 @@
             {% endfor %}
         </div>
 
-        {# --- טאב היסטוריית הורדות --- #}
+        {# --- Download history tab --- #}
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
             {% for course in course_list %}
@@ -150,7 +150,7 @@
             {% endfor %}
         </div>
 
-        {# --- טאב משאבים חיצוניים --- #}
+        {# --- External resources tab --- #}
         <div class="tab-pane fade" id="pills-external" role="tabpanel">
             <div class="card shadow-sm border rounded-4 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                 <div class="list-group list-group-flush border-0">

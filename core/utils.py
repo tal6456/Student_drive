@@ -1,24 +1,23 @@
 """
-ארגז כלים ופונקציות עזר (Utility Functions)
-==========================================
+Utility toolbox and shared helpers
+==================================
 
-מה המטרה של הקובץ הזה?
+What is this file for?
 ----------------------
-קובץ זה משמש כ"מרכז בקרה" טכני עבור האתר. הוא מרכז לוגיקה מורכבת שחוזרת על עצמה 
-במקומות שונים, ובכך מבטיח אחידות בביצועים ובהגדרות האבטחה.
+This file serves as a technical control center for the site. It collects
+shared logic that appears in multiple places, helping keep behavior and
+security consistent.
 
-הקובץ מטפל ב-3 תחומים מרכזיים:
-1. ניהול קבצים ותמונות: הגדרת הגבלות משקל (עד 20MB למסמך) וסוגי קבצים מותרים. 
-   כולל מנגנון דחיסה אוטומטי ההופך תמונות לפורמט WebP כדי להאיץ את טעינת האתר.
-2. אכיפת הרשאות מחיקה: מערכת חוקים חכמה שקובעת מי רשאי למחוק מה. 
-   היא מגנה על תכנים קהילתיים (למשל: מניעת מחיקת תיקייה אם סטודנטים אחרים 
-   כבר העלו אליה קבצים) ושומרת על זכויות היוצרים של המעלים.
-3. תקינות נתונים (Validation): בדיקה אוטומטית של קבצים לפני שהם נשמרים 
-   בשרת כדי למנוע העלאת קבצים כבדים מדי שעלולים להכביד על המערכת.
+It covers three main areas:
+1. File and image handling: defines file-size limits and allowed types,
+   and includes automatic image compression to WebP for faster loading.
+2. Deletion permissions: applies a smart rule set that decides who may
+   delete what, including protections for community-owned content.
+3. Validation: checks files before they are stored so oversized uploads
+   do not overload the system.
 
-שינוי הגדרות בקובץ זה (כמו שינוי נפח קובץ מותר) ישפיע באופן מיידי על כל האתר.
----------------
-יש להוסיף לפה פונקציונליות שחוזרת על עצמה במספר דפים באתר כדי שבלחיצת כפתור פה נשנה הכל.
+Changing settings in this file, such as the max allowed file size, affects
+the entire site immediately.
 """
 
 import os
@@ -28,7 +27,7 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 
 # ==============================================
-# ⚙️ הגדרות גלובליות - "מרכז הבקרה" של הקבצים באתר
+# Global settings: the shared control center for site file handling
 # ==============================================
 GLOBAL_MAX_FILE_SIZE_MB = 20
 
@@ -43,7 +42,7 @@ GLOBAL_ALLOWED_IMAGES = [
 ]
 
 # ==============================================
-# 1. פונקציית דחיסת תמונות (WebP)
+# 1. Image compression helper (WebP)
 # ==============================================
 def compress_to_webp(image_field, max_size=(1200, 1200), quality=80):
     if not image_field:
@@ -68,57 +67,57 @@ def compress_to_webp(image_field, max_size=(1200, 1200), quality=80):
     return ContentFile(output.read(), name=new_filename)
 
 # ==============================================
-# 2. ולידטור משקל קבצים חכם (שומרים על השם המקורי!)
+# 2. Smart file-size validator that preserves the original filename
 # ==============================================
 def validate_file_size(value):
     ext = os.path.splitext(value.name)[1].lower()
     image_exts = ['.jpg', '.jpeg', '.png', '.webp']
 
     if ext in image_exts:
-        limit = 5 * 1024 * 1024  # תמונות עד 5MB
+        limit = 5 * 1024 * 1024  # Images up to 5 MB
         if value.size > limit:
             raise ValidationError('תמונות מוגבלות לגודל של עד 5MB.')
     else:
-        limit = 20 * 1024 * 1024  # מסמכים עד 20MB
+        limit = 20 * 1024 * 1024  # Documents up to 20 MB
         if value.size > limit:
             raise ValidationError('מסמכים מוגבלים לגודל של עד 20MB.')
 
 # ==============================================
-# 3. מוח ההרשאות - מערכת מחיקות חכמה
+# 3. Permission engine: smart deletion rules
 # ==============================================
 def check_deletion_permission(user, obj, obj_type):
     """
-    בודק האם למשתמש יש הרשאה למחוק את האובייקט הספציפי.
-    מחזיר טאפל: (True/False, "הודעת שגיאה במידת הצורך")
+    Check whether the given user may delete the specific object.
+    Returns a tuple: `(True/False, "error message if needed")`.
     """
-    # 1. מנהלי מערכת יכולים למחוק הכל, תמיד.
+    # 1. System admins can always delete everything
     if user.is_superuser or user.is_staff or getattr(user, 'role', '') in ['admin', 'moderator']:
         return True, ""
 
-    # 2. חוקי מסמכים
+    # 2. Document rules
     if obj_type == 'document':
         if getattr(obj, 'uploaded_by', None) == user:
             return True, ""
         return False, "אין לך הרשאה למחוק קובץ זה, מכיוון שמשתמש אחר העלה אותו."
 
-    # 3. חוקי פוסטים ותגובות (בפיד הקהילה)
+    # 3. Post and comment rules in the community feed
     elif obj_type in ['post', 'comment']:
         if getattr(obj, 'user', None) == user:
             return True, ""
         return False, "אין לך הרשאה למחוק פריט זה."
 
-    # 4. חוקי תיקיות (הגנת קהילה מורחבת)
+    # 4. Folder rules with stronger community protection
     elif obj_type == 'folder':
-        # קודם כל, האם הסטודנט הזה בכלל יצר את התיקייה?
+        # First, did this user create the folder at all?
         if getattr(obj, 'created_by', None) != user:
             return False, "ניתן למחוק רק תיקיות שאתה יצרת בעצמך."
 
-        # הגנת תוכן: האם משתמשים אחרים העלו מסמכים לתיקייה הזו?
+        # Content protection: did other users upload documents into this folder?
         has_others_docs = obj.documents.exclude(uploaded_by=user).exists()
         if has_others_docs:
             return False, "לא ניתן למחוק את התיקייה מכיוון שסטודנטים אחרים כבר הוסיפו אליה חומרי לימוד."
 
-        # הגנת תוכן 2: האם משתמשים אחרים יצרו תתי-תיקיות בתוך התיקייה הזו?
+        # Content protection 2: did other users create subfolders under this folder?
         has_others_folders = obj.subfolders.exclude(created_by=user).exists()
         if has_others_folders:
             return False, "לא ניתן למחוק את התיקייה מכיוון שסטודנטים אחרים פתחו בתוכה תתי-תיקיות."
@@ -128,45 +127,45 @@ def check_deletion_permission(user, obj, obj_type):
     return False, "סוג אובייקט לא מוכר למערכת המחיקות."
 
 # ==============================================
-# 4. חילוץ טקסט מקבצי PDF (עבור החיפוש החכם)
+# 4. Extract text from PDFs for smart search
 # ==============================================
 def extract_text_from_pdf(file_field):
     """
-    פותחת קובץ PDF, שואבת ממנו את הטקסט הנקי ומחזירה אותו כסטרינג.
-    מוגבל ל-20 עמודים כדי לשמור על ביצועים מהירים.
+    Open a PDF, extract clean text from it, and return the result as a string.
+    Limited to 20 pages to keep performance predictable.
     """
-    import PyPDF2 # שמתי פה את הספרייה שלא יכביד על כל האתר אם לא נכנסו לזה.
+    import PyPDF2  # Imported lazily so the whole site does not pay the cost unless needed
     text = ""
     try:
-        # פתיחת הקובץ לקריאה
+        # Open the file for reading
         pdf_reader = PyPDF2.PdfReader(file_field)
         
-        # בדיקה כמה עמודים יש (מקסימום 20)
+        # Check how many pages exist, capped at 20
         num_pages = min(len(pdf_reader.pages), 20)
         
         for page_num in range(num_pages):
             page = pdf_reader.pages[page_num]
-            # חילוץ הטקסט מהעמוד והוספה למחרוזת
+            # Extract text from the page and append it
             extracted = page.extract_text()
             if extracted:
                 text += extracted + " "
                 
     except Exception as e:
-        # הדפסת השגיאה ללוג של השרת לצורך דיבוג
+        # Print the error to the server log for debugging
         print(f"Error extracting text from PDF: {e}")
     
     return text.strip()
 
 # ==============================================
-# 5. חילוץ טקסט מקבצי Word (.docx) (עבור החיפוש החכם)
+# 5. Extract text from Word files (`.docx`) for smart search
 # ==============================================        
 
 from docx import Document as DocxReader
 
 def extract_text_from_docx(file_field):
-    """מחלץ טקסט מקובץ Word (.docx)"""
+    """Extract text from a Word (`.docx`) file."""
     try:
-        # פותח את הקובץ ישירות מהשדה של ג'נגו
+        # Open the file directly from Django's file field
         doc = DocxReader(file_field)
         full_text = []
         for para in doc.paragraphs:

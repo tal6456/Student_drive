@@ -1,5 +1,6 @@
-<!-- Base Template for Student Drive 
-אחרי על השלד של האתר! ממנו כולם יורשים תכונות עיצוב כמו רקע וסרגל עליון ותחתון ועוד... 
+<!-- Base template for Student Drive.
+Responsible for the main site shell; other templates inherit shared styling
+such as the background, top bar, footer, and related layout behavior.
 -->
 
 {% load static %}
@@ -23,7 +24,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-{% comment "הסוכן מושבת זמנית בגלל איטיות" %}
+{% comment "The agent is temporarily disabled due to slowness" %}
     <link rel="stylesheet" href="{% static 'css/agent_style.css' %}">
 {% endcomment %}
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
@@ -31,7 +32,7 @@
 
     {% block extra_css %}
     <style>
-        /* --- תפריט תחתון לאפליקציה במובייל --- */
+        /* --- Bottom navigation for the mobile app --- */
         .mobile-bottom-nav {
             position: fixed;
             bottom: 0;
@@ -41,7 +42,7 @@
             box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
             display: flex;
             justify-content: space-around;
-            padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); /* תמיכה באייפונים החדשים */
+            padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); /* Support newer iPhones */
             z-index: 1050;
             border-top: 1px solid var(--gd-border, #eeeeee);
         }
@@ -60,16 +61,16 @@
         .mobile-bottom-nav .nav-item.active { color: #1a73e8; }
         .mobile-bottom-nav .nav-item:active { transform: scale(0.9); }
 
-        /* התאמות מיוחדות למובייל */
+        /* Mobile-specific adjustments */
         @media (max-width: 991px) {
             .footer { display: none !important; }
             #main-content { padding-bottom: 70px; }
 
-            /* ביטול הדחיפה של ה-50 פיקסלים כדי שההמבורגר לא יברח מהמסך */
+            /* Cancel the 50px offset so the hamburger does not slide off-screen */
             .navbar-brand { left: 0 !important; }
             .nav-hover-wrapper { right: 0 !important; }
 
-            /* נעילה הרמטית נגד גלילה אופקית (ימינה-שמאלה) */
+            /* Fully prevent horizontal scrolling */
             body, html { overflow-x: hidden; }
         }
         /* --- [NEW] Search Backdrop Style --- */
@@ -111,7 +112,7 @@
             align-items: center;
         }
 
-        /* --- המבורגר מודרני, צר ויוקרתי --- */
+        /* --- Modern, slim, polished hamburger menu --- */
         .navbar-collapse {
             position: absolute;
             top: calc(100% + 15px);
@@ -130,7 +131,7 @@
             z-index: 1050;
             border: 1px solid rgba(255, 255, 255, 0.5);
         }
-        /* פתיחת התפריט במובייל בלחיצה על ההמבורגר */
+        /* Open the menu on mobile when the hamburger is tapped */
         .navbar-collapse.show {
             visibility: visible;
             opacity: 1;
@@ -196,7 +197,7 @@
             100% { transform: translateY(-50%) translateX(0); }
         }
 
-        /* עיצוב הפוטר - כאן הוספתי את הנקודה שתקנה את המבנה */
+        /* Footer styling; this is where the structural fix was added */
         .footer-lang-bar {
             margin-bottom: 0px;
             display: flex;
@@ -244,11 +245,11 @@
 .nav-coin i {
     color: #FFD700;
 }
-/* עיצוב אישי למודאל הזמנת חברים */
+/* Custom styling for the invite-friends modal */
 .custom-invite-popup {
     border-radius: 20px !important;
     padding: 20px !important;
-    max-width: 320px !important; /* הופך את הריבוע לקטן יותר */
+    max-width: 320px !important; /* Make the box smaller */
     background: rgba(255, 255, 255, 0.96) !important;
     backdrop-filter: blur(10px);
     box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
@@ -263,14 +264,14 @@
 
 .custom-invite-input {
     font-size: 0.85rem !important;
-    border-radius: 50px !important; /* פינות מעוגלות מלאות */
+    border-radius: 50px !important; /* Fully rounded corners */
     border: 1px solid #ddd !important;
     background: #f1f3f4 !important;
     color: #333 !important;
 }
 
 .custom-invite-btn {
-    border-radius: 50px !important; /* פינות מעוגלות מלאות */
+    border-radius: 50px !important; /* Fully rounded corners */
     font-size: 0.85rem !important;
     padding: 0.5rem 1rem !important;
     font-weight: 600 !important;
@@ -292,7 +293,7 @@
     box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3) !important;
 }
 
-/* עיצוב לכפתור העתק כשהוא מצליח */
+/* Styling for the copy button after a successful copy */
 .custom-invite-btn.btn-success {
     background: linear-gradient(135deg, #34a853, #4caf50) !important;
     box-shadow: 0 2px 8px rgba(52, 168, 83, 0.3) !important;
@@ -311,7 +312,7 @@
 <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
 
-       <!-- לוגו בצד שמאל -->
+       <!-- Logo on the left side -->
 <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate" href="{% url 'home' %}">
     <div class="d-flex align-items-center justify-content-center shadow-sm"
          style="width: 45px; height: 45px; border-radius: 12px; transform: rotate(-8deg); background: linear-gradient(135deg, #7b61ff, #34a853);">
@@ -328,7 +329,7 @@
     <div class="d-flex align-items-center gap-2">
 
             {% if user.is_authenticated %}
-            <!-- המטבעות **חיצוניים להמבורגר**, לא חלק מ-hover wrapper**
+            <!-- Coins are outside the hamburger, not part of the hover wrapper -->
             -->
             <div class="nav-coin d-flex align-items-center">
                 <a href="{% url 'profile' %}" class="d-flex align-items-center text-decoration-none text-dark fw-bold">
@@ -340,16 +341,16 @@
 
 
 
-        <!-- wrapper חדש סביב המטבעות, המבורגר והתפריט -->
+        <!-- New wrapper around the coins, hamburger, and menu -->
         <div class="nav-hover-wrapper d-flex align-items-center gap-3 position-relative">
 
-            <!-- כפתור המבורגר בלבד לפתיחת התפריט -->
+            <!-- Hamburger button only, used to open the menu -->
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="fas fa-bars fs-2" style="color: var(--gd-text, #212529);"></i>
             </button>
 
 
-            <!-- תפריט נגלל -->
+            <!-- Scrollable menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <form class="mb-4" action="{% url 'global_search' %}" method="GET">
                     <div class="input-group shadow-sm rounded-pill overflow-hidden border">
@@ -372,7 +373,7 @@
         <i class="fas fa-bell"></i>
         <span class="ms-2">התראות</span>
 
-        {# שינינו כאן: מציגים רק את כמות ההתראות שלא נקראו #}
+        {# Changed here: show only the unread notification count #}
         {% if unread_notifications_count > 0 %}
             <span class="badge bg-danger text-white rounded-pill px-2 ms-2" style="font-size: 0.7rem; min-width: 18px;">
                 {{ unread_notifications_count }}
@@ -610,7 +611,7 @@ function createStarParticles(el) {
     }
 }
 </script>
-    {% comment "הסוכן מושבת זמנית " %}
+    {% comment "The agent is temporarily disabled" %}
 {% include 'core/agent_widget.html' %}
 <script src="{% static 'js/agent_logic.js' %}"></script>
 {% endcomment %}
@@ -1040,13 +1041,13 @@ function copyInviteLink(event) {
 </div>
 
 <style>
-    /* --- עיצוב תפריט 3 הנקודות --- */
+    /* --- Three-dot menu styling --- */
     .custom-dropdown-menu {
         display: none; 
         position: absolute; 
         top: 100%; 
         left: 0; 
-        z-index: 9999 !important; /* מוודא שהתפריט מעל הכל */
+        z-index: 9999 !important; /* Keep the menu above everything else */
         min-width: 160px; 
         padding: 0.5rem 0; 
         margin: 0.125rem 0 0;
@@ -1066,11 +1067,11 @@ function copyInviteLink(event) {
     }
     .custom-dropdown-menu .dropdown-item:hover { background-color: var(--gd-hover, #f8f9fa); }
     
-    /* מניעת חיתוך התפריט על ידי כרטיסיות או שורות */
+    /* Prevent cards or rows from clipping the menu */
     .list-group-item.custom-dropdown-container, .card { overflow: visible !important; }
     .pointer-events-none { pointer-events: none; }
 
-    /* --- עיצוב הבאנר למובייל --- */
+    /* --- Mobile banner styling --- */
     #smart-app-banner {
         position: fixed; top: 0; left: 0; width: 100%;
         background-color: var(--gd-card, #ffffff);
@@ -1084,7 +1085,7 @@ function copyInviteLink(event) {
         body.banner-active .navbar.sticky-top { top: 60px !important; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     }
 
-    /* --- התאמות מובייל לשורות קבצים (doc-row) --- */
+    /* --- Mobile adjustments for file rows (`doc-row`) --- */
     @media (max-width: 767px) {
         .doc-row-responsive { padding-top: 10px !important; padding-bottom: 10px !important; gap: 8px !important; }
         .doc-row-responsive .fas.fa-2x { font-size: 1.5rem !important; }

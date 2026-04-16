@@ -18,7 +18,7 @@
                     <form id="completeProfileForm" method="POST">
                         {% csrf_token %}
 
-                        {# === חלק 1: פרטים אישיים (שם וטלפון) === #}
+                        {# === Part 1: personal details (name and phone) === #}
                         <h5 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--gd-text); border-color: var(--gd-border) !important;">פרטים אישיים</h5>
                         
                         <div class="row g-3 mb-4">
@@ -45,7 +45,7 @@
                         {% endfor %}
                         </div>
 
-                        {# === חלק 2: מתג הסטודנט (Toggle) === #}
+                        {# === Part 2: student toggle === #}
                         <div class="form-check form-switch d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 transition-all" id="student-toggle-wrapper" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
                             <label class="form-check-label fw-bold fs-6 mb-0" for="isStudentToggle" style="color: var(--gd-text); cursor: pointer;">
                                 אני סטודנט/ית אקדמי 📚
@@ -53,7 +53,7 @@
                             <input class="form-check-input fs-4 m-0" type="checkbox" id="isStudentToggle" style="cursor: pointer; width: 2.5em; height: 1.25em;">
                         </div>
 
-                        {# === חלק 3: פרטים אקדמיים (מוסתר כברירת מחדל אם לא סומן) === #}
+                        {# === Part 3: academic details (hidden by default unless enabled) === #}
                         <div id="academicSection" style="display: none;">
                             <div class="p-3 p-md-4 rounded-4 mb-4" style="background-color: var(--gd-bg); border: 1px dashed var(--gd-primary);">
                                 
@@ -65,7 +65,7 @@
                                             <label class="form-label fw-bold small mb-1" style="color: var(--gd-text-muted);">{{ field.label }}</label>
                                             {{ field }}
                                             
-                                            {# תיבות נסתרות להוספת מוסד ומסלול שמופיעות רק בלחיצה #}
+                                            {# Hidden boxes for adding an institution and major, shown only on click #}
                                             {% if field.name == 'university' %}
                                             <div id="add-uni-wrapper" class="mt-2 animate__animated animate__fadeIn" style="display: none;">
                                                 <div class="d-flex flex-wrap gap-2">
@@ -99,7 +99,7 @@
                             </div>
                         </div>
 
-                        {# === חלק 4: אישור תנאי שימוש === #}
+                        {# === Part 4: terms acceptance === #}
                         <div class="mb-4 p-3 rounded-4" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
                             <div class="form-check d-flex align-items-center gap-2 m-0 p-0 ps-4 text-end">
                                 {{ form.terms_accepted }}
@@ -126,7 +126,7 @@
 </div>
 
 <style>
-    /* עיצוב משופר לשדות הקלט, מותאם למצב לילה */
+    /* Enhanced input styling with dark-mode support */
     .custom-input, input[type=text], input[type=tel], select {
         width: 100%;
         padding: 0.8rem 1rem;
@@ -150,13 +150,13 @@
         opacity: 0.7; 
     }
     
-    /* טיפול מיוחד ל-Select של Bootstrap במצב לילה */
+    /* Special handling for Bootstrap select fields in dark mode */
     select option {
         background-color: var(--gd-card);
         color: var(--gd-text);
     }
 
-    /* עיצוב הצ'קבוקס של תנאי השימוש ויישור מימין לשמאל */
+    /* Terms checkbox styling and RTL alignment */
     .form-check-input {
         cursor: pointer;
         margin-right: 0;
@@ -170,7 +170,7 @@
         border-color: var(--gd-primary) !important;
     }
 
-    /* יישור תוויות ל-RTL: למעלה לימין בכל שדות ההשלים פרופיל */
+    /* RTL label alignment: top-right for all profile-completion fields */
     #completeProfileForm .form-label,
     #completeProfileForm .form-check-label {
         display: block;
@@ -183,7 +183,7 @@
         text-align: right !important;
     }
 
-    /* אפקט לטוגל הסטודנט כשהוא דלוק */
+    /* Visual effect for the student toggle when enabled */
     #student-toggle-wrapper.active-toggle {
         background-color: rgba(26, 115, 232, 0.05) !important;
         border-color: var(--gd-primary) !important;

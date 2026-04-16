@@ -1,7 +1,7 @@
-<!-- HOME 
- זהו הדף הראשון של האתר בוא יופיעו הקורסים והכפתורים לניווט באתר.
- כמובן יורש מBASE.    
- Yovel check
+<!-- HOME
+This is the site's main landing page, where the courses and navigation
+buttons are displayed. It inherits from the base template.
+Yovel check
 -->
 
 {% extends "core/base.html" %}
@@ -13,13 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* הגדרות עיצוב חדשות ל-Header ולטיפוגרפיה */
+    /* New styling rules for the header and typography */
     .home-container { font-family: 'Assistant', sans-serif !important; }
 
     .welcome-title { font-weight: 800; color: var(--gd-text); font-size: 3.2rem; letter-spacing: -1.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     [data-theme="dark"] .welcome-title { text-shadow: 0 4px 30px rgba(255,255,255,0.05); }
 
-    /* תיבת חיפוש יוקרתית */
+    /* Premium search box */
     .creative-search-form { display: flex; align-items: center; background: var(--gd-card); padding: 8px 8px 8px 20px; border-radius: 100px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--gd-border); }
     [data-theme="dark"] .creative-search-form { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .creative-search-form:focus-within { box-shadow: 0 15px 40px rgba(26, 115, 232, 0.15); transform: translateY(-3px); border-color: var(--gd-primary); }
@@ -31,17 +31,17 @@
     .creative-search-btn { background: var(--gd-bg); border: 1px solid var(--gd-border); color: var(--gd-primary); padding: 12px 30px; border-radius: 100px; font-weight: 700; display: flex; align-items: center; transition: 0.3s; }
     .creative-search-btn:hover { background: var(--gd-primary); color: #fff; border-color: var(--gd-primary); }
 
-    /* כרטיסיות פעולה מרחפות - Premium Hover */
+    /* Floating action cards with premium hover behavior */
     .premium-action-card { background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
     [data-theme="dark"] .premium-action-card { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     .premium-action-card:hover { transform: translateY(-8px); border-color: var(--gd-primary) !important; box-shadow: 0 15px 35px rgba(26, 115, 232, 0.15) !important; }
 
-    /* שורות פרימיום צפות לקורסים */
+    /* Floating premium course rows */
     .premium-list-row { background-color: var(--gd-card); border: 1px solid var(--gd-border); transition: all 0.3s ease; }
     .premium-list-row:hover { border-color: var(--gd-primary); background-color: var(--gd-bg); transform: translateX(-6px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
     [data-theme="dark"] .premium-list-row:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
 
-    /* לוח שנה מותאם למצב לילה */
+    /* Calendar styling adjusted for dark mode */
     .day-cell { width: 14.28%; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.85rem; position: relative; color: var(--gd-text); font-weight: 600; }
     .day-cell:hover { background: var(--gd-hover); color: var(--gd-primary); }
     .day-cell.today { background: var(--gd-primary); color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); }
@@ -57,7 +57,7 @@
     #calendarWeekdays { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gd-text-muted); margin-bottom: 8px; }
     #calendarWeekdays .weekday { width: 14.28%; text-align: center; }
 
-    /* סטוריז נגלל לכפתורים במובייל */
+    /* Scrollable stories-style button row on mobile */
     .action-cards-wrapper { display: flex; gap: 1.25rem; }
     @media (max-width: 767px) {
         .action-cards-wrapper { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -68,49 +68,49 @@
         .action-cards-wrapper { justify-content: center; }
         .action-cards-wrapper > div { width: 25%; }
     }
-   /* --- תיקוני פרימיום למצב לילה - גרסה כחולה עקבית --- */
+   /* --- Premium dark-mode refinements with a consistent blue palette --- */
 
-    /* 1. התג (Badge) - כחול עדין */
+    /* 1. Badge styling with a soft blue tone */
     [data-theme="dark"] .welcome-badge {
         background: rgba(26, 115, 232, 0.15) !important;
         border-color: rgba(26, 115, 232, 0.3) !important;
     }
     [data-theme="dark"] .welcome-badge span {
-        color: #bfdbfe !important; /* כחול-לבן בהיר מאוד */
+        color: #bfdbfe !important; /* Very light blue-white */
     }
 
-    /* 2. הכותרת - גרדיאנט כחול-ציאן בהיר ויוקרתי */
+    /* 2. Heading with a premium light blue-to-cyan gradient */
     [data-theme="dark"] .welcome-title span {
-        background: linear-gradient(90deg, #60a5fa, #38bdf8) !important; /* כחול בהיר -> ציאן בהיר */
+        background: linear-gradient(90deg, #60a5fa, #38bdf8) !important; /* Light blue -> light cyan */
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
     }
 
-    /* 3. התיאור - אפור בהיר לקריאות, עם שמירה על הדגשות כחולות */
+    /* 3. Description text in light gray for readability, while preserving blue accents */
     [data-theme="dark"] .welcome-description {
-        color: #cbd5e1 !important; /* Slateבהיר לקריאות */
+        color: #cbd5e1 !important; /* Light slate for readability */
     }
-    /* וודא שהדגשות 'text-primary' נשמרות כחולות גם בלילה */
+    /* Keep `text-primary` accents blue in dark mode as well */
     [data-theme="dark"] .welcome-description .text-primary {
-        color: #3b82f6 !important; /* כחול בוהק */
+        color: #3b82f6 !important; /* Bright blue */
     }
 
-    /* 4. הציטוט - ציאן בהיר */
+    /* 4. Quote styling in light cyan */
     [data-theme="dark"] #motivationQuote {
         color: #38bdf8 !important;
         opacity: 1 !important;
     }
-    /* --- התאמות רספונסיביות לאפליקציה (מובייל) --- */
+    /* --- Responsive app adjustments for mobile --- */
     @media (max-width: 767px) {
         .welcome-title {
-            font-size: 2.2rem !important; /* מקטין את הכותרת הענקית שלא תימרח */
+            font-size: 2.2rem !important; /* Reduce the large heading so it does not spill */
             letter-spacing: -0.5px !important;
             line-height: 1.1 !important;
         }
 
         .welcome-description {
-            font-size: 1rem !important; /* פונט קצת יותר קטן וקריא למובייל */
-            padding: 0 10px; /* מוסיף רווח מהצדדים שהטקסט לא ייגע בקצוות המסך */
+            font-size: 1rem !important; /* Slightly smaller, more readable font for mobile */
+            padding: 0 10px; /* Add side spacing so the text does not touch the screen edges */
             line-height: 1.5 !important;
             margin-bottom: 20px !important;
         }
@@ -121,10 +121,10 @@
         }
 
         .welcome-section {
-            margin-bottom: 30px !important; /* מקטין מרווחים מיותרים */
+            margin-bottom: 30px !important; /* Reduce unnecessary spacing */
         }
 
-        /* תיקון לגרדיאנט במובייל שלא ייחתך בקיפול שורה */
+        /* Prevent the mobile gradient text from breaking awkwardly across lines */
         .welcome-title span {
             display: inline-block;
             padding-bottom: 5px;
@@ -134,7 +134,7 @@
 
 <div class="container mt-4 mb-5 home-container" dir="rtl">
 
-    {# --- ראש העמוד --- #}
+    {# --- Page header --- #}
     <div class="row justify-content-center mb-5 animate__animated animate__fadeIn">
         <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
@@ -178,7 +178,7 @@
         </div>
     </div>
 
-{# --- שלוש קוביות הפעולה - שודרג לנגלל במובייל --- #}
+{# --- Three action cards, upgraded to scroll on mobile --- #}
     <div class="action-cards-wrapper mb-5 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
         <div>
             <a href="{% url 'community_feed' %}" class="text-decoration-none">
@@ -214,12 +214,12 @@
     </div>
 
     <div class="row g-4">
-        {# --- תוכן מרכזי --- #}
+        {# --- Main content --- #}
         <div class="col-lg-8 order-1">
             <div class="card shadow-sm border-0 rounded-4 p-4" style="min-height: 600px; background-color: var(--gd-card);">
 
                 {% if step == 'search_results' %}
-                    {# --- תצוגת חיפוש --- #}
+                    {# --- Search view --- #}
                     <div class="mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
                         <div>
                             <h4 class="fw-bold mb-0">תוצאות חיפוש עבור: <span class="text-primary">"{{ search_query }}"</span></h4>
@@ -250,7 +250,7 @@
                     </div>
 
                 {% elif request.GET.browse or step == 'select_uni' or step == 'select_major' or step == 'select_year' or step == 'show_courses' %}
-                    {# --- תצוגת ניווט (העץ) --- #}
+                    {# --- Navigation tree view --- #}
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0 fw-bold">
@@ -307,7 +307,7 @@
                     {% endif %}
 
                 {% else %}
-                    {# --- ברירת מחדל: "הסמסטר שלי" --- #}
+                    {# --- Default view: "My semester" --- #}
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary ms-2"></i> הסמסטר שלי</h4>
                         <a href="{% url 'lecturers_index' %}" class="btn btn-sm rounded-pill px-3 fw-bold transition hover-scale" style="background: rgba(255, 193, 7, 0.15); color: #d39e00; border: 1px solid rgba(255, 193, 7, 0.3);">
@@ -360,13 +360,13 @@
             </div>
         </div>
 
-        {# --- צד שמאל: לוח שנה + אלופי הדרייב --- #}
+        {# --- Left side: calendar + Drive champions --- #}
 <div class="col-lg-4 order-2">
 
-    <!-- כרטיס לוח שנה -->
+    <!-- Calendar card -->
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background-color: var(--gd-card);">
 
-        <!-- כותרת + כפתורי ניווט -->
+        <!-- Header + navigation buttons -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold mb-0">לו"ז אישי</h6>
             <div class="d-flex gap-2">
@@ -379,10 +379,10 @@
             </div>
         </div>
 
-        <!-- תצוגת חודש -->
+        <!-- Month display -->
         <div id="monthDisplay" class="text-center fw-bold text-primary mb-2"></div>
 
-        <!-- שורת ימים בעברית -->
+        <!-- Hebrew weekday row -->
         <div id="calendarWeekdays" class="d-flex text-center fw-bold mb-2">
             <div class="weekday">א</div>
             <div class="weekday">ב</div>
@@ -393,10 +393,10 @@
             <div class="weekday">ש</div>
         </div>
 
-        <!-- לוח מספרי הימים -->
+        <!-- Day number grid -->
         <div id="calendarDays" class="d-flex flex-wrap text-center mb-3"></div>
 
-        <!-- תצוגת אירועים -->
+        <!-- Event display -->
         <div id="eventContainer" class="mt-2 border-top pt-3">
             <div id="selectedDateHeader" class="small fw-bold text-muted mb-2">בחר יום...</div>
             <div id="eventList" class="d-flex flex-column gap-2"></div>
@@ -445,7 +445,7 @@
     </div>
 </div>
 
-{# --- Modal אירוע (הותאם למצב לילה ולתיקון הצ'קבוקס) --- #}
+{# --- Event modal, adjusted for dark mode and checkbox fixes --- #}
 <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true" dir="rtl">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--gd-card);">
@@ -465,7 +465,7 @@
                 <input type="text" id="evTitle" class="form-control form-control-sm mb-2" placeholder="מה המשימה?" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
 
                 <style>
-                    /* התיקון לצ'קבוקס: מחיל את צבעי הרקע רק כשהוא לא מסומן! */
+                    /* Checkbox fix: apply background colors only when it is unchecked */
                     #evAllDay:not(:checked) {
                         background-color: var(--gd-bg);
                         border-color: var(--gd-border);

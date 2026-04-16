@@ -92,7 +92,7 @@
 </div>
 
 <style>
-    /* כפתור גוגל פרימיום מותאם למצב לילה */
+    /* Premium Google button styled for dark mode */
     .btn-google-pro {
         display: flex;
         align-items: center;
@@ -108,7 +108,7 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         transform: translateY(-2px);
     }
-    /* הרקע של האייקון תמיד לבן (הנחיות העיצוב של גוגל) */
+    /* Keep the icon background white, per Google's design guidelines */
     .google-icon-wrapper {
         background: #fff;
         width: 42px;
@@ -127,7 +127,7 @@
         font-size: 0.95rem;
     }
 
-    /* עיצוב שדות קלט למובייל - גודל נוח לאצבע ומצב לילה */
+    /* Mobile-friendly input styling with dark-mode support */
     .allauth-form input:not([type="checkbox"]) {
         width: 100%;
         padding: 0.9rem 1.2rem;
@@ -150,21 +150,21 @@
         opacity: 0.6;
     }
 
-    /* עיצוב Checkbox/Switch (זכור אותי) */
+    /* Checkbox/switch styling for "Remember me" */
     .form-check-input { 
         cursor: pointer; 
         width: 2.5em !important; 
         height: 1.25em; 
-        margin-right: -2.5em; /* תיקון RTL ליישור מתג Bootstrap */
+        margin-right: -2.5em; /* RTL adjustment for Bootstrap switch alignment */
     }
     .cursor-pointer { cursor: pointer; }
 
-    /* אפקטים כלליים */
+    /* General effects */
     .hover-scale { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .hover-scale:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(26, 115, 232, 0.2) !important; }
     .hover-underline:hover { text-decoration: underline !important; }
 
-    /* תיקוני צלליות עדינים למצב לילה */
+    /* Subtle shadow adjustments for dark mode */
     [data-theme='dark'] .btn-google-pro:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     [data-theme='dark'] .form-check-input:not(:checked) { background-color: rgba(255,255,255,0.1); border-color: var(--gd-border); }
 </style>

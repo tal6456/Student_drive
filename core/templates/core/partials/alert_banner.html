@@ -1,4 +1,4 @@
-{# רכיב הודעת מערכת דינמי. מקבל: banner_id, alert_type, icon, message, link_url, link_text #}
+{# Dynamic system-message component. Accepts: banner_id, alert_type, icon, message, link_url, link_text #}
 <div id="sys-banner-{{ banner_id }}" class="alert alert-{{ alert_type|default:'warning' }} alert-dismissible fade show text-center border-0 rounded-0 mb-0 shadow-sm" role="alert" style="z-index: 1050; display: none; padding-right: 3rem; padding-left: 3rem;">
     <div class="container d-flex align-items-center justify-content-center gap-2 flex-wrap">
         {% if icon %}<i class="fas fa-{{ icon }} fs-5"></i>{% endif %}

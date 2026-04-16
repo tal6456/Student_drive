@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const agentTitle = document.querySelector('.agent-header span');
     const quizBtn = document.getElementById('quiz-mode-btn');
 
-    // חילוץ שם המשתמש מהכותרת
+    // Extract the username from the header
     const userName = agentTitle ? agentTitle.innerText.replace('הסוכן של', '').trim() : "עמית";
 
     function showWelcomeMessage() {
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // פתיחה וסגירה של חלונית הצ'אט
+    // Open and close the chat window
     toggleBtn.onclick = () => {
         chatWindow.classList.toggle('agent-hidden');
         showWelcomeMessage();
@@ -27,13 +27,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     closeBtn.onclick = () => chatWindow.classList.add('agent-hidden');
 
-    // פונקציית עזר לקבלת CSRF Token מהדף
+    // Helper to read the CSRF token from the page
     function getCSRFToken() {
         const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
         return tokenInput ? tokenInput.value : '';
     }
 
-    // הוספת הודעה למסך
+    // Append a message bubble to the chat
     function addMessage(text, type) {
         const div = document.createElement('div');
         div.className = type === 'user' ? 'user-msg' : 'agent-msg';
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // --- פונקציה ליצירת כפתורי בחירת קורס בתוך הצ'אט ---
+    // --- Create course-selection buttons inside the chat ---
     function addCourseSelectionButtons(text, courses) {
         const mainDiv = document.createElement('div');
         mainDiv.className = 'agent-msg';
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // --- [חדש] פונקציה להצגת כפתורי ה"כן/לא" להצעה לידע כללי ---
+    // --- Show yes/no buttons when offering a general-knowledge fallback ---
     function addGeneralKnowledgeButtons(text, course) {
         const mainDiv = document.createElement('div');
         mainDiv.className = 'agent-msg';
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // פונקציה מרכזית לשליחת הודעה/שאלה
+    // Main message-sending function
     async function sendMessage(customText = null) {
         const question = customText || userInput.value.trim();
         if (!question) return;
@@ -137,15 +137,15 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
-            // 1. נסיון חכם לחלץ את שם הקורס מהעמוד הנוכחי
-            // מחפש את כותרת העמוד (h1). אם זה לא קורס, זה יעביר "כללי"
+            // 1. Smart attempt to infer the current course from the page title
+            // If the page is not a course page, this falls back to the generic label
             let currentCourseName = 'כללי';
             const pageTitle = document.querySelector('h1');
             if (pageTitle) {
                 currentCourseName = pageTitle.innerText.trim();
             }
 
-            // 2. השליחה לשרת (מוסיפים את current_course לגוף הבקשה)
+            // 2. Send the request to the server, including the current course context
             const response = await fetch('/agent/ask/', {
                 method: 'POST',
                 headers: {
@@ -154,13 +154,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     question: question,
-                    current_course: currentCourseName // <--- הקונטקסט!
+                    current_course: currentCourseName // Context from the current page
                 })
             });
             const data = await response.json();
             messagesContainer.removeChild(loadingDiv);
 
-            // בדיקת סוג התגובה מהשרת
+            // Branch based on the response type from the server
             if (data.type === 'course_selection') {
                 addCourseSelectionButtons(data.answer, data.courses);
             } else if (data.type === 'general_knowledge_offer') {
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // לוגיקת Quiz Mode
+    // Quiz mode flow
     if (quizBtn) {
         quizBtn.onclick = async function() {
             await sendMessage("GET_COURSES_FOR_QUIZ");
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
     sendBtn.onclick = () => sendMessage();
     userInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
 
-    // העלאת קובץ
+    // File upload flow
     fileInput.onchange = async function() {
         const file = fileInput.files[0];
         if (!file) return;

@@ -1,6 +1,4 @@
-"""
-סקריפט לייבוא נתונים.
-"""
+"""Data import script."""
 
 import os
 import django
@@ -11,15 +9,15 @@ django.setup()
 from core.models import University, Major, Course
 
 courses_data = [
-    # שנה א'
+    # Year 1
     {"name": "חשבון דיפרנציאלי להנדסת חשמל", "number": "21219671", "year": 1},
     {"name": "אלגברה ליניארית להנדסת חשמל 1", "number": "21219511", "year": 1},
     {"name": "פיזיקה 1 - הנדסת חשמל", "number": "20311371", "year": 1},
-    # שנה ב'
+    # Year 2
     {"name": "חדו\"א וקטורי להנדסת חשמל", "number": "21219631", "year": 2},
     {"name": "מבוא להנדסת חשמל", "number": "36111021", "year": 2},
     {"name": "מבוא למערכות ליניאריות", "number": "36112011", "year": 2},
-    # שנה ג'
+    # Year 3
     {"name": "מבוא לעיבוד אותות", "number": "36113321", "year": 3},
     {"name": "מבוא לתהליכים אקראיים", "number": "36113061", "year": 3},
     {"name": "מעגלים אלקטרוניים ספרתיים", "number": "36113021", "year": 3},
@@ -35,7 +33,7 @@ def run_import():
             defaults={
                 'name': data["name"],
                 'year': data["year"],
-                'major': major # הקורס מקושר למקצוע, שמקושר לאוניברסיטה
+                'major': major  # The course is linked to the major, which is linked to the university
             }
         )
         print(f"עודכן/נוצר: {course.name}")

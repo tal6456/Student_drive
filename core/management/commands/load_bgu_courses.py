@@ -6,20 +6,20 @@ class Command(BaseCommand):
     help = 'טוען קורסים להנדסת חשמל ומחשבים באונ\' בן גוריון מתוך הסילבוס'
 
     def handle(self, *args, **kwargs):
-        # 1. יצירת/שליפת האוניברסיטה והמסלול
+        # 1. Create or fetch the university and major
         bgu, _ = University.objects.get_or_create(name="אוניברסיטת בן-גוריון בנגב")
         ee_major, _ = Major.objects.get_or_create(university=bgu, name="הנדסת חשמל ומחשבים")
 
-        # 2. הנתונים שחולצו מהסילבוס (שנים א', ב', ג' ומסלולי התמחות)
+        # 2. Data extracted from the syllabus
         courses_data = [
-            # --- שנה א', סמסטר א' ---
+            # --- Year 1, semester A ---
             {"name": "חשבון דיפרנציאלי להנדסת חשמל", "number": "21219671", "year": 1, "sem": "A", "track": "general"},
             {"name": "מבוא מתמטי למהנדסים", "number": "36111081", "year": 1, "sem": "A", "track": "general"},
             {"name": "פיזיקה 1 - הנדסת חשמל", "number": "20311371", "year": 1, "sem": "A", "track": "general"},
             {"name": "אלגברה ליניארית להנדסת חשמל 1", "number": "21219511", "year": 1, "sem": "A", "track": "general"},
             {"name": "מתמטיקה דיסקרטית", "number": "21216201", "year": 1, "sem": "A", "track": "general"},
 
-            # --- שנה א', סמסטר ב' ---
+            # --- Year 1, semester B ---
             {"name": "מערכות ספרתיות להנדסת חשמל ומחשבים", "number": "36113231", "year": 1, "sem": "B",
              "track": "general"},
             {"name": "חשבון אינטגרלי ומשוואות דיפרנציאליות רגילות", "number": "21219681", "year": 1, "sem": "B",
@@ -28,14 +28,14 @@ class Command(BaseCommand):
             {"name": "פיזיקה א2", "number": "20311471", "year": 1, "sem": "B", "track": "general"},
             {"name": "יסודות מדעי המחשב", "number": "37111601", "year": 1, "sem": "B", "track": "general"},
 
-            # --- שנה ב', סמסטר א' ---
+            # --- Year 2, semester A ---
             {"name": "חדו\"א וקטורי להנדסת חשמל", "number": "21219631", "year": 2, "sem": "A", "track": "general"},
             {"name": "אנליזת פוריה להנדסת חשמל", "number": "21219901", "year": 2, "sem": "A", "track": "general"},
             {"name": "מבוא למחשבים", "number": "36113201", "year": 2, "sem": "A", "track": "general"},
             {"name": "פיסיקה א3", "number": "20312391", "year": 2, "sem": "A", "track": "general"},
             {"name": "מבוא להנדסת חשמל", "number": "36111021", "year": 2, "sem": "A", "track": "general"},
 
-            # --- שנה ב', סמסטר ב' ---
+            # --- Year 2, semester B ---
             {"name": "מבוא למערכות ליניאריות", "number": "36112011", "year": 2, "sem": "B", "track": "general"},
             {"name": "מבוא להתקני מוליכים למחצה", "number": "36112171", "year": 2, "sem": "B", "track": "general"},
             {"name": "יסודות תורת הפונקציות המרוכבות", "number": "21210071", "year": 2, "sem": "B", "track": "general"},
@@ -44,16 +44,16 @@ class Command(BaseCommand):
             {"name": "שדות אלקטרומגנטיים", "number": "36113011", "year": 2, "sem": "B", "track": "general"},
             {"name": "תורת ההסתברות להנדסת חשמל", "number": "21219831", "year": 2, "sem": "B", "track": "general"},
 
-            # --- שנה ג', סמסטר א' ---
+            # --- Year 3, semester A ---
             {"name": "מבוא לעיבוד אותות", "number": "36113321", "year": 3, "sem": "A", "track": "general"},
             {"name": "מבוא לתהליכים אקראיים", "number": "36113061", "year": 3, "sem": "A", "track": "general"},
             {"name": "מבוא למעגלים אלקטרונים אנלוגיים", "number": "36113661", "year": 3, "sem": "A",
              "track": "general"},
 
-            # --- שנה ג', סמסטר ב' ---
+            # --- Year 3, semester B ---
             {"name": "מעגלים אלקטרוניים ספרתיים", "number": "36113021", "year": 3, "sem": "B", "track": "general"},
 
-            # --- קורסי ליבה והתמחות (שנים ג'-ד') ---
+            # --- Core and specialization courses (years 3-4) ---
             {"name": "מבוא להמרת אנרגיה", "number": "36113031", "year": 3, "sem": "A", "track": "energy"},
             {"name": "מבוא לאלקטרומגנטיות וגלים", "number": "36113651", "year": 3, "sem": "A",
              "track": "electromagnetics"},

@@ -15,10 +15,10 @@ class Command(BaseCommand):
         uni_name = "אוניברסיטת בן-גוריון בנגב"
         bgu, _ = University.objects.get_or_create(name=uni_name)
 
-        # ניקוי המחלקה הכפולה (הנדסה אזרחית) אם היא קיימת
+        # Remove the duplicate major entry if it exists
         Major.objects.filter(name="הנדסה אזרחית", university=bgu).delete()
 
-        # --- 1. הנדסת חשמל ומחשבים ---
+        # --- 1. Electrical and Computer Engineering ---
         ee_major, _ = Major.objects.get_or_create(name="הנדסת חשמל ומחשבים", university=bgu)
         if clear_data:
             Course.objects.filter(major=ee_major).delete()
@@ -37,13 +37,13 @@ class Command(BaseCommand):
         ]
         self.save_courses(ee_major, ee_courses)
 
-        # --- 2. הנדסה אזרחית וסביבתית ---
+        # --- 2. Civil and Environmental Engineering ---
         civil_env_major, _ = Major.objects.get_or_create(name="הנדסה אזרחית וסביבתית", university=bgu)
         if clear_data:
             Course.objects.filter(major=civil_env_major).delete()
 
         civil_env_courses = [
-            # שנה א' [cite: 127, 130]
+            # Year 1 [cite: 127, 130]
             {'name': 'אלגברה ליניארית להנדסה', 'num': '220119321', 'y': 1, 's': 'A'},
             {'name': 'חדו"א 1 להנדסה', 'num': '20119711', 'y': 1, 's': 'A'},
             {'name': 'גרפיקה הנדסית להנדסת בניין', 'num': '37411011', 'y': 1, 's': 'A'},
@@ -55,7 +55,7 @@ class Command(BaseCommand):
             {'name': 'כימיה להנדסה אזרחית וסביבתית', 'num': '37411103', 'y': 1, 's': 'B'},
             {'name': 'מבוא לתכנות למהנדסים בפיתון', 'num': '37411681', 'y': 1, 's': 'B'},
 
-            # שנה ב' [cite: 140, 143]
+            # Year 2 [cite: 140, 143]
             {'name': 'משוואות דיפרנציאליות רגילות להנדסת בניין', 'num': '37412231', 'y': 2, 's': 'A'},
             {'name': 'כלכלה למהנדסי בניין', 'num': '37412311', 'y': 2, 's': 'A'},
             {'name': 'תכונות מכניות של חומרים', 'num': '37414117', 'y': 2, 's': 'A'},
@@ -69,7 +69,7 @@ class Command(BaseCommand):
             {'name': 'שיטות ביצוע בבנייה', 'num': '37412071', 'y': 2, 's': 'B'},
             {'name': 'סטטיקת מבנים 2', 'num': '37412020', 'y': 2, 's': 'B'},
 
-            # שנה ג' [cite: 148, 159]
+            # Year 3 [cite: 148, 159]
             {'name': 'פיזיקה ב2', 'num': '20311491', 'y': 3, 's': 'A'},
             {'name': 'מבוא לגיאומכניקה להנדסת בניין', 'num': '20617171', 'y': 3, 's': 'A'},
             {'name': 'סטטיסטיקה למהנדסי בניין', 'num': '37412101', 'y': 3, 's': 'A'},

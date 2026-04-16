@@ -1,15 +1,15 @@
 """
-מה המטרה של הקובץ הזה?
+What is this file for?
 ----------------------
-קובץ זה משמש כ"בקר תנועה" עבור מערכת ההתחברות (Allauth) 
-לשלוח את המשתמש מיד לאחר שהוא מזדהה מול השרת
+This file acts as a traffic controller for the Allauth authentication flow,
+deciding where to send the user immediately after authentication.
 
-הקובץ מטפל ב:
-1. ניתוב משתמשים חדשים: שליחת נרשמים טריים ישירות לדף "השלמת פרופיל".
-2. בדיקת מוכנות הפרופיל: לוגיקה חכמה שבודקת בכל התחברות האם למשתמש 
-   חסרים פרטים קריטיים (כמו שם פרטי) ומנתבת אותו בהתאם.
-3. אינטגרציה חברתית: התאמת חוויית הרישום דרך גוגל (Social Login) 
-   כך שתהיה זהה לרישום רגיל מבחינת איסוף נתונים.
+It handles:
+1. New user routing: sends fresh signups directly to the profile completion page.
+2. Profile readiness checks: applies smart logic on each login to see whether
+   the user is missing critical details (such as a first name) and routes them accordingly.
+3. Social login integration: aligns the Google signup flow with the regular
+   signup flow so data collection behaves the same way.
 """
 
 from allauth.account.adapter import DefaultAccountAdapter
@@ -19,23 +19,23 @@ from django.urls import reverse
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     def get_signup_redirect_url(self, request):
-        # מופעל רק כשמשתמש חדש נרשם עם אימייל וסיסמה פעם ראשונה
+        # Runs only when a new user signs up with email and password for the first time
         return reverse('complete_profile')
 
     def get_login_redirect_url(self, request):
-        # מופעל בכל פעם שיש התחברות (בין אם רגילה ובין אם חיבור אוטומטי של גוגל למשתמש קיים)
+        # Runs on every login, whether regular or an automatic Google connection to an existing user
         user = request.user
 
-        # הלוגיקה החכמה: בודק אם הפרופיל חסר פרטים בסיסיים (למשל, שם פרטי)
-        # אם אין לו שם פרטי, זה אומר שהוא בחיים לא סיים את טופס "השלמת פרטים"
+        # Smart logic: check whether the profile is missing basic details (for example, first name)
+        # If there is no first name, the user never finished the "complete profile" form
         if not user.first_name:
             return reverse('complete_profile')
 
-        # אם יש לו הכל, ברוך הבא לדף הבית!
+        # If everything is filled in, send them to the home page
         return reverse('home')
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     def get_signup_redirect_url(self, request, sociallogin):
-        # מופעל רק כשמשתמש חדש נרשם דרך גוגל פעם ראשונה (שים לב שהוספנו את sociallogin)
+        # Runs only when a new user signs up via Google for the first time
         return reverse('complete_profile')

@@ -426,17 +426,17 @@
 {% endif %}
 
 <style>
-    /* ניווט היררכי */
+    /* Hierarchical navigation */
     .breadcrumb-item + .breadcrumb-item::before { content: "\f104"; font-family: "Font Awesome 5 Free"; font-weight: 900; color: var(--gd-text-muted); padding: 0 10px; }
     .breadcrumb-link { color: var(--gd-primary); cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
     .breadcrumb-link:hover { text-decoration: underline; opacity: 0.8; }
 
-    /* תיקיות */
+    /* Folders */
     .folder-ui { border-right: 4px solid transparent; transition: 0.2s; }
     .folder-ui:hover { background-color: var(--gd-hover) !important; border-right-color: var(--gd-primary) !important; }
     .hover-bg-light:hover { background-color: var(--gd-hover) !important; }
 
-    /* תפריט ימני */
+    /* Right-side menu */
     .custom-context-menu { position: fixed; z-index: 10001; min-width: 220px; background-color: var(--gd-card); border: 1px solid var(--gd-border); padding: 8px 0; }
     .context-header { padding: 5px 15px 10px 15px; font-size: 0.85rem; font-weight: bold; color: var(--gd-text-muted); border-bottom: 1px solid var(--gd-border); margin-bottom: 5px; }
     .context-action { width: 100%; text-align: right; background: none; border: none; padding: 10px 15px; font-weight: 600; color: var(--gd-text); display: flex; align-items: center; transition: 0.15s; }
@@ -447,7 +447,7 @@
     .hover-scale { transition: transform 0.2s; }
     .hover-scale:hover { transform: scale(1.03); }
 
-    /* סגנונות חדשים למובייל */
+    /* New mobile styles */
     .breadcrumb-wrapper {
         overflow-x: auto;
         white-space: nowrap;

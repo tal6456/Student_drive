@@ -6,7 +6,7 @@ from google import genai
 
 
 # ==========================================
-# 1. שכבת הסורקים (OOP Inheritance)
+# 1. Scanner layer (OOP inheritance)
 # ==========================================
 
 class BaseScanner:
@@ -22,7 +22,7 @@ class BaseScanner:
 
 
 class ProjectStructureScanner(BaseScanner):
-    """סורק חדש: ממפה את עץ הפרויקט כדי שה-AI יכיר את כל הקבצים"""
+    """Scanner that maps the project tree so the AI can see the full file layout."""
 
     def scan(self):
         tree_str = "Project Directory Structure:\n"
@@ -79,7 +79,7 @@ class SettingsScanner(BaseScanner):
 
 
 # ==========================================
-# 2. שכבת העיצוב (Documentation UI/UX)
+# 2. Presentation layer (documentation UI/UX)
 # ==========================================
 
 class MarkdownUXFormatter:
@@ -113,7 +113,7 @@ class MarkdownUXFormatter:
 
 
 # ==========================================
-# 3. הפקודה הראשית (המוח המנצח המשודרג)
+# 3. Main command
 # ==========================================
 
 class Command(BaseCommand):
@@ -122,7 +122,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.NOTICE("🤖 Advanced Agent starting deep project scan..."))
 
-        # איסוף מידע כולל עץ הפרויקט
+        # Collect project data, including the directory tree
         tree_scanner = ProjectStructureScanner(settings.BASE_DIR).scan()
         core_scanner = DjangoCoreScanner(settings.BASE_DIR).scan()
         settings_scanner = SettingsScanner(settings.BASE_DIR).scan()

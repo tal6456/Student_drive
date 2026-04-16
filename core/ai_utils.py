@@ -4,7 +4,7 @@ import PyPDF2
 
 
 def extract_text_from_pdf(file_field):
-    """פותח PDF (גם מ-S3) ומוציא ממנו טקסט"""
+    """Open a PDF file, including one stored on S3, and extract its text."""
     text = ""
     try:
         with file_field.open('rb') as f:
@@ -20,7 +20,7 @@ def extract_text_from_pdf(file_field):
 
 
 def generate_smart_summary(document):
-    """שולח את הטקסט ל-Gemini ומחזיר סיכום בעברית"""
+    """Send the text to Gemini and return a Hebrew summary."""
 
     api_key = getattr(settings, 'GEMINI_API_KEY', None)
 
@@ -29,7 +29,7 @@ def generate_smart_summary(document):
 
     client = genai.Client(api_key=api_key)
 
-    # 🔥 לוקחים את הקובץ מתוך ה-Document (מתאים ל-S3)
+    # Pull the file from the `Document` object; this also works for S3-backed storage
     file_field = document.file
 
     if not file_field:

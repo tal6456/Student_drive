@@ -1,15 +1,16 @@
 """
-מה המטרה של הקובץ הזה
-----------------------
- הוא מנהל את הניווט בין המוסדות השונים, 
-החיפוש הגלובלי, וארגון חומרי הלימוד בתוך הקורסים.
+Academic navigation and course views
+===================================
 
-הקובץ מטפל ב:
-1. דף הבית והחיפוש: מנגנון חיפוש היררכי (מוסד -> מסלול -> שנה -> קורס) וחיפוש "חי" (Live Search).
-2. ניהול קורסים ותיקיות: יצירת מבנה תיקיות בתוך קורס, העלאה מהירה של קבצים (Quick Upload) וניהול מועדפים.
-3. אינדקס סגל אקדמי: מערכת דירוג מרצים ומתרגלים (Staff Reviews), כולל חישובי ממוצעים והתפלגות ציונים.
-4. גיימיפיקציה: הענקת "מטבעות דרייב" על הוספת קורסים, העלאת קבצים ודירוג סגל.
-5. לוגיקת Onboarding: ניתוב משתמשים חדשים להשלמת פרטים אישיים בביקור הראשון.
+This file manages navigation across institutions, global search,
+and the organization of study materials inside courses.
+
+It handles:
+1. Home and search flows, including hierarchical browsing and live search.
+2. Course and folder management, including quick uploads and favorites.
+3. Academic staff pages and rating logic.
+4. Gamification through Drive coin rewards.
+5. Basic onboarding redirects for new users.
 """
 
 import os
@@ -22,7 +23,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-# ייבוא רק של המודלים והטפסים הרלוונטיים לאקדמיה
+# Import only the models and forms relevant to the academic area
 from core.models import (
     University, Major, Course, Folder, Document,
     AcademicStaff, Lecturer, StaffReview, CourseSemesterStaff,
@@ -34,7 +35,7 @@ from core.forms import CourseForm
 User = get_user_model()
 
 # ==========================================
-# 1. דפי בית וחיפוש (Home & Search)
+# 1. Home and search views
 # ==========================================
 
 def home(request):
@@ -142,7 +143,7 @@ def global_search(request):
     universities, courses, documents, lecturers = [], [], [], []
 
     if query:
-        # חיפוש מוסדות וקורסים (הקוד הקיים שלך)
+        # Search institutions and courses
         universities = University.objects.filter(name__icontains=query)[:5]
         query_words = query.split()
         course_q = Q()
@@ -150,10 +151,10 @@ def global_search(request):
             course_q &= (Q(name__icontains=word) | Q(course_number__icontains=word))
         courses = Course.objects.filter(course_q).select_related('major__university')[:15]
         
-        # --- השדרוג שלנו: חיפוש בתוך תוכן הקבצים ---
+        # --- Upgrade: search inside extracted file content ---
         documents = Document.objects.filter(
             Q(title__icontains=query) | 
-            Q(file_content__icontains=query) | # חיפוש בתוך הטקסט שחילצנו מה-PDF
+            Q(file_content__icontains=query) |  # Search inside extracted PDF/Word text
             Q(course__name__icontains=query)
         ).select_related('course').distinct()[:15]
         # ------------------------------------------
@@ -171,7 +172,7 @@ def global_search(request):
     return render(request, 'core/search_results.html', context)
 
 # ==========================================
-# 2. ניהול קורסים (Courses)
+# 2. Course management
 # ==========================================
 
 def course_detail(request, course_id, folder_id=None):
@@ -353,7 +354,7 @@ def set_semester_lecturer(request, course_id):
     return redirect('course_detail', course_id=course_id)
 
 # ==========================================
-# 3. סגל אקדמי (Staff)
+# 3. Academic staff
 # ==========================================
 
 def lecturers_index(request):
@@ -425,7 +426,7 @@ def add_comment_doc(request, document_id):
                 user=request.user,
                 text=text
             )
-            # במקום redirect, אנחנו מחזירים תשובה שה-JavaScript יודע לקרוא
+            # Return JSON instead of redirecting so the frontend can update immediately
             return JsonResponse({
                 'status': 'success',
                 'user': request.user.username,

@@ -1,17 +1,18 @@
 """
-קובץ מודל זה אחראי על התשתית של מבנה הנתונים מגדיר היררכיה וקשרים בין נתונים ומשמש כמתכון ליצירת הנתונים.========================================================
---------------------------
+Core data models
+================
 
-הקובץ מטפל ב-4 תחומים קריטיים:
-1. הגדרת ישויות: מהם השדות של "משתמש", "קורס", או "מסמך" (למשל: שם, תאריך, קובץ).
-2. קשרים (Relationships): הגדרת הקשרים בין הנתונים - 
-   - ForeignKey: למשל, קורס ששייך למסלול מסוים.
-   - ManyToMany: למשל, סטודנט שיכול לבחור הרבה קורסים מועדפים.
-3. לוגיקה פנימית: פונקציות שמבצעות חישובים על הנתונים (למשל: חישוב ממוצע ציונים למרצה).
-4. אימות נתונים (Validation): הגדרת חוקים - מהו גודל קובץ מקסימלי, אילו שדות הם חובה וכו'.
+This file defines the application's data structure, entity hierarchy,
+and relationships between objects.
 
-שינוי בקובץ זה דורש ביצוע (פקודות makemigrations ו-migrate) 
-כדי לעדכן את המבנה הפיזי של מסד הנתונים.
+It covers four critical areas:
+1. Entity definitions: the fields for objects such as users, courses, and documents.
+2. Relationships: how the data connects through foreign keys and many-to-many links.
+3. Internal logic: helper methods that compute or maintain model state.
+4. Validation: rules such as required fields and file-size limits.
+
+Changes in this file usually require `makemigrations` and `migrate`
+to update the database schema.
 """
 
 from django.db import models, IntegrityError, transaction
@@ -28,7 +29,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 # ==========================================
-# 0. מערכת המשתמשים (RBAC - Role Based Access Control)
+# 0. User system (RBAC - Role Based Access Control)
 # ==========================================
 
 custom_username_validator = RegexValidator(
@@ -43,18 +44,18 @@ TAG_CHOICES = [
     ('important', 'חשוב'),
 ]
 def generate_referral_code():
-    """מייצר קוד אקראי של אותיות ומספרים"""
+    """Generate a random referral code made of letters and digits."""
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
 class CustomUser(AbstractUser):
     """
-    מודל המשתמש הראשי שמחליף את המודל הדיפולטיבי של ג'נגו.
-    מנהל את ההתחברות ואת הרשאות המערכת.
+    Primary user model that replaces Django's default user model.
+    It manages authentication and system permissions.
     """
     ROLE_CHOICES = (
-        ('member', 'חבר/ת קהילה'),  # סטודנטים, מרצים, משתמשים רגילים
-        ('moderator', 'איש/אשת צוות'),  # מנהלים שכירים/מתנדבים
-        ('admin', 'מנהל/ת העל'),  # אתה
+        ('member', 'חבר/ת קהילה'),  # Students, lecturers, and regular users
+        ('moderator', 'איש/אשת צוות'),  # Staff or volunteer moderators
+        ('admin', 'מנהל/ת העל'),  # Platform administrator
     )
 
     username = models.CharField(
@@ -69,31 +70,29 @@ class CustomUser(AbstractUser):
 
 
 class UserProfile(models.Model):
-    """
-    פרופיל משתמש אחוד. גמיש מספיק כדי להכיל סטודנטים, מרצים ואנשים רגילים.
-    """
+    """Unified user profile model for students, lecturers, and general users."""
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
 
-    # --- מידע אקדמי (אופציונלי - רק למי שסטודנט) ---
+    # --- Academic information (optional, mainly for students) ---
     university = models.ForeignKey('University', on_delete=models.SET_NULL, null=True, blank=True,
                                    verbose_name="מוסד לימודים")
     major = models.ForeignKey('Major', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="מסלול לימודים")
     YEAR_CHOICES = [(1, 'שנה א\''), (2, 'שנה ב\''), (3, 'שנה ג\''), (4, 'שנה ד\''), (5, 'שנה ה\' / תואר שני')]
     year = models.IntegerField(choices=YEAR_CHOICES, null=True, blank=True, verbose_name="שנת לימוד")
 
-    # --- פרטים אישיים ---
+    # --- Personal details ---
     bio = models.TextField(max_length=500, blank=True, verbose_name="קצת עלי (Bio)")
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True, verbose_name="תמונת פרופיל", validators=[validate_file_size])
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="מספר טלפון")
 
-    # --- כלכלת המערכת ומוניטין ---
+    # --- Economy and reputation ---
     current_balance = models.PositiveIntegerField(default=0, verbose_name="יתרת מטבעות לשימוש")
     lifetime_coins = models.PositiveIntegerField(default=0, verbose_name="מוניטין (סך כל המטבעות שהורווחו מעשייה)")
 
     favorite_courses = models.ManyToManyField('Course', related_name='favorited_by_users', blank=True,
                                               verbose_name="קורסים מועדפים")
 
-    # --- הגדרות משתמש ---
+    # --- User preferences ---
     THEME_CHOICES = [('light', 'יום (בהיר)'), ('dark', 'לילה (כהה)'), ('auto', 'אוטומטי')]
     LANGUAGE_CHOICES = [('he', 'עברית'), ('en', 'English')]
     VISIBILITY_CHOICES = [
@@ -108,14 +107,14 @@ class UserProfile(models.Model):
                                           verbose_name="מי יכול לראות את הפרופיל שלי")
     show_coins_publicly = models.BooleanField(default=True, verbose_name="הצג מוניטין לציבור")
 
-    # --- שדות שיתוף (Referrals) ---
+    # --- Referral fields ---
     referral_code = models.CharField(max_length=12, unique=True, blank=True, null=True)
     referred_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='referrals')
 
     @property
     def rank_name(self):
-        """ חישוב רמת המשתמש מבוסס אך ורק על המוניטין (Lifetime Coins) ולא על היתרה """
+        """Compute the user's rank using lifetime coins only, not the current balance."""
         if self.lifetime_coins >= 1000:
             return "💎 אלוף דרייב"
         elif self.lifetime_coins >= 500:
@@ -126,20 +125,20 @@ class UserProfile(models.Model):
             return "🥈 תורם פעיל"
         return "🥉 מתלמד"
 
-    # --- מתודות כלכלה חכמות ---
+    # --- Economy helpers ---
     def earn_coins(self, amount):
-        """ הפעלה כאשר משתמש מרוויח מטבעות מעשייה (מעלה גם יתרה וגם מוניטין) """
+        """Award coins earned through activity, increasing both balance and reputation."""
         self.current_balance += amount
         self.lifetime_coins += amount
         self.save()
 
     def buy_coins(self, amount):
-        """ הפעלה כאשר משתמש רוכש מטבעות בכסף (מעלה רק יתרה, המוניטין לא משתנה!) """
+        """Handle a coin purchase, increasing balance only and not reputation."""
         self.current_balance += amount
         self.save()
 
     def spend_coins(self, amount):
-        """ הפעלה כאשר משתמש מבזבז מטבעות (מוריד רק יתרה) """
+        """Spend coins by decreasing the current balance only."""
         if self.current_balance >= amount:
             self.current_balance -= amount
             self.save()
@@ -150,11 +149,11 @@ class UserProfile(models.Model):
         return self.user.username
 
     def save(self, *args, **kwargs):
-        # יצירת קוד הזמנה אם אין
+        # Generate a referral code if it does not exist yet
         if not self.referral_code:
             self.referral_code = generate_referral_code()
 
-        # --- כיווץ תמונת פרופיל ל-WebP ---
+        # --- Compress the profile picture to WebP ---
         if self.profile_picture and not self.profile_picture.name.endswith('.webp'):
             self.profile_picture = compress_to_webp(self.profile_picture)
 
@@ -182,14 +181,13 @@ class UserProfile(models.Model):
 
 @receiver(post_save, sender=CustomUser)
 def create_or_save_user_profile(sender, instance, created, **kwargs):
-    """ מייצר פרופיל אוטומטית לכל משתמש חדש - גרסה בטוחה """
+    """Create a profile automatically for every new user, using the safe path."""
     if created:
         UserProfile.objects.create(user=instance)
     else:
-        # משתמשים ב-filter.update כדי למנוע קריאה ל-save() של הפרופיל
-        # שעלולה להתנגש עם תהליכי מחיקה או מיגרציות
+        # Avoid profile `save()` recursion that can clash with deletes or migrations
         if hasattr(instance, 'profile'):
-            # בדיקה שהפרופיל לא נמחק כבר מהזיכרון
+            # Guard against the profile already being removed from memory/state
             try:
                 instance.profile.save()
             except UserProfile.DoesNotExist:
@@ -209,7 +207,7 @@ class Friendship(models.Model):
 
 
 # ==========================================
-# 1. מוסדות לימוד ותשתית אקדמית
+# 1. Institutions and academic structure
 # ==========================================
 
 class University(models.Model):
@@ -264,7 +262,7 @@ class Course(models.Model):
 
 
 # ==========================================
-# 2. ניהול קבצים ותיקיות
+# 2. File and folder management
 # ==========================================
 
 class Folder(models.Model):
@@ -284,13 +282,13 @@ class Folder(models.Model):
 
 
 class Document(models.Model):
-    # שינוי קריטי: הוספת null=True ו-blank=True כדי שיהיה אפשר להעלות קובץ ללא קורס (למשל בצאט)
+    # Critical change: allow uploads without a course, for example from chat
     course = models.ForeignKey('Course', on_delete=models.CASCADE, null=True, blank=True)
     
     folder = models.ForeignKey('Folder', on_delete=models.CASCADE, null=True, blank=True, related_name='documents')
     title = models.CharField(max_length=200, verbose_name="כותרת הקובץ")
 
-    # חיבור הוולידטור החכם לשדה הקובץ
+    # Attach the smart validator to the file field
     file = models.FileField(upload_to='documents/', validators=[validate_file_size])
     file_content = models.TextField(blank=True, null=True, verbose_name="תוכן הקובץ לחיפוש")
 
@@ -303,7 +301,7 @@ class Document(models.Model):
     download_count = models.PositiveIntegerField(default=0)
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_documents', blank=True)
 
-    # --- השדה החדש לתיוג אישי ---
+    # --- Personal tagging field ---
     personal_tag = models.CharField(
         max_length=20,
         choices=TAG_CHOICES,
@@ -312,14 +310,14 @@ class Document(models.Model):
     )
     def save(self, *args, **kwargs):
         if self.file:
-            # 1. עדכון סיומת וגודל הקובץ (הקוד המקורי שלך)
+            # 1. Update the file extension and size
             self.file_extension = os.path.splitext(self.file.name)[1].lower()
             try:
                 self.file_size_bytes = self.file.size
             except:
                 pass
 
-            # 2. חילוץ טקסט לחיפוש חכם - (PDF + Word)
+            # 2. Extract text for smart search (PDF + Word)
             if not self.file_content:
                 try:
                     if self.file_extension == '.pdf':
@@ -332,7 +330,7 @@ class Document(models.Model):
                 except Exception as e:
                     print(f"Text extraction failed: {e}")
 
-            # 3. לוגיקה לכיווץ תמונות ל-WebP (הקוד המקורי שלך)
+            # 3. Compress uploaded images to WebP when applicable
             image_extensions = ['.jpg', '.jpeg', '.png']
             if self.file_extension in image_extensions and not self.file.name.endswith('.webp'):
                 try:
@@ -362,7 +360,7 @@ class ExternalResource(models.Model):
     file = models.FileField(upload_to='external_resources/', blank=True, null=True, verbose_name="קובץ מקומי")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # --- השדה החדש לתיוג אישי ---
+    # --- Personal tagging field ---
     personal_tag = models.CharField(
         max_length=20,
         choices=TAG_CHOICES,
@@ -373,7 +371,7 @@ class ExternalResource(models.Model):
     def __str__(self):
         return self.title
 # ==========================================
-# 4. מערכת הקהילה (הפיד החברתי)
+# 4. Community system (social feed)
 # ==========================================
 
 class Community(models.Model):
@@ -420,7 +418,7 @@ class MarketplacePost(Post):
 
 
 class VideoPost(Post):
-    # החלפנו את שדה הקובץ הכבד בשדה טקסט קליל לקישור בלבד!
+    # Replace the heavy file field with a lightweight URL field
     youtube_url = models.URLField(
         max_length=500,
         verbose_name="קישור ליוטיוב",
@@ -434,17 +432,17 @@ class VideoPost(Post):
 
     @property
     def embed_url(self):
-        """ ממיר אוטומטית קישור רגיל של יוטיוב לקישור שניתן להציג באתר """
+        """Convert a standard YouTube URL into an embeddable site URL."""
         url = self.youtube_url
         if not url:
             return ""
 
-        # תופס קישורים רגילים של יוטיוב
+        # Handle regular YouTube watch URLs
         if 'youtube.com/watch?v=' in url:
             video_id = url.split('v=')[1].split('&')[0]
             return f"https://www.youtube.com/embed/{video_id}"
 
-        # תופס קישורים מקוצרים (מהפלאפון)
+        # Handle shortened `youtu.be` links
         elif 'youtu.be/' in url:
             video_id = url.split('youtu.be/')[1].split('?')[0]
             return f"https://www.youtube.com/embed/{video_id}"
@@ -453,7 +451,7 @@ class VideoPost(Post):
 
     def save(self, *args, **kwargs):
         if self.thumbnail and not self.thumbnail.name.endswith('.webp'):
-            from .utils import compress_to_webp  # ליתר ביטחון נוודא שזה מיובא
+            from .utils import compress_to_webp  # Extra safety to ensure the helper is available
             self.thumbnail = compress_to_webp(self.thumbnail)
         super().save(*args, **kwargs)
 
@@ -466,7 +464,7 @@ class Comment(models.Model):
 
 
 # ==========================================
-# 5. סגל אקדמי, דיווחים ופידבק
+# 5. Academic staff, reports, and feedback
 # ==========================================
 
 class Report(models.Model):
@@ -552,7 +550,7 @@ class Feedback(models.Model):
 
 
 # ==========================================
-# 6. יצירת קהילות אוטומטית
+# 6. Automatic community creation
 # ==========================================
 
 @receiver(post_save, sender=UserProfile)
@@ -577,7 +575,7 @@ def auto_join_communities(sender, instance, created, **kwargs):
 class DownloadLog(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     document = models.ForeignKey('Document', on_delete=models.CASCADE)
-    # שינוי: auto_now_add=True הוא הסטנדרט של דג'נגו לשדות תאריך יצירה
+    # `auto_now_add=True` is the standard Django approach for creation timestamps
     download_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -585,7 +583,7 @@ class DownloadLog(models.Model):
 class Vote(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     document = models.ForeignKey('Document', on_delete=models.CASCADE, related_name='votes')
-    value = models.SmallIntegerField() # 1 ללייק, -1 לדיסלייק
+    value = models.SmallIntegerField()  # `1` for like, `-1` for dislike
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -594,16 +592,16 @@ class Vote(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.value} on {self.document.title}"
 # ==========================================
-#  רכיב הסוכן האישי כרגע מושבת. (Student Agent)
+# 7. Personal agent component (currently disabled)
 # ==========================================
 
 class AgentKnowledge(models.Model):
-    # משתמשים ב-CustomUser כי זה המודל שהגדרת למעלה
+    # Use `CustomUser` because it is the main user model defined above
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='agent_knowledge')
     file = models.FileField(upload_to='agent_storage/', validators=[validate_file_size])
     course_name = models.CharField(max_length=100, verbose_name="שיוך לקורס")
 
-    # שדה לאחסון הטקסט שחולץ מהקובץ כדי לחסוך עיבוד עתידי
+    # Store extracted text so future requests do not need to reprocess the file
     extracted_text = models.TextField(blank=True, null=True, verbose_name="תוכן הטקסט שחולץ")
 
     upload_date = models.DateTimeField(auto_now_add=True)
@@ -612,7 +610,7 @@ class AgentKnowledge(models.Model):
         return f"Agent Knowledge: {self.course_name} ({self.owner.username})"
 
 # ==========================================
-# 8. מערכת התראות ואוטומציה (חדש)
+# 8. Notifications and automation
 # ==========================================
 
 class Notification(models.Model):
@@ -638,14 +636,14 @@ class Notification(models.Model):
         return f"התראה ל-{self.user.username}: {self.title}"
 
 class UserCourseSelection(models.Model):
-    """מודל שמחבר בין סטודנט לקורס ומסמן אם הוא במעקב (Star)"""
+    """Link a user to a course and track whether the course is starred."""
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='course_selections')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='selected_by_users')
     is_starred = models.BooleanField(default=False, verbose_name="מסומן בכוכב")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'course') # מונע כפילויות
+        unique_together = ('user', 'course')  # Prevent duplicates
 
     def __str__(self):
         status = "⭐" if self.is_starred else "❌"
@@ -663,7 +661,7 @@ class ChatMessage(models.Model):
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
-    # קישור לקובץ קיים מהדרייב
+    # Link to an existing file from the drive
     attached_file = models.ForeignKey('Document', on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -673,7 +671,7 @@ class ChatMessage(models.Model):
 
 class DocumentComment(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')
-    # כאן השינוי - במקום User כותבים settings.AUTH_USER_MODEL
+    # Use `settings.AUTH_USER_MODEL` instead of the concrete `User` class
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -682,5 +680,5 @@ class DocumentComment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        # שים לב: אם במודל המשתמש שלך אין username אלא email, תשנה פה ל-self.user.email
+        # If your user model uses email instead of username, switch this to `self.user.email`
         return f"Comment by {self.user} on {self.document.title}"

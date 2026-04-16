@@ -1,27 +1,25 @@
 """
-מערכת טפסים ואימות נתונים (Forms System)
-=======================================
+Forms and validation system
+===========================
 
-מה המטרה של הקובץ הזה?
+What is this file for?
 ----------------------
-קובץ זה מנהל את כל הקלט מהמשתמשים באתר. הוא אחראי לייצר טפסים מאובטחים, 
-מעוצבים וידידותיים למשתמש, תוך הקפדה שהמידע שנכנס למערכת תקין.
+This file manages all user input across the site. It is responsible for
+building secure, well-styled, and user-friendly forms while making sure
+incoming data is valid.
 
-הקובץ מטפל ב-4 תחומים מרכזיים:
-1. אוטומיזציה של עיצוב (BaseStyledModelForm): מנוע חכם שמזריק אוטומטית 
-   עיצוב Bootstrap ומצב לילה לכל שדה בטופס, מה שחוסך עבודה ידנית רבה.
-2. ניהול תוכן (Document & Course): טפסים להעלאת קבצים ויצירת קורסים. 
-   הם כוללים לוגיקה למניעת כפילויות (למשל: התראה אם קורס כבר קיים) 
-   ובדיקת זכויות יוצרים.
-3. ניהול רישום (Signup): אינטגרציה עם מערכת ההתחברות כדי להכריח משתמשים 
-   לאשר את תנאי השימוש ומדיניות הפרטיות כבר בשלב ההרשמה.
-4. השלמת פרופיל: טופס מורכב המאפשר לסטודנטים לעדכן פרטים אישיים, 
-   מוסד לימודים ומסלול, תוך סנכרון המידע בין מודל המשתמש למודל הפרופיל.
+It covers four main areas:
+1. Styling automation (`BaseStyledModelForm`): a smart base form that injects
+   Bootstrap and dark-mode styling into each field automatically.
+2. Content management (`Document` and `Course`): forms for uploading files and
+   creating courses, including duplicate-prevention logic and copyright checks.
+3. Signup flow: integrates with the authentication system to require users to
+   accept the terms and privacy policy during registration.
+4. Profile completion: a richer form that lets students update personal and
+   academic details while syncing data between the user and profile models.
 
-השימוש בטפסים אלו מבטיח הגנה מפני הזרקות קוד (XSS) ושומר על אחידות 
-ויזואלית בכל רחבי האתר.
------------------------------------------------
-עלינו לדאוג שבקובץ הזה מאוחסנים נושא הטפסים מול המשתמש באתר!!
+Using these forms helps protect the site from invalid input and keeps the UI
+consistent throughout the project.
 """
 
 import re
@@ -32,18 +30,18 @@ from .models import Document, Course, UserProfile, Folder
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-# משיכת מודל המשתמש החדש שלנו (CustomUser) בצורה בטוחה
+# Safely load the custom user model
 User = get_user_model()
 
 
 # ==========================================
-# 1. טופס האב: מכונת העיצוב האוטומטית
+# 1. Base form: the automatic styling engine
 # ==========================================
 class BaseStyledModelForm(forms.ModelForm):
     """
-    טופס בסיס שכל הטפסים באתר יירשו ממנו.
-    הוא עובר אוטומטית על כל השדות ומזריק להם עיצוב של Bootstrap ומצב לילה,
-    כך שלא צריך לכתוב widget class לכל שדה בנפרד!
+    Base form class inherited by the site's forms.
+    It automatically walks through the fields and injects Bootstrap and
+    dark-mode styling so each widget does not need to be styled manually.
     """
 
     def __init__(self, *args, **kwargs):
@@ -59,7 +57,7 @@ class BaseStyledModelForm(forms.ModelForm):
                 })
 
 
-# --- טופס להעלאת קבצים (מותאם למבנה התיקיות החדש וללא אנונימיות) ---
+# --- File upload form (adapted to the new folder structure and non-anonymous uploads) ---
 class DocumentUploadForm(BaseStyledModelForm):
     new_folder_name = forms.CharField(
         required=False,
@@ -84,7 +82,7 @@ class DocumentUploadForm(BaseStyledModelForm):
         }
 
 
-# --- טופס ליצירת קורס חדש (מנוע חכם נגד כפילויות) ---
+# --- New course form (smart duplicate prevention) ---
 class CourseForm(BaseStyledModelForm):
     class Meta:
         model = Course
@@ -117,7 +115,7 @@ class CourseForm(BaseStyledModelForm):
         return name
 
 
-# --- טופס שמתממשק ישירות עם django-allauth כדי להוסיף תנאי שימוש ---
+# --- Form that integrates directly with `django-allauth` to add terms acceptance ---
 class CustomSignupForm(forms.Form):
     terms_accepted = forms.BooleanField(
         required=True,
@@ -127,7 +125,7 @@ class CustomSignupForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # הזרקת הלינקים מתבצעת רק לאחר שהטופס נטען
+        # Inject the links only after the form is initialized
         self.fields['terms_accepted'].label = mark_safe(
             f'אני קראתי ומאשר/ת את <a href="{reverse("terms")}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{reverse("privacy")}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>'
         )
@@ -136,7 +134,7 @@ class CustomSignupForm(forms.Form):
         pass
 
 
-# --- טופס להשלמת פרטי פרופיל (מותאם לכולם - סטודנטים וקהל רחב) ---
+# --- Profile completion form (works for students and general users alike) ---
 class UserProfileForm(BaseStyledModelForm):
     first_name = forms.CharField(max_length=30, required=True, label="שם פרטי")
     last_name = forms.CharField(max_length=30, required=True, label="שם משפחה")
@@ -155,7 +153,7 @@ class UserProfileForm(BaseStyledModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # הזרקת הלינקים מתבצעת רק לאחר שהטופס נטען
+        # Inject the links only after the form is initialized
         self.fields['terms_accepted'].label = mark_safe(
             f'אני קראתי ומאשר/ת את <a href="{reverse("terms")}" class="text-primary text-decoration-none fw-bold" target="_blank">תנאי השימוש</a> ואת <a href="{reverse("privacy")}" class="text-primary text-decoration-none fw-bold" target="_blank">מדיניות הפרטיות</a>'
         )

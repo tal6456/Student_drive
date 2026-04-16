@@ -61,14 +61,14 @@ body {
     padding: 0;
 }
 
-/* 🌙 דארק מוד — מוסיף שכבת כהות מעל התמונה */
+/* Dark mode: add a dimming overlay above the background image */
 [data-theme='dark'] body {
     background:
         linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
         url("../background.jpeg") center / cover no-repeat fixed !important;
 }
 
-/* 🌙 גם אם זה AUTO לפי מערכת */
+/* Apply the same overlay when dark mode follows the OS setting */
 @media (prefers-color-scheme: dark) {
     body:not([data-theme='light']) {
         background:
@@ -133,7 +133,7 @@ input, .form-control {
    4. CUSTOM UI COMPONENTS
    ----------------------------------------- */
 
-/* תיקון Navbar אגרסיבי - דורס כל הגדרת Bootstrap */
+/* Aggressive navbar override to take precedence over Bootstrap defaults */
 nav.navbar, .navbar {
     height: 32px !important;
     min-height: 32px !important;

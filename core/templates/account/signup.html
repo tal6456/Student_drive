@@ -90,7 +90,7 @@
 </div>
 
 <style>
-    /* כפתור גוגל פרימיום מותאם למצב לילה (זהה למסך ההתחברות) */
+    /* Premium Google button styled for dark mode, matching the login screen */
     .btn-google-pro {
         display: flex;
         align-items: center;
@@ -124,7 +124,7 @@
         font-size: 0.95rem;
     }
 
-    /* עיצוב שדות קלט למובייל - גודל נוח לאצבע ומצב לילה */
+    /* Mobile-friendly input styling with dark-mode support */
     .allauth-form input:not([type="checkbox"]) {
         width: 100%;
         padding: 0.9rem 1.2rem;
@@ -147,12 +147,12 @@
         opacity: 0.6;
     }
 
-    /* אפקטים כלליים */
+    /* General effects */
     .hover-scale { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .hover-scale:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(26, 115, 232, 0.2) !important; }
     .hover-underline:hover { text-decoration: underline !important; }
 
-    /* תיקוני צלליות עדינים למצב לילה */
+    /* Subtle shadow adjustments for dark mode */
     [data-theme='dark'] .btn-google-pro:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
 </style>
 {% endblock %}

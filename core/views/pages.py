@@ -1,12 +1,9 @@
 
 """
-הקובץ מטפל ב:
-1. דפים משפטיים וסטטיים: תנאי שימוש, פרטיות ונגישות.
-2. דף תרומות: ניהול הקשר הכלכלי עם המשתמשים.
-3. מערכת משוב (Feedback): איסוף תקלות והצעות מהמשתמשים (כולל צילומי מסך).
-4. לוח בקרה למנהלים (Analytics Dashboard): ניתוח נתונים בזמן אמת על שימוש בקבצים, 
-   הורדות, והתפלגות משתמשים לפי פקולטות.
-5. ניהול שגיאות: דפי 404 ו-500 מעוצבים לחוויית משתמש טובה יותר.
+Static, legal, feedback, and analytics pages.
+
+This file handles legal pages, accessibility, donations, feedback intake,
+staff analytics, and the custom 404/500 error pages.
 """
 
 from django.shortcuts import render, redirect
@@ -14,12 +11,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Sum, Q
 
-# ייבוא רק של המודלים הנדרשים לכאן
+# Import only the models needed here
 from core.models import Document, Course, UserProfile, Report, Feedback
 
 
 # ==========================================
-# 1. דפי מידע וסטטיים
+# 1. Informational and static pages
 # ==========================================
 
 def terms_view(request):
@@ -36,7 +33,7 @@ def privacy_view(request):
 
 
 # ==========================================
-# 2. מערכת, משוב ואנליטיקס
+# 2. System, feedback, and analytics
 # ==========================================
 
 def submit_feedback(request):
@@ -81,7 +78,7 @@ def analytics_dashboard(request):
 
 
 # ==========================================
-# 3. דפי שגיאה מערכתיים
+# 3. System error pages
 # ==========================================
 
 def error_404(request, exception):

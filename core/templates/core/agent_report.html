@@ -65,32 +65,32 @@
            הקסם האמיתי: הגדרות מיוחדות רק לייצור ה-PDF
            ========================================== */
         @media print {
-            /* מכריח את הדפדפן להדפיס גם את רקע הלילה המגניב */
+            /* Force the browser to print the dark background as well */
             body, .markdown-body {
                 background-color: #0d1117 !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
 
-            /* מעלים את הכפתורים למעלה כדי שלא יופיעו במסמך */
+            /* Move the buttons out of the print flow so they do not appear in the document */
             .actions-container {
                 display: none !important;
             }
 
-            /* מבטל את הצלליות והשוליים כדי שזה יישב מושלם על הדף */
+            /* Remove shadows and margins so the report sits cleanly on the page */
             .markdown-body {
                 box-shadow: none !important;
                 max-width: 100% !important;
                 padding: 0 20px !important;
             }
 
-            /* מונע במפורש חיתוך של פסקאות, רשימות ובלוקים של קוד באמצע הדף */
+            /* Explicitly prevent paragraphs, lists, and code blocks from being cut mid-page */
             pre, blockquote, tr, img, li, p {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
 
-            /* דואג שכותרות לא יישארו יתומות בתחתית הדף */
+            /* Prevent headings from being orphaned at the bottom of a page */
             h1, h2, h3 {
                 page-break-after: avoid !important;
                 break-after: avoid !important;

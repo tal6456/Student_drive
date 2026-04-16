@@ -1,14 +1,17 @@
 """
-מה המטרה של הקובץ הזה
+What is this file for?
 ----------------------
-הקובץ הזה מעצב ונותן יכולות לסופריוזר ולמנהלי האתר.
------------
-הקובץ מטפל ב:
-1. אוטומיזציה וייצוא: הוספת אפשרות לייצוא כל טבלה לפורמט CSV בלחיצת כפתור.
-2. ניהול קבצים ויזואלי: הצגת סוגי קבצים עם תוויות צבעוניות, הצגת גודל קובץ וקישורים ישירים.
-3. ניהול משתמשים וכלכלה: חיבור הפרופיל למשתמש (Inline) ותצוגה של יתרת המטבעות (Coins).
-4. מערכת בקרה (Moderation): ניהול דיווחים על קבצים פגומים ופידבקים ממשתמשים.
-5. היררכיה אקדמית: שליטה על קורסים, מרצים ומוסדות לימוד.
+This file shapes the Django admin experience and adds capabilities for the
+superuser and site managers.
+
+It handles:
+1. Automation and export: adds one-click CSV export for admin tables.
+2. Visual file management: shows file types with colored labels, file sizes,
+   and direct links.
+3. User and economy management: connects the profile inline to the user and
+   displays coin balances.
+4. Moderation: manages broken-file reports and user feedback.
+5. Academic hierarchy: controls courses, lecturers, and institutions.
 """
 
 import csv
@@ -18,7 +21,7 @@ from django.utils.html import format_html
 from django.template.defaultfilters import filesizeformat
 from django.http import HttpResponse
 
-# ייבוא המודלים
+# Import the models
 from .models import (
     CustomUser, UserProfile, Friendship,
     University, Major, Course, Folder, Document,
@@ -31,7 +34,7 @@ from .models import (
 
 
 # ==========================================
-# 1. מחלקות אב (ירושות)
+# 1. Base admin classes
 # ==========================================
 
 class BaseAdmin(admin.ModelAdmin):
@@ -53,7 +56,7 @@ class BaseAdmin(admin.ModelAdmin):
 
 
 class ModerationAdmin(BaseAdmin):
-    """עבור דיווחים ופידבקים"""
+    """Shared admin behavior for reports and feedback."""
     list_editable = ('is_resolved',)
     actions = ['mark_as_resolved', 'export_as_csv']
 
@@ -64,7 +67,7 @@ class ModerationAdmin(BaseAdmin):
 
 
 # ==========================================
-# 2. ניהול קבצים וסוכן ה-AI
+# 2. File management and the AI agent
 # ==========================================
 
 @admin.register(Document)
@@ -101,27 +104,27 @@ class DocumentAdmin(BaseAdmin):
 
 # @admin.register(AgentKnowledge)
 # class AgentKnowledgeAdmin(BaseAdmin):
-#     # שינינו את created_at ל-upload_date כדי שיתאים למודל
+#     # We changed `created_at` to `upload_date` to match the model
 #     list_display = ('owner', 'course_name', 'get_text_stats', 'extraction_status', 'upload_date')
 #     readonly_fields = ('extracted_text', 'upload_date')
 #     search_fields = ('owner__username', 'course_name', 'extracted_text')
 #
 #     def get_text_stats(self, obj):
-#         """מדד לכמה ידע ה-AI חילץ מהקובץ"""
+#         """Measure how much text the AI extracted from the file."""
 #         if obj.extracted_text:
-#             return f"{len(obj.extracted_text)} תווים"
-#         return "ריק"
-#     get_text_stats.short_description = 'נפח ידע'
+#             return f"{len(obj.extracted_text)} characters"
+#         return "Empty"
+#     get_text_stats.short_description = 'Knowledge volume'
 #
 #     def extraction_status(self, obj):
 #         if obj.extracted_text and len(obj.extracted_text) > 10:
-#             return format_html('<span style="color: green;">✔ עובד</span>')
-#         return format_html('<span style="color: orange;">⏳ בהמתנה</span>')
-#     extraction_status.short_description = 'סטטוס עיבוד'
+#             return format_html('<span style="color: green;">✔ Working</span>')
+#         return format_html('<span style="color: orange;">⏳ Pending</span>')
+#     extraction_status.short_description = 'Processing status'
 #
 
 # ==========================================
-# 3. משתמשים וכלכלה
+# 3. Users and economy
 # ==========================================
 
 class UserProfileInline(admin.StackedInline):
@@ -148,7 +151,7 @@ class UserProfileAdmin(BaseAdmin):
 
 
 # ==========================================
-# 4. מוסדות, קורסים ותוכן
+# 4. Institutions, courses, and content
 # ==========================================
 
 @admin.register(Course)
@@ -168,10 +171,10 @@ class FeedbackAdmin(ModerationAdmin):
 
 
 # ==========================================
-# 5. רישום שאר המודלים (בצורה בטוחה)
+# 5. Register the remaining models safely
 # ==========================================
 
-# מודלים שמשתמשים ב-BaseAdmin ללא לוגיקה מיוחדת
+# Models that use `BaseAdmin` without special logic
 admin.site.register([
     University, Major, Folder, Community, Post,
     MarketplacePost, VideoPost, Comment, Friendship,DocumentComment,
@@ -179,7 +182,7 @@ admin.site.register([
     CourseSemesterStaff,Notification, UserCourseSelection
 ], BaseAdmin)
 
-# עיצוב כותרות
+# Admin site titles
 admin.site.site_header = 'הדרייב הסטודנטיאלי - מערכת ניהול'
 admin.site.index_title = 'לוח בקרה אסטרטגי'
 

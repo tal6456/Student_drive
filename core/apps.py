@@ -5,5 +5,5 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        # השורה הזו היא ה"סטארטר" שמפעיל את ה-Signals
+        # This import is the startup hook that activates the signal handlers
         import core.signals

@@ -1,18 +1,10 @@
 """
-קובץ friends_chat.py: ניהול חברים, קשרים חברתיים וצ'אט פרטי 
-===========================================================
+Friends and private chat views
+==============================
 
-מה המטרה של הקובץ הזה?
-----------------------
-קובץ זה מרכז את כל האינטראקציות ה-Peer-to-Peer (בין משתמש למשתמש) באתר. 
-הוא מנהל את המעגל החברתי הקרוב של הסטודנט ומאפשר תקשורת ישירה.
-
-הקובץ מטפל ב:
-1. פרופיל ציבורי (Public Profile): תצוגת המידע של משתמשים אחרים ובדיקת סטטוס החברות מולם.
-2. מערכת חברות (Friendship System): שליחה, אישור, דחייה והסרה של חברים, כולל ניהול התראות.
-3. חיפוש משתמשים (User Search): מנגנון למציאת חברים חדשים לפי שם או שם משתמש.
-4. צ'אט פרטי (Private Messaging): מערכת הודעות בזמן אמת (בבסיסה) הכוללת אפשרות 
-   לצרף קבצים קיימים מה"דרייב" של הסטודנט או להעלות קבצים חדשים ישירות לשיחה.
+This file groups the peer-to-peer interactions on the site.
+It manages friendship flows, public profiles, user search,
+and private chat rooms with optional file attachments.
 """
 
 
@@ -24,14 +16,14 @@ from django.db.models import Q
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-# ייבוא רק של המודלים הנדרשים למודול זה
+# Import only the models required by this module
 from core.models import Friendship, Notification, Post, Document, ChatRoom, ChatMessage
 
 User = get_user_model()
 
 
 # ==========================================
-# 1. פרופיל ציבורי ובקשות חברות
+# 1. Public profile and friend requests
 # ==========================================
 
 @login_required
@@ -39,7 +31,7 @@ def public_profile(request, username):
     target_user = get_object_or_404(User, username=username)
     target_profile = target_user.profile
 
-    # מחיקת התראות ספציפיות אם נלחצו
+    # Delete a notification if the user opened the page through it
     notification_id = request.GET.get('delete')
     if notification_id:
         Notification.objects.filter(id=notification_id, user=request.user).delete()
@@ -161,7 +153,7 @@ def reject_friend_request(request, request_id):
 
 
 # ==========================================
-# 2. ניהול רשימת החברים
+# 2. Friends list management
 # ==========================================
 
 @login_required
@@ -211,7 +203,7 @@ def search_users(request):
 
 
 # ==========================================
-# 3. הצ'אט הפרטי
+# 3. Private chat
 # ==========================================
 
 @login_required
@@ -252,7 +244,7 @@ def chat_room(request, room_id):
                     pass
 
             elif local_file:
-                # קובץ שמועלה בצ'אט - נשמר ללא קורס
+                # Files uploaded in chat are intentionally stored without a course
                 new_doc = Document.objects.create(
                     uploaded_by=request.user,
                     title=local_file.name,

@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container mt-4 animate__animated animate__fadeIn" dir="rtl">
-    {# --- כותרת התוצאות --- #}
+    {# --- Results header --- #}
     <div class="d-flex align-items-center mb-4 border-bottom pb-3">
         <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center me-3 ms-3" style="width: 50px; height: 50px;">
             <i class="fas fa-search text-primary fs-4"></i>
@@ -27,7 +27,7 @@
     <div class="row g-4">
         <div class="col-lg-8">
             
-            {# --- מוסדות לימוד (בן גוריון וכו') --- #}
+            {# --- Educational institutions (Ben-Gurion, etc.) --- #}
             {% if universities %}
             <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card); border: 2px solid #1a73e8 !important;">
                 <div class="card-header bg-transparent border-bottom p-3">
@@ -47,7 +47,7 @@
             </div>
             {% endif %}
 
-            {# --- קורסים (אלגברה לינארית וכו') --- #}
+            {# --- Courses (Linear Algebra, etc.) --- #}
             {% if courses %}
             <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">
                 <div class="card-header bg-transparent border-bottom p-3">
@@ -64,7 +64,7 @@
             </div>
             {% endif %}
 
-            {# --- קבצים וסיכומים (עם העיצוב המקורי שלך) --- #}
+            {# --- Files and summaries, using the original styling --- #}
             {% if documents %}
             <div class="mb-4">
                 <h5 class="fw-bold mb-3"><i class="fas fa-file-pdf text-danger ms-2"></i> קבצים וסיכומים ({{ documents|length }})</h5>
@@ -73,7 +73,7 @@
                         <div class="list-group-item list-group-item-action d-flex flex-column border-0 border-bottom py-3 hover-bg-light" style="background-color: var(--gd-card); border-color: var(--border-color) !important;">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                 <div class="d-flex align-items-center gap-3">
-                                    {# זיהוי אייקון לפי סיומת #}
+                                    {# Pick the icon based on the file extension #}
                                     <div class="text-center" style="width: 45px;">
                                         {% with ext=doc.file.name|lower %}
                                             {% if ".pdf" in ext %}<i class="fas fa-file-pdf fa-2x text-danger drop-shadow"></i>
@@ -97,7 +97,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                {# כפתורי פעולה #}
+                                {# Action buttons #}
                                 <div class="d-flex align-items-center gap-2">
                                     {% if user.is_authenticated %}
                                         <button onclick="handleDocumentLike({{ doc.id }}, this)" class="btn btn-sm {% if user in doc.likes.all %}btn-primary text-white{% else %}btn-outline-primary{% endif %} rounded-pill px-3 shadow-sm like-btn">
@@ -117,7 +117,7 @@
             {% endif %}
         </div>
 
-        {# --- עמודה צדדית: סטודנטים ומרצים --- #}
+        {# --- Sidebar column: students and lecturers --- #}
         <div class="col-lg-4">
             {% if users %}
             <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--gd-card);">

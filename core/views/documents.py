@@ -1,18 +1,15 @@
 """
-קובץ documents.py: ניהול מסמכים, הורדות ואינטראקציות 
-===========================================================
+Document lifecycle management
+=============================
 
-מה המטרה של הקובץ הזה
-----------------------
-זהו קובץ הליבה של האתר. הוא מנהל את כל מחזור החיים של מסמך 
-מרגע העלאתו ועד לצריכתו על ידי סטודנטים אחרים.
+This file handles documents from upload through download and interaction.
 
-הקובץ מטפל ב:
-1. מערכת הורדות (Download System): ניהול הורדות מאובטח, עדכון מונים ורישום לוגים.
-2. תצוגת מסמכים (Document Viewer): זיהוי סוג הקובץ (PDF, Office, תמונה) והצגתו בדפדפן.
-3. בינה מלאכותית (AI Summary): התממשקות לכלי AI ליצירת סיכומים אוטומטיים של מסמכים.
-4. אינטראקציות ודיווחים: מנגנון לייקים (המעניק "מטבעות" ליוצר) ומערכת דיווח על תוכן פוגעני.
-5. ניהול אישי: העתקת קבצים ל"דרייב האישי" של המשתמש וניהול היסטוריית הורדות.
+It covers:
+1. Secure downloads with counters and logs.
+2. In-browser document viewing by file type.
+3. AI-based summaries.
+4. Likes and abuse reports.
+5. Personal-drive copy and history management.
 """
 
 import mimetypes
@@ -22,7 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, Http404
 
-# ייבוא המודלים והכלים שהקובץ הזה בלבד צריך
+# Import the models and helpers needed by this module
 from core.models import Document, DownloadLog, Report
 from core.ai_utils import generate_smart_summary
 
@@ -33,7 +30,7 @@ def download_file(request, document_id):
     d.download_count += 1
     d.save()
 
-    # רישום ההורדה במערכת (Log)
+    # Record the download in the system log
     DownloadLog.objects.create(user=request.user, document=d)
 
     if not d.file:
@@ -168,11 +165,11 @@ def delete_entire_course_folder(request):
     if request.method == 'POST':
         course_name = request.POST.get('course_name')
         
-        # מחיקת כל המסמכים שאתה העלית ושייכים לקורס הזה
+        # Delete all documents uploaded by the user for this course bucket
         if course_name == "ללא קורס":
             Document.objects.filter(uploaded_by=request.user, course__isnull=True).delete()
         else:
-            # אנחנו מחפשים לפי שם הקורס כי זה מה שיש לנו ב-grouper ב-HTML
+            # Match by course name because that is what the HTML `grouper` uses
             Document.objects.filter(uploaded_by=request.user, course__name=course_name).delete()
             
         messages.success(request, f"התיקייה '{course_name}' נמחקה בהצלחה מהדרייב שלך.")
@@ -183,7 +180,7 @@ def delete_entire_course_folder(request):
 def delete_download_history_folder(request):
     if request.method == 'POST':
         course_name = request.POST.get('course_name')
-        from core.models import DownloadLog  # וודא שהמודל מיובא
+        from core.models import DownloadLog  # Keep the import local and explicit
         
         if course_name == "ללא קורס":
             DownloadLog.objects.filter(user=request.user, document__course__isnull=True).delete()

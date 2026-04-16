@@ -24,15 +24,15 @@
 </div>
 
 <style>
-    /* עיצוב פריט פעיל בתפריט */
+    /* Styling for the active menu item */
     .active-social {
         background-color: rgba(26, 115, 232, 0.1) !important;
         color: var(--gd-primary) !important;
         font-weight: bold;
-        border-right: 4px solid var(--gd-primary); /* פס הדגשה יפה בצד */
+        border-right: 4px solid var(--gd-primary); /* Nice highlight bar on the side */
     }
     
-    /* תמיכה במצב לילה לפריטי התפריט הצידי */
+    /* Dark-mode support for sidebar menu items */
     .list-group-item-action {
         color: var(--gd-text) !important;
         background-color: var(--gd-card) !important;
@@ -43,7 +43,7 @@
         background-color: var(--gd-hover) !important;
     }
     
-    /* אנימציית ריחוף יוקרתית לפוסטים */
+    /* Premium hover animation for posts */
     .post-card {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -51,7 +51,7 @@
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
     }
-    /* צל מותאם למצב לילה כשרחפים מעל פוסט */
+    /* Dark-mode shadow while hovering over a post */
     [data-theme="dark"] .post-card:hover {
         box-shadow: 0 10px 20px rgba(0,0,0,0.4) !important;
     }

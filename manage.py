@@ -1,23 +1,24 @@
 """
-כלי ניהול ושליטה של פרויקט ג'אנגו (Django Management Utility)
-===========================================================
+Django management and control utility
+=====================================
 
-מה המטרה של הקובץ הזה?
+What is this file for?
 ----------------------
-קובץ זה הוא ממשק שורת הפקודה (CLI) של האתר. הוא משמש כצינור המקשר 
-בינך לבין תשתית ה-Django, ומאפשר להריץ פעולות תחזוקה, פיתוח וניהול.
+This file is the site's command-line interface (CLI). It acts as the bridge
+between you and the Django infrastructure, allowing maintenance, development,
+and management tasks to run.
 
-הקובץ מאפשר לבצע את הפעולות הבאות:
-1. הרצת האתר: הפעלת שרת הפיתוח המקומי (runserver) כדי לבדוק את האתר במחשב.
-2. ניהול מסד הנתונים: יצירת טבלאות (makemigrations) ועדכונן (migrate) 
-   בהתאם לשינויים שביצעת במודלים.
-3. יצירת משתמשים: יצירת משתמשי על (createsuperuser) לניהול האתר.
-4. הרצת פקודות מותאמות אישית: הפעלת סקריפטים מיוחדים שבנית עבור 
-   Student Drive, כמו הרצת סוכן ה-AI או ניקוי נתונים.
-5. בדיקות (Testing): הרצת בדיקות אוטומטיות לווידוא שהקוד תקין.
+It supports the following actions:
+1. Run the site: start the local development server (`runserver`) to test it.
+2. Manage the database: create tables (`makemigrations`) and update them
+   (`migrate`) according to model changes.
+3. Create users: create superusers (`createsuperuser`) for site management.
+4. Run custom commands: execute custom scripts built for Student Drive,
+   such as the AI agent or cleanup jobs.
+5. Testing: run automated checks to verify the code is working correctly.
 
-חשוב לזכור: הקובץ הזה טוען באופן אוטומטי את קובץ ה-Settings של הפרויקט, 
-ולכן הוא תמיד יודע לאיזה בסיס נתונים להתחבר ואיך להפעיל את האפליקציה.
+Important: this file automatically loads the project's settings module,
+so it always knows which database to connect to and how to boot the app.
 """
 
 #!/usr/bin/env python

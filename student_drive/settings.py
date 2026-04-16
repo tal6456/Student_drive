@@ -1,26 +1,22 @@
 """
-הגדרות ליבה של הפרויקט (Project Settings)
-=========================================
+Project core settings
+=====================
 
-מה המטרה של הקובץ הזה?
+What is this file for?
 ----------------------
-קובץ זה מהווה את מרכז השליטה של האתר. הוא מחבר בין כל רכיבי המערכת 
-(בסיס נתונים, שרת מיילים, אחסון ענן ואבטחה) ומגדיר את התנהגותם.
+This file is the site's control center. It wires together the major system
+components, including the database, email server, cloud storage, and security.
 
-הקובץ מטפל ב-5 תחומים קריטיים:
-1. אבטחה והגנה: ניהול מפתחות סודיים, הגדרות HTTPS למניעת פריצות, 
-   והצפנת סיסמאות ברמה הגבוהה ביותר (Argon2).
-2. ניהול סביבות (DEBUG): מנגנון חכם המבדיל בין עבודה במחשב האישי 
-   לבין עבודה בשרת אמיתי (Render/DigitalOcean), ומתאים את הניתובים בהתאם.
-3. תשתיות נתונים: חיבור למסד נתונים (PostgreSQL בשרת או SQLite מקומי) 
-   ואחסון קבצים בענן של אמזון (S3) לשמירה על ביצועים מהירים.
-4. אימות משתמשים וגוגל: הגדרות להתחברות חברתית (Social Login) המאפשרות 
-   לסטודנטים להיכנס עם חשבון הגוגל האקדמי שלהם בלחיצת כפתור.
-5. תקשורת ושפות: הגדרת שליחת מיילים אוטומטיים לשחזור סיסמה והתאמת 
-   ממשק האתר לעברית (Right-to-Left).
+It covers five critical areas:
+1. Security: secret keys, HTTPS settings, and strong password hashing.
+2. Environment handling (`DEBUG`): separates local development from live deployment.
+3. Data infrastructure: configures the database and S3-based file storage.
+4. Authentication and Google login: defines social-login behavior.
+5. Communication and languages: configures outgoing mail and language support.
 
-שינוי בקובץ זה משפיע על היציבות והאבטחה של כל המערכת.
-ולכן יש להתנהג בזהירות בשינויים פה. יש לשים לב להעברות ממצב פיתוח למצב האתר באוויר. שימו לב לא לעלות מפתחות סודיים שלנו לגיט או לשום מקום.
+Changes in this file affect the stability and security of the whole system,
+so edits here should be made carefully, especially when moving between
+development and production. Never commit secret keys.
 """
 
 """
@@ -35,48 +31,48 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
-# --- אבטחה: מפתח סודי ---
+# --- Security: secret key ---
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' # להחזיר שאני רוצה לעבוד על האינטרנט
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # Toggle this when switching between local and deployed work
 
-# --- מפתח AI של גוגל ---
+# --- Google AI key ---
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 
 
 #TODO
-# הגדרת דומיינים מורשים (Localhost + DigitalOcean + Render למקרה גיבוי)
+# Allowed domains (localhost + DigitalOcean + Render as a fallback)
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '.ondigitalocean.app', 'student-drive.onrender.com']
 
 # ==========================================
-# הגדרות שליחת מיילים (דרך ג'ימייל)
+# Email delivery settings (via Gmail)
 # ==========================================
-# רשימת המנהלים שיקבלו מייל בכל פעם שיש שגיאת 500
+# Admins who receive an email whenever a 500 error occurs
 ADMINS = [
     ('Tal', 'student.drive10@gmail.com'),
 ]
 
-# המייל שממנו יישלחו ההודעות (יכול להיות אותו מייל)
+# Sender address for outgoing emails
 SERVER_EMAIL = 'student.drive10@gmail.com'
 
-# תנאי חכם לשליחת מיילים
+# Smart environment-aware email backend selection
 if DEBUG:
-    # בפיתוח מקומי: המייל (כולל הלינק לאיפוס סיסמה) פשוט יודפס לך בחלון הטרמינל למטה
+    # In local development, print the email, including password-reset links, to the terminal
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
-    # בשרת האמיתי: שליחת מיילים אמיתיים לתיבת הדואר של הסטודנט
+    # In production, send real emails to the student's inbox
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'student.drive10@gmail.com'
-# כאן שמים סיסמת אפליקציה של גוגל, לא את הסיסמה הרגילה שלך! עדיף להשתמש במשתנה סביבה:
+# Use a Google app password here, not your normal Gmail password; an environment variable is preferred
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
-# מאפשר הזרקת דומיין מותאם אישית (Custom Domain) דרך משתני סביבה
+# Allow an optional custom domain through environment variables
 APP_DOMAIN = os.getenv('APP_DOMAIN')
 if APP_DOMAIN:
     ALLOWED_HOSTS.append(APP_DOMAIN)
@@ -92,7 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'storages',
 
-    # Apps שלנו
+    # Our apps
     'core',
 
     # Allauth & Social Accounts
@@ -139,7 +135,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'student_drive.wsgi.application'
 
-# נסיון לקרוא DATABASE_URL מהסביבה (Render) או מה-.env (מקומי)
+# Try reading `DATABASE_URL` from the environment or `.env`
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
@@ -148,10 +144,10 @@ DATABASES = {
 }
 
 # ==========================================
-# אבטחת סיסמאות (הצפנה משופרת)
+# Password security
 # ==========================================
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher', # ההצפנה הכי חזקה
+    'django.contrib.auth.hashers.Argon2PasswordHasher',  # Strongest hashing option in this stack
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
 ]
@@ -164,10 +160,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ==========================================
-# אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
+# Cookie and session security
 # ==========================================
-SESSION_COOKIE_HTTPONLY = True  # מונע מ-JS לגשת לסשן
-CSRF_COOKIE_HTTPONLY = True     # מונע מ-JS לגשת ל-CSRF
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to the session cookie
+CSRF_COOKIE_HTTPONLY = True     # Prevent JavaScript access to the CSRF cookie
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -193,12 +189,12 @@ LOCALE_PATHS = [
 # Static & Media
 # ==========================================
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # התיקייה שהשרת יאסוף אליה את העיצוב
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Folder where the server collects static assets
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# --- הגדרות אימות ---
+# --- Authentication settings ---
 AUTH_USER_MODEL = 'core.CustomUser'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -223,31 +219,31 @@ ACCOUNT_SIGNUP_FORM_CLASS = 'core.forms.CustomSignupForm'
 # ==========================================
 # Allauth Adapters & Social Auto-Connect
 # ==========================================
-# הפניית משתמשים חדשים למסך השלמת פרופיל
+# Redirect new users to the profile completion screen
 ACCOUNT_ADAPTER = 'core.adapters.CustomAccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
 
-# חיבור אוטומטי של גוגל לאימייל קיים (ללא מסך שגיאה)
+# Automatically connect Google login to an existing email without an error screen
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-# דילוג על טופס יצירת משתמש בהתחברות דרך גוגל
+# Skip the extra signup form during Google login
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # -----------------------------------------------------------
 # -----------------------------------------------------------
 if not DEBUG:
-    # מאלץ את כל התעבורה לעבור דרך HTTPS
+    # Force all traffic through HTTPS
     SECURE_SSL_REDIRECT = True
 
     # ==========================================
-    # אבטחת עוגיות וסשנים (הגנה מגניבת זהות)
+    # Cookie and session security
     # ==========================================
-    SESSION_COOKIE_HTTPONLY = True  # משאירים על True, זה קריטי לאבטחת הסשן!
-    CSRF_COOKIE_HTTPONLY = True  # תוקן ל - True. ה-JS ב-base.html עוקף את זה דרך ה-DOM.
+    SESSION_COOKIE_HTTPONLY = True  # Keep this `True`; it is critical for session security
+    CSRF_COOKIE_HTTPONLY = True  # Intentionally `True`; client-side code reads the token from the DOM
 
     CSRF_TRUSTED_ORIGINS = ['https://*.ondigitalocean.app', 'https://student-drive.onrender.com']
 
-    # HSTS - אומר לדפדפן "תמיד תתחבר אלי ב-HTTPS"
-    SECURE_HSTS_SECONDS = 31536000  # שנה אחת
+    # HSTS tells the browser to always connect over HTTPS
+    SECURE_HSTS_SECONDS = 31536000  # One year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
@@ -264,16 +260,16 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         },
-        # אופציונלי אבל מומלץ מאוד לאבטחה בגרסאות החדשות של ג'נגו
+        # Optional, but strongly recommended for security in newer Django versions
         'OAUTH_PKCE_ENABLED': True,
     }
 }
 
-# מוודא שהמערכת מחפשת את הנתונים בטבלאות האדמין ולא בקוד
+# Store social-account tokens in the database instead of hardcoding anything in code
 SOCIALACCOUNT_STORE_TOKENS = True
 
 # ==========================================
-# הגדרות אמזון S3 (חכמות - עובדות לפי משתני סביבה)
+# Amazon S3 settings driven by environment variables
 # ==========================================
 if os.getenv('AWS_ACCESS_KEY_ID'):
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -284,7 +280,7 @@ if os.getenv('AWS_ACCESS_KEY_ID'):
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
     AWS_QUERYSTRING_AUTH = False
 
-    # --- השיטה המודרנית לג'אנגו 4.2 ומעלה ---
+    # --- Modern storage configuration for Django 4.2+ ---
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",

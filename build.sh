@@ -1,20 +1,20 @@
 """
-סקריפט הקמה ואוטומציה לשרת (Build & Deployment Script)
-=====================================================
+Server setup and automation script (Build & Deployment Script)
+==============================================================
 
-הקובץ מבצע את הפעולות הבאות לפי הסדר:
-1. התקנת חבילות: מוריד ומתקין את כל הספריות מרשימת ה-requirements.
-2. איסוף קבצים סטטיים (collectstatic): מאחד את כל קבצי העיצוב (CSS) 
-   והגרפיקה למקום אחד כדי שהאתר ייטען מהר.
-3. ניהול מסד הנתונים: יוצר ומריץ "מיגרציות" כדי לעדכן את הטבלאות 
-   בבסיס הנתונים בהתאם לשינויים האחרונים בקוד.
-4. הגדרות מערכת אוטומטיות: יוצר משתמש מנהל (Superuser) ראשוני 
-   ומגדיר את כתובת הדומיין של האתר בבסיס הנתונים.
-5. הפעלת בינה מלאכותית: מריץ פקודה מיוחדת המפעילה את סוכן התיעוד 
-   וה-AI של המערכת.
+This file performs the following steps in order:
+1. Install packages: downloads and installs all libraries from `requirements`.
+2. Collect static files (`collectstatic`): gathers CSS and graphic assets
+   into one place so the site loads faster.
+3. Manage the database: creates and runs migrations to update the tables
+   according to the latest code changes.
+4. Apply automatic system setup: creates an initial superuser
+   and configures the site domain in the database.
+5. Activate AI features: runs a dedicated command that starts the
+   documentation and AI agent for the system.
 
-הסקריפט כולל מנגנוני הגנה (כמו set -o errexit) שגורמים לו לעצור מיד 
-אם משהו השתבש, כדי למנוע מצב של אתר שבור באוויר.
+The script includes safety guards (such as `set -o errexit`) so it stops
+immediately if something goes wrong, preventing a broken deployment.
 """
 
 #!/usr/bin/env bash
@@ -27,15 +27,15 @@ pip install -r requirements.txt
 echo "🖼️ Collecting static files..."
 python manage.py collectstatic --no-input
 
-# 1. קודם כל יוצרים את קבצי המיגרציה
+# 1. First create the migration files
 echo "🔨 Generating migration files..."
 python manage.py makemigrations core --no-input
 
-# 2. עכשיו מריצים אותם - זה יוצר את הטבלה core_customuser
+# 2. Then run them - this creates the `core_customuser` table
 echo "🗄️ Running migrations..."
 python manage.py migrate --no-input
 
-# 3. רק עכשיו, כשהטבלה בטוח קיימת, מריצים את ה-Superuser
+# 3. Only now, once the table definitely exists, run the superuser setup
 echo "⚙️ Running post-deploy setup..."
 python manage.py shell << 'END'
 from django.contrib.auth import get_user_model
@@ -47,7 +47,7 @@ username = os.getenv('ADMIN_USERNAME', 'admin_master')
 email = os.getenv('ADMIN_EMAIL', 'admin@example.com')
 password = os.getenv('ADMIN_PASSWORD', 'admin1234')
 
-# יצירת סופר-יוזר בצורה בטוחה
+# Safely create the superuser
 try:
     if not User.objects.filter(username=username).exists():
         User.objects.create_superuser(username, email, password)
@@ -57,7 +57,7 @@ try:
 except Exception as e:
     print(f"⚠️ Could not create superuser: {e}")
 
-# הגדרת ה-Site בצורה דינמית כדי שיתאים ל-DigitalOcean
+# Configure the `Site` dynamically so it matches the deployment domain
 domain_name = os.getenv('SITE_DOMAIN', 'localhost:8000')
 try:
     site, created = Site.objects.update_or_create(
@@ -75,7 +75,7 @@ print("🎉 Setup script completed!")
 END
 
 # ==========================================
-# הפעלת סוכן התיעוד והאינטליגנציה שלנו!
+# Run the documentation and intelligence agent
 # ==========================================
 echo "🤖 Running AI Documentation Agent..."
 python manage.py run_agent

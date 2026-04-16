@@ -1,29 +1,20 @@
 """
-מערכת ניתוב כתובות (URL Routing System)
-=======================================
+URL routing system
+==================
 
-הקובץ מטפל ב-5 אזורי פעילות מרכזיים:
-1. ניווט ליבה ואקדמיה: ניתוב לדף הבית, דפי קורסים, ספריות חומרים אקדמיים 
-   ופונקציות חיפוש חי.
-2. ניהול הדרייב האישי: כתובות ייעודיות לניהול הקבצים האישיים של הסטודנט, 
-   הוספת משאבים חיצוניים וניהול היסטוריית ההורדות.
-3. קהילה ותקשורת: הגדרת הנתיבים לרשת החברתית (פיד, לייקים, תגובות), 
-   מערכת חברים וצ'אט פרטי בזמן אמת.
-4. חשבונות ואבטחה: חיבור למערכת ההזדהות (Allauth), פרופילים אישיים, 
-   הגדרות פרטיות ודפי תנאי שימוש.
-5. ממשקי עזר (API & AJAX): ניתובים לפעולות מהירות מאחורי הקלעים כמו 
-   מחיקת פריטים ללא רענון דף, דירוג מרצים והתראות.
+This file wires together the site's main URL endpoints:
+1. Core academic navigation and search.
+2. Personal drive routes for user-owned content.
+3. Community, friends, and chat features.
+4. Authentication, privacy, and profile pages.
+5. AJAX/API-style helper endpoints.
 
-הקובץ כולל גם הגדרות לטיפול בשגיאות (404 ו-500) ותמיכה בהצגת קבצי מדיה 
-ותמונות בזמן פיתוח.
-----------------------------------------
-**חשוב** 
-זה קובץ שמקשר בין כל חלקי האתר והקובץ שנותן לנו אפשרות להגיע לדף המנהלים.
+It also defines error handlers and serves media files during development.
 """
 
 from django.contrib import admin
 from django.urls import path, include
-# הוספתי כאן את personal_drive לייבוא
+# Import the dedicated personal-drive view module
 from core import views, personal_drive #agent_views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -31,43 +22,42 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
 # ==========================================
-    # משאבים חיצוניים בדרייב
+    # External resources in the drive
     # ==========================================
     path('drive/add-external/', personal_drive.add_external_resource, name='add_external_resource'),
     path('drive/delete-external/<int:resource_id>/', personal_drive.delete_external_resource, name='delete_external_resource'),
     path('drive/update-tag/', personal_drive.update_resource_tag, name='update_resource_tag'),
-    # בתוך קובץ urls.py
+    # Route kept here alongside the rest of the URL definitions
     path('remove-from-history/<int:log_id>/', views.remove_from_history, name='remove_from_history'),
-    # ממשק ניהול
+    # Admin interface
     path('admin/', admin.site.urls),
 
-    # השורה שמוסיפה את ה-Service Worker לכתובת הראשית:
+    # Route that exposes the service worker from the site root
     path('sw.js', TemplateView.as_view(template_name="sw.js", content_type='application/javascript'), name='sw.js'),
 
-    # מערכת ההרשמה והתחברות (Allauth)
+    # Signup and authentication system (`allauth`)
     path('accounts/', include('allauth.urls')),
 
-    # דפי ניווט וקורסים
-    # דפי ניווט וקורסים
+    # Navigation and course pages
     path('', views.home, name='home'),
 
-    # שים לב לסדר: קודם הנתיב עם התיקייה, אחר כך הקורס הכללי
+    # Order matters: the folder-specific path must come before the generic course path
     path('course/<int:course_id>/folder/<int:folder_id>/', views.course_detail, name='course_detail_folder'),
     path('course/<int:course_id>/', views.course_detail, name='course_detail'),
 
-    # הנתיב שהיה חסר לך וגרם לשגיאה בדף הבית
+    # Favorite toggle route used from the home page
     path('course/<int:course_id>/toggle_favorite/', views.toggle_favorite_course, name='toggle_favorite_course'),
 
     path('add-course/', views.add_course, name='add_course'),
     # ==========================================
-    # הדרייב האישי החדש (מה שהוספנו עכשיו)
+    # Personal drive routes
     # ==========================================
     path('drive/', personal_drive.personal_drive, name='personal_drive'),
     path('delete-folder/', views.delete_entire_course_folder, name='delete_entire_course_folder'),
     path('delete-download-history/', views.delete_download_history_folder, name='delete_download_history_folder'),
 
     # ==========================================
-    # קהילה ורשת חברתית
+    # Community and social features
     # ==========================================
     path('feed/', views.community_feed, name='community_feed'),
     path('u/<str:username>/', views.public_profile, name='public_profile'),
@@ -75,32 +65,32 @@ urlpatterns = [
     path('community/<int:community_id>/join/', views.join_community, name='join_community'),
     path('communities/discover/', views.discover_communities, name='discover_communities'),
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
-    #הוספת תגובה לקובץ
+    # Add a comment to a document
     path('document/<int:document_id>/comment/', views.add_comment_doc, name='add_comment_doc'),
 
-    # חיפושים דינמיים ו-API
+    # Dynamic search and AJAX/API endpoints
     path('search/live/', views.live_search, name='live_search'),
     path('ajax/load-majors/', views.load_majors, name='ajax_load_majors'),
 
-    # ניהול קבצים
+    # File management
     path('download/<int:document_id>/', views.download_file, name='download_file'),
     path('document/<int:document_id>/view/', views.document_viewer, name='document_viewer'),
     path('document/<int:document_id>/like/', views.like_document, name='like_document'),
     path('report/<int:document_id>/', views.report_document, name='report_document'),
 
-    #  מחיקה של דברים שהמשתמש יצר
+    # Delete objects created by the current user
     path('ajax/delete-item/', views.delete_item_ajax, name='delete_item_ajax'),
 
-    # הוספת אוניברסיטה ופקולטה
+    # Add a university or major
     path('ajax/add-university/', views.add_university_ajax, name='add_university_ajax'),
     path('ajax/add-major/', views.add_major_ajax, name='add_major_ajax'),
 
-    # פרופיל ואנליטיקס
+    # Profile and analytics
     path('profile/', views.profile, name='profile'),
     path('complete-profile/', views.complete_profile, name='complete_profile'),
     path('analytics/', views.analytics_dashboard, name='analytics'),
 
-    # הגדרות, פרטיות ונגישות
+    # Settings, privacy, and accessibility
     path('settings/', views.settings_view, name='settings'),
     path('settings/password/', views.change_password, name='change_password'),
     path('settings/delete-account/', views.delete_account, name='delete_account'),
@@ -108,7 +98,7 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('terms/', views.terms_view, name='terms'),
 
-    # סגל אקדמי ושונות
+    # Academic staff and related pages
     path('lecturers/', views.lecturers_index, name='lecturers_index'),
     path('staff/<int:staff_id>/rate/', views.rate_staff, name='rate_staff'),
     path('staff/<int:staff_id>/', views.staff_detail, name='staff_detail'),
@@ -117,7 +107,7 @@ urlpatterns = [
     path('document/<int:document_id>/ai-summary/', views.summarize_document_ai, name='summarize_document_ai'),
     path('donations/', views.donations, name='donations'),
 
-    # חברות
+    # Friend system
     path('friend/request/<str:username>/', views.send_friend_request, name='send_friend_request'),
     path('friend/accept/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
     path('friend/reject/<int:request_id>/', views.reject_friend_request, name='reject_friend_request'),
@@ -128,18 +118,18 @@ urlpatterns = [
     path('search/', views.global_search, name='global_search'),
     #path('system-architecture-mirror/', views.agent_report, name='agent_report'),
 # ==========================================
-    # מערכת התראות
+    # Notifications
     # ==========================================
     path('notifications/', views.notifications_list, name='notifications_list'),
 
     # ==========================================
-    # סוכן אישי (Personal AI Agent)
+    # Personal AI agent
     # ==========================================
     #path('agent/upload/', agent_views.upload_agent_file, name='agent_upload_file'),
     #path('agent/ask/', agent_views.ask_agent_question, name='agent_ask_question'),
 
        # ==========================================
-    # צאט 
+    # Chat
     # ==========================================
     path('chat/start/<str:username>/', views.get_or_create_chat, name='get_or_create_chat'),
     path('chat/<int:room_id>/', views.chat_room, name='chat_room'),

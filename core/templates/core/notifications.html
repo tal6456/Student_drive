@@ -25,7 +25,7 @@
                                 
                                 {% if notification.notification_type == 'friend_request' and notification.sender %}
                                     <div class="flex-shrink-0">
-                                        {# שימוש בשדה profile_picture מהמודל שלך #}
+                                        {# Use the `profile_picture` field from your model #}
                                         {% if notification.sender.profile.profile_picture %}
                                             <img src="{{ notification.sender.profile.profile_picture.url }}" 
                                                  class="rounded-circle border shadow-sm" 
@@ -95,7 +95,7 @@
 </div>
 
 <style>
-    /* אפקטים של ריחוף ומעברים */
+    /* Hover and transition effects */
     .hover-bg-light:hover { 
         background-color: rgba(66, 133, 244, 0.05) !important; 
         border-right: 4px solid var(--gd-primary) !important;

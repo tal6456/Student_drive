@@ -1,39 +1,37 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from .models import AgentKnowledge, Course  # וודא שהייבוא של Course תקין
+from .models import AgentKnowledge, Course  # Ensure the `Course` import remains valid
 import json
 
-# אתחול המוח של הסוכן פעם אחת ברמת המודול
+# Initialize the agent brain once at module level
 from .agent_brain import StudentAgentBrain
 
 agent_brain = StudentAgentBrain()
 @login_required
 @csrf_exempt
 def upload_agent_file(request):
-    """
-    View שמקבל קובץ מהסוכן הצף, שומר אותו ומחזיר סיכום ראשוני.
-    """
+    """Receive a file from the floating agent, save it, and return an initial summary."""
     if request.method == 'POST' and request.FILES.get('file'):
         uploaded_file = request.FILES['file']
-        # שימוש בשם הקורס שנשלח, אם לא קיים - ברירת מחדל 'כללי'
+        # Use the submitted course name; if missing, fall back to the generic label
         course_name = request.POST.get('course_name', 'כללי')
 
-        # 1. שמירת הקובץ במאגר של הסוכן
+        # 1. Save the file in the agent storage
         agent_entry = AgentKnowledge.objects.create(
             owner=request.user,
             file=uploaded_file,
             course_name=course_name
         )
 
-        # 2. חילוץ הטקסט (הפעלת הפונקציה מה-Brain)
+        # 2. Extract the text using the brain helper
         extracted_text = agent_brain.extract_text_from_agent_file(agent_entry)
 
-        # 3. שמירת הטקסט המופק במודל
+        # 3. Persist the extracted text on the model
         agent_entry.extracted_text = extracted_text
         agent_entry.save()
 
-        # 4. יצירת סיכום ראשוני מהיר
+        # 4. Generate a quick initial summary
         summary = agent_brain.get_summary(extracted_text)
 
         return JsonResponse({
@@ -49,30 +47,28 @@ def upload_agent_file(request):
 @login_required
 @csrf_exempt
 def ask_agent_question(request):
-    """
-    View משופר המנהל זיהוי קורסים לסמסטר וייצור בוחן ממוקד עם מעבר לידע כללי במקרה הצורך.
-    """
+    """Handle course-aware quiz generation, with a general-knowledge fallback when needed."""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             user_question = data.get('question', '')
 
-            # --- שלב 1: בקשת רשימת קורסים לבוחן ---
+            # --- Step 1: request the course list for quiz creation ---
             if user_question == "GET_COURSES_FOR_QUIZ":
-                # א. שליפת קורסים מהקבצים שהסוכן כבר מכיר (הזיכרון של הסוכן)
+                # A. Pull courses from files the agent already knows about
                 agent_courses = list(
                     AgentKnowledge.objects.filter(owner=request.user).values_list('course_name', flat=True).distinct())
 
-                # ב. שליפת הקורסים שמופיעים באתר (הסמסטר שלי) מתוך מודל Course
+                # B. Pull the courses shown on the site ("my semester") from the `Course` model
                 semester_courses = list(Course.objects.all().values_list('name', flat=True))
 
-                # ג. איחוד הרשימות כדי שכל הקורסים שרואים בתמונה יופיעו ככפתורים
+                # C. Merge the lists so every visible course can appear as a button
                 all_courses = list(set(agent_courses + semester_courses))
 
-                # סינון ערכים ריקים, None או "כללי" כדי להשאיר רק שמות קורסים אמיתיים
+                # Filter out empty values, `None`, and the generic label so only real course names remain
                 all_courses = [c for c in all_courses if c and c != "None" and c != "כללי"]
 
-                # אם הרשימה ריקה, נחזיר לפחות אופציה כללית או הודעה מתאימה
+                # If the list is empty, return at least a generic option
                 if not all_courses:
                     all_courses = ["כללי"]
 
@@ -82,11 +78,11 @@ def ask_agent_question(request):
                     'courses': all_courses
                 })
 
-            # --- שלב 2: ניסיון יצירת בוחן לקורס שנבחר ---
+            # --- Step 2: attempt to create a quiz for the selected course ---
             if "בוחן בקורס:" in user_question:
                 selected_course = user_question.split("בוחן בקורס:")[-1].strip()
 
-                # חיפוש חומר לימוד ששייך לקורס הזה בבסיס הנתונים של הסוכן
+                # Look up study material for this course in the agent database
                 relevant_knowledge = AgentKnowledge.objects.filter(
                     owner=request.user,
                     course_name__icontains=selected_course
@@ -94,7 +90,7 @@ def ask_agent_question(request):
 
                 full_context = "\n".join(filter(None, relevant_knowledge))
 
-                # --- לוגיקה חדשה: אם אין חומר ב-DB, נציע בוחן מידע כללי ---
+                # --- New logic: if no material exists in the DB, offer a general-knowledge quiz ---
                 if not full_context:
                     return JsonResponse({
                         'type': 'general_knowledge_offer',
@@ -112,7 +108,7 @@ def ask_agent_question(request):
                 answer = agent_brain.answer_question(quiz_instruction, full_context)
                 return JsonResponse({'type': 'text', 'answer': answer})
 
-            # --- שלב 3: יצירת שאלה מידע כללי (הפעלת מוח ה-AI) ---
+            # --- Step 3: create a general-knowledge question ---
             if "ייצר שאלות כלליות ב:" in user_question:
                 topic = user_question.split("ייצר שאלות כלליות ב:")[-1].strip()
                 general_quiz_instruction = (
@@ -123,25 +119,25 @@ def ask_agent_question(request):
                 answer = agent_brain.answer_question(general_quiz_instruction, "")
                 return JsonResponse({'type': 'text', 'answer': answer})
 
-                # --- שלב 4: שאלה רגילה (RAG חכם מבוסס קונטקסט) ---
-                # 1. מנסים למשוך את שם הקורס הנוכחי מתוך הבקשה (אם קיים)
+                # --- Step 4: regular question flow (context-aware RAG) ---
+                # 1. Try to pull the current course name from the request, if it exists
                 current_course = data.get('current_course', None)
 
-                # 2. מתחילים את השאילתה - רק קבצים של המשתמש הזה
+                # 2. Start the query with only this user's files
                 knowledge_query = AgentKnowledge.objects.filter(owner=request.user)
 
                 if current_course and current_course != 'כללי':
-                    # סופר-פוקוס: המשתמש שואל מתוך עמוד של קורס! נמשוך רק חומר של הקורס הזה
+                    # Super-focused path: if the user is asking from a course page, pull only that course's material
                     knowledge_query = knowledge_query.filter(course_name__icontains=current_course)
                 else:
-                    # רשת ביטחון: המשתמש שואל ממסך הבית או קורס כללי. כדי לא להקריס, ניקח רק את ה-3 האחרונים
+                    # Safety net: if the question comes from home or a generic course, keep it to the latest three items
                     knowledge_query = knowledge_query.order_by('-id')[:3]
 
-                # 3. שולפים את הטקסט ומאחדים אותו
+                # 3. Fetch the text and combine it
                 relevant_knowledge = knowledge_query.values_list('extracted_text', flat=True)
                 full_context = "\n".join(filter(None, relevant_knowledge))
 
-                # 4. שולחים לג'מיני בצירוף הטקסט המסונן
+                # 4. Send the filtered text to Gemini
                 answer = agent_brain.answer_question(
                     user_question,
                     full_context or "אין לי כרגע חומר רלוונטי בנושא זה. העלה קובץ כדי שנתחיל!"

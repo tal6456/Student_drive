@@ -20,11 +20,11 @@
         border: 1px solid var(--border-color);
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-        background-color: var(--card-bg); /* משתנה דינמי */
+        background-color: var(--card-bg); /* Dynamic variable */
     }
     .achievement-card {
-        background-color: var(--bg-secondary, rgba(0,0,0,0.02)); /* משתנה דינמי */
-        border: 1px solid var(--border-color); /* משתנה דינמי */
+        background-color: var(--bg-secondary, rgba(0,0,0,0.02)); /* Dynamic variable */
+        border: 1px solid var(--border-color); /* Dynamic variable */
         border-radius: 15px;
         padding: 18px;
         transition: all 0.3s ease;
@@ -39,7 +39,7 @@
     }
     .stat-text {
         font-size: 0.85rem;
-        color: var(--text-muted); /* משתנה דינמי */
+        color: var(--text-muted); /* Dynamic variable */
         font-weight: 600;
         display: block;
         margin-top: 5px;
@@ -47,18 +47,18 @@
     .stat-value {
         font-size: 1.5rem;
         font-weight: 800;
-        color: var(--text-main); /* משתנה דינמי */
+        color: var(--text-main); /* Dynamic variable */
     }
     .info-tag {
         background-color: var(--bg-secondary, #f8f9fa);
         padding: 5px 15px;
         border-radius: 50px;
         font-size: 0.9rem;
-        color: var(--text-main); /* משתנה דינמי */
+        color: var(--text-main); /* Dynamic variable */
         border: 1px solid var(--border-color);
     }
     
-    /* תיקוני צלליות למצב לילה */
+    /* Shadow adjustments for dark mode */
     [data-theme='dark'] .profile-card { box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 </style>
     
@@ -66,7 +66,7 @@
     <div class="row justify-content-center animate__animated animate__fadeIn">
         <div class="col-lg-9 col-md-11">
             <div class="profile-card overflow-hidden shadow-lg">
-                {# Header עם הגרדיאנט המדויק שלך #}
+                {# Header with your exact gradient styling #}
                 <div class="profile-header-bg"></div>
                 
                 <div class="card-body p-4 text-center">
@@ -82,14 +82,14 @@
 
                     <h2 class="fw-bold mb-1" style="color: var(--text-main); letter-spacing: -0.5px;">{{ user.username }}</h2>
                     
-                    {# Badge הדרגה #}
+                    {# Rank badge #}
                     <div class="mb-4">
                         <span class="badge rounded-pill px-3 py-2 shadow-sm" style="background: white; color: #7b61ff; border: 1px solid #7b61ff; font-weight: 700;">
                             <i class="fas fa-medal ms-1"></i> {{ user.profile.rank_name }}
                         </span>
                     </div>
 
-                    {# שורת המידע האקדמי המלאה (כולל שנה) #}
+                    {# Full academic info row, including year #}
                     <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
                         {% if user.profile.university %}
                             <span class="info-tag"><i class="fas fa-university ms-1 text-primary"></i> {{ user.profile.university.name }}</span>
@@ -100,7 +100,7 @@
                         {% endif %}
                     </div>
 
-                    {# שורת ההישגים הוויזואלית #}
+                    {# Visual achievements row #}
                     <div class="row g-3 px-md-4 mb-5">
                         <div class="col-4">
                             <div class="achievement-card">
@@ -125,7 +125,7 @@
                         </div>
                     </div>
 
-                    {# כפתורי ניהול #}
+                    {# Management buttons #}
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{% url 'complete_profile' %}" class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm transition">
                             <i class="fas fa-user-edit ms-2"></i> עריכת פרופיל
@@ -136,7 +136,7 @@
                     </div>
                 </div>
                 
-                {# פוטר עדין להשפעה בקהילה - מוצג רק אם יש הורדות #}
+                {# Subtle community-impact footer, shown only if downloads exist #}
                 {% if total_downloads > 0 %}
                 <div class="bg-light p-3 text-center border-top">
                     <p class="text-muted small mb-0">

@@ -1,16 +1,10 @@
 """
-מה המטרה של הקובץ הזה
-----------------------
-קובץ זה מהווה את מרכז הבקרה האישי של המשתמש. הוא מטפל בכל ההיבטים של 
-חוויית המשתמש האינדיבידואלית, אבטחת החשבון והתקשורת מהמערכת.
+Account and profile views
+=========================
 
-הקובץ מטפל ב:
-1. תצוגת פרופיל אישי: ריכוז נתונים על קבצים שהועלו, לייקים שהתקבלו והיסטוריית הורדות.
-2. הגדרות והעדפות (Settings): ניהול העדפות שפה, ערכות נושא (Theme), ותמונת פרופיל.
-3. תהליך הצטרפות (Onboarding): השלמת פרטי פרופיל ומערכת הפניות (Referrals) המעניקה בונוסים.
-4. אבטחה ופרטיות: שינוי סיסמה, ניהול נראות הפרופיל ובקשות להורדת מידע אישי (GDPR).
-5. מערכת התראות (Notifications): הצגה וניהול של עדכונים על בקשות חברות, לייקים והודעות מערכת.
-6. סיום התקשרות: מנגנון למחיקת חשבון לצמיתות מהמערכת.
+This file acts as the user's personal control center.
+It handles profile pages, settings, onboarding, password changes,
+notifications, and permanent account deletion.
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -21,7 +15,7 @@ from django.utils import timezone
 from django.contrib.auth import logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
 
-# ייבוא המודלים והטפסים הרלוונטיים
+# Import the relevant models and forms
 from core.models import UserProfile, Document, DownloadLog, Notification
 from core.forms import UserProfileForm
 

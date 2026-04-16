@@ -3,15 +3,15 @@ import io
 import PyPDF2
 from docx import Document
 from django.conf import settings
-from google import genai  # ה-SDK החדש שאתה משתמש בו
+from google import genai  # The newer SDK used by this project
 
 
 class StudentAgentBrain:
     def __init__(self):
-        # משיכת המפתח בצורה בטוחה
+        # Read the key safely
         api_key = getattr(settings, 'GEMINI_API_KEY', None)
 
-        # אתחול רק אם יש מפתח, אחרת נשמור כ-None ונטפל בזה בפונקציות
+        # Initialize only if a key exists; otherwise keep `None` and handle it in the methods
         if api_key:
             self.client = genai.Client(api_key=api_key)
         else:
@@ -21,13 +21,13 @@ class StudentAgentBrain:
         self.model_name = 'gemini-2.5-flash'
 
     def extract_text_from_agent_file(self, agent_file_obj):
-        """חילוץ טקסט מ-PDF ו-Word עם תמיכה מלאה באחסון ענן"""
+        """Extract text from PDF and Word files with full cloud-storage support."""
         try:
             file_field = agent_file_obj.file
             file_extension = file_field.name.split('.')[-1].lower()
             text = ""
 
-            # פתיחת הקובץ בצורה בטוחה (מתאים גם ל-S3/DigitalOcean וגם למקומי)
+            # Open the file safely, whether it is stored on S3/DigitalOcean or locally
             with file_field.open('rb') as f:
                 content = f.read()
                 print(f"DEBUG: File size read: {len(content)} bytes")
@@ -44,7 +44,7 @@ class StudentAgentBrain:
 
                 elif file_extension == 'docx':
                     doc = Document(io.BytesIO(content))
-                    # חילוץ טקסט מכל הפסקאות
+                    # Extract text from all paragraphs
                     text = "\n".join([para.text for para in doc.paragraphs if para.text.strip()])
                     print(f"DEBUG: Word extraction complete")
 
@@ -60,7 +60,7 @@ class StudentAgentBrain:
             return ""
 
     def get_summary(self, text_content):
-        """מייצר סיכום נקי ללא תווים מיוחדים"""
+        """Generate a clean summary without special formatting characters."""
         if not self.client:
             return "מערכת ה-AI כרגע לא מוגדרת. אנא פנה למנהל האתר."
 
@@ -87,7 +87,7 @@ class StudentAgentBrain:
             return "אופס! ה-AI נתקל בקושי לסכם את הקובץ כרגע."
 
     def answer_question(self, question, context_text):
-        """מענה על שאלות הסטודנט על בסיס החומר שהועלה"""
+        """Answer student questions based on the uploaded material."""
         if not self.client:
             return "מערכת ה-AI כרגע לא מוגדרת. אנא פנה למנהל האתר."
 

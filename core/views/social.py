@@ -1,25 +1,10 @@
 
 """
-קובץ SOCIAL: ניהול הלוגיקה של מערכת הקהילות (Communities)
-=====================================================
+Community and social-feed views.
 
-מה זה בכלל קובץ Views ב-Django?
---------------------------------
-VIEWS הוא המח של האפליקציה.
-הוא מתווך בין הדפדפן לבין הטהלאות נתונים MODELS.
-1. לקבל בקשות (Requests) מהמשתמש.
-2. לבצע לוגיקה עסקית (חישובים, בדיקות הרשאות, שליפת נתונים).
-3. להחזיר תגובה (Response) - בדרך כלל דף HTML מעובד או נתונים בפורמט JSON (במקרה של AJAX).
-
-מטרת הקובץ הספציפי הזה (social.py):
---------------------------------------------
-קובץ זה הופרד מה-views הראשי כדי לרכז את כל הפונקציונליות החברתית של הפרויקט.
-הוא מטפל ב:
-* ניהול הפיד המרכזי (community_feed): הצגת פוסטים מותאמים אישית לפי מוסד הלימודים של הסטודנט.
-* יצירת תוכן מגוון: תמיכה בפוסטים רגילים, פוסטים של וידאו ופוסטים של Marketplace (יד שנייה).
-* אינטראקציות חברתיות: מנגנון לייקים (Likes) ותגובות (Comments) מבוסס AJAX לחוויית משתמש מהירה.
-* גילוי קהילות: חיפוש והצטרפות לקהילות חדשות (גלובליות, מוסדיות או לפי תחום לימוד).
-* אופטימיזציה: שימוש ב-select_related ו-prefetch_related למניעת עומס על מסד הנתונים (בעיית N+1).
+This module was split out to keep the project's social features together.
+It handles the main community feed, multiple post types, AJAX likes/comments,
+community discovery, and queryset optimization to avoid N+1 issues.
 """
 
 
@@ -31,7 +16,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.db.models import Q, Prefetch
 
-# ייבוא רק של המודלים הקשורים לקהילה
+# Import only the community-related models
 from core.models import Community, Post, MarketplacePost, VideoPost, Comment
 
 @login_required
@@ -46,7 +31,7 @@ def community_feed(request):
     if community_id:
         current_community = get_object_or_404(Community, id=community_id)
     else:
-        # יצירת קהילה חכמה אם היא חסרה
+        # Auto-create a sensible default community when needed
         if profile.university:
             current_community, created = Community.objects.get_or_create(
                 university=profile.university,
@@ -65,24 +50,24 @@ def community_feed(request):
                 }
             )
 
-        # מוודאים שהמשתמש חבר בקהילה
+        # Ensure the current user is a member of the active community
         if current_community not in my_communities:
             current_community.members.add(request.user)
 
-    # --- התיקון הקריטי להזחות ולמניעת N+1 ---
+    # --- Critical queryset path to keep indentation correct and avoid N+1 queries ---
     if current_community:
         posts = Post.objects.filter(community=current_community).select_related(
             'user', 'user__profile', 'university', 'community',
-            'marketplacepost', 'videopost'  # מונע שאילתות בדיקת סוג פוסט בטמפלייט
+            'marketplacepost', 'videopost'  # Avoid extra subtype checks in the template
         ).prefetch_related(
             'likes',
-            # מביא את התגובות יחד עם המשתמשים והפרופילים שכתבו אותן!
+            # Pull comments together with their authors and profiles
             Prefetch('comments', queryset=Comment.objects.select_related('user', 'user__profile'))
         )
     else:
         posts = Post.objects.none()
 
-    # סינון לפי סוג הפוסט (Marketplace וכו')
+    # Optional filtering by post subtype
     post_filter = request.GET.get('type')
     if post_filter == 'market':
         posts = posts.filter(marketplacepost__isnull=False)

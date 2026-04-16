@@ -3,7 +3,7 @@
    ===================================================================== */
 
 // --- 1. PWA & Service Worker Registration ---
-let deferredPrompt; // משתנה שישמור את אירוע ההתקנה
+let deferredPrompt; // Store the browser's install event for later use
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -17,9 +17,9 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// האזנה לאירוע שבו הדפדפן מזהה שהאתר כשיר להתקנה
+// Listen for the event fired when the browser decides the site is installable
 window.addEventListener('beforeinstallprompt', (e) => {
-    // מונע מהדפדפן להקפיץ את הבאנר המובנה מיד
+    // Prevent the browser from showing the built-in install banner immediately
     e.preventDefault();
     deferredPrompt = e;
     console.log('🚀 האתר מוכן להתקנה כ-PWA!');
@@ -34,7 +34,7 @@ window.addEventListener('load', () => {
     }
 });
 
-// התחלת פס טעינה בלחיצה על קישורים (חוויית SPA)
+// Start the loading bar when navigating through regular links
 document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (link && link.href && !link.target && !link.href.includes('#') && !link.href.startsWith('javascript:')) {
@@ -52,7 +52,7 @@ function setTheme(theme) {
     localStorage.setItem('theme_preference', theme);
 }
 
-// סנכרון עם המערכת במידה והוגדר 'auto'
+// Keep the theme in sync with the OS when the preference is `auto`
 const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 function handleThemeChange(e) {
     if (localStorage.getItem('theme_preference') === 'auto') {
@@ -63,11 +63,11 @@ themeQuery.addListener(handleThemeChange);
 
 // --- 4. Accessibility & UI Init ---
 document.addEventListener('DOMContentLoaded', function() {
-    // אתחול Toasts
+    // Initialize Bootstrap toasts
     const toastElList = [].slice.call(document.querySelectorAll('.toast'));
     toastElList.map(toastEl => new bootstrap.Toast(toastEl).show());
 
-    // תפריט נגישות
+    // Accessibility menu controls
     const a11yToggle = document.getElementById('a11y-toggle');
     const a11yMenu = document.getElementById('a11y-menu');
     const a11yClose = document.getElementById('a11y-close');
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         a11yClose.addEventListener('click', () => a11yMenu.classList.add('d-none'));
     }
 
-    // טעינת הגדרות נגישות
+    // Load saved accessibility preferences
     ['a11y-large-text', 'a11y-high-contrast', 'a11y-highlight-links', 'a11y-readable-font'].forEach(cls => {
         if(localStorage.getItem(cls) === 'true') document.body.classList.add(cls);
     });
@@ -121,7 +121,7 @@ function secureFetch(url, options = {}) {
 
 // --- 6. Interaction Logic (Likes, Comments, Folders) ---
 
-// לייק לקובץ
+// Toggle a like on a document
 function toggleLike(event, buttonElement) {
     event.preventDefault();
     const url = buttonElement.getAttribute('data-url');
@@ -138,7 +138,7 @@ function toggleLike(event, buttonElement) {
     });
 }
 
-// לייק לפוסט בקהילה
+// Toggle a like on a community post
 function handlePostLike(postId, btn) {
     secureFetch(`/post/${postId}/like/`, { method: 'POST' })
     .then(res => res.json())
@@ -152,7 +152,7 @@ function handlePostLike(postId, btn) {
     });
 }
 
-// תגובות
+// Comment interactions
 function toggleComments(postId) {
     const section = document.getElementById(`comments-section-${postId}`);
     if (section) {
@@ -215,7 +215,7 @@ function generateAISummary(docId, btn) {
         if (data.success) {
             textDiv.innerText = data.summary;
             new bootstrap.Collapse(container, { toggle: false }).show();
-            // עדכון הארנק ב-Navbar בזמן אמת אם חזר ערך מטבעות חדש
+            // Update the navbar wallet immediately if the server returns a new coin balance
             const walletSpan = document.querySelector('.fa-coins + span');
             if (walletSpan && data.new_coins !== undefined) {
                 walletSpan.innerText = data.new_coins;
