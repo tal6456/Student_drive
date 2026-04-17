@@ -75,7 +75,7 @@ class ModerationAdmin(BaseAdmin):
 @admin.register(Document)
 class DocumentAdmin(BaseAdmin):
     list_display = (
-    'title_link', 'course', 'get_file_type', 'get_file_size', 'uploaded_by', 'download_count', 'upload_date')
+    'title_link', 'course', 'get_file_type', 'get_file_size', 'uploaded_by','uploader_ip', 'download_count', 'upload_date')
     list_filter = ('course__major__university', 'upload_date')
     search_fields = ('title', 'course__name', 'uploaded_by__username')
     readonly_fields = ('download_count', 'upload_date')
@@ -139,7 +139,14 @@ class CustomUserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
     
     # 1. עדכון רשימת התצוגה כך שתכלול את הפונקציות החדשות
-    list_display = ('username', 'email', 'role', 'is_staff', 'get_balance', 'is_email_verified', 'login_method')
+    list_display = ('username', 'email', 'role', 'is_staff', 'get_balance', 'is_email_verified', 'login_method', 'last_ip')
+
+    # פונקציה ששולפת את ה-IP מהמסמך האחרון שהיוזר העלה
+    def last_ip(self, obj):
+        last_doc = Document.objects.filter(uploaded_by=obj).order_by('-upload_date').first()
+        return last_doc.uploader_ip if last_doc else "אין העלאות"
+
+    last_ip.short_description = 'IP אחרון (מהעלאה)'
 
     def get_balance(self, obj):
         return f"{obj.profile.current_balance} 🪙"
