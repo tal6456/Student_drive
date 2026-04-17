@@ -575,7 +575,7 @@ def auto_join_communities(sender, instance, created, **kwargs):
 
 class DownloadLog(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    document = models.ForeignKey('Document', on_delete=models.CASCADE)
+    document = models.ForeignKey('Document', on_delete=models.CASCADE, related_name='downloads')
     # `auto_now_add=True` is the standard Django approach for creation timestamps
     download_date = models.DateTimeField(auto_now_add=True)
 
@@ -635,6 +635,56 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"התראה ל-{self.user.username}: {self.title}"
+
+
+# --- New activity base and economy models ---
+class BaseActivity(models.Model):
+    """Abstract base model providing standard timestamps for activity models."""
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+        ordering = ['-created_at']
+
+
+class CoinTransaction(BaseActivity):
+    """Ledger of coin movements for users."""
+    TX_TYPE_CHOICES = (
+        ('signup', 'Signup'),
+        ('referral', 'Referral'),
+        ('quality_bonus', 'Quality bonus'),
+        ('ai_summary', 'AI summary'),
+        ('bounty', 'Bounty'),
+        ('purchase', 'Purchase'),
+        ('system', 'System'),
+        ('spend', 'Spend'),
+    )
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='coin_transactions')
+    amount = models.IntegerField(verbose_name='amount')
+    transaction_type = models.CharField(max_length=30, choices=TX_TYPE_CHOICES, default='system')
+    description = models.CharField(max_length=500, blank=True, null=True)
+
+    # Optional balance snapshots for auditing
+    balance_before = models.IntegerField(null=True, blank=True)
+    balance_after = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}: {self.amount} ({self.transaction_type})"
+
+
+class BountyRequest(BaseActivity):
+    """Users can create bounty requests for course-related tasks."""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='bounty_requests')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+    title = models.CharField(max_length=255)
+    reward_amount = models.PositiveIntegerField(default=0)
+    is_fulfilled = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Bounty: {self.title} ({self.reward_amount}) by {self.user.username}"
+
 
 class UserCourseSelection(models.Model):
     """Link a user to a course and track whether the course is starred."""

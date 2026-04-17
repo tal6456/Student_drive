@@ -22,6 +22,8 @@ from django.template.defaultfilters import filesizeformat
 from django.http import HttpResponse
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
+from django.contrib import messages
+from .utils import process_transaction
 
 # Import the models
 from .models import (
@@ -29,7 +31,8 @@ from .models import (
     University, Major, Course, Folder, Document,
     Community, Post, MarketplacePost, VideoPost, Comment,DocumentComment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
-    Report, Feedback,Notification, UserCourseSelection
+    Report, Feedback,Notification, UserCourseSelection,
+    CoinTransaction, BountyRequest
 )
 
 
@@ -103,27 +106,42 @@ class DocumentAdmin(BaseAdmin):
 
     get_file_type.short_description = 'סוג'
 
+    @admin.action(description='🎖️ הענק בונוס איכות (10 מטבעות) למעלות המסמכים הנבחרים')
+    def grant_quality_bonus(self, request, queryset):
+        successes = 0
+        failures = []
+        BONUS = 10
+        for doc in queryset:
+            if not doc.uploaded_by:
+                failures.append((doc.pk, 'No uploader'))
+                continue
+            try:
+                process_transaction(doc.uploaded_by, BONUS, tx_type='quality_bonus', description=f'Quality bonus for "{doc.title}"', actor=request.user)
+                successes += 1
+            except Exception as e:
+                failures.append((doc.pk, str(e)))
 
-# @admin.register(AgentKnowledge)
-# class AgentKnowledgeAdmin(BaseAdmin):
-#     # We changed `created_at` to `upload_date` to match the model
-#     list_display = ('owner', 'course_name', 'get_text_stats', 'extraction_status', 'upload_date')
-#     readonly_fields = ('extracted_text', 'upload_date')
-#     search_fields = ('owner__username', 'course_name', 'extracted_text')
-#
-#     def get_text_stats(self, obj):
-#         """Measure how much text the AI extracted from the file."""
-#         if obj.extracted_text:
-#             return f"{len(obj.extracted_text)} characters"
-#         return "Empty"
-#     get_text_stats.short_description = 'Knowledge volume'
-#
-#     def extraction_status(self, obj):
-#         if obj.extracted_text and len(obj.extracted_text) > 10:
-#             return format_html('<span style="color: green;">✔ Working</span>')
-#         return format_html('<span style="color: orange;">⏳ Pending</span>')
-#     extraction_status.short_description = 'Processing status'
-#
+        msg = f"בונוס הוענק ל-{successes} מסמכים."
+        if failures:
+            msg += f" כשלונות: {len(failures)}"
+            self.message_user(request, msg, level=messages.WARNING)
+        else:
+            self.message_user(request, msg, level=messages.SUCCESS)
+
+    actions = ['grant_quality_bonus']
+
+
+@admin.register(CoinTransaction)
+class CoinTransactionAdmin(BaseAdmin):
+    list_display = ('user', 'amount', 'transaction_type', 'balance_before', 'balance_after', 'created_at')
+    search_fields = ('user__username', 'transaction_type', 'description')
+    readonly_fields = ('balance_before', 'balance_after', 'created_at')
+
+
+@admin.register(BountyRequest)
+class BountyRequestAdmin(BaseAdmin):
+    list_display = ('title', 'user', 'course', 'reward_amount', 'is_fulfilled', 'created_at')
+    search_fields = ('title', 'user__username', 'course__name')
 
 # ==========================================
 # 3. Users and economy
@@ -176,7 +194,8 @@ class CustomUserAdmin(BaseUserAdmin):
 @admin.register(UserProfile)
 class UserProfileAdmin(BaseAdmin):
     list_display = ('user', 'university', 'lifetime_coins', 'current_balance')
-    search_fields = ('user__username', 'referral_code')
+    search_fields = ('user__username', 'referral_code', 'user__email')
+    readonly_fields = ('referral_code',)
 
 
 # ==========================================

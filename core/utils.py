@@ -25,6 +25,9 @@ from io import BytesIO
 from PIL import Image
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import F
+from django.core.exceptions import ObjectDoesNotExist
 
 # ==============================================
 # Global settings: the shared control center for site file handling
@@ -193,3 +196,80 @@ def get_client_ip(request):
         # במידה ולא, לוקחים את הכתובת הישירה מהבקשה
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+# ==============================================
+# 7. Coin transaction processor
+# ==============================================
+
+# Import models lazily inside functions to avoid circular imports at module import time
+
+class InsufficientFunds(Exception):
+    pass
+
+
+def process_transaction(user, amount, tx_type='system', description=None, actor=None, notify=True, bonus_increases_lifetime=True):
+    """Process a coin transaction for a user.
+
+    - user: CustomUser instance
+    - amount: positive int to credit, negative int to debit
+    - tx_type: one of CoinTransaction.TX_TYPE_CHOICES
+    - description: optional human-readable description
+    - actor: CustomUser who triggered the transaction (admin, system, etc.)
+    - notify: whether to create a Notification for the user
+    - bonus_increases_lifetime: whether positive amounts should increase lifetime_coins
+
+    The operation is atomic: if creating the notification fails, the coin update and ledger entry will be rolled back.
+    """
+    from .models import UserProfile, CoinTransaction, Notification
+
+    if not hasattr(user, 'profile'):
+        # Ensure profile exists; this should normally be created by signal
+        UserProfile.objects.get_or_create(user=user)
+
+    with transaction.atomic():
+        # Obtain current values in a safe manner
+        profile = UserProfile.objects.select_for_update().get(user=user)
+        # For debits, ensure sufficient funds
+        if amount < 0 and profile.current_balance < abs(amount):
+            raise InsufficientFunds('User does not have enough coins for this transaction.')
+
+        balance_before = profile.current_balance
+
+        # Use F() expressions to avoid race conditions
+        updates = { 'current_balance': F('current_balance') + amount }
+        if amount > 0 and bonus_increases_lifetime:
+            updates['lifetime_coins'] = F('lifetime_coins') + amount
+
+        UserProfile.objects.filter(pk=profile.pk).update(**updates)
+        # Refresh to read new values
+        profile.refresh_from_db()
+        balance_after = profile.current_balance
+
+        # Create ledger entry
+        tx = CoinTransaction.objects.create(
+            user=user,
+            amount=amount,
+            transaction_type=tx_type,
+            description=description or '',
+            balance_before=balance_before,
+            balance_after=balance_after,
+        )
+
+        # Create notification (if requested) inside the transaction so any failure rolls back the whole operation
+        if notify:
+            title = f"הורווחו {amount} מטבעות" if amount > 0 else f"הועברו {abs(amount)} מטבעות"
+            try:
+                Notification.objects.create(
+                    user=user,
+                    sender=actor if actor else None,
+                    notification_type='system',
+                    title=title,
+                    message=description or '',
+                    link=None,
+                )
+            except Exception:
+                # Let exceptions bubble up so the atomic block rolls back
+                raise
+
+    return tx
+
