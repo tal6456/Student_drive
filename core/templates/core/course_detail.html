@@ -989,5 +989,85 @@ function navigateToFolder(folderId) {
     if (typeof renderDrive === 'function') renderDrive();
 }
 </script>
+    
+<script>
+/**
+ * פונקציה לשליחת תגובות אסינכרונית כדי למנוע רענון לעמוד שחור
+ */
+window.submitCommentForm = function(event, form) {
+    event.preventDefault(); // עוצר את השליחה הרגילה
+    
+    const url = form.getAttribute('action');
+    const formData = new FormData(form);
+    const inputField = form.querySelector('input[name="comment_text"]');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn.innerHTML;
+    
+    // מוצא את המיכל של התגובות הספציפי ששייך לטופס הזה
+    const modalBody = form.closest('.modal-body');
+    const commentsList = modalBody.querySelector('.comments-container');
+
+    if (!inputField.value.trim()) return;
+
+    // מניעת לחיצות כפולות
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network error');
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            // מסיר את הודעת "אין תגובות" אם קיימת
+            const emptyMsg = commentsList.querySelector('.opacity-50');
+            if (emptyMsg) emptyMsg.remove();
+            
+            // בונה את התגובה החדשה בצורה שתואמת לעיצוב שלך
+            const newCommentHtml = `
+                <div class="d-flex gap-2 mb-3 animate__animated animate__fadeIn">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        ${data.user.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold" style="font-size: 0.85rem;">${data.user}</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">עכשיו</small>
+                        </div>
+                        <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${data.text}</p>
+                    </div>
+                </div>
+            `;
+            
+            // דוחף את התגובה לסוף הרשימה
+            commentsList.insertAdjacentHTML('beforeend', newCommentHtml);
+            
+            // גולל למטה לתגובה החדשה
+            commentsList.scrollTop = commentsList.scrollHeight;
+            
+            // מנקה את שדה ההזנה
+            inputField.value = '';
+        } else {
+            alert("שגיאה בשמירת התגובה.");
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting comment:', error);
+        alert("תקלה בתקשורת. נסה שוב.");
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+    });
+};
+</script>
+
 {% endblock %}
 
