@@ -23,6 +23,7 @@ from django.http import JsonResponse, HttpResponse, Http404
 from core.models import Document, DownloadLog, Report
 from core.ai_utils import generate_smart_summary
 from core.utils import get_client_ip
+from core.utils import process_transaction
 
 
 @login_required
@@ -125,8 +126,15 @@ def like_document(request, document_id):
         else:
             doc.likes.add(request.user)
             liked = True
+            # בדיקה שהמעלה קיים ושהוא לא הלייקר (כדי שלא ייתן לעצמו לייקים בשביל כסף)
             if doc.uploaded_by and doc.uploaded_by != request.user:
-                doc.uploaded_by.profile.earn_coins(1)
+                # שימוש במערכת הטרנזקציות החדשה
+                process_transaction(
+                    user=doc.uploaded_by,
+                    amount=1,
+                    tx_type='system',
+                    description=f'קיבלת מטבע על לייק לקובץ: {doc.title}'
+                )
 
         return JsonResponse({'liked': liked, 'total_likes': doc.total_likes})
     return JsonResponse({'error': 'בקשה לא חוקית'}, status=400)

@@ -30,7 +30,7 @@ from core.models import (
     UserProfile, UserCourseSelection, Comment, DocumentComment
 )
 from core.forms import CourseForm
-from core.utils import get_client_ip
+from core.utils import get_client_ip, process_transaction
 
 
 User = get_user_model()
@@ -283,7 +283,7 @@ def course_detail(request, course_id, folder_id=None):
                         staff_member=p_folder.staff_member if p_folder else None,
                         uploader_ip = get_client_ip(request)
                     )
-                    request.user.profile.earn_coins(1)
+                    process_transaction(request.user, 1, tx_type='system', description='בונוס על העלאת מסמך')
                     uploaded_count += 1
             return JsonResponse({'success': True, 'count': uploaded_count})
 
@@ -307,7 +307,7 @@ def add_course(request):
         form = CourseForm(request.POST)
         if form.is_valid():
             c = form.save()
-            request.user.profile.earn_coins(5)
+            process_transaction(request.user, 5, tx_type='system', description='בונוס על הוספת קורס חדש 🪙')
             messages.success(request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
             return redirect('course_detail', course_id=c.id)
     else:
@@ -412,7 +412,7 @@ def rate_staff(request, staff_id):
             staff.save()
 
             if created:
-                request.user.profile.earn_coins(2)
+                process_transaction(request.user, 2, tx_type='system', description='בונוס על דירוג איש סגל ✨')
             messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
     return redirect('staff_detail', staff_id=staff.id)
 

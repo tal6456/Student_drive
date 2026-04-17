@@ -18,6 +18,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 # Import the relevant models and forms
 from core.models import UserProfile, Document, DownloadLog, Notification
 from core.forms import UserProfileForm
+from core.utils import process_transaction
 
 User = get_user_model()
 
@@ -86,8 +87,10 @@ def complete_profile(request):
                     referrer = referrer_profile.user
                     if referrer != request.user:
                         user_profile.referred_by = referrer
-                        user_profile.earn_coins(20)
-                        referrer_profile.earn_coins(50)
+                        process_transaction(user_profile.user, 20, tx_type='referral',
+                                            description="בונוס הצטרפות מהזמנה")
+                        process_transaction(referrer, 50, tx_type='referral',
+                                            description=f"בונוס על הזמנת {user_profile.user.username}")
                         del request.session['referral_code']
                         messages.success(request, f"איזה כיף! קיבלת 20 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
                 except UserProfile.DoesNotExist:
