@@ -139,17 +139,34 @@ def delete_account(request):
 
 @login_required
 def notifications_list(request):
+    # 1. מחיקת התראה בודדת (קיים בקוד שלך)
     delete_id = request.GET.get('delete')
     if delete_id:
         notification = Notification.objects.filter(id=delete_id, user=request.user).first()
         if notification:
-            target_url = notification.link
+            target_url = notification.link or 'notifications_list'
             notification.delete()
             return redirect(target_url)
 
-    notifications = Notification.objects.filter(user=request.user).select_related('sender').order_by('-created_at')
-    notifications.filter(is_read=False).update(is_read=True)
+    # 2. סינון לפי סוג (חדש!)
+    notif_filter = request.GET.get('filter', 'all')
+    notifications = Notification.objects.filter(user=request.user).select_related('sender')
 
-    return render(request, 'core/notifications.html', {
-        'notifications': notifications
-    })
+    if notif_filter == 'economy':
+        notifications = notifications.filter(notification_type='economy')
+    elif notif_filter == 'social':
+        notifications = notifications.filter(notification_type__in=['friend_request', 'system'])
+
+    notifications = notifications.order_by('-created_at')
+
+    # 3. עדכון סטטוס "נקרא" (רק מה שמוצג כרגע למשתמש)
+    unread_count = notifications.filter(is_read=False).count()
+    if unread_count > 0:
+        notifications.filter(is_read=False).update(is_read=True)
+
+    context = {
+        'notifications': notifications,
+        'current_filter': notif_filter,
+        'unread_count': unread_count
+    }
+    return render(request, 'core/notifications.html', context)
