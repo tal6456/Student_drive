@@ -22,6 +22,7 @@ from django.http import JsonResponse, HttpResponse, Http404
 # Import the models and helpers needed by this module
 from core.models import Document, DownloadLog, Report
 from core.ai_utils import generate_smart_summary
+from core.utils import get_client_ip
 
 
 @login_required
@@ -152,7 +153,8 @@ def copy_file_to_my_drive(request, document_id):
             uploaded_by=request.user,
             title=f"עותק של {original_doc.title}",
             file=original_doc.file,
-            course=original_doc.course
+            course=original_doc.course,
+            uploader_ip = get_client_ip(request)
         )
         messages.success(request, f"הקובץ '{original_doc.title}' נוסף לדרייב שלך!")
     else:

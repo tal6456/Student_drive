@@ -175,3 +175,21 @@ def extract_text_from_docx(file_field):
     except Exception as e:
         print(f"Error extracting word text: {e}")
         return ""
+
+# ==============================================
+# 6. Networking & Security helpers
+# ==============================================
+
+def get_client_ip(request):
+    """
+    מחלץ את כתובת ה-IP האמיתית של המשתמש.
+    בודק קודם האם המשתמש מאחורי שרת מתווך (Proxy) כמו ב-Render או DigitalOcean.
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        # במידה ויש רשימת כתובות, הכתובת הראשונה היא ה-IP המקורית של המשתמש
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        # במידה ולא, לוקחים את הכתובת הישירה מהבקשה
+        ip = request.META.get('REMOTE_ADDR')
+    return ip

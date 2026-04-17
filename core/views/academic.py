@@ -279,7 +279,8 @@ def course_detail(request, course_id, folder_id=None):
                         title=os.path.splitext(uploaded_file.name)[0],
                         file=uploaded_file,
                         uploaded_by=request.user,
-                        staff_member=p_folder.staff_member if p_folder else None
+                        staff_member=p_folder.staff_member if p_folder else None,
+                        uploader_ip = get_client_ip(request)
                     )
                     request.user.profile.earn_coins(1)
                     uploaded_count += 1

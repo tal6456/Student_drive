@@ -23,6 +23,7 @@ from django.http import JsonResponse
 from core.models import University, Major, Document, Folder, Post, Comment
 
 
+
 def normalize_string_for_comparison(text):
     if not text:
         return ""
