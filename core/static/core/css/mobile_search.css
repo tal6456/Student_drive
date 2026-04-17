@@ -1,0 +1,119 @@
+#search-focus-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1040;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1.5rem 1rem 1rem;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.mobile-search-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-search-panel {
+    width: min(100%, 640px);
+    background: var(--gd-card);
+    border: 1px solid var(--gd-border);
+    border-radius: 28px;
+    padding: 1.4rem;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.15);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.mobile-search-overlay.active .mobile-search-panel {
+    transform: translateY(0);
+}
+
+.search-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--gd-bg);
+    border: 1px solid var(--gd-border);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.search-btn {
+    background: var(--gd-card);
+    color: var(--gd-text-muted);
+    border: none;
+    padding: 0.8rem 1rem;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.search-btn:hover,
+.search-btn:focus {
+    color: var(--gd-primary);
+    background: rgba(26, 115, 232, 0.08);
+}
+
+.search-input {
+    min-width: 0;
+    flex: 1;
+    background: transparent;
+    color: var(--gd-text);
+    padding: 0.85rem 1rem;
+}
+
+.search-input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--gd-text);
+    padding: 0.45rem;
+}
+
+.close-mobile-search {
+    color: var(--gd-text-muted);
+}
+
+body.search-overlay-open {
+    overflow: hidden;
+}
+
+[data-theme='dark'] .mobile-search-panel {
+    background: var(--gd-card);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='dark'] .search-btn {
+    color: var(--gd-text-muted);
+}
+
+[data-theme='dark'] .search-input {
+    color: var(--gd-text);
+}
+
+[data-theme='dark'] .close-mobile-search {
+    color: var(--gd-text-muted);
+}
