@@ -13,7 +13,7 @@
     height: 65px;
     border-radius: 50%;
     border: none;
-    background-color: #0d6efd; /* Base blue background */
+    background-color: var(--gd-primary, #0d6efd); /* Use theme variable */
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     cursor: pointer;
     display: flex;
@@ -46,7 +46,7 @@
 #agent-chat-window {
     width: 330px;
     height: 460px;
-    background: white;
+    background: var(--gd-card, #fff);
     border-radius: 15px;
     display: flex;
     flex-direction: column;
@@ -66,7 +66,7 @@
     flex: 1;
     padding: 12px;
     overflow-y: auto;
-    background-color: #f8f9fa;
+    background-color: var(--gd-bg, #f8f9fa);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -82,15 +82,15 @@
 }
 
 .agent-msg {
-    background-color: white;
+    background-color: var(--gd-card, #fff);
     align-self: flex-start;
     border: 1px solid #dee2e6;
     border-bottom-right-radius: 2px;
 }
 
 .user-msg {
-    background-color: #0d6efd;
-    color: white;
+    background-color: var(--gd-primary, #0d6efd);
+    color: var(--gd-text-muted, #fff);
     align-self: flex-end;
     border-bottom-left-radius: 2px;
 }
@@ -114,14 +114,14 @@
 #quiz-mode-btn {
     border-radius: 10px;
     font-weight: 600;
-    border-color: #ffc107;
-    color: #856404;
+    border-color: var(--gd-warning, #ffc107);
+    color: var(--gd-warning-text, #856404);
     transition: all 0.3s ease;
 }
 
 #quiz-mode-btn:hover {
-    background-color: #ffc107;
-    color: white;
+    background-color: var(--gd-warning, #ffc107);
+    color: var(--gd-card, #fff);
     box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
 }
 

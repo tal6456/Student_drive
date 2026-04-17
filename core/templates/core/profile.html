@@ -17,14 +17,14 @@
         position: relative;
     }
     .profile-card {
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--gd-border);
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-        background-color: var(--card-bg); /* Dynamic variable */
+        background-color: var(--gd-card);
     }
     .achievement-card {
-        background-color: var(--bg-secondary, rgba(0,0,0,0.02)); /* Dynamic variable */
-        border: 1px solid var(--border-color); /* Dynamic variable */
+        background-color: var(--gd-hover, rgba(0,0,0,0.02));
+        border: 1px solid var(--gd-border);
         border-radius: 15px;
         padding: 18px;
         transition: all 0.3s ease;
@@ -32,14 +32,14 @@
         height: 100%;
     }
     .achievement-card:hover {
-        background-color: var(--card-bg);
-        border-color: #7b61ff;
+        background-color: var(--gd-card);
+        border-color: var(--brand-accent, #7b61ff);
         box-shadow: 0 5px 15px rgba(123, 97, 255, 0.08);
         transform: translateY(-3px);
     }
     .stat-text {
         font-size: 0.85rem;
-        color: var(--text-muted); /* Dynamic variable */
+        color: var(--gd-text-muted);
         font-weight: 600;
         display: block;
         margin-top: 5px;
@@ -47,15 +47,15 @@
     .stat-value {
         font-size: 1.5rem;
         font-weight: 800;
-        color: var(--text-main); /* Dynamic variable */
+        color: var(--gd-text);
     }
     .info-tag {
-        background-color: var(--bg-secondary, #f8f9fa);
+        background-color: var(--gd-hover, #f8f9fa);
         padding: 5px 15px;
         border-radius: 50px;
         font-size: 0.9rem;
-        color: var(--text-main); /* Dynamic variable */
-        border: 1px solid var(--border-color);
+        color: var(--gd-text);
+        border: 1px solid var(--gd-border);
     }
     
     /* Shadow adjustments for dark mode */
@@ -72,19 +72,19 @@
                 <div class="card-body p-4 text-center">
                     <div class="profile-avatar-wrapper mb-3">
                         {% if user.profile.profile_picture %}
-                            <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle border border-4 border-white shadow-sm" style="width: 125px; height: 125px; object-fit: cover;">
+                            <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle border border-4" style="border-color: var(--gd-border); width: 125px; height: 125px; object-fit: cover; background: var(--gd-card);">
                         {% else %}
-                            <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow-sm border border-4 border-white mx-auto" style="width: 125px; height: 125px;">
-                                <i class="fas fa-user display-4" style="color: #7b61ff;"></i>
+                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm border border-4 mx-auto" style="background: var(--gd-card); color: var(--gd-primary, #7b61ff); border-color: var(--gd-border); width: 125px; height: 125px;">
+                                <i class="fas fa-user display-4" style="color: var(--gd-primary, #7b61ff);"></i>
                             </div>
                         {% endif %}
                     </div>
 
-                    <h2 class="fw-bold mb-1" style="color: var(--text-main); letter-spacing: -0.5px;">{{ user.username }}</h2>
+                    <h2 class="fw-bold mb-1" style="color: var(--gd-text); letter-spacing: -0.5px;">{{ user.username }}</h2>
                     
                     {# Rank badge #}
                     <div class="mb-4">
-                        <span class="badge rounded-pill px-3 py-2 shadow-sm" style="background: white; color: #7b61ff; border: 1px solid #7b61ff; font-weight: 700;">
+                        <span class="badge rounded-pill px-3 py-2 shadow-sm" style="background: var(--gd-card, #fff); color: var(--gd-primary, #7b61ff); border: 1px solid var(--gd-primary, #7b61ff); font-weight: 700;">
                             <i class="fas fa-medal ms-1"></i> {{ user.profile.rank_name }}
                         </span>
                     </div>

@@ -38,27 +38,27 @@ such as the background, top bar, footer, and related layout behavior.
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: var(--gd-card, #ffffff);
+            background-color: var(--gd-card) !important;
             box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
             display: flex;
             justify-content: space-around;
             padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); /* Support newer iPhones */
             z-index: 1050;
-            border-top: 1px solid var(--gd-border, #eeeeee);
+            border-top: 1px solid var(--gd-border) !important;
         }
         .mobile-bottom-nav .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: var(--gd-text-muted, #6c757d);
+            color: var(--gd-text-muted) !important;
             text-decoration: none;
             font-size: 0.75rem;
             font-weight: 600;
             gap: 4px;
             transition: 0.2s;
         }
-        .mobile-bottom-nav .nav-item i { font-size: 1.3rem; }
-        .mobile-bottom-nav .nav-item.active { color: #1a73e8; }
+        .mobile-bottom-nav .nav-item i { font-size: 1.3rem; color: var(--gd-text) !important; }
+        .mobile-bottom-nav .nav-item.active { color: var(--gd-primary) !important; }
         .mobile-bottom-nav .nav-item:active { transform: scale(0.9); }
 
         /* Mobile-specific adjustments */
@@ -91,11 +91,20 @@ such as the background, top bar, footer, and related layout behavior.
         /*the logo up button*/
         .navbar {
             z-index: 1060 !important;
+            background-color: var(--gd-card) !important;
+            color: var(--gd-text) !important;
         }
         .navbar-brand {
             position: relative;
             left: 50px;
             transition: all 0.3s ease;
+            color: var(--gd-text) !important;
+        }
+        .navbar-toggler i {
+            color: var(--gd-text) !important;
+        }
+        body[data-theme='dark'] .navbar-toggler i {
+            color: var(--gd-card, #fff) !important;
         }
 
         .navbar > .container {
@@ -119,7 +128,7 @@ such as the background, top bar, footer, and related layout behavior.
             left: 0;
             right: auto;
             width: 200px;
-            background: rgba(255, 255, 255, 0.94);
+            background: var(--gd-card, rgba(255, 255, 255, 0.94));
             backdrop-filter: blur(12px);
             box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             border-radius: 20px;
@@ -129,7 +138,7 @@ such as the background, top bar, footer, and related layout behavior.
             transform: translateY(15px) scale(0.97);
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1050;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
         /* Open the menu on mobile when the hamburger is tapped */
         .navbar-collapse.show {
@@ -150,7 +159,7 @@ such as the background, top bar, footer, and related layout behavior.
         }
 
         .navbar-nav .nav-link {
-            color: #333 !important;
+            color: var(--gd-text, #212529) !important;
             font-weight: 600;
             padding: 10px 15px !important;
             border-radius: 12px;
@@ -161,23 +170,23 @@ such as the background, top bar, footer, and related layout behavior.
         }
 
         .navbar-nav .nav-link:hover {
-            background: rgba(26, 115, 232, 0.08);
-            color: #1a73e8 !important;
+            background: var(--gd-hover-bg, rgba(26, 115, 232, 0.08));
+            color: var(--gd-primary, #1a73e8) !important;
             transform: translateX(-5px);
         }
 
         .admin-link {
-            background: rgba(108, 92, 231, 0.1) !important;
-            color: #6c5ce7 !important;
+            background: var(--gd-admin-bg, rgba(108, 92, 231, 0.1)) !important;
+            color: var(--gd-admin, #6c5ce7) !important;
             margin-top: 8px;
         }
         .admin-link:hover {
-            background: #6c5ce7 !important;
-            color: white !important;
+            background: var(--gd-admin, #6c5ce7) !important;
+            color: var(--gd-card, #fff) !important;
         }
 
         .navbar-collapse .input-group {
-            background: #f1f3f4;
+            background: var(--gd-input-bg, #f1f3f4);
             border: none !important;
             border-radius: 100px;
             padding: 2px 5px;
@@ -185,8 +194,8 @@ such as the background, top bar, footer, and related layout behavior.
         }
 
         .navbar-collapse .input-group:focus-within {
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2) !important;
+            background: var(--gd-card, #fff);
+            box-shadow: 0 0 0 3px var(--gd-primary-shadow, rgba(26, 115, 232, 0.2)) !important;
             transform: scale(1.02);
         }
 
@@ -206,8 +215,8 @@ such as the background, top bar, footer, and related layout behavior.
         .lang-btn-footer {
             padding: 6px 15px;
             border-radius: 50px;
-            border: 1.5px solid #1a73e8;
-            color: #1a73e8;
+            border: 1.5px solid var(--gd-primary, #1a73e8);
+            color: var(--gd-primary, #1a73e8);
             text-decoration: none;
             font-weight: bold;
             margin: 0 4px;
@@ -215,14 +224,14 @@ such as the background, top bar, footer, and related layout behavior.
             display: inline-block;
             cursor: pointer;
         }
-        .lang-btn-footer:hover { background: #1a73e8; color: white; }
+        .lang-btn-footer:hover { background: var(--gd-primary, #1a73e8); color: var(--gd-card, #fff); }
 
         iframe.goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
         .goog-te-gadget { display: none !important; }
         .nav-notification-badge {
-            background-color: #dc3545;
-            color: white;
+            background-color: var(--gd-danger, #dc3545);
+            color: var(--gd-card, #fff);
             font-size: 0.7rem;
             padding: 2px 6px;
             border-radius: 50px;
@@ -234,16 +243,16 @@ such as the background, top bar, footer, and related layout behavior.
     gap: 4px;
     padding: 4px 8px;
     border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: var(--gd-coin-bg, rgba(255, 255, 255, 0.15));
     transition: background-color 0.2s;
 }
 
 .nav-coin a:hover {
-    background-color: rgba(26, 115, 232, 0.1);
+    background-color: var(--gd-coin-hover-bg, rgba(26, 115, 232, 0.1));
 }
 
 .nav-coin i {
-    color: #FFD700;
+    color: var(--gd-coin, #FFD700);
 }
 /* Custom styling for the invite-friends modal */
 .custom-invite-popup {
@@ -257,7 +266,7 @@ such as the background, top bar, footer, and related layout behavior.
 
 .custom-invite-title {
     font-size: 1.2rem !important;
-    color: #1a73e8 !important;
+    color: var(--gd-primary, #1a73e8) !important;
     font-weight: 700 !important;
     margin-bottom: 10px !important;
 }
@@ -267,7 +276,7 @@ such as the background, top bar, footer, and related layout behavior.
     border-radius: 50px !important; /* Fully rounded corners */
     border: 1px solid #ddd !important;
     background: #f1f3f4 !important;
-    color: #333 !important;
+    color: var(--gd-text, #212529) !important;
 }
 
 .custom-invite-btn {
@@ -276,14 +285,14 @@ such as the background, top bar, footer, and related layout behavior.
     padding: 0.5rem 1rem !important;
     font-weight: 600 !important;
     border: none !important;
-    background: linear-gradient(135deg, #1a73e8, #4285f4) !important;
-    color: white !important;
+    background: var(--gd-btn-gradient, linear-gradient(135deg, #1a73e8, #4285f4)) !important;
+    color: var(--gd-card, #fff) !important;
     transition: all 0.3s ease !important;
     box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3) !important;
 }
 
 .custom-invite-btn:hover {
-    background: linear-gradient(135deg, #1557b0, #3367d6) !important;
+    background: var(--gd-btn-gradient-hover, linear-gradient(135deg, #1557b0, #3367d6)) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4) !important;
 }
@@ -295,7 +304,7 @@ such as the background, top bar, footer, and related layout behavior.
 
 /* Styling for the copy button after a successful copy */
 .custom-invite-btn.btn-success {
-    background: linear-gradient(135deg, #34a853, #4caf50) !important;
+    background: var(--gd-success-gradient, linear-gradient(135deg, #34a853, #4caf50)) !important;
     box-shadow: 0 2px 8px rgba(52, 168, 83, 0.3) !important;
 }
 
@@ -309,7 +318,7 @@ such as the background, top bar, footer, and related layout behavior.
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
 
-<nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom shadow-sm">
+<nav class="navbar navbar-expand-lg sticky-top" style="background-color: var(--gd-card, #fff); border-bottom: 1px solid var(--gd-border, #eee); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
     <div class="container d-flex justify-content-between align-items-center">
 
        <!-- Logo on the left side -->
@@ -319,7 +328,7 @@ such as the background, top bar, footer, and related layout behavior.
         <i class="fas fa-graduation-cap text-white fs-5" style="transform: rotate(8deg);"></i>
     </div>
     <span style="
-    color: #212529;
+    color: var(--gd-text, #212529);
     font-size: 1.4rem;
     font-family: 'Heebo', sans-serif;
 ">
@@ -354,10 +363,10 @@ such as the background, top bar, footer, and related layout behavior.
             <div class="collapse navbar-collapse" id="navbarNav">
                 <form class="mb-4" action="{% url 'global_search' %}" method="GET">
                     <div class="input-group shadow-sm rounded-pill overflow-hidden border">
-                        <button class="btn bg-white border-0 text-muted px-3" type="submit">
+                        <button class="btn" style="background-color: var(--gd-card, #fff); color: var(--gd-text-muted, #6c757d); border: none; padding-left: 1rem; padding-right: 1rem;" type="submit">
                             <i class="fas fa-search"></i>
                         </button>
-                        <input id="navbarSearchInput" class="form-control border-0 bg-white" type="search" name="q"
+                        <input id="navbarSearchInput" class="form-control border-0" style="background-color: var(--gd-card, #fff); color: var(--gd-text, #212529);" type="search" name="q"
                                placeholder="חיפוש..." value="{{ request.GET.q }}" required>
                     </div>
                 </form>
@@ -430,7 +439,7 @@ such as the background, top bar, footer, and related layout behavior.
         {% block content %}{% endblock %}
     </main>
 
-<footer class="footer py-3 mt-auto border-top bg-white">
+<footer class="footer py-3 mt-auto border-top" style="background: var(--gd-card, #fff);">
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
             
@@ -470,8 +479,8 @@ such as the background, top bar, footer, and related layout behavior.
 
 <div class="modal fade" id="supportModal" tabindex="-1" aria-labelledby="supportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow">
-            <div class="modal-header border-0 pb-0" dir="rtl">
+        <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--gd-card, #fff); border: 1px solid var(--gd-border, #eee);">
+            <div class="modal-header border-0 pb-0" dir="rtl" style="background-color: var(--gd-card, #fff); color: var(--gd-text, #212529);">
                 <h5 class="modal-title fw-bold" id="supportModalLabel">אהבתם את האתר? ✨</h5>
                 <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
