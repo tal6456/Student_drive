@@ -58,11 +58,38 @@ Yovel check
     #calendarWeekdays .weekday { width: 14.28%; text-align: center; }
 
     /* Scrollable stories-style button row on mobile */
-    .action-cards-wrapper { display: flex; gap: 1.25rem; }
+    .action-cards-wrapper { display: flex; gap: 0.75rem; }
     @media (max-width: 767px) {
-        .action-cards-wrapper { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 15px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .action-cards-wrapper::-webkit-scrollbar { display: none; }
-        .action-cards-wrapper > div { flex: 0 0 45%; min-width: 140px; }
+        .action-cards-wrapper { 
+            flex-wrap: nowrap; 
+            justify-content: center; 
+            gap: 0.4rem; /* רווח קטן יותר בין הכרטיסיות */
+            padding: 0 0.5rem; /* פחות ריווח מהצדדים של המסך */
+        }
+        .action-cards-wrapper > div { 
+            flex: 1; 
+            min-width: 0; 
+            max-width: 33.333%;
+        }
+        .action-cards-wrapper .card {
+            padding: 0.75rem 0.25rem !important; /* פחות שוליים פנימיים */
+            min-height: 90px; /* כרטיסיה נמוכה יותר */
+        }
+        .action-cards-wrapper .rounded-circle {
+            width: 42px !important; /* עיגול קטן יותר */
+            height: 42px !important;
+            margin-bottom: 0.5rem !important;
+        }
+        .action-cards-wrapper .fs-3 {
+            font-size: 1.1rem !important; /* אייקון קטן יותר */
+        }
+        .action-cards-wrapper h5 {
+            font-size: 0.8rem !important; /* טקסט שמתאים למסך קטן */
+            margin-bottom: 0 !important;
+            white-space: nowrap; /* מונע מהטקסט לרדת שורה */
+            overflow: hidden; /* חותך עודפי טקסט אם המסך פצפון */
+            text-overflow: ellipsis; /* מוסיף 3 נקודות אם נחתך */
+        }
     }
     @media (min-width: 768px) {
         .action-cards-wrapper { justify-content: center; }
