@@ -295,6 +295,7 @@ class Document(models.Model):
     file_extension = models.CharField(max_length=10, blank=True)
     file_size_bytes = models.PositiveIntegerField(default=0)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    uploader_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name="כתובת IP של המעלה")
     staff_member = models.ForeignKey('AcademicStaff', on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name="מרצה/מתרגל רלוונטי")
     upload_date = models.DateTimeField(auto_now_add=True)

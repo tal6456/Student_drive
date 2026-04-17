@@ -20,6 +20,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.template.defaultfilters import filesizeformat
 from django.http import HttpResponse
+from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount
 
 # Import the models
 from .models import (
@@ -132,17 +134,37 @@ class UserProfileInline(admin.StackedInline):
     can_delete = False
     fk_name = 'user'
 
-
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
-    list_display = ('username', 'email', 'role', 'is_staff', 'get_balance')
+    
+    # 1. עדכון רשימת התצוגה כך שתכלול את הפונקציות החדשות
+    list_display = ('username', 'email', 'role', 'is_staff', 'get_balance', 'is_email_verified', 'login_method')
 
     def get_balance(self, obj):
         return f"{obj.profile.current_balance} 🪙"
-
     get_balance.short_description = 'יתרה'
 
+    # -------------------------------------------------------------
+    # פונקציה לבדיקה האם המייל אומת (מציג אייקון וי/איקס)
+    # -------------------------------------------------------------
+    def is_email_verified(self, obj):
+        return EmailAddress.objects.filter(user=obj, verified=True).exists()
+    
+    is_email_verified.boolean = True  # הופך את זה לאייקון גרפי נחמד
+    is_email_verified.short_description = 'מייל מאומת'
+
+    # -------------------------------------------------------------
+    # פונקציה להצגת שיטת ההתחברות (גוגל או רגיל)
+    # -------------------------------------------------------------
+    def login_method(self, obj):
+        social_accounts = SocialAccount.objects.filter(user=obj)
+        if social_accounts.exists():
+            providers = [acc.provider.capitalize() for acc in social_accounts]
+            return ", ".join(providers)
+        return 'מייל וסיסמה'
+    
+    login_method.short_description = 'שיטת התחברות'
 
 @admin.register(UserProfile)
 class UserProfileAdmin(BaseAdmin):

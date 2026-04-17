@@ -57,8 +57,9 @@ SERVER_EMAIL = 'student.drive10@gmail.com'
 
 # Smart environment-aware email backend selection
 if DEBUG:
-    # In local development, print the email, including password-reset links, to the terminal
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # בסביבת פיתוח, שומר את המיילים כקבצי טקסט קריאים בתיקייה (למניעת קידודי Base64 בעברית)
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
 else:
     # In production, send real emails to the student's inbox
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -205,9 +206,18 @@ LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
+# --- Authentication & Registration Settings ---
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# חובה לאשר מייל למשתמשים שנרשמים עם סיסמה (מונע ספאם)
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
+# לא מאפשר התחברות לפני לחיצה על הלינק באימייל
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+
+# פטור מאימות למשתמשי גוגל (הם מאומתים מול גוגל)
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_LOGOUT_ON_GET = False

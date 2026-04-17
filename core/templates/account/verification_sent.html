@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+
+{% block title %}אימות אימייל נשלח - Student Drive{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;" dir="rtl">
+    <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 480px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+
+        <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3 shadow-sm">
+                <i class="fas fa-envelope-open-text fa-2x text-primary"></i>
+            </div>
+            <h2 class="fw-bold mb-1" style="color: var(--gd-text);">קישור לאימות נשלח בהצלחה</h2>
+            <p class="small" style="color: var(--gd-text-muted);">בדוק את תיבת הדואר שלך ופתח את הקישור כדי להפעיל את החשבון.</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5 pt-2">
+            <div class="mb-4">
+                <p class="mb-3" style="color: var(--gd-text);">
+                    שלחנו לך קישור האימות לכתובת האימייל שסיפקת. לאחר לחיצה על הקישור, תוכל להתחבר ולהתחיל להשתמש ב-Student Drive.
+                </p>
+                <p class="small" style="color: var(--gd-text-muted);">
+                    אם אינך מוצא את המייל, בדוק את תיקיית הספאם או נסה לשלוח את הבקשה שוב דרך דף ההתחברות.
+                </p>
+            </div>
+
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm py-3 mt-2 hover-scale" style="background-color: var(--gd-primary); border: none;">
+                חזרה להתחברות
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
