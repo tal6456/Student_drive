@@ -17,6 +17,7 @@ class ProfileCompletionMiddleware:
                 reverse('complete_profile'),
                 reverse('account_logout'),
                 '/admin/',  # מאפשר לך כניסה לניהול
+                '/ajax/',  # <--- הוספנו את השורה הזו! מאפשר משיכת פקולטות והוספת אוניברסיטה
             ]
 
             # בודקים אם הנתיב הנוכחי הוא לא אחד מהמאושרים ולא קובץ מדיה/סטטיק
