@@ -55,6 +55,23 @@ such as the background, top bar, footer, and related layout behavior.
     --gd-hover-bg: rgba(138, 180, 248, 0.15);
 }
 
+/* הכרחת כל הכרטיסיות, החלוניות והרשימות להשתמש במשתני הצבע שלנו */
+.card, .modal-content, .list-group-item {
+    background-color: var(--gd-card) !important;
+    color: var(--gd-text) !important;
+    border-color: var(--gd-border) !important;
+}
+
+/* סידור צבעי הטקסט והכותרות בתוך הכרטיסיות */
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6, .modal-title {
+    color: var(--gd-text) !important;
+}
+
+/* שמירה על צבע טקסט משני תקין גם בלילה */
+.text-muted {
+    color: var(--gd-text-muted) !important;
+}
+
 body {
     background-color: var(--gd-bg);
     color: var(--gd-text);
@@ -340,8 +357,7 @@ body {
     </style>
     {% endblock %}
 </head>
-<body data-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}auto{% endif %}">
-
+<body data-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}light{% endif %}">
     <div id="search-focus-backdrop"></div>
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
