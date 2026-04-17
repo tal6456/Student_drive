@@ -148,6 +148,9 @@ class UserProfileForm(BaseStyledModelForm):
     class Meta:
         model = UserProfile
         fields = ['phone_number', 'university', 'major', 'year']
+        labels = {
+            'phone_number': 'מספר טלפון נייד (חובה)',
+        }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -168,7 +171,7 @@ class UserProfileForm(BaseStyledModelForm):
         self.fields['major'].empty_label = "--- ללא מסלול ---"
         self.fields['year'].required = False
         self.fields['year'].empty_label = "--- לא רלוונטי ---"
-        self.fields['phone_number'].required = False
+        self.fields['phone_number'].required = True
         self.fields['phone_number'].widget.attrs.update({
             'placeholder': 'לדוגמה: 0501234567',
             'type': 'tel',
@@ -178,16 +181,21 @@ class UserProfileForm(BaseStyledModelForm):
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
-        if not phone_number:
-            return phone_number
 
-        # Normalize number by stripping spaces, dashes and parentheses.
+        # 1. בדיקה שהשדה לא ריק (ליתר ביטחון)
+        if not phone_number:
+            raise forms.ValidationError("חובה להזין מספר טלפון כדי להמשיך.")
+
+        # 2. ניקוי תווים מיותרים (רווחים, מקפים)
         normalized = re.sub(r'[\s\-()]+', '', phone_number)
 
-        valid_pattern = re.compile(r'^(?:\+9725\d{8}|05\d{8}|\+972[23489]\d{7}|0[23489]\d{7})$')
+        # 3. רגקס קשוח לנייד ישראלי בלבד (05X-XXXXXXX או עם קידומת +972)
+        # מאפשר: 0501234567 או 972501234567+
+        valid_pattern = re.compile(r'^(?:05\d{8}|\+9725\d{8})$')
+
         if not valid_pattern.match(normalized):
             raise forms.ValidationError(
-                'המספר שהוזן לא תקין. אנא הקלד מספר ישראלי תקין כמו 0501234567 או +972501234567.'
+                'נא להזין מספר טלפון נייד ישראלי תקין (לדוגמה: 0501234567).'
             )
 
         return normalized

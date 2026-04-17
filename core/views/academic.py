@@ -55,9 +55,17 @@ def home(request):
 
     if request.user.is_authenticated:
         profile = request.user.profile
-        has_completed_profile = bool(request.user.first_name or profile.university)
-        if not has_completed_profile and not request.session.get('onboarding_complete'):
-            request.session['onboarding_complete'] = True
+
+        # הבדיקה הקשוחה: האם יש טלפון? האם הוזן שם?
+        # (אם המשתמש סטודנט, הטופס ב-HTML כבר ידאג שהוא ימלא גם אוניברסיטה)
+        has_phone = bool(profile.phone_number)
+        has_name = bool(request.user.first_name)
+
+        # אם חסר טלפון או שם, אנחנו לא נותנים לו להמשיך לדף הבית
+        if not has_phone or not has_name:
+            # אנחנו מסירים את ה-session כדי לוודא שגם אם הוא ניסה לעקוף, הוא יחזור לטופס
+            if request.session.get('onboarding_complete'):
+                del request.session['onboarding_complete']
             return redirect('complete_profile')
 
     year_names = {1: "שנה א'", 2: "שנה ב'", 3: "שנה ג'", 4: "שנה ד'", 5: "תואר שני"}

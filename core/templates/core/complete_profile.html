@@ -35,10 +35,15 @@
                             
                             {% if field.name == 'phone_number' %}
                                 <div class="col-12 text-end">
-                                    <label class="form-label fw-bold small mb-1" style="color: var(--gd-text-muted);">{{ field.label }}</label>
+                                    <label class="form-label fw-bold small mb-1" style="color: var(--gd-text);">
+                                        {{ field.label }} <span class="text-danger">*</span>
+                                    </label>
                                     {{ field }}
+                                    <div class="form-text small mb-2 text-muted">המספר משמש לאימות וקבלת עדכונים חשובים בלבד.</div>
                                     {% for error in field.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                        <div class="text-danger small mt-1 animate__animated animate__shakeX">
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        </div>
                                     {% endfor %}
                                 </div>
                             {% endif %}
@@ -401,6 +406,26 @@
                 if(addMajorWrapper) addMajorWrapper.style.display = 'none';
             }
         }
+        
+        // מניעת שליחת טופס אם הטלפון ריק (בדיקה ראשונית בצד הלקוח)
+        const form = document.getElementById('completeProfileForm');
+        const phoneInput = document.getElementById('id_phone_number');
+        
+        form.addEventListener('submit', function(e) {
+            if (!phoneInput.value.trim()) {
+                e.preventDefault();
+                phoneInput.classList.add('is-invalid');
+                phoneInput.style.borderColor = 'var(--gd-danger, #dc3545)';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'חסר מספר טלפון',
+                    text: 'חובה להזין מספר טלפון תקין כדי להשלים את ההרשמה.',
+                    confirmButtonText: 'הבנתי',
+                    confirmButtonColor: 'var(--gd-primary)'
+                });
+            }
+        });
 
         const hasAcademicData = (uniSelect && uniSelect.value && uniSelect.value !== 'ADD_NEW') || document.querySelector('#academicSection .text-danger');
         if(studentToggle) {
