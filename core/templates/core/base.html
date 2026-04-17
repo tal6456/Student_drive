@@ -5,7 +5,7 @@ such as the background, top bar, footer, and related layout behavior.
 
 {% load static %}
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" data-bs-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}light{% endif %}" data-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}light{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -357,7 +357,7 @@ body {
     </style>
     {% endblock %}
 </head>
-<body data-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}light{% endif %}">
+<body>    
     <div id="search-focus-backdrop"></div>
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
