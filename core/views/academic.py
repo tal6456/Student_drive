@@ -30,6 +30,7 @@ from core.models import (
     UserProfile, UserCourseSelection, Comment, DocumentComment
 )
 from core.forms import CourseForm
+from core.utils import get_client_ip
 
 
 User = get_user_model()
