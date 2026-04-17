@@ -437,3 +437,24 @@ body[data-theme='dark'] .mobile-bottom-nav .nav-item {
 body[data-theme='dark'] .mobile-bottom-nav .nav-item.active {
     color: var(--gd-primary) !important;
 }
+body[data-theme='dark'] .navbar-toggler-icon {
+    filter: invert(1) brightness(100%) !important;
+}
+
+/* ליתר ביטחון - אם יש מסגרת לכפתור שאתה רוצה להבהיר */
+body[data-theme='dark'] .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+/* זה יכריח את האייקון להפוך ללבן במצב לילה */
+body[data-theme='dark'] .navbar-toggler i {
+    color: #ffffff !important;
+}
+body[data-theme='dark'] {
+    /* זה יעדכן את המשתנה שהאייקון משתמש בו */
+    --gd-text: #ffffff !important;
+}
+
+/* ליתר ביטחון, נטרגט את האייקון ישירות עם כוח מקסימלי */
+body[data-theme='dark'] .navbar-toggler i.fas.fa-bars {
+    color: #ffffff !important;
+}
