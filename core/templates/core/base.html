@@ -32,6 +32,34 @@ such as the background, top bar, footer, and related layout behavior.
 
     {% block extra_css %}
     <style>
+        :root {
+    /* Light Mode - משתני ברירת מחדל */
+    --gd-primary: #1a73e8;
+    --gd-bg: #f8f9fa;
+    --gd-card: #ffffff;
+    --gd-text: #212529;
+    --gd-text-muted: #6c757d;
+    --gd-border: #dee2e6;
+    --gd-hover-bg: rgba(26, 115, 232, 0.08);
+    --gd-coin: #FFD700;
+}
+
+[data-theme='dark'] {
+    /* Dark Mode - משתנים שנדרסים כשהתמה משתנה */
+    --gd-primary: #8ab4f8;
+    --gd-bg: #121212;
+    --gd-card: #1e1e1e;
+    --gd-text: #e8eaed;
+    --gd-text-muted: #9aa0a6;
+    --gd-border: #3c4043;
+    --gd-hover-bg: rgba(138, 180, 248, 0.15);
+}
+
+body {
+    background-color: var(--gd-bg);
+    color: var(--gd-text);
+    transition: background-color 0.3s, color 0.3s;
+}
         /* --- Bottom navigation for the mobile app --- */
         .mobile-bottom-nav {
             position: fixed;
@@ -965,39 +993,6 @@ function copyInviteLink(event) {
     });
 }
 </script>
-{% if user.is_authenticated %}
-<div class="modal fade" id="globalReportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
-            <div class="modal-header bg-danger text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle ms-2"></i> דיווח על קובץ</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="globalReportForm" method="post" action="{% url 'report_document' 0 %}">
-                {% csrf_token %}
-                <div class="modal-body p-4 text-end">
-                    <p class="small text-muted mb-3" style="color: var(--gd-text-muted) !important;">דיווח על: <strong id="reportDocTitle" style="color: var(--gd-text);"></strong></p>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small" style="color: var(--gd-text);">סיבת הדיווח:</label>
-                        <select name="reason" class="form-select" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);" required>
-                            <option value="">בחר סיבה...</option>
-                            <option value="broken">הקובץ פגום / לא נפתח</option>
-                            <option value="inappropriate">תוכן פוגעני / לא ראוי</option>
-                            <option value="irrelevant">לא קשור לקורס</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small" style="color: var(--gd-text);">פירוט נוסף:</label>
-                        <textarea name="description" class="form-control" rows="2" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill shadow-sm">שלח דיווח לחמ"ל</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 {% if user.is_authenticated %}
 <div class="modal fade" id="globalReportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

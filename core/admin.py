@@ -80,7 +80,7 @@ class DocumentAdmin(BaseAdmin):
     list_display = (
     'title_link', 'course', 'get_file_type', 'get_file_size', 'uploaded_by','uploader_ip', 'download_count', 'upload_date')
     list_filter = ('course__major__university', 'upload_date')
-    search_fields = ('title', 'course__name', 'uploaded_by__username')
+    search_fields = ('title', 'course__name', 'uploaded_by__username', 'uploader_ip')
     readonly_fields = ('download_count', 'upload_date')
 
     def title_link(self, obj):
@@ -129,13 +129,6 @@ class DocumentAdmin(BaseAdmin):
             self.message_user(request, msg, level=messages.SUCCESS)
 
     actions = ['grant_quality_bonus']
-
-
-@admin.register(CoinTransaction)
-class CoinTransactionAdmin(BaseAdmin):
-    list_display = ('user', 'amount', 'transaction_type', 'balance_before', 'balance_after', 'created_at')
-    search_fields = ('user__username', 'transaction_type', 'description')
-    readonly_fields = ('balance_before', 'balance_after', 'created_at')
 
 
 @admin.register(BountyRequest)
@@ -227,9 +220,28 @@ admin.site.register([
     University, Major, Folder, Community, Post,
     MarketplacePost, VideoPost, Comment, Friendship,DocumentComment,
     StaffReview, AcademicStaff, Lecturer, TeachingAssistant,
-    CourseSemesterStaff,Notification, UserCourseSelection
+    CourseSemesterStaff, UserCourseSelection
 ], BaseAdmin)
 
+
+@admin.register(Notification)
+class NotificationAdmin(BaseAdmin):
+    list_display = ('user', 'notification_type', 'title', 'is_read', 'created_at')
+    list_filter = ('notification_type', 'is_read', 'created_at')
+    search_fields = ('user__username', 'title', 'message')
+
+
+@admin.register(CoinTransaction)
+class CoinTransactionAdmin(BaseAdmin):
+    list_display = ('user', 'colored_amount', 'transaction_type', 'balance_after', 'created_at')
+    list_filter = ('transaction_type', 'created_at')
+    search_fields = ('user__username', 'description')
+
+    def colored_amount(self, obj):
+        color = 'green' if obj.amount > 0 else 'red'
+        return format_html('<span style="color: {}; font-weight: bold;">{}</span>', color, obj.amount)
+
+    colored_amount.short_description = 'סכום'
 # Admin site titles
 admin.site.site_header = 'הדרייב הסטודנטיאלי - מערכת ניהול'
 admin.site.index_title = 'לוח בקרה אסטרטגי'

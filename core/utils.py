@@ -256,19 +256,26 @@ def process_transaction(user, amount, tx_type='system', description=None, actor=
         )
 
         # Create notification (if requested) inside the transaction so any failure rolls back the whole operation
+        # Create notification (if requested) inside the transaction
         if notify:
-            title = f"הורווחו {amount} מטבעות" if amount > 0 else f"הועברו {abs(amount)} מטבעות"
+            # הגדרת כותרת חכמה יותר לפי סוג הפעולה
+            if amount > 0:
+                title = f"🪙 קיבלת {amount} מטבעות!"
+            else:
+                title = f"💸 העברת {abs(amount)} מטבעות"
+
             try:
                 Notification.objects.create(
                     user=user,
                     sender=actor if actor else None,
-                    notification_type='system',
+                    notification_type='economy',  # עדכנו לסוג החדש שהגדרנו במודל
                     title=title,
                     message=description or '',
                     link=None,
                 )
-            except Exception:
-                # Let exceptions bubble up so the atomic block rolls back
+            except Exception as e:
+                # מדפיסים ללוג כדי שנדע מה קרה, ומעלים את השגיאה ל-Rollback
+                print(f"Notification failed: {e}")
                 raise
 
     return tx

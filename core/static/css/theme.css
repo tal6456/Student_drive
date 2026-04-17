@@ -1,0 +1,10 @@
+:root {
+    --bg-primary: #ffffff;
+    --text-primary: #333333;
+    --accent-gold: #ffcc00; /* צבע המטבעות */
+}
+
+[data-theme='dark'] {
+    --bg-primary: #121212;
+    --text-primary: #e0e0e0;
+}

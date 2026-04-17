@@ -250,7 +250,7 @@ if not DEBUG:
     SESSION_COOKIE_HTTPONLY = True  # Keep this `True`; it is critical for session security
     CSRF_COOKIE_HTTPONLY = True  # Intentionally `True`; client-side code reads the token from the DOM
 
-    CSRF_TRUSTED_ORIGINS = ['https://*.ondigitalocean.app', 'https://student-drive.onrender.com']
+    CSRF_TRUSTED_ORIGINS = ['https://*.ondigitalocean.app', 'https://student-drive.onrender.com', 'https://student-drive-8d8o9.ondigitalocean.app']
 
     # HSTS tells the browser to always connect over HTTPS
     SECURE_HSTS_SECONDS = 31536000  # One year
@@ -290,12 +290,21 @@ if os.getenv('AWS_ACCESS_KEY_ID'):
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
     AWS_QUERYSTRING_AUTH = False
 
-    # --- Modern storage configuration for Django 4.2+ ---
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
+# הגדרת ברירת מחדל (מקומי)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# אם יש הגדרות S3, נדרוס רק את ה-default
+if os.getenv('AWS_ACCESS_KEY_ID'):
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    # ... שאר הגדרות ה-AWS שלך ...
+
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     }

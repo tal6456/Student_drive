@@ -126,24 +126,24 @@ class UserProfile(models.Model):
         return "🥉 מתלמד"
 
     # --- Economy helpers ---
-    def earn_coins(self, amount):
-        """Award coins earned through activity, increasing both balance and reputation."""
-        self.current_balance += amount
-        self.lifetime_coins += amount
-        self.save()
-
-    def buy_coins(self, amount):
-        """Handle a coin purchase, increasing balance only and not reputation."""
-        self.current_balance += amount
-        self.save()
-
-    def spend_coins(self, amount):
-        """Spend coins by decreasing the current balance only."""
-        if self.current_balance >= amount:
-            self.current_balance -= amount
-            self.save()
-            return True
-        return False
+    # def earn_coins(self, amount):
+    #     """Award coins earned through activity, increasing both balance and reputation."""
+    #     self.current_balance += amount
+    #     self.lifetime_coins += amount
+    #     self.save()
+    #
+    # def buy_coins(self, amount):
+    #     """Handle a coin purchase, increasing balance only and not reputation."""
+    #     self.current_balance += amount
+    #     self.save()
+    #
+    # def spend_coins(self, amount):
+    #     """Spend coins by decreasing the current balance only."""
+    #     if self.current_balance >= amount:
+    #         self.current_balance -= amount
+    #         self.save()
+    #         return True
+    #     return False
 
     def __str__(self):
         return self.user.username
@@ -618,6 +618,7 @@ class Notification(models.Model):
     NOTIFICATION_TYPES = (
         ('friend_request', 'בקשת חברות'),
         ('system', 'התראת מערכת'),
+        ('economy', 'פעולה כספית'),
     )
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
