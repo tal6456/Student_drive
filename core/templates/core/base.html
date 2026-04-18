@@ -5,11 +5,16 @@ such as the background, top bar, footer, and related layout behavior.
 
 {% load static %}
 <!DOCTYPE html>
-<html lang="he" dir="rtl" data-bs-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}light{% endif %}" data-theme="{% if user.is_authenticated and user.profile %}{{ user.profile.theme_preference }}{% else %}light{% endif %}">
+<html lang="he" dir="rtl" data-bs-theme="{{ user.profile.theme_preference|default:'light' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>{% block title %}Student Drive{% endblock %}</title>
+    <script>
+    // בדיקה מהירה של ערכת הנושא לפני רינדור העמוד
+    const theme = "{{ user.profile.theme_preference|default:'light' }}";
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    </script>
 
     <link rel="apple-touch-icon" href="{% static 'icon-192.png' %}">
     <meta name="theme-color" content="#1a73e8">
@@ -34,8 +39,11 @@ such as the background, top bar, footer, and related layout behavior.
     <style>
         /* --- סנכרון חכם בין צבעי הדרייב לבין Bootstrap 5.3 --- */
         
-        :root, [data-bs-theme="light"], [data-theme="light"] {
-            /* משתני הדרייב שלנו (מצב יום) */
+        /* --- ריכוז הגדרות צבעים (ללא Auto) --- */
+        
+        /* --- הגדרות ליבה של ערכות נושא (ללא Auto) --- */
+        
+        :root, [data-bs-theme="light"] {
             --gd-primary: #1a73e8;
             --gd-bg: #f8f9fa;
             --gd-card: #ffffff;
@@ -45,7 +53,6 @@ such as the background, top bar, footer, and related layout behavior.
             --gd-hover-bg: rgba(26, 115, 232, 0.08);
             --gd-coin: #FFD700;
 
-            /* השתלת הצבעים שלנו לתוך המערכת של Bootstrap */
             --bs-body-bg: var(--gd-bg);
             --bs-body-color: var(--gd-text);
             --bs-card-bg: var(--gd-card);
@@ -54,8 +61,7 @@ such as the background, top bar, footer, and related layout behavior.
             --bs-secondary-color: var(--gd-text-muted);
         }
 
-        [data-bs-theme="dark"], [data-theme="dark"] {
-            /* משתני הדרייב שלנו (מצב לילה) */
+        [data-bs-theme="dark"] {
             --gd-primary: #8ab4f8;
             --gd-bg: #121212;
             --gd-card: #1e1e1e;
@@ -64,7 +70,6 @@ such as the background, top bar, footer, and related layout behavior.
             --gd-border: #3c4043;
             --gd-hover-bg: rgba(138, 180, 248, 0.15);
 
-            /* השתלת הצבעים הכהים שלנו לתוך המערכת של Bootstrap */
             --bs-body-bg: var(--gd-bg);
             --bs-body-color: var(--gd-text);
             --bs-card-bg: var(--gd-card);
@@ -76,30 +81,15 @@ such as the background, top bar, footer, and related layout behavior.
         body {
             background-color: var(--gd-bg) !important;
             color: var(--gd-text) !important;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
         }
 
-        /* מניעת דריסות צבע מיותרות של קישורים וכותרות */
-        .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
-            color: var(--gd-text);
-        }
-
-        body {
-            background-color: var(--gd-bg) !important;
+        /* סנכרון כותרות וכרטיסיות */
+        .card, .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
             color: var(--gd-text) !important;
-            transition: background-color 0.3s, color 0.3s;
         }
-
-        /* מניעת דריסות צבע מיותרות של קישורים וכותרות */
-        .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
-            color: var(--gd-text);
-        }
-
-body {
-    background-color: var(--gd-bg);
-    color: var(--gd-text);
-    transition: background-color 0.3s, color 0.3s;
-}
+        
         /* --- Bottom navigation for the mobile app --- */
         .mobile-bottom-nav {
             position: fixed;
@@ -171,8 +161,8 @@ body {
         .navbar-toggler i {
             color: var(--gd-text) !important;
         }
-        body[data-theme='dark'] .navbar-toggler i {
-            color: var(--gd-card, #fff) !important;
+        [data-bs-theme='dark'] .navbar-toggler i {
+            color: var(--gd-text) !important;
         }
 
         .navbar > .container {
@@ -227,7 +217,7 @@ body {
         }
 
         .navbar-nav .nav-link {
-            color: var(--gd-text, #212529) !important;
+            color: var(--gd-text) !important;
             font-weight: 600;
             padding: 10px 15px !important;
             border-radius: 12px;
@@ -1037,7 +1027,7 @@ function copyInviteLink(event) {
 {% if user.is_authenticated %}
 <div class="modal fade" id="globalReportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text); border: 1px solid var(--gd-border) !important;">
             <div class="modal-header bg-danger text-white border-0">
                 <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle ms-2"></i> דיווח על קובץ</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
