@@ -31,6 +31,8 @@ from .utils import compress_to_webp, validate_file_size
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
+from .utils import compress_to_webp, validate_file_size, validate_file_type
+
 # ==========================================
 # 0. User system (RBAC - Role Based Access Control)
 # ==========================================
@@ -295,7 +297,7 @@ class Document(models.Model):
     title = models.CharField(max_length=200, verbose_name="כותרת הקובץ")
 
     # Attach the smart validator to the file field
-    file = models.FileField(upload_to='documents/', validators=[validate_file_size])
+    file = models.FileField(upload_to='documents/', validators=[validate_file_size, validate_file_type])
     file_content = models.TextField(blank=True, null=True, verbose_name="תוכן הקובץ לחיפוש")
 
     file_extension = models.CharField(max_length=10, blank=True)

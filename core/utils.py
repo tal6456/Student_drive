@@ -29,6 +29,7 @@ from django.db import transaction
 from django.db.models import F
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.contenttypes.models import ContentType
+import filetype
 
 # ==============================================
 # Global settings: the shared control center for site file handling
@@ -85,6 +86,43 @@ def validate_file_size(value):
         limit = 20 * 1024 * 1024  # Documents up to 20 MB
         if value.size > limit:
             raise ValidationError('מסמכים מוגבלים לגודל של עד 20MB.')
+
+
+# ==============================================
+# 2.5 Smart file-type validator (Magic Numbers Security)
+# ==============================================
+def validate_file_type(file):
+    """
+    בודק את החתימה הדיגיטלית (Magic Numbers) של הקובץ
+    כדי לוודא שהסיומת לא זויפה ושסוג הקובץ מותר להעלאה.
+    """
+    ALLOWED_MIMES = [
+        'application/pdf',  # PDF
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  # DOCX
+        'application/msword',  # DOC
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',  # PPTX
+        'application/zip',  # ZIP
+        'application/x-rar-compressed',  # RAR
+        'application/x-7z-compressed',  # 7Z
+        'image/jpeg',
+        'image/png',
+        'image/webp'
+    ]
+
+    # קריאת 2048 הבתים הראשונים של הקובץ בלבד
+    header = file.read(2048)
+
+    # חובה! איפוס "סמן" הקריאה חזרה לתחילת הקובץ
+    file.seek(0)
+
+    # זיהוי הסוג האמיתי של הקובץ מתוך החתימה הבינארית
+    kind = filetype.guess(header)
+
+    if kind is None:
+        raise ValidationError('המערכת לא הצליחה לזהות את סוג הקובץ. אנא ודא שהקובץ תקין.')
+
+    if kind.mime not in ALLOWED_MIMES:
+        raise ValidationError(f'סוג הקובץ שהעלית (.{kind.extension}) אינו נתמך או נחסם מטעמי אבטחה.')
 
 # ==============================================
 # 3. Permission engine: smart deletion rules
