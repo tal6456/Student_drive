@@ -244,41 +244,61 @@ def course_detail(request, course_id, folder_id=None):
                 clean_id = folder_id_raw.replace('folder_', '')
                 folder_to_edit = get_object_or_404(Folder, id=clean_id, course=course)
 
+                # 1. טיפול בהוספת או שיוך מרצה לתיקייה
                 if new_staff_input and new_staff_input.strip():
-                    new_lecturer, _ = Lecturer.objects.get_or_create(
+                    new_lecturer, staff_created = Lecturer.objects.get_or_create(
                         name=new_staff_input.strip(),
                         university=course.major.university
                     )
                     folder_to_edit.staff_member = new_lecturer
+
+                    # בונוס על הוספת מרצה חדש למערכת
+                    if staff_created:
+                        process_transaction(request.user, 2, tx_type='system', description='בונוס על הוספת מרצה חדש 🎓')
+
                 elif staff_id_select and staff_id_select.strip().isdigit():
                     folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
 
+                # 2. שמירת הצבע והמרצה בתיקייה
                 if folder_color:
                     folder_to_edit.color = folder_color
                 folder_to_edit.save()
 
+                # 3. טיפול בדירוג מרצה (אם המשתמש לחץ על הכוכבים)
                 if folder_to_edit.staff_member and rating_val.isdigit() and int(rating_val) > 0:
                     rating_int = int(rating_val)
-
-                    # 1. שומרים את הדירוג ובודקים אם זה דירוג חדש (created)
-                    review, created = StaffReview.objects.update_or_create(
+                    review, review_created = StaffReview.objects.update_or_create(
                         staff_member=folder_to_edit.staff_member,
                         user=request.user,
                         defaults={'rating': rating_int, 'review_text': review_text.strip()}
                     )
 
-                    # 2. מעדכנים את הממוצע של המרצה כדי שהכוכבים יתעדכנו באתר
+                    # חישוב ממוצע חדש למרצה
+                    from django.db.models import Avg
                     avg = folder_to_edit.staff_member.reviews.aggregate(Avg('rating'))['rating__avg']
                     if avg:
                         folder_to_edit.staff_member.average_rating = round(avg, 1)
                         folder_to_edit.staff_member.save()
 
-                    # 3. מחלקים את המטבעות (רק אם זו פעם ראשונה שהוא מדרג את המרצה הזה)
-                    if created:
+                    # חלוקת בונוס על דירוג בפעם הראשונה ויצירת התראה!
+                    if review_created:
                         process_transaction(request.user, 2, tx_type='quality_bonus',
                                             description='בונוס על דירוג איש סגל ✨')
 
-                    messages.success(request, 'התיקייה והדירוג עודכנו! ✨')
+                        # כפיית יצירת התראה לפעמון (כדי שיקפוץ מיד העדכון למשתמש)
+                        from core.models import Notification
+                        Notification.objects.create(
+                            user=request.user,
+                            title='קיבלת מטבעות! 🪙',
+                            message=f'תודה על הדירוג של {folder_to_edit.staff_member.name}! קיבלת 2 מטבעות.',
+                            notification_type='economy'
+                        )
+
+                        messages.success(request, 'התיקייה והדירוג נשמרו, וזכית ב-2 מטבעות! 🪙')
+                    else:
+                        messages.success(request, 'הדירוג של המרצה עודכן בהצלחה! ✨')
+                else:
+                    messages.success(request, 'התיקייה עודכנה בהצלחה! 📁')
 
             if open_this_folder:
                 return redirect('course_detail_folder', course_id=course.id, folder_id=open_this_folder)
