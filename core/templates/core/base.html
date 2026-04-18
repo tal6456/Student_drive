@@ -180,19 +180,60 @@ such as the background, top bar, footer, and related layout behavior.
         }
 
         #a11y-menu {
-            margin-top: 10px;
-            width: 230px;
+            margin-top: 12px;
+            width: 280px;
             border: 1px solid var(--gd-border);
-            border-radius: 14px;
+            border-radius: 18px;
             background: var(--gd-card);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-            padding: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            direction: rtl !important;
+            text-align: right !important;
         }
 
         .a11y-control-btn {
             width: 100%;
-            text-align: right;
-            margin-bottom: 8px;
+            margin-bottom: 0;
+            padding: 14px 16px !important;
+            border: none !important;
+            background: var(--gd-bg) !important;
+            color: var(--gd-text) !important;
+            border-radius: 12px;
+            font-family: 'Heebo', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            border: 1px solid var(--gd-border) !important;
+            direction: rtl !important;
+            text-align: right !important;
+        }
+
+        .a11y-control-btn:hover {
+            background: var(--gd-hover, rgba(26, 115, 232, 0.1)) !important;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .a11y-control-btn i {
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #5B8DEF 0%, #1a73e8 100%);
+            color: white;
+            flex-shrink: 0;
         }
 
         #main-content {
@@ -499,11 +540,26 @@ such as the background, top bar, footer, and related layout behavior.
             <i class="fas fa-universal-access"></i>
         </button>
         <div id="a11y-menu" class="d-none" role="menu" aria-label="תפריט נגישות">
-            <button type="button" class="btn btn-sm btn-outline-primary a11y-control-btn" id="a11y-font-increase">הגדל טקסט</button>
-            <button type="button" class="btn btn-sm btn-outline-primary a11y-control-btn" id="a11y-font-decrease">הקטן טקסט</button>
-            <button type="button" class="btn btn-sm btn-outline-dark a11y-control-btn" id="a11y-contrast-toggle">ניגודיות גבוהה</button>
-            <button type="button" class="btn btn-sm btn-outline-dark a11y-control-btn" id="a11y-underline-toggle">קו תחתון לקישורים</button>
-            <a href="{% url 'accessibility' %}" class="btn btn-sm btn-outline-dark a11y-control-btn mb-0">הצהרת נגישות</a>
+            <button type="button" class="a11y-control-btn" id="a11y-font-increase">
+                <i class="fas fa-plus"></i>
+                <span>הגדל טקסט</span>
+            </button>
+            <button type="button" class="a11y-control-btn" id="a11y-font-decrease">
+                <i class="fas fa-minus"></i>
+                <span>הקטן טקסט</span>
+            </button>
+            <button type="button" class="a11y-control-btn" id="a11y-contrast-toggle">
+                <i class="fas fa-adjust"></i>
+                <span>ניגודיות גבוהה</span>
+            </button>
+            <button type="button" class="a11y-control-btn" id="a11y-underline-toggle">
+                <i class="fas fa-underline"></i>
+                <span>קו תחתון לקישורים</span>
+            </button>
+            <a href="{% url 'accessibility' %}" class="a11y-control-btn">
+                <i class="fas fa-file-contract"></i>
+                <span>הצהרת נגישות</span>
+            </a>
         </div>
     </div>
 
