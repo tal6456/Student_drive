@@ -21,14 +21,14 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background-color: var(--gd-card);">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
                 <div class="list-group list-group-flush">
-                    {% for notification in notifications %}
+                    {% for notification in page_obj %}
                         <a href="{% if notification.link %}{{ notification.link }}{% if '?' in notification.link %}&{% else %}?{% endif %}delete={{ notification.id }}{% else %}?delete={{ notification.id }}{% endif %}" 
-                           class="list-group-item list-group-item-action p-4 border-0 border-bottom transition notif-item {% if notification.notification_type == 'economy' %}notif-economy{% endif %}">
+                           class="list-group-item list-group-item-action p-4 border-0 border-bottom transition notif-item {% if notification.notification_type == 'economy' %}notif-economy{% endif %}"
+                           style="background-color: transparent; border-color: var(--gd-border) !important;">
                             
                             <div class="d-flex align-items-center gap-3">
-                                
                                 <div class="flex-shrink-0">
                                     {% if notification.notification_type == 'friend_request' and notification.sender %}
                                         {% if notification.sender.profile.profile_picture %}
@@ -68,7 +68,6 @@
                                 <div class="flex-shrink-0 opacity-25">
                                     <i class="fas fa-chevron-left"></i>
                                 </div>
-                                
                             </div>
                         </a>
                     {% empty %}
@@ -83,12 +82,40 @@
                     {% endfor %}
                 </div>
             </div>
+
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-4" aria-label="Page navigation">
+                <ul class="pagination justify-content-center" dir="ltr">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link border-0 shadow-sm rounded-circle mx-1" href="?page={{ page_obj.previous_page_number }}&filter={{ current_filter }}" style="background-color: var(--gd-card); color: var(--gd-primary); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link border-0 shadow-sm rounded-circle mx-1 fw-bold" style="background-color: var(--gd-primary); color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            {{ page_obj.number }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link border-0 shadow-sm rounded-circle mx-1" href="?page={{ page_obj.next_page_number }}&filter={{ current_filter }}" style="background-color: var(--gd-card); color: var(--gd-primary); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
         </div>
     </div>
 </div>
 
 <style>
-    /* עיצוב התראות כלכליות */
     .notif-economy {
         border-right: 4px solid #FFD700 !important;
         background-color: rgba(255, 215, 0, 0.02) !important;
@@ -97,7 +124,6 @@
         background-color: rgba(255, 215, 0, 0.05) !important;
     }
 
-    /* אפקטים כלליים */
     .notif-item {
         border-right: 4px solid transparent;
         transition: all 0.2s ease;
@@ -108,9 +134,6 @@
         z-index: 10;
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         border-right-color: var(--gd-primary);
-        background-color: var(--gd-card) !important;
     }
-
-    [data-theme='dark'] .bg-light { background-color: #2c2c2c !important; }
 </style>
 {% endblock %}

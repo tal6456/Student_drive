@@ -13,6 +13,8 @@ from django.db.models import Count, Sum, Q
 
 # Import only the models needed here
 from core.models import Document, Course, UserProfile, Report, Feedback
+from django.core.paginator import Paginator
+from core.models import Notification
 
 
 # ==========================================
@@ -86,3 +88,30 @@ def error_404(request, exception):
 
 def error_500(request):
     return render(request, '500.html', status=500)
+
+
+@login_required
+def notifications_list(request):
+    current_filter = request.GET.get('filter', 'all')
+    all_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+    # סינון לפי הלוגיקה של הכפתורים שלך
+    if current_filter == 'economy':
+        all_notifications = all_notifications.filter(notification_type='economy')
+    elif current_filter == 'social':
+        all_notifications = all_notifications.filter(notification_type='system')
+
+    # סימון כנקרא
+    unread = all_notifications.filter(is_read=False)
+    if unread.exists():
+        unread.update(is_read=True)
+
+    # דפדוף (Pagination) - חשוב כדי שהעמוד לא יטען לאט כ שיהיו 100 התראות
+    paginator = Paginator(all_notifications, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'core/notifications_list.html', {
+        'page_obj': page_obj,
+        'current_filter': current_filter
+    })

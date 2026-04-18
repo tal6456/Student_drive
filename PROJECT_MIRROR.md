@@ -34,6 +34,7 @@
         📄 apps.py
         📄 context_processors.py
         📄 forms.py
+        📄 middleware.py
         📄 models.py
         📄 personal_drive.py
         📄 signals.py
@@ -49,17 +50,22 @@
                 📄 seed_bgu_ee.py
                 📄 __init__.py
         📂 static/
+            📂 core/
+                📂 css/
+                📂 js/
             📂 css/
             📂 js/
         📂 templates/
             📄 404.html
             📄 500.html
             📂 account/
+                📄 email_confirm.html
                 📄 login.html
                 📄 logout.html
                 📄 password_change.html
                 📄 password_reset.html
                 📄 signup.html
+                📄 verification_sent.html
             📂 core/
                 📄 accessibility.html
                 📄 add_course.html
@@ -92,6 +98,7 @@
                 📄 social_base.html
                 📄 staff_detail.html
                 📄 terms.html
+                📄 _search_form.html
                 📂 partials/
                     📄 alert_banner.html
                     📄 collapsible_semester.html
@@ -105,6 +112,9 @@
             📂 socialaccount/
                 📄 login.html
                 📄 signup.html
+        📂 tests/
+            📄 test_economy.py
+            📄 __init__.py
         📂 views/
             📄 academic.py
             📄 accounts.py
@@ -128,315 +138,320 @@
             📄 base_site.html
 ```
 
-**רשימת קבצים ותפקידיהם:**
+**פירוט תפקידי הקבצים והתיקיות:**
 
-**1. הגדרות וניהול פרויקט:**
+*   **`student_drive/` (תיקיית הפרויקט הראשית):**
+    *   **`build.sh`**: סקריפט Shell המשמש כנראה לבנייה, פריסה או הגדרת סביבת הפרויקט. מתחבר לתהליכי CI/CD או פריסה ידנית.
+    *   **`import_courses.py`**: סקריפט פייתון עצמאי, ככל הנראה משמש לייבוא נתוני קורסים למסד הנתונים מתוך קובץ או מקור חיצוני. מתחבר למודלים של `Course`, `University`, `Major`.
+    *   **`manage.py`**: כלי שורת הפקודה של Django. מאפשר לבצע פעולות כמו `runserver`, `makemigrations`, `migrate`, `createsuperuser` ופקודות מותאמות אישית. נקודת הכניסה לניהול הפרויקט.
+    *   **`PROJECT_MIRROR.md`**: קובץ תיעוד, ככל הנראה מתאר את מבנה הפרויקט או שיקולים אדריכליים.
 
-*   **`student_drive/manage.py`**: כלי שורת הפקודה של Django. מאפשר לבצע פעולות כמו הרצת השרת, ביצוע מיגרציות למסד הנתונים וניהול אפליקציות. הוא נקודת הכניסה העיקרית לניהול הפרויקט.
-*   **`student_drive/student_drive/settings.py`**: קובץ ההגדרות הראשי של הפרויקט. מנהל את כל התצורה של Django, כולל הגדרות מסד נתונים, אפליקציות מותקנות, אבטחה, דוא"ל, שפות, קבצים סטטיים ומדיה. הוא מתחבר למשתני סביבה (.env) לאבטחת מפתחות רגישים ומגדיר התנהגות שונה בין סביבת פיתוח לסביבת פרודקשן.
-*   **`student_drive/student_drive/urls.py`**: קובץ ניתוב ה-URL הראשי של הפרויקט. הוא מפנה בקשות HTTP לאפליקציות השונות על בסיס הנתיב.
-*   **`student_drive/student_drive/wsgi.py`**: נקודת כניסה לשרתי ווב התומכים ב-WSGI, משמש לפריסת הפרויקט.
-*   **`student_drive/student_drive/asgi.py`**: נקודת כניסה לשרתי ווב התומכים ב-ASGI, משמש לאפליקציות אסינכרוניות (כמו צ'אט) ופריסת הפרויקט.
-*   **`student_drive/build.sh`**: סקריפט מעטפת (shell script) המשמש כנראה לבנייה או פריסה של הפרויקט, ככל הנראה בסביבות CI/CD או שרתי ענן (כמו Render).
-*   **`student_drive/import_courses.py`**: סקריפט ייבוא חיצוני, כנראה לייבוא נתונים ראשוניים של קורסים, אולי מקובץ CSV או מקור אחר.
-*   **`student_drive/PROJECT_MIRROR.md`**: קובץ תיעוד, ככל הנראה משקף את מבנה הפרויקט או תיאור כללי שלו.
+*   **`student_drive/student_drive/` (תיקיית הגדרות הפרויקט):**
+    *   **`asgi.py`**: נקודת כניסה לשרת ASGI, משמשת לאפליקציות אסינכרוניות כמו WebSockets. מתחברת ל-Daphne או Uvicorn בסביבת פרודקשן.
+    *   **`settings.py`**: ליבת ההגדרות של פרויקט Django. מגדיר את מסד הנתונים, אפליקציות מותקנות, Middleware, אבטחה, ניהול קבצים (S3), אימות (Allauth) ועוד. מתחבר כמעט לכל חלק בפרויקט.
+    *   **`urls.py`**: קובץ ניתוב הראשי של הפרויקט. מאגד את ניתובים של אפליקציית `core` (וכל אפליקציה נוספת) לכתובות URL. מתחבר ל-`views` השונים.
+    *   **`wsgi.py`**: נקודת כניסה לשרת WSGI, משמשת לאפליקציות סינכרוניות. מתחברת ל-Gunicorn או Apache/Nginx בסביבת פרודקשן.
 
-**2. אפליקציית `core` (ליבת המערכת):**
+*   **`student_drive/core/` (אפליקציית הליבה של הפרויקט):**
+    *   **`adapters.py`**: מכיל קלאסים מותאמים אישית (Adapters) עבור `django-allauth`, המאפשרים להתאים אישית את תהליכי ההרשמה וההתחברות, לדוגמה הפנייה למסך השלמת פרופיל לאחר הרשמה חברתית. מתחבר ל-`settings.py` (ACCOUNT_ADAPTER, SOCIALACCOUNT_ADAPTER) ולמודלים `CustomUser`, `UserProfile`.
+    *   **`admin.py`**: מגדיר את האופן שבו המודלים מוצגים ומנוהלים בממשק הניהול של Django. מתחבר ל-`models.py`.
+    *   **`agent_brain.py`, `agent_views.py`, `ai_utils.py`, `student_agent.py`**: קבצים הקשורים למרכיב ה-AI Agent בפרויקט. `agent_brain.py` כנראה מכיל את הלוגיקה העיקרית של הסוכן, `agent_views.py` את ה-Views הקשורים, `ai_utils.py` כלי עזר כלליים ל-AI, ו-`student_agent.py` הגדרות ספציפיות לסוכן התלמיד. מתחברים ל-`models.py` (AgentKnowledge), ל-`views` ול-`settings.py` (GEMINI_API_KEY).
+    *   **`apps.py`**: הגדרות ספציפיות לאפליקציית `core`.
+    *   **`context_processors.py`**: פונקציות המוסיפות נתונים (קונטקסט) לכל תבנית HTML המרונדרת בפרויקט. לדוגמה, `global_counts` יכול לספק מידע גלובלי כמו מספר מסמכים או משתמשים. מתחבר ל-`settings.py` (TEMPLATES) ול-`models.py`.
+    *   **`forms.py`**: מכיל את כל טפסי Django ליצירה ועדכון מודלים, אימות קלט משתמש, וכן לוגיקה לעיצוב אוטומטי של טפסים (BaseStyledModelForm). מתחבר ל-`models.py` ומשמש את ה-`views`.
+    *   **`middleware.py`**: מכיל Middleware מותאם אישית, כמו `ProfileCompletionMiddleware` שמבטיח שמשתמשים חדשים ישלימו את הפרופיל שלהם לפני גישה לחלקים אחרים באתר. מתחבר ל-`settings.py` ולמודל `UserProfile`.
+    *   **`models.py`**: הגדרת כל מודלי הנתונים (טבלאות מסד הנתונים) של האפליקציה, כולל קשרים בין מודלים, שיטות עזר וולידציה. זהו קובץ ליבה קריטי המתאר את המבנה הלוגי של כל הנתונים במערכת. מתחבר כמעט לכל קובצי ה-`forms.py`, `admin.py`, `views`, `signals.py`, ו-`utils.py`.
+    *   **`personal_drive.py`**: קובץ ששמו מרמז על לוגיקה או Views ספציפיים הקשורים ל"דרייב אישי" של המשתמש. ככל הנראה מכיל Views או פונקציות עזר.
+    *   **`signals.py`**: מכיל פונקציות שמגיבות לאירועים ספציפיים במערכת Django (לדוגמה, `post_save` לאחר שמודל נשמר). לדוגמה, יצירת `UserProfile` אוטומטית לאחר יצירת `CustomUser`. מתחבר ל-`models.py`.
+    *   **`tests.py`**: קובץ המכיל בדיקות יחידה (unit tests) עבור לוגיקת האפליקציה `core`.
+    *   **`utils.py`**: פונקציות עזר כלליות שאינן קשורות ישירות למודלים או Views, כמו דחיסת תמונות ל-WebP, חילוץ טקסט מקבצים ואימות גודל קובץ. משמשות מודלים (בפונקציות `save`), Views ו-Forms.
+    *   **`management/`**: תיקייה עבור פקודות ניהול מותאמות אישית של Django.
+        *   **`commands/`**: מכילה את קובצי הפקודות הספציפיות.
+            *   **`load_bgu_courses.py`**: פקודת ניהול לטעינת נתוני קורסים של אוניברסיטת בן-גוריון.
+            *   **`run_agent.py`**: פקודת ניהול להפעלת רכיב ה-AI Agent.
+            *   **`seed_bgu_ee.py`**: פקודת ניהול לאכלוס ראשוני של נתונים (seed data) למסד הנתונים, ככל הנראה קורסים ספציפיים להנדסת חשמל באוניברסיטת בן-גוריון.
 
-*   **`core/__init__.py`**: מציין שתיקיית `core` היא חבילת פייתון.
-*   **`core/apps.py`**: מגדיר את תצורת האפליקציה `core`.
-*   **`core/models.py`**: קובץ המודלים הראשי המגדיר את מבנה הנתונים (הישויות) של כל המערכת: משתמשים (CustomUser, UserProfile), מוסדות לימוד (University, Major, Course), ניהול קבצים (Folder, Document, ExternalResource), קהילות (Community, Post, Comment), סגל אקדמי (AcademicStaff) ועוד. הוא כולל לוגיקה עסקית ואימות נתונים ברמת המודל. מתחבר ל-`utils.py` עבור פעולות על קבצים ול-`signals.py` דרך `@receiver`.
-*   **`core/forms.py`**: מגדיר את כל הטפסים המשמשים לאינטראקציה עם המשתמש. כולל טפסי העלאת מסמכים, יצירת קורסים, הרשמה והשלמת פרופיל. הוא משתמש ב-`BaseStyledModelForm` עבור עיצוב אחיד וכולל לוגיקת אימות (למשל, מניעת כפילויות של קורסים). מתחבר ל-`models.py` כדי ליצור טפסים על בסיס המודלים.
-*   **`core/views/` (תיקייה)**: מכילה את כל קבצי ה-Views של האפליקציה, מחולקים לפי נושאים, מה שמעיד על ארכיטקטורה מודולרית.
-    *   **`core/views/__init__.py`**: מאפשר לייבא Views מתיקייה זו כמודול.
-    *   **`core/views/academic.py`**: מכיל Views הקשורים לניהול אקדמי, כמו רשימות קורסים, פרטי קורסים, תיקיות וכו'.
-    *   **`core/views/accounts.py`**: Views הקשורים לניהול חשבונות משתמשים, פרופילים, הגדרות.
-    *   **`core/views/api.py`**: Views עבור ממשקי API, כנראה לטעינת נתונים אסינכרונית או אינטגרציה עם צד לקוח.
-    *   **`core/views/documents.py`**: Views הקשורים להעלאה, הצגה, הורדה וניהול מסמכים.
-    *   **`core/views/friends_chat.py`**: Views עבור תכונות חברתיות כמו ניהול חברים וצ'אט.
-    *   **`core/views/pages.py`**: Views עבור דפים כלליים באתר (בית, אודות, מדיניות פרטיות וכו').
-    *   **`core/views/social.py`**: Views הקשורים לפיד חברתי, פוסטים, קהילות.
-*   **`core/admin.py`**: מגדיר כיצד המודלים השונים מוצגים ומנוהלים בממשק האדמין של Django.
-*   **`core/adapters.py`**: מכיל אדפטרים עבור `django-allauth` (מערכת ההרשמה וההתחברות החברתית), המאפשרים התאמה אישית של תהליך הרישום והחיבור למערכת. מתחבר ל-`forms.py` (CustomSignupForm) ול-`models.py` (CustomUser).
-*   **`core/signals.py`**: מכיל פונקציות שמגיבות לאירועים ספציפיים (Signals) במערכת, כמו יצירת משתמש חדש (למשל, יצירת UserProfile אוטומטית). מתחבר ל-`models.py`.
-*   **`core/utils.py`**: קובץ עזר המכיל פונקציות שימושיות כלליות, כגון כיווץ תמונות ל-WebP, אימות גודל קובץ, וחילוץ טקסט מ-PDF/DOCX. פונקציות אלו משומשות ב-`models.py` וייתכן שגם ב-views.
-*   **`core/context_processors.py`**: פונקציות שמזריקות נתונים נוספים לכל תבנית רנדור. לדוגמה, `global_counts` כנראה מספקת נתונים סטטיסטיים כלליים לאתר.
-*   **`core/templates/` (תיקייה)**: מכילה את קבצי התבניות (HTML) של האפליקציה `core`. מחולקת לתיקיות משנה כמו `account`, `core`, `partials` לארגון טוב יותר. תבניות אלו מרנדרות את ממשק המשתמש ומתחברות ל-Views.
-*   **`core/static/` (תיקייה)**: מכילה קבצים סטטיים (CSS, JavaScript, תמונות) ספציפיים לאפליקציית `core`.
-*   **`core/management/commands/` (תיקייה)**: מכילה פקודות ניהול מותאמות אישית ל-Django.
-    *   **`load_bgu_courses.py`**: פקודה לטעינת קורסים ספציפיים של אוניברסיטת בן-גוריון.
-    *   **`run_agent.py`**: פקודה להרצת הסוכן האישי (AI Agent) שהוזכר בקובץ המודל.
-    *   **`seed_bgu_ee.py`**: פקודה לאכלוס נתונים (seeding) של קורסי הנדסת חשמל בבן-גוריון.
-*   **`core/agent_brain.py`, `core/agent_views.py`, `core/ai_utils.py`, `core/student_agent.py`**: קבצים אלה נראה ששייכים למערכת ה-AI Agent, המופיעה במודל כ"כרגע מושבת". הם ככל הנראה מכילים לוגיקה, Views ופונקציות עזר עבור סוכן אינטליגנטי זה.
-*   **`core/personal_drive.py`**: ככל הנראה קובץ Views או לוגיקה הקשורים לניהול הדרייב האישי של המשתמש.
-*   **`core/tests.py`**: קובץ המכיל בדיקות יחידה ואינטגרציה עבור לוגיקת האפליקציה.
+*   **`student_drive/core/static/`**: תיקייה לאחסון קבצים סטטיים (CSS, JavaScript, תמונות) הספציפיים לאפליקציית `core`.
+    *   **`core/css/`, `core/js/`**: קבצי CSS ו-JS מותאמים אישית.
 
-**3. תיקיות כלליות:**
+*   **`student_drive/core/templates/`**: תיקייה עבור תבניות HTML הספציפיות לאפליקציית `core`.
+    *   **`account/`**: תבניות המותאמות אישית עבור `django-allauth` הקשורות לחשבון המשתמש (התחברות, הרשמה, איפוס סיסמה).
+    *   **`core/`**: תבניות HTML עבור המסכים השונים של האפליקציה (דף הבית, פרטי קורס, פרופיל אישי ועוד).
+    *   **`core/partials/`**: תבניות קטנות יותר המשמשות כחלקים הניתנים לשימוש חוזר בתבניות גדולות יותר (לדוגמה: כרטיס פוסט, שורת מסמך).
 
-*   **`documents/`**: ככל הנראה תיקייה לאחסון פיזי של קבצים שהועלו על ידי משתמשים (אם לא משתמשים ב-S3).
-*   **`locale/`**: מכיל קבצי תרגום (לוקליזציה) של האתר, במקרה זה עבור אנגלית.
-*   **`templates/admin/base_site.html`**: תבנית המרחיבה או משנה את מראה ממשק האדמין של Django.
+*   **`student_drive/core/views/`**: תיקייה המכילה את כל ה-Views (פונקציות או קלאסים שמטפלים בבקשות HTTP ומחזירים תגובות). החלוקה לקבצים נפרדים לפי נושאים משפרת את הסדר והמודולריות בתוך אפליקציית `core`.
+    *   **`academic.py`**: Views הקשורים למוסדות אקדמיים, קורסים, סגל.
+    *   **`accounts.py`**: Views הקשורים לניהול חשבונות משתמשים (למשל השלמת פרופיל, הגדרות).
+    *   **`api.py`**: Views שמחזירים נתוני JSON, אולי עבור ממשקי API לשימוש צד לקוח (Frontend).
+    *   **`documents.py`**: Views לטיפול במסמכים (העלאה, צפייה, הורדה, חיפוש).
+    *   **`friends_chat.py`**: Views הקשורים למערכת החברים והצ'אט.
+    *   **`pages.py`**: Views לדפים כלליים (דף הבית, אודות, תנאי שימוש).
+    *   **`social.py`**: Views הקשורים לפיד החברתי, פוסטים, קהילות.
+
+*   **`student_drive/documents/`**: תיקייה במערכת הקבצים המשמשת כברירת מחדל לאחסון קבצים שהועלו על ידי משתמשים (למשל מסמכים, תמונות פרופיל). זהו ה-`MEDIA_ROOT` בסביבת פיתוח מקומית.
+
+*   **`student_drive/locale/`**: תיקייה עבור קבצי תרגום (Internationalization), המאפשרת לאתר לתמוך במספר שפות.
+
+*   **`student_drive/templates/` (ברמת הפרויקט):**
+    *   **`admin/base_site.html`**: תבנית המאפשרת התאמה אישית של דף הניהול הראשי של Django.
 
 ## 📈 2. תמונת מצב וציון בריאות
 
-**סקירה כללית:**
-הפרויקט "Student Drive" הוא פלטפורמה מקיפה המיועדת ככל הנראה לקהילה אקדמית. הוא כולל תכונות של ניהול קבצים וקורסים, מערכת משתמשים עם פרופילים מפורטים (כולל כלכלת מטבעות), פיד חברתי (פוסטים, קהילות, צ'אט), מערכת דירוג סגל, התראות ופוטנציאל לסוכן AI אישי. ישנה השקעה ניכרת בתשתית, החל ממודלים מפורטים וקשרים מורכבים, דרך טפסים מותאמים אישית ועד אינטגרציה עם שירותים חיצוניים (Google OAuth, S3) וטיפול בסביבות שונות (פיתוח מול פרודקשן). הפרויקט בעל שאיפות גבוהות ומציג בסיס יציב ופונקציונלי.
+**סקירה כללית של הפרויקט:**
+הפרויקט "Student Drive" נראה כפלטפורמה מקיפה לניהול תוכן אקדמי וקהילתי עבור סטודנטים. הוא כולל מערכת משתמשים מורכבת (עם תפקידים ופרופילים מפורטים), ניהול קורסים ומוסדות, מערכת קבצים וניהול תיקיות, פיד חברתי עם פוסטים ותגובות, מערכת דירוגים לסגל אקדמי, מרכיב של סוכן AI אישי (שכרגע מושבת), מערכת התראות, ואף מיני-מערכת כלכלית מבוססת "מטבעות". הפרויקט עושה שימוש נרחב ב-`django-allauth` לאימות, ומציג גישה מודרנית לפריסה (S3, Heroku/DigitalOcean) וביצועים (דחיסת תמונות ל-WebP). קיימת השקעה רבה בפרטי לוקליזציה (עברית) ו-UX (עיצוב אוטומטי לטפסים, השלמת פרופיל חובה).
 
-**ציון בריאות: 78/100**
+**ציון בריאות: 75/100**
 
-*   **ניקיון קוד (Code Cleanliness):**
-    *   **חוזקות:** ישנם תיאורים מפורטים (בעברית) בראשי קבצים חשובים (`models.py`, `forms.py`, `settings.py`), מה שמקל על ההבנה. השימוש ב-`BaseStyledModelForm` הוא דוגמה מצוינת לעקרון DRY (Don't Repeat Yourself) ולניקיון קוד. הפרדת ה-Views לתיקייה משלהם ולקבצים לפי נושאים היא פרקטיקה טובה. שימוש במודל משתמש מותאם אישית (CustomUser) הוא נכון.
-    *   **חולשות:** חלק מהלוגיקה בשיטות `save` במודלים (כיווץ תמונות, חילוץ טקסט) עלולה להפוך אותן לארוכות מדי ולפגוע בקריאות. קיימות מספר `print` הצהרות בתוך בלוקי `try-except` ב-`Document.save` במקום לוגינג מסודר.
-    *   **ציון:** 8/10
+**ניתוח לפי קטגוריות:**
+
+*   **ניקיון קוד ומבנה (Cleanliness & Structure):**
+    *   **חוזקות:** יש תיעוד פנימי טוב בקבצים (docstrings), חלוקת Views לקבצים נפרדים באפליקציית `core/views` היא טובה ומסייעת למודולריות. השימוש ב-`BaseStyledModelForm` חכם ומפחית כפילויות בעיצוב. השימוש ב-`settings.py` עם משתני סביבה מסודר.
+    *   **חולשות:** אפליקציית `core` גדולה ומונוליטית באופן משמעותי, וכוללת בתוכה תחומים רבים ובלתי קשורים. קובץ `models.py` הוא ענק ומכיל מעל 1,000 שורות, מה שמקשה על תחזוקה, קריאות וסיכוי גבוה לקונפליקטים במיזוג קוד. רכיבי ה-AI agent מושבתים אך עדיין נמצאים בקוד.
+    *   **ציון:** 70/100
 
 *   **אבטחה (Security):**
-    *   **חוזקות:** שימוש ב-`dotenv` למשתני סביבה, סיסמאות מוצפנות ב-`Argon2`, הגדרות `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_HTTPONLY`, `SECURE_HSTS_SECONDS` ב-`settings.py` מעידים על מודעות גבוהה לאבטחה. אימות גודל קובץ (`validate_file_size`) בקבצים שהועלו מונע התקפות DoS. CSRF/XSS מוגנים.
-    *   **חולשות/חששות:**
-        *   הערה ב-`settings.py` לגבי `CSRF_COOKIE_HTTPONLY`: "ה-JS ב-base.html עוקף את זה דרך ה-DOM." אם אכן קוד צד-לקוח (JS) עוקף את הגדרת ה-HTTPOnly, זו חולשת אבטחה קריטית שעלולה לחשוף את אסימון ה-CSRF להתקפות XSS. יש לבדוק ולתקן לאלתר.
-        *   חילוץ טקסט מ-PDF/DOCX: קבצים אלו עלולים להכיל תוכן זדוני (למשל, macros בקבצי Word) או להיות מעוצבים באופן שיגרום לקריסת מנתח הטקסט, ובכך ליצור חולשת DoS. תהליך זה דורש סנדבוקסינג קפדני.
-    *   **ציון:** 6/10 (בגלל החשש מ-CSRF bypass וסיכוני עיבוד קבצים).
+    *   **חוזקות:** `settings.py` מוגדר היטב עם שימוש במשתני סביבה עבור מפתחות סודיים, הפניית HTTPS חובה (בפרודקשן), הגדרות קוקיז ואבטחת סשנים, HSTS. אימות סיסמאות חזק. `django-allauth` תורם רבות לאבטחת אימות המשתמשים. קיימת ולידציית גודל קובץ (`validate_file_size`).
+    *   **חולשות:** חסרה ולידציית תוכן/סוג קובץ מדויקת ב-`FileField` ו-`ImageField` מעבר לגודל וסיומת, מה שעלול לאפשר העלאת קבצים זדוניים עם סיומת מתאימה. לדוגמה, קובץ עם סיומת `.jpg` אך עם תוכן שאינו תמונה. יש לוודא שהפונקציות `extract_text_from_pdf` ו-`extract_text_from_docx` חסינות מ-DoS ואינן מעבדות קבצים זדוניים.
+    *   **ציון:** 80/100
 
-*   **מבנה (Structure):**
-    *   **חוזקות:** ארכיטקטורה מודולרית טובה (אפליקציית `core` יחידה אך מקיפה, `views` מחולקים לפי נושאים). הפרדה ברורה בין מודלים, טפסים, ו-views. שימוש ב-`django-allauth` וב-`storages` (S3) מצביע על פתרונות מבוססים ונפוצים. קיומן של פקודות ניהול מותאמות אישית תורם לסקלביליות. ארגון התבניות בתיקיות משנה הוא טוב.
-    *   **חולשות:** אפליקציית `core` גדולה מאוד. בעוד שהחלוקה הפנימית טובה, ייתכן שבעתיד יהיה כדאי לשקול פיצול שלה לאפליקציות Django קטנות יותר (למשל, `users`, `courses`, `documents`, `social`) כדי לשפר את המודולריות ולצמצם את הצימוד.
-    *   **ציון:** 8.5/10
+*   **מבנה ארכיטקטוני ויכולת הרחבה (Architecture & Scalability):**
+    *   **חוזקות:** שימוש ב-`CustomUser` מאפשר גמישות רבה במודל המשתמש. ההפרדה בין `CustomUser` ל-`UserProfile` היא דפוס עיצוב טוב. ניהול קבצים באמצעות S3 (בפרודקשן) הוא קריטי לסילומיות. חלוקת Views לקבצים משפרת את הסדר.
+    *   **חולשות:** כפי שצוין, אפליקציית `core` המונוליטית תפגע ביכולת הרחבה ובידוד תקלות. פעולות כבדות כמו דחיסת תמונות וחילוץ טקסט מתבצעות בתוך מתודות `save()` סינכרוניות, מה שיכול להוות צוואר בקבוק בביצועים ולפגוע בחווית המשתמש בהעלאות קבצים גדולות. קיימת פוטנציאל ל-N+1 queries במתודות כמו `UserProfile.get_accepted_friends`.
+    *   **ציון:** 75/100
 
-**ציון בריאות סופי: 78/100**
-הפרויקט במצב טוב בסך הכל, עם בסיס חזק ופיצ'רים מרשימים. הבעיות העיקריות נוגעות לאבטחה פוטנציאלית בתחום ה-CSRF ועיבוד קבצים, ולפוטנציאל לבעיות ביצועים כתוצאה מפעולות סינכרוניות כבדות ב-`save` של המודלים.
+לסיכום, הפרויקט מציג יסודות חזקים עם תכונות מתקדמות רבות והקפדה על אבטחה בסיסית ו-UX, אך סובל מעומס על אפליקציית ה-`core` וקובץ `models.py` שלה, מה שמצריך ארגון מחדש כדי להבטיח תחזוקה ויכולת הרחבה לאורך זמן.
 
 ## 🗺️ 3. מפת ארכיטקטורה (Visual Flowchart)
 
 ```mermaid
 classDiagram
     class CustomUser {
-        +username
-        +role
+        +username: str
+        +email: str
+        +role: str
     }
-
     class UserProfile {
-        +user: CustomUser
-        +university: University
-        +major: Major
-        +favorite_courses: Course[]
-        +current_balance
-        +lifetime_coins
+        +bio: str
+        +profile_picture: ImageField
+        +current_balance: int
+        +lifetime_coins: int
+        +referral_code: str
     }
-
     class University {
-        +name
+        +name: str
+        +logo: ImageField
     }
-
     class Major {
-        +university: University
-        +name
+        +name: str
     }
-
     class Course {
-        +major: Major
-        +name
-        +semester_staff: CourseSemesterStaff[]
+        +name: str
+        +course_number: str
+        +description: str
     }
-
+    class Folder {
+        +name: str
+        +parent: Folder
+    }
+    class Document {
+        +title: str
+        +file: FileField
+        +file_content: TextField
+        +download_count: int
+    }
+    class ExternalResource {
+        +title: str
+        +link: URLField
+        +file: FileField
+    }
+    class Community {
+        +name: str
+        +description: str
+        +community_type: str
+    }
+    class Post {
+        +content: str
+        +image: ImageField
+        +created_at: datetime
+    }
+    class MarketplacePost {
+        +price: DecimalField
+        +category: str
+    }
+    class VideoPost {
+        +youtube_url: URLField
+        +thumbnail: ImageField
+    }
+    class Comment {
+        +text: str
+    }
     class AcademicStaff {
-        +university: University
-        +name
-        +image
+        +name: str
+        +email: EmailField
+        +image: ImageField
     }
     class Lecturer
     class TeachingAssistant
-
-    class Folder {
-        +course: Course
-        +parent: Folder
-        +name
-    }
-
-    class Document {
-        +course: Course
-        +folder: Folder
-        +uploaded_by: CustomUser
-        +staff_member: AcademicStaff
-        +file
-        +file_content
-        +likes: CustomUser[]
-    }
-
-    class ExternalResource {
-        +user: CustomUser
-        +title
-        +link
-        +file
-    }
-
-    class Community {
-        +name
-        +members: CustomUser[]
-        +university: University
-        +major: Major
-    }
-
-    class Post {
-        +user: CustomUser
-        +content
-        +community: Community
-        +likes: CustomUser[]
-    }
-    class MarketplacePost
-    class VideoPost
-
-    class Comment {
-        +post: Post
-        +user: CustomUser
-        +text
-    }
-
-    class Friendship {
-        +user_from: CustomUser
-        +user_to: CustomUser
-        +status
-    }
-
-    class Report {
-        +document: Document
-        +user: CustomUser
-    }
-
     class StaffReview {
-        +staff_member: AcademicStaff
-        +user: CustomUser
-        +rating
+        +rating: int
+        +review_text: str
     }
-
-    class CourseSemesterStaff {
-        +course: Course
-        +staff_member: AcademicStaff
+    class Report {
+        +reason: str
+        +description: str
     }
-
     class Feedback {
-        +user: CustomUser
+        +subject: str
+        +message: str
     }
-
-    class DownloadLog {
-        +user: CustomUser
-        +document: Document
-    }
-
-    class Vote {
-        +user: CustomUser
-        +document: Document
-    }
-
-    class AgentKnowledge {
-        +owner: CustomUser
-    }
-
     class Notification {
-        +user: CustomUser
-        +sender: CustomUser
+        +title: str
+        +message: str
+        +notification_type: str
     }
-
+    class CoinTransaction {
+        +amount: int
+        +transaction_type: str
+    }
+    class BountyRequest {
+        +title: str
+        +reward_amount: int
+    }
     class UserCourseSelection {
-        +user: CustomUser
-        +course: Course
+        +is_starred: boolean
     }
-
-    class ChatRoom {
-        +participants: CustomUser[]
-    }
-
+    class ChatRoom
     class ChatMessage {
-        +room: ChatRoom
-        +sender: CustomUser
-        +attached_file: Document
+        +content: str
     }
-
     class DocumentComment {
-        +document: Document
-        +user: CustomUser
+        +text: str
+    }
+    class Friendship {
+        +status: str
+    }
+    class DownloadLog {
+        +download_date: datetime
+    }
+    class Vote {
+        +value: int
+    }
+    class AgentKnowledge {
+        +file: FileField
+        +extracted_text: TextField
     }
 
-    CustomUser "1" -- "1" UserProfile : has
-    CustomUser "1" -- "*" Friendship : sent_requests
-    CustomUser "*" -- "1" Friendship : received_requests
-    CustomUser "1" -- "*" Post : posts
-    CustomUser "1" -- "*" Comment
-    CustomUser "1" -- "*" Report
-    CustomUser "1" -- "*" StaffReview
-    CustomUser "1" -- "*" Feedback
-    CustomUser "1" -- "*" DownloadLog
-    CustomUser "1" -- "*" Vote
-    CustomUser "1" -- "*" AgentKnowledge : owner
-    CustomUser "1" -- "*" Notification : notifications
-    CustomUser "1" -- "*" Notification : sent_notifications
-    CustomUser "*" -- "*" ChatRoom : participants
-    CustomUser "1" -- "*" ChatMessage : sender
-    CustomUser "1" -- "*" DocumentComment
-    CustomUser "*" -- "*" Course : favorited_by_users
-    CustomUser "*" -- "*" Community : joined_communities
-    CustomUser "*" -- "*" Post : liked_posts
-    CustomUser "*" -- "*" Document : likes
 
-    UserProfile "1" -- "0..1" University
-    UserProfile "1" -- "0..1" Major
+    CustomUser "1" -- "1" UserProfile : owns
+    CustomUser "1" -- "0..N" Friendship : sent_requests
+    CustomUser "1" -- "0..N" Friendship : received_requests
+    CustomUser "1" -- "0..N" Post : creates
+    CustomUser "1" -- "0..N" Comment : creates
+    CustomUser "1" -- "0..N" Report : creates
+    CustomUser "1" -- "0..N" StaffReview : creates
+    CustomUser "1" -- "0..N" Feedback : creates
+    CustomUser "1" -- "0..N" Notification : receives
+    CustomUser "1" -- "0..N" CoinTransaction : has
+    CustomUser "1" -- "0..N" BountyRequest : creates
+    CustomUser "1" -- "0..N" UserCourseSelection : selects
+    CustomUser "1" -- "0..N" ChatRoom : participates
+    CustomUser "1" -- "0..N" ChatMessage : sends
+    CustomUser "1" -- "0..N" DocumentComment : creates
+    CustomUser "1" -- "0..N" DownloadLog : logs
+    CustomUser "1" -- "0..N" Vote : votes
+    CustomUser "1" -- "0..N" AgentKnowledge : owns
+    CustomUser "1" *-- "0..N" Community : joins (members)
+    CustomUser "1" *-- "0..N" Document : likes
+    CustomUser "1" *-- "0..N" Post : likes
 
-    University "1" -- "*" Major
-    University "1" -- "*" Course
-    University "1" -- "*" AcademicStaff
-    University "1" -- "*" Community
+    UserProfile --> University : studies_at
+    UserProfile --> Major : majors_in
+    UserProfile --> Course : favorite_courses (M2M)
+    UserProfile --> CustomUser : referred_by
 
-    Major "1" -- "*" Course
-    Major "1" -- "*" Community
+    University "1" -- "0..N" Major : has
+    University "1" -- "0..N" Course : teaches
+    University "1" -- "0..N" AcademicStaff : employs
+    University "1" -- "0..N" Community : relates_to
 
-    Course "1" -- "*" Folder
-    Course "1" -- "*" Document
-    Course "1" -- "*" CourseSemesterStaff
-    Course "*" -- "*" UserCourseSelection
+    Major "1" -- "0..N" Course : offers
 
-    AcademicStaff <|-- Lecturer
-    AcademicStaff <|-- TeachingAssistant
-    AcademicStaff "1" -- "*" StaffReview
-    AcademicStaff "1" -- "*" CourseSemesterStaff
-    AcademicStaff "1" -- "*" Document
+    Course "1" -- "0..N" Folder : has
+    Course "1" -- "0..N" Document : contains
+    Course "1" -- "0..N" UserCourseSelection : selected_by
+    Course "1" -- "0..N" BountyRequest : relates_to
 
-    Folder "1" -- "*" Document
-    Folder "1" -- "0..*" Folder : subfolders
+    Folder "1" -- "0..N" Folder : subfolders
+    Folder "1" -- "0..N" Document : contains
+    Folder --> CustomUser : created_by
+    Folder --> AcademicStaff : staff_member
 
-    Document "1" -- "*" Report
-    Document "1" -- "*" DownloadLog
-    Document "1" -- "*" Vote
-    Document "1" -- "0..1" ChatMessage
-    Document "1" -- "*" DocumentComment
+    Document --> Course : belongs_to
+    Document --> Folder : belongs_to
+    Document --> CustomUser : uploaded_by
+    Document *-- CustomUser : likes
+    Document "1" -- "0..N" Report : reported_by
+    Document "1" -- "0..N" DownloadLog : logged_for
+    Document "1" -- "0..N" Vote : voted_on
+    Document "1" -- "0..N" DocumentComment : commented_on
 
-    Community "1" -- "*" Post
+    Post --> CustomUser : posted_by
+    Post --> Community : posted_in
+    Post --> University : posted_in
+    Post *-- CustomUser : likes
+    Post "1" -- "0..N" Comment : has
 
-    Post <|-- MarketplacePost
-    Post <|-- VideoPost
-    Post "1" -- "*" Comment
-    Post "*" -- "*" CustomUser : likes
+    MarketplacePost --|> Post : inherits
+    VideoPost --|> Post : inherits
 
-    ChatRoom "1" -- "*" ChatMessage
+    Comment --> Post : comments_on
+    Comment --> CustomUser : commented_by
+
+    AcademicStaff --|> Lecturer : inherits
+    AcademicStaff --|> TeachingAssistant : inherits
+    AcademicStaff "1" -- "0..N" StaffReview : reviewed_by
+
+    StaffReview --> AcademicStaff : reviews
+    StaffReview --> CustomUser : reviewer
+
+    Report --> Document : reports
+    Report --> CustomUser : reporter
+
+    Notification --> CustomUser : to_user
+    Notification --> CustomUser : from_user
+
+    CoinTransaction --> CustomUser : for_user
+
+    ChatRoom "1" -- "0..N" ChatMessage : contains
+    ChatMessage --> ChatRoom : in_room
+    ChatMessage --> CustomUser : sent_by
+    ChatMessage --> Document : attaches
+
 ```
 
 ## 💡 4. ביקורת קוד אדריכלית (Code Review)
 
-*   🔴 **קריטי (Security/Bugs)**
-    1.  **סיכון אבטחה ב-CSRF_COOKIE_HTTPONLY**: ההערה ב-`settings.py` לפיה "ה-JS ב-base.html עוקף את זה דרך ה-DOM" היא דגל אדום בוהק. אם קוד JavaScript צד-לקוח אכן יכול לגשת ל-CSRF Token שנועד להיות מוגן באמצעות HTTPOnly, מדובר בחולשת אבטחה חמורה (XSS) שעלולה לאפשר לתוקפים לבצע פעולות בשם המשתמש. יש לבדוק מיידית את הקוד ב-`base.html` ולסלק כל דרך בה ה-CSRF Token חשוף ל-JS באופן ישיר, תוך הקפדה על השימוש המקובל ב-`{% csrf_token %}` לטפסים.
-    2.  **סיכוני עיבוד קבצים (Text Extraction)**: הפונקציות `extract_text_from_pdf` ו-`extract_text_from_docx` ב-`Document.save` עלולות להוות וקטור התקפה. עיבוד קבצים שהועלו על ידי משתמשים, במיוחד בפורמטים מורכבים כמו PDF ו-DOCX, יכול לחשוף את השרת להתקפות Denial of Service (DoS) עקב קבצים מעוצבים לרעה, ואף להזרקת קוד במקרה של DOCX עם Macros. מומלץ לבצע חילוץ טקסט בסביבה מבודדת (Sandbox) או באמצעות שירות חיצוני, ולהגביל את גודל הקבצים ואת משך זמן העיבוד.
-    3.  **מודל Document עם שדות Nullable ל-Course ול-Folder**: העובדה ששדות `course` ו-`folder` במודל `Document` הם `null=True, blank=True` מאפשרת גמישות (למשל, צירוף קובץ לצ'אט ללא הקשר לקורס), אך עלולה להוביל לחוסר עקביות בנתונים או לקבצים "יתומים" בדרייב. עבור מסמכים שמיועדים להיות חלק מהדרייב האקדמי, מומלץ לשקול לאכוף שדות אלו כחובה, אולי עם מודל נפרד לקבצים כלליים/צ'אט.
+*   **🔴 קריטי (Security/Bugs)**
+    *   **המלצה**: **יישום ולידציית סוג קובץ חזקה (MIME Type Validation)**. כיום קיימת ולידציית גודל, אך חסרה בדיקה אמיתית של סוג הקובץ (MIME type) עבור קבצים המועלים ל-`Document` ולשדות `ImageField` אחרים. הסתמכות על סיומת קובץ בלבד (כמו בבדיקה `not self.file.name.endswith('.webp')`) אינה מספקת ועלולה לאפשר העלאת קבצים זדוניים (לדוגמה, סקריפט עם סיומת JPG) שעלול לנצל פרצות אבטחה בשרת או בצד הלקוח.
+    *   **פעולה נדרשת**: השתמש בספריית צד שלישי כמו `python-magic` או ב-Django `FileExtensionValidator` בשילוב עם בדיקת `content_type` ב-`clean()` של הטופס או ב-`save()` של המודל כדי לוודא שסוג ה-MIME של הקובץ תואם לסיומת המצופה (למשל, `image/jpeg` עבור `.jpg`).
 
-*   🟡 **שיפור ביצועים (Optimization)**
-    1.  **פעולות כבדות ב-`save` של המודלים (Async Tasks)**: כיווץ תמונות ל-WebP וחילוץ טקסט מ-PDF/DOCX בשיטת `save` של המודלים (`UserProfile`, `University`, `Document`, `Post`, `AcademicStaff`, `Feedback`) הן פעולות שצורכות CPU וזמן. ביצוען באופן סינכרוני חוסם את ה-request-response cycle ועלול לגרום לזמני תגובה איטיים ואף ל-timeouts עבור המשתמש. יש להעביר פעולות אלו למשימות אסינכרוניות ברקע (באמצעות Celery או RQ) המופעלות על ידי `post_save` signals.
-    2.  **N+1 Queries פוטנציאליים**: ישנם קשרים רבים בין מודלים (לדוגמה, `UserProfile.favorite_courses`, `Document.likes`, `Post.likes`, `ChatMessage.room`). ב-Views רבים, גישה חוזרת ונשנית לאובייקטים קשורים בתוך לולאות עלולה לגרום לבעיות N+1 Queries. יש להקפיד להשתמש ב-`select_related()` וב-`prefetch_related()` בקוואריסטים (QuerySets) כדי למזער את מספר גישות למסד הנתונים.
+*   **🟡 שיפור ביצועים (Optimization)**
+    *   **המלצה**: **אסינכרוניות לפעולות כבדות במתודות `save()`**. פעולות כמו דחיסת תמונות (`compress_to_webp`) וחילוץ טקסט מ-PDF/DOCX (`extract_text_from_pdf`, `extract_text_from_docx`) מתבצעות באופן סינכרוני בתוך מתודות `save()` של המודלים (`UserProfile`, `Document`, `Post`, `VideoPost`, `AcademicStaff`, `Feedback`). פעולות אלו חוסמות את ה-HTTP request ועלולות לגרום לזמני תגובה ארוכים, במיוחד עם קבצים גדולים או עומס משתמשים.
+    *   **פעולה נדרשת**: העבר את הפעולות הכבדות האלה למשימות רקע אסינכרוניות (למשל, באמצעות Celery/Redis Queue, או אפילו משימות קרונ בסיסיות) שמופעלות באמצעות Django signals (`post_save`). כך ה-HTTP request יושלם במהירות, והעיבוד יבוצע ברקע.
 
-*   🟢 **ניקיון קוד (Clean Code / DRY)**
-    1.  **ייבוא מיותר ב-`core/models.py`**: קיים ייבוא מיותר של `from django.contrib.auth.models import User` ב-`core/models.py`, בעוד שהפרויקט מגדיר את `AUTH_USER_MODEL = 'core.CustomUser'`. יש להסיר את הייבוא המיותר כדי לשמור על ניקיון הקוד ולמנוע בלבול.
-    2.  **לוגיקת `UserProfile.get_accepted_friends`**: המתודה `get_accepted_friends` ב-`UserProfile` לוקחת את כל קשרי החברות ובונה רשימה ידנית. ניתן לפשט ולייעל לוגיקה זו באמצעות QuerySet בודד עם `Q` objects ו-`distinct()` או `union()` על מודל `CustomUser` עצמו, מה שישפר את קריאות הקוד וגם את ביצועי מסד הנתונים.
+*   **🟢 ניקיון קוד (Clean Code / DRY)**
+    *   **המלצה**: **פירוק אפליקציית `core` המונוליטית לאפליקציות Django קטנות וממוקדות**. אפליקציית `core` מכילה מודלים, Views, Forms, Signals, Utilities ואף רכיבי AI עבור מגוון רחב של תחומי ליבה (משתמשים, אקדמיה, מסמכים, קהילה, התראות). הדבר מנוגד לעיקרון Single Responsibility Principle (SRP) ומקשה על הבנה, בדיקה, תחזוקה ושימוש חוזר בקוד.
+    *   **פעולה נדרשת**: צור אפליקציות Django נפרדות עבור כל תחום מרכזי. לדוגמה: `users` (למשתמשים ופרופילים), `academic` (לאוניברסיטאות, קורסים, סגל), `documents` (למסמכים ותיקיות), `community` (לפוסטים, קהילות, תגובות), `notifications`, `economy`, `ai_agent` (אם יופעל). העבר את המודלים, Views, Forms וקבצים רלוונטיים לכל אפליקציה חדשה. עדכן את `settings.py` (INSTALLED_APPS), `urls.py` וייבואי קוד בהתאם.
+
+*   **🟢 ניקיון קוד (Clean Code / DRY)**
+    *   **המלצה**: **הימנע מכפילויות קוד במתודות `save()` עבור דחיסת תמונות**. הלוגיקה של `compress_to_webp` חוזרת על עצמה שוב ושוב במתודות `save()` של מודלים שונים (כמו `UserProfile`, `University`, `Post`, `VideoPost`, `AcademicStaff`, `Feedback`). זוהי הפרה מובהקת של עקרון DRY (Don't Repeat Yourself).
+    *   **פעולה נדרשת**: צור Signal ייעודי (למשל, `post_save`) שיבדוק אם שדה מסוים במודל הוא `ImageField` שהשתנה, ורק אז יפעיל את `compress_to_webp`. או לחלופין, צור `mixin` למודלים שונים שיטפל בלוגיקה הזו. פתרון אלגנטי יותר הוא ליצור Storage backend מותאם אישית (לדוגמה, עבור S3) שידאג לדחוס תמונות באופן אוטומטי כששומרים אותן.
 
 ## ✅ 5. צ'ק-ליסט משימות (Action Items)
 
-- [ ]  **טיפול מיידי בחולשת CSRF פוטנציאלית:** לבדוק את קובץ `base.html` (או כל קוד JS אחר) ולסלק כל גישה ישירה ל-CSRF Token שאינה באמצעות הטכניקות המומלצות של Django (`{% csrf_token %}` לטפסים, ו-JS שמקבל את הטוקן מקוקי ולא מה-DOM לאחר ש-HTTPOnly מופעל). וודא ש-`CSRF_COOKIE_HTTPONLY` נשאר `True` ושאין עקיפות.
-- [ ]  **הטמעת משימות אסינכרוניות לכיווץ קבצים וחילוץ טקסט:** לשלב מערכת משימות רקע (כמו Celery או RQ) ולהעביר אליה את הלוגיקה של כיווץ תמונות וחילוץ טקסט מתוך שיטות ה-`save` במודלים הרלוונטיים. הפעל את המשימות הללו באמצעות `post_save` signals.
-- [ ]  **שיפור אבטחת חילוץ טקסט:** לבחון ולהטמיע פתרונות אבטחה לחילוץ טקסט מקבצי PDF ו-DOCX. זה עשוי לכלול שימוש בספריות חיצוניות עם פחות סיכון, ביצוע הפעולות בתוך Sandbox מבודד, או העברת משימת החילוץ לשירות מיקרוסרביסים ייעודי.
+- [ ] הטמע ולידציית סוג קובץ חזקה (MIME Type Validation) עבור כל שדות `FileField` ו-`ImageField` בפרויקט כדי למנוע העלאת קבצים זדוניים.
+- [ ] העבר את פעולות דחיסת התמונות וחילוץ הטקסט ממתודות `save()` סינכרוניות למשימות רקע אסינכרוניות (באמצעות Django Signals ו-Celery/RQ) כדי לשפר את ביצועי האתר וחווית המשתמש.
+- [ ] פרק את אפליקציית ה-`core` המונוליטית למספר אפליקציות Django קטנות וממוקדות, כל אחת עם אחריות אחת (לדוגמה: `users`, `academic`, `documents`, `community`, `notifications`), כדי לשפר את המודולריות, הקריאות והתחזוקה של הפרויקט.
 
 ---
 *נבנה באהבה על ידי סוכן ה-AI שלך 🤖 | מופעל באמצעות Gemini 2.5 Flash*

@@ -117,7 +117,8 @@ urlpatterns = [
 
     path('search/', views.global_search, name='global_search'),
     #path('system-architecture-mirror/', views.agent_report, name='agent_report'),
-# ==========================================
+
+    # ==========================================
     # Notifications
     # ==========================================
     path('notifications/', views.notifications_list, name='notifications_list'),
