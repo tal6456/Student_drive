@@ -259,12 +259,26 @@ def course_detail(request, course_id, folder_id=None):
 
                 if folder_to_edit.staff_member and rating_val.isdigit() and int(rating_val) > 0:
                     rating_int = int(rating_val)
-                    StaffReview.objects.update_or_create(
+
+                    # 1. שומרים את הדירוג ובודקים אם זה דירוג חדש (created)
+                    review, created = StaffReview.objects.update_or_create(
                         staff_member=folder_to_edit.staff_member,
                         user=request.user,
                         defaults={'rating': rating_int, 'review_text': review_text.strip()}
                     )
-                    messages.success(request, 'התיקייה והדירוג עודכנו!')
+
+                    # 2. מעדכנים את הממוצע של המרצה כדי שהכוכבים יתעדכנו באתר
+                    avg = folder_to_edit.staff_member.reviews.aggregate(Avg('rating'))['rating__avg']
+                    if avg:
+                        folder_to_edit.staff_member.average_rating = round(avg, 1)
+                        folder_to_edit.staff_member.save()
+
+                    # 3. מחלקים את המטבעות (רק אם זו פעם ראשונה שהוא מדרג את המרצה הזה)
+                    if created:
+                        process_transaction(request.user, 2, tx_type='quality_bonus',
+                                            description='בונוס על דירוג איש סגל ✨')
+
+                    messages.success(request, 'התיקייה והדירוג עודכנו! ✨')
 
             if open_this_folder:
                 return redirect('course_detail_folder', course_id=course.id, folder_id=open_this_folder)
