@@ -128,4 +128,4 @@ def resolve_notification(request, pk):
     elif notification.link:
         return redirect(notification.link)
     else:
-        return redirect('notifications_list')
+        return redirect('profile')

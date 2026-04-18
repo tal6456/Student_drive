@@ -135,3 +135,11 @@ def delete_item_ajax(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'אירעה שגיאה בשרת: {str(e)}'})
+
+
+@login_required
+def unread_notifications_count(request):
+    """Return the count of unread notifications for the authenticated user."""
+    from core.models import Notification
+    count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return JsonResponse({'unread_count': count})

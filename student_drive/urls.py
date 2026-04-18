@@ -85,6 +85,9 @@ urlpatterns = [
     path('ajax/add-university/', views.add_university_ajax, name='add_university_ajax'),
     path('ajax/add-major/', views.add_major_ajax, name='add_major_ajax'),
 
+    # Unread notifications count
+    path('ajax/unread-notifications-count/', views.unread_notifications_count, name='unread_notifications_count'),
+
     # Profile and analytics
     path('profile/', views.profile, name='profile'),
     path('complete-profile/', views.complete_profile, name='complete_profile'),
