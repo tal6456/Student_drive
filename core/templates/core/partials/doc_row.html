@@ -81,7 +81,7 @@ The template also includes a modal for viewing and adding comments related to th
                         <i class="fas fa-user-secret me-1"></i> אנונימי
                     {% elif doc.uploaded_by %}
                         {% if doc.uploaded_by.profile.profile_picture %}
-                            <img src="{{ doc.uploaded_by.profile.profile_picture.url }}" class="rounded-circle border border-secondary border-opacity-25 me-1" style="width: 14px; height: 14px; object-fit: cover;">
+                            <img src="{{ doc.uploaded_by.profile.profile_picture.url }}" alt="תמונת פרופיל של {{ doc.uploaded_by.username }}" class="rounded-circle border border-secondary border-opacity-25 me-1" style="width: 14px; height: 14px; object-fit: cover;">
                         {% else %}
                             <i class="far fa-user me-1"></i>
                         {% endif %}
@@ -97,7 +97,7 @@ The template also includes a modal for viewing and adding comments related to th
             <button type="button" class="btn btn-sm rounded-pill px-3 shadow-none d-none d-md-flex align-items-center gap-1 transition-all"
                     style="border: 1px solid var(--gd-border); background-color: var(--gd-bg); color: var(--gd-text-muted);"
                     onclick="document.body.appendChild(document.getElementById('commentModal{{ doc.id }}'));"
-                    data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" title="שאלות והערות">
+                    data-bs-toggle="modal" data-bs-target="#commentModal{{ doc.id }}" title="שאלות והערות" aria-label="פתח שאלות והערות עבור {{ doc.title }}">
                 <i class="far fa-comment-dots"></i>
                 <span class="fw-bold">{{ doc.comments.count }}</span>
             </button>
@@ -105,7 +105,7 @@ The template also includes a modal for viewing and adding comments related to th
             <button onclick="handleDocumentLike({{ doc.id }}, this)"
                     class="btn btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-1 transition-all like-btn-responsive"
                     style="border: 1px solid {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-border){% endif %}; background-color: {% if user in doc.likes.all %}rgba(26, 115, 232, 0.1){% else %}var(--gd-bg){% endif %}; color: {% if user in doc.likes.all %}var(--gd-primary){% else %}var(--gd-text-muted){% endif %};"
-                    title="אהבתי">
+                    title="אהבתי" aria-label="סמן אהבתי עבור {{ doc.title }}">
                 <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i>
                 <span class="like-count-{{ doc.id }} fw-bold">{{ doc.likes.count }}</span>
             </button>
@@ -115,14 +115,14 @@ The template also includes a modal for viewing and adding comments related to th
             </span>
         {% endif %}
 
-        <a href="{% url 'download_file' doc.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ">
+        <a href="{% url 'download_file' doc.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
 
         <div>
             <button class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle"
                     onclick="toggleCustomMenu(event, 'customMenu{{ unique_id|default:doc.id }}')"
-                    style="color: var(--gd-text-muted) !important;">
+                    style="color: var(--gd-text-muted) !important;" aria-label="פעולות נוספות עבור {{ doc.title }}">
                 <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
             </button>
 
@@ -211,7 +211,7 @@ The template also includes a modal for viewing and adding comments related to th
                     {% for comment in doc.comments.all %}
                         <div class="d-flex gap-2 mb-3">
                             {% if comment.user.profile.profile_picture %}
-                                <img src="{{ comment.user.profile.profile_picture.url }}" class="rounded-circle flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;">
+                                <img src="{{ comment.user.profile.profile_picture.url }}" alt="תמונת פרופיל של {{ comment.user.username }}" class="rounded-circle flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;">
                             {% else %}
                                 <div class="rounded-circle style="background-color: var(--gd-primary);" d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
                                     {{ comment.user.username|slice:":1"|upper }}
@@ -239,7 +239,7 @@ The template also includes a modal for viewing and adding comments related to th
                         <input type="text" name="comment_text" class="form-control border-0 px-3 shadow-none"
                                placeholder="כתוב שאלה או הערה..." required
                                style="background-color: var(--gd-bg); color: var(--gd-text);">
-                        <button class="btn btn-primary border-0 px-3" type="submit">
+                        <button class="btn btn-primary border-0 px-3" type="submit" aria-label="שליחת תגובה">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>

@@ -15,13 +15,13 @@
                             <div class="logo-circle mx-auto mb-3 shadow-sm">
                                 <i class="fas fa-graduation-cap text-white fs-2"></i>
                             </div>
-                            <h2 class="fw-bold text-dark">ברוך שובך! 👋</h2>
+                            <h1 class="fw-bold text-dark">ברוך שובך! 👋</h1>
                             <p class="text-muted">טוב לראות אותך שוב בדרייב</p>
                         </div>
 
                         <div class="mb-4">
                             <a href="{% provider_login_url 'google' %}" class="google-btn w-100 shadow-sm">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google__G__Logo.svg" alt="G" width="20">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google__G__Logo.svg" alt="לוגו Google" width="20">
                                 <span>התחברות מהירה עם Google</span>
                             </a>
                             <div class="divider my-4">
@@ -40,7 +40,7 @@
 
                             {% for field in form %}
                                 <div class="mb-3 text-end">
-                                    <label class="form-label small fw-bold text-secondary">{{ field.label }}</label>
+                                    <label class="form-label small fw-bold text-secondary" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                     {{ field }}
                                     {% if field.errors %}
                                         <div class="text-danger x-small mt-1">{{ field.errors|striptags }}</div>

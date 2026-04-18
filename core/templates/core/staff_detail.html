@@ -125,8 +125,8 @@
                 {% csrf_token %}
                 <div class="modal-body p-4">
                     <div class="mb-4 text-center">
-                        <label class="form-label d-block fw-bold mb-3">איך הייתה החוויה שלך?</label>
-                        <select name="rating" class="form-select border-0 bg-light shadow-sm py-3 rounded-3" style="background-color: var(--gd-bg) !important; color: var(--gd-text) !important;" required>
+                        <label class="form-label d-block fw-bold mb-3" for="rating_input">איך הייתה החוויה שלך?</label>
+                        <select name="rating" id="rating_input" class="form-select border-0 bg-light shadow-sm py-3 rounded-3" style="background-color: var(--gd-bg) !important; color: var(--gd-text) !important;" required>
                             <option value="5">⭐⭐⭐⭐⭐ מצוין - מרצה מעורר השראה</option>
                             <option value="4">⭐⭐⭐⭐ טוב מאוד - ברור ומקצועי</option>
                             <option value="3">⭐⭐⭐ בסדר גמור - עושה את העבודה</option>
@@ -135,8 +135,8 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">פירוט (אופציונלי):</label>
-                        <textarea name="review_text" class="form-control border-0 bg-light shadow-sm rounded-3"
+                        <label class="form-label fw-bold small" for="review_text_input">פירוט (אופציונלי):</label>
+                        <textarea name="review_text" id="review_text_input" class="form-control border-0 bg-light shadow-sm rounded-3"
                                   style="background-color: var(--gd-bg) !important; color: var(--gd-text) !important;"
                                   rows="4" placeholder="איך המבחן? הוא זמין לשאלות?..."></textarea>
                     </div>

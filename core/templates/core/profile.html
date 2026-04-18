@@ -72,7 +72,7 @@
                 <div class="card-body p-4 text-center">
                     <div class="profile-avatar-wrapper mb-3">
                         {% if user.profile.profile_picture %}
-                            <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle border border-4" style="border-color: var(--gd-border); width: 125px; height: 125px; object-fit: cover; background: var(--gd-card);">
+                            <img src="{{ user.profile.profile_picture.url }}" alt="תמונת הפרופיל של {{ user.username }}" class="rounded-circle border border-4" style="border-color: var(--gd-border); width: 125px; height: 125px; object-fit: cover; background: var(--gd-card);">
                         {% else %}
                             <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm border border-4 mx-auto" style="background: var(--gd-card); color: var(--gd-primary, #7b61ff); border-color: var(--gd-border); width: 125px; height: 125px;">
                                 <i class="fas fa-user display-4" style="color: var(--gd-primary, #7b61ff);"></i>

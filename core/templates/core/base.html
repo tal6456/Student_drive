@@ -115,6 +115,86 @@ such as the background, top bar, footer, and related layout behavior.
             min-height: 100vh;
         }
 
+        .skip-link {
+            position: absolute;
+            top: -48px;
+            right: 12px;
+            z-index: 2000;
+            background-color: var(--gd-primary);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: top 0.2s ease;
+        }
+
+        .skip-link:focus {
+            top: 12px;
+        }
+
+        :focus-visible {
+            outline: 3px solid #ffbf47 !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 4px rgba(255, 191, 71, 0.35) !important;
+        }
+
+        body.a11y-high-contrast {
+            --gd-bg: #000000;
+            --gd-card: #000000;
+            --gd-text: #ffffff;
+            --gd-text-muted: #f0f0f0;
+            --gd-border: #ffffff;
+            --gd-primary: #ffd400;
+            background-color: var(--gd-bg) !important;
+            color: var(--gd-text) !important;
+        }
+
+        body.a11y-high-contrast .btn,
+        body.a11y-high-contrast .card,
+        body.a11y-high-contrast .navbar,
+        body.a11y-high-contrast .modal-content {
+            border-color: #ffffff !important;
+        }
+
+        body.a11y-underline-links a {
+            text-decoration: underline !important;
+            text-underline-offset: 3px;
+        }
+
+        #a11y-floating-widget {
+            position: fixed;
+            left: 16px;
+            bottom: 18px;
+            z-index: 1700;
+        }
+
+        #a11y-toggle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1px solid var(--gd-border);
+            background: var(--gd-card);
+            color: var(--gd-text);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+        }
+
+        #a11y-menu {
+            margin-top: 10px;
+            width: 230px;
+            border: 1px solid var(--gd-border);
+            border-radius: 14px;
+            background: var(--gd-card);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+            padding: 12px;
+        }
+
+        .a11y-control-btn {
+            width: 100%;
+            text-align: right;
+            margin-bottom: 8px;
+        }
+
         #main-content {
             flex: 1 0 auto;
         }
@@ -409,9 +489,23 @@ such as the background, top bar, footer, and related layout behavior.
     {% endblock %}
 </head>
 <body>    
+    <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
     <div id="search-focus-backdrop"></div>
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
+
+    <div id="a11y-floating-widget" dir="rtl">
+        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" title="אפשרויות נגישות">
+            <i class="fas fa-universal-access"></i>
+        </button>
+        <div id="a11y-menu" class="d-none" role="menu" aria-label="תפריט נגישות">
+            <button type="button" class="btn btn-sm btn-outline-primary a11y-control-btn" id="a11y-font-increase">הגדל טקסט</button>
+            <button type="button" class="btn btn-sm btn-outline-primary a11y-control-btn" id="a11y-font-decrease">הקטן טקסט</button>
+            <button type="button" class="btn btn-sm btn-outline-dark a11y-control-btn" id="a11y-contrast-toggle">ניגודיות גבוהה</button>
+            <button type="button" class="btn btn-sm btn-outline-dark a11y-control-btn" id="a11y-underline-toggle">קו תחתון לקישורים</button>
+            <a href="{% url 'accessibility' %}" class="btn btn-sm btn-outline-dark a11y-control-btn mb-0">הצהרת נגישות</a>
+        </div>
+    </div>
 
 <nav class="navbar navbar-expand-lg sticky-top py-1" style="background-color: var(--gd-card); border-bottom: 1px solid var(--gd-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
     <div class="container d-flex justify-content-between align-items-center">
@@ -433,7 +527,7 @@ such as the background, top bar, footer, and related layout behavior.
     <div class="d-flex align-items-center gap-3">
 
         {% if user.is_authenticated %}
-        <a href="{% url 'notifications_list' %}" class="position-relative text-decoration-none transition hover-scale me-2" title="התראות">
+                <a href="{% url 'notifications_list' %}" class="position-relative text-decoration-none transition hover-scale me-2" title="התראות" aria-label="התראות">
             <i class="fas fa-bell fs-5" style="color: var(--gd-text);"></i>
             <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger nav-notification-badge" 
                   style="font-size: 0.55rem; padding: 2px 5px; {% if not unread_notifications_count %}display: none;{% endif %}">
@@ -443,14 +537,14 @@ such as the background, top bar, footer, and related layout behavior.
         {% endif %}
 
         <div class="nav-hover-wrapper d-flex align-items-center position-relative">
-            <button class="navbar-toggler border-0 shadow-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0 shadow-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="פתח תפריט ניווט">
                 <i class="fas fa-bars fs-3" style="color: var(--gd-text);"></i>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <form class="mb-4" action="{% url 'global_search' %}" method="GET">
                     <div class="input-group shadow-sm rounded-pill overflow-hidden border">
-                        <button class="btn" style="background-color: var(--gd-card, #fff); color: var(--gd-text-muted, #6c757d); border: none; padding-left: 1rem; padding-right: 1rem;" type="submit">
+                        <button class="btn" style="background-color: var(--gd-card, #fff); color: var(--gd-text-muted, #6c757d); border: none; padding-left: 1rem; padding-right: 1rem;" type="submit" aria-label="בצע חיפוש">
                             <i class="fas fa-search"></i>
                         </button>
                         <input id="navbarSearchInput" class="form-control border-0" style="background-color: var(--gd-card, #fff); color: var(--gd-text, #212529);" type="search" name="q"
@@ -465,7 +559,7 @@ such as the background, top bar, footer, and related layout behavior.
 
                     {% if user.is_authenticated %}
                         <li class="nav-item border-top pt-3 mt-2">
-                            <a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> פרופיל</a>
+                            <a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a>
                             <a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a>
                             <a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()">
                                 <i class="fas fa-user-plus"></i> הזמנת חברים
@@ -536,9 +630,10 @@ such as the background, top bar, footer, and related layout behavior.
                 </button>
             </div>
 
-            <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'privacy' %}" class="text-muted small text-decoration-none">פרטיות</a>
+            <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center">
                 <a href="{% url 'terms' %}" class="text-muted small text-decoration-none">תנאים</a>
+                <a href="{% url 'privacy' %}" class="text-muted small text-decoration-none">פרטיות</a>
+                <a href="{% url 'accessibility' %}" class="text-muted small text-decoration-none">נגישות</a>
             </div>
 
         </div>
@@ -1315,6 +1410,67 @@ function copyInviteLink(event) {
     // Update on page load and every 10 seconds
     document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     setInterval(updateNotificationBadge, 10000);
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const a11yToggle = document.getElementById('a11y-toggle');
+        const a11yMenu = document.getElementById('a11y-menu');
+        const fontIncreaseBtn = document.getElementById('a11y-font-increase');
+        const fontDecreaseBtn = document.getElementById('a11y-font-decrease');
+        const contrastBtn = document.getElementById('a11y-contrast-toggle');
+        const underlineBtn = document.getElementById('a11y-underline-toggle');
+
+        const applyFontScale = (scale) => {
+            const clamped = Math.max(0.9, Math.min(1.4, scale));
+            document.documentElement.style.fontSize = `${clamped * 100}%`;
+            localStorage.setItem('a11yFontScale', String(clamped));
+        };
+
+        const setToggleState = (key, className) => {
+            const enabled = localStorage.getItem(key) === 'true';
+            document.body.classList.toggle(className, enabled);
+        };
+
+        const savedScale = parseFloat(localStorage.getItem('a11yFontScale') || '1');
+        applyFontScale(savedScale);
+        setToggleState('a11yHighContrast', 'a11y-high-contrast');
+        setToggleState('a11yUnderlineLinks', 'a11y-underline-links');
+
+        if (a11yToggle && a11yMenu) {
+            a11yToggle.addEventListener('click', () => {
+                a11yMenu.classList.toggle('d-none');
+            });
+        }
+
+        if (fontIncreaseBtn) {
+            fontIncreaseBtn.addEventListener('click', () => {
+                const current = parseFloat(localStorage.getItem('a11yFontScale') || '1');
+                applyFontScale(current + 0.1);
+            });
+        }
+
+        if (fontDecreaseBtn) {
+            fontDecreaseBtn.addEventListener('click', () => {
+                const current = parseFloat(localStorage.getItem('a11yFontScale') || '1');
+                applyFontScale(current - 0.1);
+            });
+        }
+
+        if (contrastBtn) {
+            contrastBtn.addEventListener('click', () => {
+                document.body.classList.toggle('a11y-high-contrast');
+                localStorage.setItem('a11yHighContrast', document.body.classList.contains('a11y-high-contrast'));
+            });
+        }
+
+        if (underlineBtn) {
+            underlineBtn.addEventListener('click', () => {
+                document.body.classList.toggle('a11y-underline-links');
+                localStorage.setItem('a11yUnderlineLinks', document.body.classList.contains('a11y-underline-links'));
+            });
+        }
+    });
 </script>
 </body>
 </html>

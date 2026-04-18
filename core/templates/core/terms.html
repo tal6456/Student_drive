@@ -1,60 +1,62 @@
 {% extends "core/base.html" %}
 
-{% block title %}תנאי שימוש ופרטיות | הדרייב הסטודנטיאלי{% endblock %}
+{% block title %}תקנון ותנאי שימוש | הדרייב הסטודנטיאלי{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5" dir="rtl">
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body p-5">
+<div class="container d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;" dir="rtl">
+    <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 920px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; color: var(--gd-text);">
+        <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3 shadow-sm">
+                <i class="fas fa-file-contract fa-2x text-primary"></i>
+            </div>
+            <h1 class="fw-bold mb-1" style="color: var(--gd-text);">תקנון ותנאי שימוש</h1>
+            <p class="small mb-0" style="color: var(--gd-text-muted);">ברוכים הבאים ל"הדרייב הסטודנטיאלי". השימוש באתר מותנה בהסכמתך לתנאים הבאים.</p>
+        </div>
 
-                    <div class="text-center mb-5">
-                        <i class="fas fa-file-contract fa-4x text-primary mb-3"></i>
-                        <h1 class="fw-bold text-dark border-bottom pb-3">תנאי שימוש ומדיניות פרטיות</h1>
-                        <p class="lead text-muted mt-3">ברוכים הבאים ל<strong>"הדרייב הסטודנטיאלי"</strong>. השימוש באתר מותנה בהסכמתך לתנאים הבאים:</p>
+        <div class="card-body p-4 p-md-5 pt-2 text-end" style="direction: rtl; text-align: right; font-family: 'Heebo', sans-serif; line-height: 1.6;">
+            <div class="alert alert-warning border-0 shadow-sm p-4 mb-5 rounded-4 text-end">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-exclamation-triangle fa-2x ms-3 text-warning mt-1"></i>
+                    <div>
+                        <h5 class="fw-bold mb-2" style="color: var(--gd-text);"><strong>חשוב לדעת</strong></h5>
+                        <p class="mb-0" style="color: var(--gd-text);"><strong>אחריות המשתמש</strong> היא מלאה ובלעדית. צוות האתר אינו נושא באחריות לתוכן המועלה על ידי המשתמשים.</p>
                     </div>
+                </div>
+            </div>
 
-                    <div class="alert alert-warning border-0 shadow-sm p-4 mb-5 rounded-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-exclamation-triangle fa-2x ms-3 text-warning"></i>
-                            <div>
-                                <h5 class="fw-bold mb-1 text-dark">חשוב לדעת:</h5>
-                                <p class="mb-0">השימוש באתר הוא באחריות המשתמש בלבד. צוות האתר אינו נושא באחריות לתוכן המועלה על ידי המשתמשים.</p>
-                            </div>
-                        </div>
-                    </div>
+            <section class="mb-4">
+                <h2 class="h4 fw-bold mb-3 text-primary" style="text-align: right !important;"><i class="fas fa-copyright ms-2"></i> <strong>1. זכויות יוצרים וקניין רוחני</strong></h2>
+                <p class="mb-0" style="color: var(--gd-text); text-align: right !important;">המשתמש מצהיר ומתחייב כי הוא בעל הזכויות או קיבל הרשאה כדין להעלות את התכנים (סיכומים, מצגות, תרגילים וכו') לאתר. חל איסור מוחלט על העלאת חומרים המפרים זכויות יוצרים של מרצים, מוסדות אקדמיים או צדדים שלישיים.</p>
+            </section>
 
-                    <section class="mb-5">
-                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-copyright ms-2"></i> 1. זכויות יוצרים וקניין רוחני</h2>
-                        <p class="text-secondary fs-5">המשתמש מצהיר ומתחייב כי הוא בעל הזכויות או קיבל הרשאה כדין להעלות את התכנים (סיכומים, מצגות, תרגילים וכו') לאתר. חל איסור מוחלט על העלאת חומרים המפרים זכויות יוצרים של מרצים, מוסדות אקדמיים או צדדים שלישיים.</p>
-                    </section>
+            <section class="mb-4">
+                <h2 class="h4 fw-bold mb-3 text-primary" style="text-align: right !important;"><i class="fas fa-shield-alt ms-2"></i> <strong>2. הגבלת אחריות</strong> (<strong>Disclaimer</strong>)</h2>
+                <p class="mb-0" style="color: var(--gd-text); text-align: right !important;">בעל האתר משמש כפלטפורמה לאחסון תוכן בלבד (<strong>"AS-IS"</strong> / <strong>"Safe Harbor"</strong>). <strong>אחריות המשתמש</strong> הבלעדית חלה על כל נזק, תביעה או דרישה הנובעת מהעלאת תוכן מפר. בעל האתר יסיר כל תוכן מפר מייד עם קבלת הודעה מסודרת על כך.</p>
+            </section>
 
-                    <section class="mb-5">
-                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-shield-alt ms-2"></i> 2. הגבלת אחריות (Disclaimer)</h2>
-                        <p class="text-secondary fs-5">בעל האתר משמש כפלטפורמה לאחסון תוכן בלבד ("Safe Harbor"). האחריות הבלעדית לכל נזק, תביעה או דרישה הנובעת מהעלאת תוכן מפר חלה על המשתמש המעלה. בעל האתר יסיר כל תוכן מפר מייד עם קבלת הודעה מסודרת על כך.</p>
-                    </section>
+            <section class="mb-4">
+                <h2 class="h4 fw-bold mb-3 text-primary" style="text-align: right !important;"><i class="fas fa-user-secret ms-2"></i> <strong>3. פרטיות ואיסוף נתונים</strong></h2>
+                <p class="mb-0" style="color: var(--gd-text); text-align: right !important;">אנו אוספים נתונים אגרגטיביים (כגון מספר הורדות ופופולריות של קורסים) לצרכי ניתוח ושיפור המערכת. נתונים אלו עוזרים לנו להבין אילו פקולטות פעילות יותר ולשפר את חווית המשתמש. המידע אינו מועבר לצד ג'.</p>
+            </section>
 
-                    <section class="mb-5">
-                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-user-secret ms-2"></i> 3. פרטיות ואיסוף נתונים</h2>
-                        <p class="text-secondary fs-5">אנו אוספים נתונים אגרגטיביים (כגון מספר הורדות ופופולריות של קורסים) לצרכי ניתוח ושיפור המערכת. נתונים אלו עוזרים לנו להבין אילו פקולטות פעילות יותר ולשפר את חווית המשתמש. המידע אינו מועבר לצד ג'.</p>
-                    </section>
+            <section class="mb-4 pb-4 border-bottom" style="border-color: var(--gd-border) !important;">
+                <h2 class="h4 fw-bold mb-3 text-primary" style="text-align: right !important;"><i class="fas fa-balance-scale ms-2"></i> <strong>4. שימוש הוגן</strong></h2>
+                <p class="mb-0" style="color: var(--gd-text); text-align: right !important;">האתר נועד לצרכי למידה בלבד. אין לעשות שימוש מסחרי בתכני האתר ללא אישור בכתב מבעלי האתר.</p>
+            </section>
 
-                    <section class="mb-5 border-bottom pb-4">
-                        <h2 class="h4 fw-bold text-primary mb-3"><i class="fas fa-balance-scale ms-2"></i> 4. שימוש הוגן</h2>
-                        <p class="text-secondary fs-5">האתר נועד לצרכי למידה בלבד. אין לעשות שימוש מסחרי בתכני האתר ללא אישור בכתב מבעלי האתר.</p>
-                    </section>
+            <section class="mb-4">
+                <h2 class="h4 fw-bold mb-3 text-primary" style="text-align: right !important;"><i class="fas fa-coins ms-2"></i> <strong>13. מערכת התגמולים (Bounty)</strong></h2>
+                <p class="mb-0" style="color: var(--gd-text); text-align: right !important;">המערכת מפעילה מנגנון מטבעות וירטואליים. המטבעות אינם בעלי ערך כספי, אינם ניתנים להמרה למזומן, ומטרתם עידוד שיתוף ידע בקהילה בלבד.</p>
+            </section>
 
-                    <div class="text-center mt-5">
-                        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow">
-                             המשך להרשמה <i class="fas fa-arrow-left me-2"></i>
-                        </a>
-                        <br>
-                        <a href="{% url 'home' %}" class="btn btn-link text-muted mt-3 text-decoration-none small">
-                            חזרה לדף הבית
-                        </a>
-                    </div>
-
+            <div class="d-flex flex-column align-items-center gap-3 mt-4 pt-3">
+                <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm rounded-3">
+                    המשך להרשמה <i class="fas fa-arrow-left me-2"></i>
+                </a>
+                <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center mt-3 pt-3" style="border-top: 1px solid var(--gd-border); width: 100%; padding-top: 1rem;">
+                    <a href="{% url 'privacy' %}" class="small fw-bold text-decoration-none" style="color: var(--gd-primary);">מדיניות פרטיות</a>
+                    <a href="{% url 'accessibility' %}" class="small fw-bold text-decoration-none" style="color: var(--gd-primary);">הצהרת נגישות</a>
+                    <a href="{% url 'home' %}" class="small text-muted text-decoration-none">חזרה לדף הבית</a>
                 </div>
             </div>
         </div>

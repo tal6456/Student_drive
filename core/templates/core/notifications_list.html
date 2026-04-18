@@ -32,7 +32,7 @@
                                 <div class="flex-shrink-0">
                                     {% if notification.notification_type == 'friend_request' and notification.sender %}
                                         {% if notification.sender.profile.profile_picture %}
-                                            <img src="{{ notification.sender.profile.profile_picture.url }}" class="rounded-circle border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <img src="{{ notification.sender.profile.profile_picture.url }}" alt="תמונת פרופיל של {{ notification.sender.username }}" class="rounded-circle border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
                                         {% else %}
                                             <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                                 <i class="fas fa-user"></i>
