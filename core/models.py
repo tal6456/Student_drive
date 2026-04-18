@@ -98,7 +98,7 @@ class UserProfile(models.Model):
                                               verbose_name="קורסים מועדפים")
 
     # --- User preferences ---
-    THEME_CHOICES = [('light', 'יום (בהיר)'), ('dark', 'לילה (כהה)'), ('auto', 'אוטומטי')]
+    THEME_CHOICES = [('light', 'יום (בהיר)'), ('dark', 'לילה (כהה)')]
     LANGUAGE_CHOICES = [('he', 'עברית'), ('en', 'English')]
     VISIBILITY_CHOICES = [
         ('public', 'כולם יכולים לראות את הפרופיל שלי'),

@@ -134,7 +134,7 @@
 
 <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow-lg" style="background-color: var(--card-bg);">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background-color: var(--gd-card); color: var(--gd-text);">
             <div class="modal-header bg-danger text-white border-0 px-4 py-3">
                 <h5 class="modal-title fw-bold">אזהרה: מחיקת חשבון</h5>
                 <button type="button" class="btn-close btn-close-white ms-0 me-auto" data-bs-dismiss="modal"></button>
@@ -156,26 +156,49 @@
 
 <style>
     html { scroll-behavior: smooth; }
-    #profile-section,
-    #display,
-    #privacy,
-    #gdpr {
-        scroll-margin-top: 110px; /* tweak to your header height */
+    #profile-section, #display, #privacy, #gdpr {
+        scroll-margin-top: 110px;
     }
-    .gd-btn { border-color: var(--border-color); color: var(--text-main); font-weight: 500; transition: 0.2s; }
-    .btn-check:checked + .gd-btn { background-color: rgba(26, 115, 232, 0.1); border-color: #1a73e8; color: #1a73e8; }
-    .hover-nav:hover { background-color: rgba(0,0,0,0.04); transform: translateX(-5px); transition: 0.2s; }
-    .hover-scale { transition: transform 0.2s; }
-    .hover-scale:hover { transform: scale(1.05); }
-    .gdpr-card { border: 1px solid var(--border-color); }
 
-    [data-theme='dark'] .dark-input { background-color: #2c2c2c !important; color: #fff !important; border-color: #444 !important; }
-    [data-theme='dark'] .gd-btn { border-color: #555; color: #e0e0e0; }
-    [data-theme='dark'] .btn-check:checked + .gd-btn { background-color: rgba(138, 180, 248, 0.15); border-color: #8ab4f8; color: #8ab4f8; }
+    /* כפתורי בחירת ערכת נושא */
+    .gd-btn { 
+        border-color: var(--gd-border) !important; 
+        color: var(--gd-text); 
+        font-weight: 500; 
+        transition: 0.2s; 
+    }
+    
+    .btn-check:checked + .gd-btn { 
+        background-color: rgba(26, 115, 232, 0.1); 
+        border-color: var(--gd-primary) !important; 
+        color: var(--gd-primary); 
+    }
+
+    /* ניווט צדדי */
+    .hover-nav:hover { 
+        background-color: var(--gd-hover-bg); 
+        transform: translateX(-5px); 
+        transition: 0.2s; 
+    }
+    
     .nav-link.active {
         background-color: rgba(26, 115, 232, 0.1) !important;
-        color: #1a73e8 !important;
+        color: var(--gd-primary) !important;
         font-weight: 700 !important;
+    }
+
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: scale(1.05); }
+
+    /* התאמות ספציפיות למצב לילה */
+    [data-bs-theme='dark'] .btn-check:checked + .gd-btn { 
+        background-color: rgba(138, 180, 248, 0.15); 
+        border-color: var(--gd-primary) !important; 
+        color: var(--gd-primary); 
+    }
+    
+    [data-bs-theme='dark'] .nav-link.active {
+        background-color: rgba(138, 180, 248, 0.15) !important;
     }
 </style>
 <script>
