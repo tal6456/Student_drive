@@ -8,6 +8,8 @@ notifications, and permanent account deletion.
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Count
@@ -107,19 +109,41 @@ def complete_profile(request):
 @login_required
 def change_password(request):
     has_password = request.user.has_usable_password()
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
     if request.method == 'POST':
         if not has_password:
-            messages.error(request, 'משתמשי גוגל לא יכולים לשנות סיסמה דרך המערכת.')
+            error_message = 'משתמשי גוגל לא יכולים לשנות סיסמה דרך המערכת.'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': error_message}, status=400)
+            messages.error(request, error_message)
             return redirect('settings')
 
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            messages.success(request, 'הסיסמה שלך שונתה בהצלחה! 🔒')
-            return redirect('settings')
+            success_message = 'הסיסמה שלך שונתה בהצלחה! 🔒'
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': success_message,
+                    'redirect_url': reverse('profile')
+                })
+            messages.success(request, success_message)
+            return redirect('profile')
         else:
+            if is_ajax:
+                errors = {
+                    field: [err.get('message', '') for err in error_list]
+                    for field, error_list in form.errors.get_json_data().items()
+                }
+                first_error = next((msgs[0] for msgs in errors.values() if msgs), 'יש שגיאות בטופס, אנא בדוק את הפרטים.')
+                return JsonResponse({
+                    'success': False,
+                    'message': first_error,
+                    'errors': errors
+                }, status=400)
             messages.error(request, 'יש שגיאות בטופס, אנא בדוק את הפרטים.')
     else:
         form = PasswordChangeForm(request.user) if has_password else None
