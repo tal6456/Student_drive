@@ -258,11 +258,11 @@ Yovel check
                     <div class="row g-3">
                         {% for course in courses_results %}
                         <div class="col-12">
-                            <a href="{% url 'course_detail' course.id %}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none bg-white transition hover-scale shadow-sm">
+                            <a href="{% url 'course_detail' course.id %}" class="nav-item-card d-flex align-items-center p-3 border rounded-4 text-decoration-none transition hover-scale shadow-sm" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
                                 <div class="flex-grow-1 text-end">
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         <span class="badge rounded-pill bg-light text-dark border small fw-normal">{{ course.course_number }}</span>
-                                        <span class="fw-bold text-dark fs-5">{{ course.name }}</span>
+                                        <span class="fw-bold fs-5" style="color: var(--gd-text) !important;">{{ course.name }}</span>
                                     </div>
                                     <div class="text-muted small">{{ course.major.university.name }} | {{ course.major.name }}</div>
                                 </div>
@@ -315,9 +315,9 @@ Yovel check
                         <div class="row g-4">
                             {% for y_val, y_name in years.items %}
                             <div class="col-md-4 text-center">
-                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale bg-white shadow-sm browse-link" data-url="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true">
+                                <a href="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true" class="year-selector-card p-4 border rounded-4 d-block text-decoration-none transition hover-scale shadow-sm browse-link" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;" data-url="?university={{ uni_id }}&major={{ major_id }}&year={{ y_val }}&browse=true">
                                     <div class="display-6 fw-bold text-primary">{{ y_val }}</div>
-                                    <div class="fw-bold text-dark">{{ y_name }}</div>
+                                    <div class="fw-bold" style="color: var(--gd-text) !important;">{{ y_name }}</div>
                                 </a>
                             </div>
                             {% endfor %}
@@ -432,8 +432,8 @@ Yovel check
     </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background-color: var(--gd-card);">
-                <div class="card-header bg-white border-0 pt-4 pb-0">
-                    <h6 class="fw-bold mb-0"><i class="fas fa-trophy text-warning ms-2"></i>אלופי הדרייב</h6>
+                <div class="card-header border-0 pt-4 pb-0" style="background-color: transparent;">
+                    <h6 class="fw-bold mb-0" style="color: var(--gd-text) !important;"><i class="fas fa-trophy text-warning ms-2"></i>אלופי הדרייב</h6>
                     <hr class="text-muted opacity-25 mb-0">
                 </div>
                 <div class="card-body p-0">
@@ -483,21 +483,13 @@ Yovel check
                 <button
                     type="button"
                     class="btn-close position-absolute start-0 top-0 mt-2 ms-2"
-                    style="filter: var(--gd-invert-icons);"
                     data-bs-dismiss="modal"
                     aria-label="Close">
                 </button>
             </div>
             <div class="modal-body">
                 <input type="text" id="evTitle" class="form-control form-control-sm mb-2" placeholder="מה המשימה?" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);">
-
-                <style>
-                    /* Checkbox fix: apply background colors only when it is unchecked */
-                    #evAllDay:not(:checked) {
-                        background-color: var(--gd-bg);
-                        border-color: var(--gd-border);
-                    }
-                </style>
+                
 
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" value="" id="evAllDay">
