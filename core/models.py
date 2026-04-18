@@ -20,6 +20,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.urls import reverse
 import os
 import random
 import string
@@ -257,6 +260,9 @@ class Course(models.Model):
                     for sem in semesters:
                         Folder.objects.get_or_create(course=self, name=sem, parent=year_folder)
 
+    def get_absolute_url(self):
+        return reverse('course_detail', kwargs={'course_id': self.id})
+
     def __str__(self):
         return self.name
 
@@ -351,6 +357,9 @@ class Document(models.Model):
     def total_likes(self):
         return self.likes.count()
 
+    def get_absolute_url(self):
+        return reverse('document_viewer', kwargs={'document_id': self.id})
+
     def __str__(self):
         return self.title
 
@@ -411,6 +420,9 @@ class Post(models.Model):
             self.image = compress_to_webp(self.image)
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return reverse('community_feed') + f'#post-{self.id}'
+
 
 class MarketplacePost(Post):
     CATEGORY_CHOICES = [('rent', 'השכרת דירה'), ('sell', 'מכירה'), ('giveaway', 'מסירה')]
@@ -462,6 +474,9 @@ class Comment(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     text = models.TextField(verbose_name="תגובה")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_absolute_url(self):
+        return self.post.get_absolute_url() + f'#comment-{self.id}'
 
 
 # ==========================================
@@ -628,11 +643,18 @@ class Notification(models.Model):
     title = models.CharField(max_length=255, verbose_name="כותרת")
     message = models.TextField(verbose_name="הודעה")
     link = models.CharField(max_length=500, blank=True, null=True, verbose_name="קישור")
+    
+    # Generic relation for target object
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    
     is_read = models.BooleanField(default=False, verbose_name="נקרא?")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [models.Index(fields=['user', 'is_read'])]
 
     def __str__(self):
         return f"התראה ל-{self.user.username}: {self.title}"
@@ -730,6 +752,9 @@ class DocumentComment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+    def get_absolute_url(self):
+        return reverse('document_viewer', kwargs={'document_id': self.document.id}) + f'#comment-{self.id}'
 
     def __str__(self):
         # If your user model uses email instead of username, switch this to `self.user.email`

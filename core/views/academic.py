@@ -286,12 +286,12 @@ def course_detail(request, course_id, folder_id=None):
                                             description='בונוס על דירוג איש סגל ✨')
 
                         # כפיית יצירת התראה לפעמון (כדי שיקפוץ מיד העדכון למשתמש)
-                        from core.models import Notification
-                        Notification.objects.create(
-                            user=request.user,
+                        from core.utils import send_notification
+                        send_notification(
+                            recipient=request.user,
+                            notification_type='economy',
                             title='קיבלת מטבעות! 🪙',
-                            message=f'תודה על הדירוג של {folder_to_edit.staff_member.name}! קיבלת 2 מטבעות.',
-                            notification_type='economy'
+                            message=f'תודה על הדירוג של {folder_to_edit.staff_member.name}! קיבלת 2 מטבעות.'
                         )
 
                         messages.success(request, 'התיקייה והדירוג נשמרו, וזכית ב-2 מטבעות! 🪙')

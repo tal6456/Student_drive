@@ -6,13 +6,13 @@ This file handles legal pages, accessibility, donations, feedback intake,
 staff analytics, and the custom 404/500 error pages.
 """
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Sum, Q
 
 # Import only the models needed here
-from core.models import Document, Course, UserProfile, Report, Feedback
+from core.models import Document, Course, UserProfile, Report, Feedback, Notification
 from django.core.paginator import Paginator
 from core.models import Notification
 
@@ -115,3 +115,17 @@ def notifications_list(request):
         'page_obj': page_obj,
         'current_filter': current_filter
     })
+
+
+@login_required
+def resolve_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, user=request.user)
+    notification.is_read = True
+    notification.save()
+    
+    if notification.content_object and hasattr(notification.content_object, 'get_absolute_url'):
+        return redirect(notification.content_object.get_absolute_url())
+    elif notification.link:
+        return redirect(notification.link)
+    else:
+        return redirect('notifications_list')

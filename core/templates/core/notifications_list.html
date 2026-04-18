@@ -24,8 +24,8 @@
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
                 <div class="list-group list-group-flush">
                     {% for notification in page_obj %}
-                        <a href="{% if notification.link %}{{ notification.link }}{% if '?' in notification.link %}&{% else %}?{% endif %}delete={{ notification.id }}{% else %}?delete={{ notification.id }}{% endif %}" 
-                           class="list-group-item list-group-item-action p-4 border-0 border-bottom transition notif-item {% if notification.notification_type == 'economy' %}notif-economy{% endif %}"
+                        <a href="{% url 'resolve_notification' notification.id %}" 
+                           class="list-group-item list-group-item-action p-4 border-0 border-bottom transition notif-item {% if not notification.is_read %}notif-unread{% endif %} {% if notification.notification_type == 'economy' %}notif-economy{% endif %}"
                            style="background-color: transparent; border-color: var(--gd-border) !important;">
                             
                             <div class="d-flex align-items-center gap-3">

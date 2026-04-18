@@ -122,6 +122,7 @@ urlpatterns = [
     # Notifications
     # ==========================================
     path('notifications/', views.notifications_list, name='notifications_list'),
+    path('notifications/<int:pk>/resolve/', views.resolve_notification, name='resolve_notification'),
 
     # ==========================================
     # Personal AI agent

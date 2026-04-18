@@ -6,43 +6,35 @@
    1. COLOR VARIABLES (LIGHT & DARK MODES)
    ----------------------------------------- */
 
-/* LIGHT MODE (Google Drive Default) */
-:root, [data-theme='light'] {
-    --gd-bg: #ffffff;
-    --gd-card: #ffffff;
-    --gd-text: #202124;
-    --gd-text-muted: #5f6368;
-    --gd-border: #dadce0;
-    --gd-primary: #1a73e8;
-    --gd-hover: #f1f3f4;
-    --gd-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+/* LIGHT MODE */
+:root {
+    --bg-primary: #ffffff;
+    --text-primary: #202124;
+    --accent-gold: #FFD700;
+    --nav-bg: #ffffff;
+    --card-bg: #ffffff;
+    --text-muted: #5f6368;
+    --border: #dadce0;
+    --primary: #1a73e8;
+    --hover: #f1f3f4;
+    --shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
 }
 
-/* DARK MODE (OS Preference) */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --gd-bg: #202124;
-        --gd-card: #2d2e30;
-        --gd-text: #e8eaed;
-        --gd-text-muted: #9aa0a6;
-        --gd-border: #5f6368;
-        --gd-primary: #8ab4f8;
-        --gd-hover: #3c4043;
-        --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-    }
+/* DARK MODE */
+.dark-theme {
+    --bg-primary: #202124;
+    --text-primary: #e8eaed;
+    --accent-gold: #FFD700;
+    --nav-bg: #2d2e30;
+    --card-bg: #2d2e30;
+    --text-muted: #9aa0a6;
+    --border: #5f6368;
+    --primary: #8ab4f8;
+    --hover: #3c4043;
+    --shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
 }
 
-/* DARK MODE (Manual Toggle) */
-[data-theme='dark'] {
-    --gd-bg: #202124;
-    --gd-card: #2d2e30;
-    --gd-text: #e8eaed;
-    --gd-text-muted: #9aa0a6;
-    --gd-border: #5f6368;
-    --gd-primary: #8ab4f8;
-    --gd-hover: #3c4043;
-    --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-}
+/* -----------------------------------------
 
 /* -----------------------------------------
    2. GLOBAL HTML ELEMENTS & UTILITIES
@@ -52,17 +44,18 @@ body {
         linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)),
         url("../background.jpeg") center / cover no-repeat fixed !important;
 
-    color: var(--gd-text) !important;
+    color: var(--text-primary) !important;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     margin: 0;
     padding: 0;
+    transition: background 0.3s, color 0.3s;
 }
 
 /* Dark mode: add a dimming overlay above the background image */
-[data-theme='dark'] body {
+.dark-theme body {
     background:
         linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
         url("../background.jpeg") center / cover no-repeat fixed !important;
@@ -70,7 +63,7 @@ body {
 
 /* Apply the same overlay when dark mode follows the OS setting */
 @media (prefers-color-scheme: dark) {
-    body:not([data-theme='light']) {
+    body:not([data-theme='light']):not(.dark-theme) {
         background:
             linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
             url("../background.jpeg") center / cover no-repeat fixed !important;
@@ -81,52 +74,55 @@ main {
     flex: 1;
 }
 
-.text-dark, a.text-dark { color: var(--gd-text) !important; }
-.text-muted { color: var(--gd-text-muted) !important; }
-.bg-light, .bg-white { background-color: var(--gd-card) !important; }
-.border, .border-bottom { border-color: var(--gd-border) !important; }
+.text-dark, a.text-dark { color: var(--text-primary) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.bg-light, .bg-white { background-color: var(--card-bg) !important; }
+.border, .border-bottom { border-color: var(--border) !important; }
 
 /* -----------------------------------------
    3. BOOTSTRAP COMPONENTS OVERRIDES
    ----------------------------------------- */
 
 .card, .modal-content {
-    background-color: var(--gd-card) !important;
-    border: 1px solid var(--gd-border) !important;
-    box-shadow: var(--gd-shadow) !important;
-    color: var(--gd-text) !important;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow) !important;
+    color: var(--text-primary) !important;
+    transition: background 0.3s, color 0.3s, border 0.3s;
 }
 
 input, select, textarea, .form-control, .form-select {
-    background-color: var(--gd-bg) !important;
-    color: var(--gd-text) !important;
-    border: 1px solid var(--gd-border) !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    transition: background 0.3s, color 0.3s, border 0.3s;
 }
 input:focus, select:focus, textarea:focus {
-    border-color: var(--gd-primary) !important;
+    border-color: var(--primary) !important;
     box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25) !important;
 }
 
 .list-group-item {
-    background-color: var(--gd-card) !important;
-    border-color: var(--gd-border) !important;
-    color: var(--gd-text) !important;
+    background-color: var(--card-bg) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+    transition: background 0.3s, color 0.3s, border 0.3s;
 }
 a.list-group-item, .list-group-item a {
-    color: var(--gd-text) !important;
+    color: var(--text-primary) !important;
     text-decoration: none;
 }
 a.list-group-item:hover, .list-group-item a:hover {
-    color: var(--gd-primary) !important;
-    background-color: var(--gd-hover) !important;
+    color: var(--primary) !important;
+    background-color: var(--hover) !important;
 }
 input::placeholder, select::placeholder, textarea::placeholder, .form-control::placeholder {
-    color: var(--gd-text-muted) !important;
+    color: var(--text-muted) !important;
     opacity: 0.8 !important;
 }
 
 input, .form-control {
-    color: var(--gd-text) !important;
+    color: var(--text-primary) !important;
 }
 
 /* -----------------------------------------
@@ -140,12 +136,13 @@ nav.navbar, .navbar {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin: 0 !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: var(--nav-bg) !important;
     backdrop-filter: blur(20px) saturate(160%) !important;
     border-bottom: none !important;
     position: sticky;
     top: 0;
     z-index: 1000;
+    transition: background 0.3s;
 }
 
 .navbar .container, .navbar .container-fluid {
@@ -181,7 +178,7 @@ nav.navbar, .navbar {
 }
 
 .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--hover);
 }
 
 .nav-profile-img {
@@ -192,16 +189,16 @@ nav.navbar, .navbar {
 
 .btn-support {
     background: transparent;
-    border: 1px solid var(--gd-border);
-    color: var(--gd-text) !important;
+    border: 1px solid var(--border);
+    color: var(--text-primary) !important;
 }
 .btn-support:hover {
-    background: var(--gd-hover);
+    background: var(--hover);
 }
 .coin-badge {
-    background: var(--gd-hover);
-    color: var(--gd-text) !important;
-    border: 1px solid var(--gd-border);
+    background: var(--hover);
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border);
     padding: 1px 6px !important;
     font-size: 0.7rem !important;
 }
@@ -229,7 +226,7 @@ nav.navbar, .navbar {
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--gd-primary);
+    background: var(--primary);
     z-index: 9999;
     width: 0%;
     transition: width 0.4s ease;

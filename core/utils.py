@@ -28,6 +28,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.contenttypes.models import ContentType
 
 # ==============================================
 # Global settings: the shared control center for site file handling
@@ -198,6 +199,35 @@ def get_client_ip(request):
     return ip
 
 # ==============================================
+# 7. Notification utility
+# ==============================================
+
+def send_notification(recipient, notification_type, title, message, target_object=None, link=None):
+    """
+    Utility function to create and send notifications.
+    
+    Args:
+        recipient: CustomUser instance to receive the notification
+        notification_type: String type of notification
+        title: Notification title
+        message: Notification message
+        target_object: Optional model instance for generic relation
+        link: Optional fallback link if no target_object
+    """
+    from .models import Notification
+    
+    notification = Notification.objects.create(
+        user=recipient,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        link=link
+    )
+    
+    if target_object:
+        notification.content_type = ContentType.objects.get_for_model(target_object)
+        notification.object_id = target_object.id
+        notification.save()
 # 7. Coin transaction processor
 # ==============================================
 
@@ -265,10 +295,9 @@ def process_transaction(user, amount, tx_type='system', description=None, actor=
                 title = f"💸 העברת {abs(amount)} מטבעות"
 
             try:
-                Notification.objects.create(
-                    user=user,
-                    sender=actor if actor else None,
-                    notification_type='economy',  # עדכנו לסוג החדש שהגדרנו במודל
+                send_notification(
+                    recipient=user,
+                    notification_type='economy',
                     title=title,
                     message=description or '',
                     link=None,

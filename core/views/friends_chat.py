@@ -124,9 +124,9 @@ def accept_friend_request(request, request_id):
         notification_type='friend_request'
     ).delete()
 
-    Notification.objects.create(
-        user=friend_req.user_from,
-        sender=request.user,
+    from core.utils import send_notification
+    send_notification(
+        recipient=friend_req.user_from,
         notification_type='system',
         title="בקשת החברות אושרה!",
         message=f"{request.user.username} אישר את בקשת החברות שלך. עכשיו אתם חברים!",
