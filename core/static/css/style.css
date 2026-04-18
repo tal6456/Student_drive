@@ -1,457 +1,63 @@
-/* =====================================================================
-   GOOGLE DRIVE THEME ENGINE - CORE CSS
-   ===================================================================== */
+/* --- 1. שחזור משתני צבעים (Google Drive Style) --- */
 
-/* -----------------------------------------
-   1. COLOR VARIABLES (LIGHT & DARK MODES)
-   ----------------------------------------- */
-
-/* LIGHT MODE */
-:root {
-    --bg-primary: #ffffff;
-    --text-primary: #202124;
-    --accent-gold: #FFD700;
-    --nav-bg: #ffffff;
-    --card-bg: #ffffff;
-    --text-muted: #5f6368;
-    --border: #dadce0;
-    --primary: #1a73e8;
-    --hover: #f1f3f4;
-    --shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+:root, [data-bs-theme='light'] {
+    --gd-bg: #ffffff;
+    --gd-card: #ffffff;
+    --gd-text: #202124;
+    --gd-text-muted: #5f6368;
+    --gd-border: #dadce0;
+    --gd-primary: #1a73e8;
+    --gd-hover: #f1f3f4;
+    --gd-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+    --gd-coin: #FFD700;
 }
 
-/* DARK MODE */
-.dark-theme {
-    --bg-primary: #202124;
-    --text-primary: #e8eaed;
-    --accent-gold: #FFD700;
-    --nav-bg: #2d2e30;
-    --card-bg: #2d2e30;
-    --text-muted: #9aa0a6;
-    --border: #5f6368;
-    --primary: #8ab4f8;
-    --hover: #3c4043;
-    --shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+[data-bs-theme='dark'] {
+    --gd-bg: #202124;
+    --gd-card: #2d2e30;
+    --gd-text: #e8eaed;
+    --gd-text-muted: #9aa0a6;
+    --gd-border: #5f6368;
+    --gd-primary: #8ab4f8;
+    --gd-hover: #3c4043;
+    --gd-shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
 }
 
-/* -----------------------------------------
-
-/* -----------------------------------------
-   2. GLOBAL HTML ELEMENTS & UTILITIES
-   ----------------------------------------- */
+/* --- 2. שחזור אלמנטים גלובליים --- */
 body {
-    background:
-        linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)),
-        url("../background.jpeg") center / cover no-repeat fixed !important;
-
-    color: var(--text-primary) !important;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
+    background: url("../background.jpeg") center / cover no-repeat fixed !important;
+    color: var(--gd-text) !important;
+    font-family: 'Heebo', sans-serif;
     transition: background 0.3s, color 0.3s;
 }
 
-/* Dark mode: add a dimming overlay above the background image */
-.dark-theme body {
+/* שכבת עמעום לרקע במצב לילה */
+[data-bs-theme='dark'] body {
     background:
         linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
         url("../background.jpeg") center / cover no-repeat fixed !important;
 }
 
-/* Apply the same overlay when dark mode follows the OS setting */
-@media (prefers-color-scheme: dark) {
-    body:not([data-theme='light']):not(.dark-theme) {
-        background:
-            linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-            url("../background.jpeg") center / cover no-repeat fixed !important;
-    }
-}
-
-main {
-    flex: 1;
-}
-
-.text-dark, a.text-dark { color: var(--text-primary) !important; }
-.text-muted { color: var(--text-muted) !important; }
-.bg-light, .bg-white { background-color: var(--card-bg) !important; }
-.border, .border-bottom { border-color: var(--border) !important; }
-
-/* -----------------------------------------
-   3. BOOTSTRAP COMPONENTS OVERRIDES
-   ----------------------------------------- */
-
+/* --- 3. שחזור רכיבי Bootstrap --- */
 .card, .modal-content {
-    background-color: var(--card-bg) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: var(--shadow) !important;
-    color: var(--text-primary) !important;
-    transition: background 0.3s, color 0.3s, border 0.3s;
+    background-color: var(--gd-card) !important;
+    border: 1px solid var(--gd-border) !important;
+    color: var(--gd-text) !important;
+    box-shadow: var(--gd-shadow) !important;
 }
 
 input, select, textarea, .form-control, .form-select {
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border) !important;
-    transition: background 0.3s, color 0.3s, border 0.3s;
-}
-input:focus, select:focus, textarea:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25) !important;
+    background-color: var(--gd-bg) !important;
+    color: var(--gd-text) !important;
+    border: 1px solid var(--gd-border) !important;
 }
 
 .list-group-item {
-    background-color: var(--card-bg) !important;
-    border-color: var(--border) !important;
-    color: var(--text-primary) !important;
-    transition: background 0.3s, color 0.3s, border 0.3s;
-}
-a.list-group-item, .list-group-item a {
-    color: var(--text-primary) !important;
-    text-decoration: none;
-}
-a.list-group-item:hover, .list-group-item a:hover {
-    color: var(--primary) !important;
-    background-color: var(--hover) !important;
-}
-input::placeholder, select::placeholder, textarea::placeholder, .form-control::placeholder {
-    color: var(--text-muted) !important;
-    opacity: 0.8 !important;
-}
-
-input, .form-control {
-    color: var(--text-primary) !important;
-}
-
-/* -----------------------------------------
-   4. CUSTOM UI COMPONENTS
-   ----------------------------------------- */
-
-/* Aggressive navbar override to take precedence over Bootstrap defaults */
-nav.navbar, .navbar {
-    height: 32px !important;
-    min-height: 32px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    margin: 0 !important;
-    background-color: var(--nav-bg) !important;
-    backdrop-filter: blur(20px) saturate(160%) !important;
-    border-bottom: none !important;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    transition: background 0.3s;
-}
-
-.navbar .container, .navbar .container-fluid {
-    height: 32px !important;
-    min-height: 32px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-.navbar-brand {
-    height: 32px !important;
-    padding: 0 !important;
-    margin: 0 10px 0 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    font-size: 0.8rem !important;
-}
-
-.navbar-brand img {
-    height: 18px !important;
-    width: auto !important;
-}
-
-.navbar-nav .nav-link, .nav-item .nav-link {
-    height: 32px !important;
-    line-height: 32px !important;
-    padding: 0 10px !important;
-    font-size: 0.7rem !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-.nav-link:hover {
-    background-color: var(--hover);
-}
-
-.nav-profile-img {
-    width: 24px !important;
-    height: 24px !important;
-    margin: 0 !important;
-}
-
-.btn-support {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-primary) !important;
-}
-.btn-support:hover {
-    background: var(--hover);
-}
-.coin-badge {
-    background: var(--hover);
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border);
-    padding: 1px 6px !important;
-    font-size: 0.7rem !important;
-}
-
-.report-btn-hover {
-    transition: 0.2s;
-    opacity: 0.6;
-}
-.report-btn-hover:hover {
-    color: var(--gd-danger, #dc3545) !important;
-    opacity: 1;
-    transform: scale(1.1);
-}
-.hover-bg-light:hover {
-    background-color: rgba(13, 110, 253, 0.05) !important;
-}
-
-.footer {
-    background-color: transparent !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-#loading-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--primary);
-    z-index: 9999;
-    width: 0%;
-    transition: width 0.4s ease;
-}
-
-/* -----------------------------------------
-   5. DARK MODE SPECIFIC FIXES (Anti-Glare)
-   ----------------------------------------- */
-
-[data-theme='dark'] .btn-warning,
-[data-theme='dark'] .bg-warning {
-    background-color: #d4af37 !important;
-    border-color: #d4af37 !important;
-    color: var(--gd-warning-text, #121212) !important;
-}
-[data-theme='dark'] .btn-warning:hover {
-    background-color: #b8962e !important;
-    border-color: #b8962e !important;
-}
-[data-theme='dark'] .text-warning {
-    color: var(--gd-warning, #e6c243) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-    body:not([data-theme='light']) .btn-warning,
-    body:not([data-theme='light']) .bg-warning {
-        background-color: #d4af37 !important;
-        border-color: #d4af37 !important;
-        color: var(--gd-warning-text, #121212) !important;
-    }
-    body:not([data-theme='light']) .btn-warning:hover {
-        background-color: #b8962e !important;
-        border-color: #b8962e !important;
-    }
-    body:not([data-theme='light']) .text-warning {
-        color: var(--gd-warning, #e6c243) !important;
-    }
-    .navbar {
-        background-color: rgba(0, 0, 0, 0.3) !important;
-    }
-}
-
-/* -----------------------------------------
-   6. ACCESSIBILITY (A11Y) ENGINE
-   ----------------------------------------- */
-
-#a11y-toggle {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 60px;
-    height: 60px;
-    z-index: 9999;
-}
-#a11y-menu {
-    position: fixed;
-    bottom: 90px;
-    left: 20px;
-    width: 280px;
-    z-index: 9999;
-    border-radius: 12px;
-    background-color: var(--gd-card);
-    border: 1px solid var(--gd-border);
-    box-shadow: var(--gd-shadow);
-}
-
-body.a11y-large-text, body.a11y-large-text * {
-    font-size: 104% !important;
-    line-height: 1.1 !important;
-}
-body.a11y-high-contrast {
-    --gd-bg: #000000 !important;
-    --gd-card: #121212 !important;
-    --gd-text: #ee00ff !important;
-    --gd-text-muted: #ffffff !important;
-    --gd-border: #ffff00 !important;
-    --gd-primary: #00ff00 !important;
-}
-body.a11y-high-contrast * {
-    border-color: var(--gd-border, #ffff00) !important;
-}
-body.a11y-highlight-links a {
-    text-decoration: underline !important;
-    text-decoration-thickness: 3px !important;
-    background-color: var(--gd-border, #ffff00) !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-    padding: 2px 4px !important;
-    border-radius: 4px;
-}
-body.a11y-readable-font, body.a11y-readable-font * {
-    font-family: Arial, Helvetica, sans-serif !important;
-    letter-spacing: 1px !important;
-    word-spacing: 2px !important;
-}
-
-/* -----------------------------------------
-   7. COLLAPSIBLE SEMESTERS & ELEMENTS
-   ----------------------------------------- */
-
-.semester-header {
-    transition: all 0.2s ease;
-    user-select: none;
-    cursor: pointer;
-}
-.semester-header:hover {
-    background-color: var(--gd-hover) !important;
-}
-.semester-header[aria-expanded="false"] .collapse-arrow i {
-    transform: rotate(-90deg);
-}
-.transition-transform {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-block;
-}
-.collapse .list-group {
-    margin-top: 4px;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-}
-
-/* Google Translate Fixes */
-.skiptranslate, .goog-te-banner-frame, #goog-gt-tt { display: none !important; visibility: hidden !important; }
-body { top: 0px !important; position: static !important; }
-
-/* =====================================================================
-   PWA ICON PLACEHOLDERS
-   ===================================================================== */
-
-.pwa-icon-192 {
-    display: none;
-    width: 192px;
-    height: 192px;
-    background-color: var(--gd-primary);
-    border-radius: 50%;
-    color: var(--gd-card, #fff);
-    font-size: 80px;
-    font-weight: bold;
-    align-items: center;
-    justify-content: center;
-}
-.pwa-icon-192::after { content: "ה"; }
-
-.pwa-icon-512 {
-    display: none;
-    width: 512px;
-    height: 512px;
-    background-color: var(--gd-primary);
-    border-radius: 50%;
-    color: var(--gd-card, #fff);
-    font-size: 200px;
-    font-weight: bold;
-    align-items: center;
-    justify-content: center;
-}
-.pwa-icon-512::after { content: "ה"; }
-/* =========================================
-   🔥 HARD OVERRIDE - WILL 100% WORK
-   ========================================= */
-
-/* NAVBAR MENU */
-body[data-theme='dark'] .navbar-collapse {
-    background: rgba(20, 20, 20, 0.95) !important;
-    border: 1px solid #444 !important;
-}
-
-/* LINKS */
-body[data-theme='dark'] .navbar-nav .nav-link {
-    color: var(--gd-text, #e8eaed) !important;
-}
-
-/* SEARCH BOX */
-body[data-theme='dark'] .navbar-collapse .input-group {
-    background: rgba(40,40,40,0.9) !important;
-}
-
-body[data-theme='dark'] .navbar-collapse .form-control {
-    background: transparent !important;
-    color: var(--gd-card, #fff) !important;
-}
-
-/* ICON */
-body[data-theme='dark'] .navbar-toggler i {
-    color: var(--gd-card, #fff) !important;
-}
-
-body[data-theme='dark'] .navbar {
-    background-color: rgba(20,20,20,0.88) !important;
-    border-bottom: 1px solid var(--gd-border, #5f6368) !important;
-}
-
-body[data-theme='dark'] .navbar .nav-link {
-    color: var(--gd-text, #e8eaed) !important;
-}
-
-body[data-theme='dark'] .mobile-bottom-nav {
     background-color: var(--gd-card) !important;
-    border-top: 1px solid var(--gd-border, #5f6368) !important;
+    border-color: var(--gd-border) !important;
+    color: var(--gd-text) !important;
 }
 
-body[data-theme='dark'] .mobile-bottom-nav .nav-item {
-    color: var(--gd-text-muted) !important;
-}
-
-body[data-theme='dark'] .mobile-bottom-nav .nav-item.active {
-    color: var(--gd-primary) !important;
-}
-body[data-theme='dark'] .navbar-toggler-icon {
-    filter: invert(1) brightness(100%) !important;
-}
-
-/* ליתר ביטחון - אם יש מסגרת לכפתור שאתה רוצה להבהיר */
-body[data-theme='dark'] .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.5) !important;
-}
-/* זה יכריח את האייקון להפוך ללבן במצב לילה */
-body[data-theme='dark'] .navbar-toggler i {
-    color: #ffffff !important;
-}
-body[data-theme='dark'] {
-    /* זה יעדכן את המשתנה שהאייקון משתמש בו */
-    --gd-text: #ffffff !important;
-}
-
-/* ליתר ביטחון, נטרגט את האייקון ישירות עם כוח מקסימלי */
-body[data-theme='dark'] .navbar-toggler i.fas.fa-bars {
-    color: #ffffff !important;
+.list-group-item:hover {
+    background-color: var(--gd-hover) !important;
 }
