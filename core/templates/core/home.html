@@ -10,18 +10,47 @@ Yovel check
 
 {% block content %}
 
-<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
 <style>
     /* New styling rules for the header and typography */
-    .home-container { font-family: 'Assistant', sans-serif !important; }
+    .home-container { font-family: var(--sd-font-family), sans-serif !important; }
+
+    .home-container {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .home-container::before,
+    .home-container::after {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        filter: blur(70px);
+        opacity: 0.45;
+        pointer-events: none;
+    }
+
+    .home-container::before {
+        width: 280px;
+        height: 280px;
+        inset-inline-start: -80px;
+        top: 30px;
+        background: radial-gradient(circle, rgba(123, 97, 255, 0.65) 0%, rgba(123, 97, 255, 0) 70%);
+    }
+
+    .home-container::after {
+        width: 260px;
+        height: 260px;
+        inset-inline-end: -70px;
+        top: 110px;
+        background: radial-gradient(circle, rgba(0, 198, 255, 0.58) 0%, rgba(0, 198, 255, 0) 70%);
+    }
 
     .welcome-title { font-weight: 800; color: var(--gd-text); font-size: 3.2rem; letter-spacing: -1.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    [data-theme="dark"] .welcome-title { text-shadow: 0 4px 30px rgba(255,255,255,0.05); }
+    [data-bs-theme="dark"] .welcome-title { text-shadow: 0 4px 30px rgba(255,255,255,0.05); }
 
     /* Premium search box */
     .creative-search-form { display: flex; align-items: center; background: var(--gd-card); padding: 8px 8px 8px 20px; border-radius: 100px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--gd-border); }
-    [data-theme="dark"] .creative-search-form { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    [data-bs-theme="dark"] .creative-search-form { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .creative-search-form:focus-within { box-shadow: 0 15px 40px rgba(26, 115, 232, 0.15); transform: translateY(-3px); border-color: var(--gd-primary); }
     .input-wrapper { display: flex; align-items: center; flex-grow: 1; }
     .search-icon { color: var(--gd-text-muted); margin-left: 15px; font-size: 1.2rem; }
@@ -33,13 +62,13 @@ Yovel check
 
     /* Floating action cards with premium hover behavior */
     .premium-action-card { background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-    [data-theme="dark"] .premium-action-card { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    [data-bs-theme="dark"] .premium-action-card { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     .premium-action-card:hover { transform: translateY(-8px); border-color: var(--gd-primary) !important; box-shadow: 0 15px 35px rgba(26, 115, 232, 0.15) !important; }
 
     /* Floating premium course rows */
     .premium-list-row { background-color: var(--gd-card); border: 1px solid var(--gd-border); transition: all 0.3s ease; }
     .premium-list-row:hover { border-color: var(--gd-primary); background-color: var(--gd-bg); transform: translateX(-6px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-    [data-theme="dark"] .premium-list-row:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    [data-bs-theme="dark"] .premium-list-row:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
 
     /* Calendar styling adjusted for dark mode */
     .day-cell { width: 14.28%; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.85rem; position: relative; color: var(--gd-text); font-weight: 600; }
@@ -98,32 +127,32 @@ Yovel check
    /* --- Premium dark-mode refinements with a consistent blue palette --- */
 
     /* 1. Badge styling with a soft blue tone */
-    [data-theme="dark"] .welcome-badge {
+    [data-bs-theme="dark"] .welcome-badge {
         background: rgba(26, 115, 232, 0.15) !important;
         border-color: rgba(26, 115, 232, 0.3) !important;
     }
-    [data-theme="dark"] .welcome-badge span {
+    [data-bs-theme="dark"] .welcome-badge span {
         color: #bfdbfe !important; /* Very light blue-white */
     }
 
     /* 2. Heading with a premium light blue-to-cyan gradient */
-    [data-theme="dark"] .welcome-title span {
+    [data-bs-theme="dark"] .welcome-title span {
         background: linear-gradient(90deg, #60a5fa, #38bdf8) !important; /* Light blue -> light cyan */
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
     }
 
     /* 3. Description text in light gray for readability, while preserving blue accents */
-    [data-theme="dark"] .welcome-description {
+    [data-bs-theme="dark"] .welcome-description {
         color: #cbd5e1 !important; /* Light slate for readability */
     }
     /* Keep `text-primary` accents blue in dark mode as well */
-    [data-theme="dark"] .welcome-description .text-primary {
+    [data-bs-theme="dark"] .welcome-description .text-primary {
         color: #3b82f6 !important; /* Bright blue */
     }
 
     /* 4. Quote styling in light cyan */
-    [data-theme="dark"] #motivationQuote {
+    [data-bs-theme="dark"] #motivationQuote {
         color: #38bdf8 !important;
         opacity: 1 !important;
     }
@@ -166,19 +195,15 @@ Yovel check
         <div class="col-md-10 text-center">
             {% if user.is_authenticated %}
                 <div class="welcome-section mb-5 animate__animated animate__fadeIn">
-                    <div class="welcome-badge d-inline-block px-3 py-1 rounded-pill mb-3 shadow-sm"
-                         style="background: rgba(26, 115, 232, 0.1); border: 1px solid rgba(26, 115, 232, 0.2);">
-                        <span class="small fw-bold text-primary">הבית של הסטודנטים 🎓</span>
-                    </div>
+                    
 
                     <h1 class="welcome-title mb-3" style="line-height: 1.2;">
                         כל המוסדות. כל הקורסים. <br>
-                        <span class="d-inline-block" style="background: linear-gradient(90deg, #7b61ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">מקום אחד.</span>
+                        <span class="d-inline-block" style="background: linear-gradient(90deg, #7b61ff, #26616e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">מקום אחד.</span>
                     </h1>
 
                     <p class="welcome-description fs-5 mx-auto mb-4" style="color: var(--gd-text-muted); max-width: 750px; line-height: 1.7; font-weight: 400;">
-                        מהיום, אף סטודנט לא לומד לבד. ב-<span class="fw-bold text-primary">Student Drive</span> כל לייק הוא עזרה וכל סיכום הוא כוח לקהילה.
-                        הנתינה שלכם צוברת מטבעות, והיחד שלנו צובר הצלחות בדרך לתואר.
+                        אף סטודנט לא נשאר מאחור. ברוך הבא לקהילה שמשתפת את הדרך לתואר, כל תרומה לאתר תזכה אותכם במטבעות ואותנו לקהילה חזקה יותר. אז קדימה שנתחיל?
                     </p>
 
                     <div class="mt-4 pt-3 border-top mx-auto" style="max-width: 400px; border-color: var(--gd-border) !important;">
@@ -231,7 +256,7 @@ Yovel check
             <a href="{% url 'personal_drive' %}" class="text-decoration-none">
                 <div class="card h-100 rounded-4 p-4 text-center premium-action-card">
                     <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                         style="width: 65px; height: 65px; background: linear-gradient(135deg, #7b61ff, #34a853); box-shadow: 0 4px 15px rgba(123, 97, 255, 0.3);">
+                        style="width: 65px; height: 65px; background: var(--sd-brand-gradient); box-shadow: 0 4px 15px rgba(123, 97, 255, 0.3);">
                         <i class="fab fa-google-drive text-white fs-3 folder-icon"></i>
                     </div>
                     <h5 class="fw-bold mb-1" style="color: var(--gd-text);">דרייב אישי</h5>
