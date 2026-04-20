@@ -38,6 +38,20 @@ User = get_user_model()
 class SiteRegressionSuiteTests(TestCase):
     """Verify core business rules and button-driven flows remain stable."""
 
+    IMAGE_SIZE_LIMIT_BYTES = 5 * 1024 * 1024
+    QUICK_UPLOAD_LIMIT_MB = 1
+    QUICK_UPLOAD_FILE_SIZE_BYTES = 2 * 1024 * 1024
+    USER_PHONE = "0500000001"
+    UPLOADER_PHONE = "0500000002"
+    WATCHER_PHONE = "0500000003"
+
+    def _request_after_optional_301(self, method, url):
+        """Follow a single optional 301 redirect before asserting auth behavior."""
+        response = getattr(self.client, method)(url)
+        if response.status_code == 301:
+            response = getattr(self.client, method)(response["Location"])
+        return response
+
     def setUp(self):
         """Create shared users and academic objects for integration-style tests."""
         self.user = User.objects.create_user(
@@ -46,7 +60,7 @@ class SiteRegressionSuiteTests(TestCase):
             password="StrongPass123!",
             first_name="User",
         )
-        self.user.profile.phone_number = "0500000001"
+        self.user.profile.phone_number = self.USER_PHONE
         self.user.profile.save()
 
         self.uploader = User.objects.create_user(
@@ -55,7 +69,7 @@ class SiteRegressionSuiteTests(TestCase):
             password="StrongPass123!",
             first_name="Uploader",
         )
-        self.uploader.profile.phone_number = "0500000002"
+        self.uploader.profile.phone_number = self.UPLOADER_PHONE
         self.uploader.profile.save()
 
         self.watcher = User.objects.create_user(
@@ -64,7 +78,7 @@ class SiteRegressionSuiteTests(TestCase):
             password="StrongPass123!",
             first_name="Watcher",
         )
-        self.watcher.profile.phone_number = "0500000003"
+        self.watcher.profile.phone_number = self.WATCHER_PHONE
         self.watcher.profile.save()
 
         self.university = University.objects.create(name="Test University")
@@ -128,7 +142,7 @@ class SiteRegressionSuiteTests(TestCase):
         """Ensure image uploads above 5MB are blocked by file-size validation."""
         oversized_image = SimpleUploadedFile(
             "oversized.jpg",
-            b"a" * (5 * 1024 * 1024 + 1),
+            b"a" * (self.IMAGE_SIZE_LIMIT_BYTES + 1),
             content_type="image/jpeg",
         )
         with self.assertRaises(ValidationError):
@@ -148,13 +162,13 @@ class SiteRegressionSuiteTests(TestCase):
         """Ensure browse-mode home request renders the expected template."""
         response = self.client.get(reverse("home"), {"browse": "1"}, follow=True)
         self.assertEqual(response.status_code, 200)
+        if response.redirect_chain:
+            self.assertEqual(response.redirect_chain[0][1], 301)
         self.assertTemplateUsed(response, "core/home.html")
 
     def test_personal_drive_requires_login(self):
         """Ensure personal drive page is protected for unauthenticated visitors."""
-        response = self.client.get(reverse("personal_drive"))
-        if response.status_code == 301:
-            response = self.client.get(response["Location"])
+        response = self._request_after_optional_301("get", reverse("personal_drive"))
         self.assertEqual(response.status_code, 302)
         self.assertIn("/accounts/login/", response["Location"])
 
@@ -172,9 +186,10 @@ class SiteRegressionSuiteTests(TestCase):
 
     def test_toggle_favorite_button_requires_login(self):
         """Ensure favorite-toggle button endpoint is inaccessible without authentication."""
-        response = self.client.post(reverse("toggle_favorite_course", args=[self.course.id]))
-        if response.status_code == 301:
-            response = self.client.post(response["Location"])
+        response = self._request_after_optional_301(
+            "post",
+            reverse("toggle_favorite_course", args=[self.course.id]),
+        )
         self.assertEqual(response.status_code, 302)
         self.assertIn("/accounts/login/", response["Location"])
 
@@ -191,9 +206,13 @@ class SiteRegressionSuiteTests(TestCase):
     def test_quick_upload_button_skips_files_above_limit(self):
         """Ensure quick upload endpoint ignores files larger than configured max size."""
         self.client.force_login(self.user)
-        oversized = SimpleUploadedFile("huge.pdf", b"x" * (2 * 1024 * 1024), content_type="application/pdf")
+        oversized = SimpleUploadedFile(
+            "huge.pdf",
+            b"x" * self.QUICK_UPLOAD_FILE_SIZE_BYTES,
+            content_type="application/pdf",
+        )
 
-        with patch("core.utils.GLOBAL_MAX_FILE_SIZE_MB", 1):
+        with patch("core.utils.GLOBAL_MAX_FILE_SIZE_MB", self.QUICK_UPLOAD_LIMIT_MB):
             response = self.client.post(
                 reverse("course_detail", args=[self.course.id]),
                 {"action": "quick_upload", "folder_id": "root", "file": oversized},
