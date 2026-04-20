@@ -25,6 +25,8 @@ Django settings for student_drive project.
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import sys
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 import dj_database_url
 
@@ -33,6 +35,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 # --- Security: secret key ---
 SECRET_KEY = os.getenv('SECRET_KEY')
+is_running_tests = (
+    any(arg in {'test', 'pytest', 'py.test'} for arg in sys.argv)
+    or bool(os.getenv('PYTEST_CURRENT_TEST'))
+)
+if not SECRET_KEY and is_running_tests:
+    SECRET_KEY = 'test-secret-key'
+if not SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY environment variable is required.')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # Toggle this when switching between local and deployed work
 
 # --- Google AI key ---
