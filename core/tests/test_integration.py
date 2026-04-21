@@ -3,6 +3,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import reverse
 
+from allauth.socialaccount.models import SocialApp
+from django.contrib.sites.models import Site
+
 from core.models import Course, Major, Notification, University, UserCourseSelection
 from core.tests.base import BaseLiveServerTestCase
 
@@ -17,9 +20,21 @@ class LiveJourneyTests(BaseLiveServerTestCase):
         self.user = get_user_model().objects.create_user(
             username="journey_user", email="journey@example.com", password=self.password
         )
+        self.user.first_name = "Journey"
+        self.user.save()
+        self.user.profile.phone_number = "0501234567"
+        self.user.profile.save()
         self.university = University.objects.create(name="Journey University")
         self.major = Major.objects.create(name="Physics", university=self.university)
         self.course = Course.objects.create(name="Quantum Mechanics", major=self.major)
+        site = Site.objects.get_current()
+        social_app = SocialApp.objects.create(
+            provider="google",
+            name="Google",
+            client_id="test-client",
+            secret="test-secret",
+        )
+        social_app.sites.add(site)
 
     def test_user_journey_uploads_and_sees_drive(self):
         self.assertTrue(self.client.login(username="journey_user", password=self.password))

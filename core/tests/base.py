@@ -18,6 +18,8 @@ class StorageOverrideMixin:
             MEDIA_ROOT=cls._temp_media,
             STORAGES=STORAGE_SETTINGS,
             STATICFILES_STORAGE="django.core.files.storage.FileSystemStorage",
+            DEBUG=True,
+            SECURE_SSL_REDIRECT=False,
         )
         cls._override.enable()
         super().setUpClass()

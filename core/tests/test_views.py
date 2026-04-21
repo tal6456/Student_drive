@@ -6,6 +6,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import reverse
 
+from allauth.socialaccount.models import SocialApp
+from django.contrib.sites.models import Site
+
 from core.models import Course, ExternalResource, Major, University, UserCourseSelection
 from core.tests.base import BaseTestCase
 
@@ -20,9 +23,21 @@ class ViewTests(BaseTestCase):
         self.user = get_user_model().objects.create_user(
             username="viewer", email="viewer@example.com", password=self.password
         )
+        self.user.first_name = "Viewer"
+        self.user.save()
+        self.user.profile.phone_number = "0501234567"
+        self.user.profile.save()
         self.university = University.objects.create(name="Test University")
         self.major = Major.objects.create(name="Engineering", university=self.university)
         self.course = Course.objects.create(name="Thermodynamics", major=self.major)
+        site = Site.objects.get_current()
+        social_app = SocialApp.objects.create(
+            provider="google",
+            name="Google",
+            client_id="test-client",
+            secret="test-secret",
+        )
+        social_app.sites.add(site)
 
     def test_personal_drive_requires_login(self):
         response = self.client.get(reverse("personal_drive"))
