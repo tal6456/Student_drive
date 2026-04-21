@@ -10,7 +10,7 @@ from django.urls import reverse
 from allauth.socialaccount.models import SocialApp
 from django.contrib.sites.models import Site
 
-from core.models import Course, DownloadLog, Document, ExternalResource, Major, University, UserCourseSelection
+from core.models import Course, DownloadLog, Document, ExternalResource, Folder, Major, University, UserCourseSelection
 from core.tests.base import BaseTestCase
 
 
@@ -171,6 +171,10 @@ class ViewTests(BaseTestCase):
             password="StrongPass123!",
             is_staff=True,
         )
+        admin.first_name = "Admin"
+        admin.save()
+        admin.profile.phone_number = "0501234567"
+        admin.profile.save()
         self.client.force_login(admin)
         response = self.client.post(reverse("delete_course", args=[self.course.id]))
         self.assertEqual(response.status_code, 302)
