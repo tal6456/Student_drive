@@ -388,17 +388,32 @@ Yovel check
                                 </div>
                                 {% endif %}
                                 {% if user.is_authenticated and user.id %}
-                                    {% if user.is_superuser or user.is_staff or user.role == 'admin' or user.role == 'moderator' or course.creator_id == user.id %}
-                                    <div class="d-flex align-items-center gap-2 ms-2">
-                                        <a href="{% url 'edit_course' course.id %}" class="btn btn-sm btn-light rounded-pill px-3">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form method="post" action="{% url 'delete_course' course.id %}" class="m-0" onsubmit="return confirm('האם למחוק את הקורס?');">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
+                                    {% if user.is_superuser or user.is_staff or user.role == 'admin' or course.creator_id == user.id %}
+                                    <div class="custom-dropdown-container position-relative ms-2">
+                                        <button class="btn btn-link p-2 text-muted shadow-none custom-dropdown-toggle mobile-menu-btn-responsive"
+                                                type="button"
+                                                onclick="toggleCustomMenu(event); return false;"
+                                                aria-label="אפשרויות נוספות">
+                                            <i class="fas fa-ellipsis-v fs-5 pointer-events-none"></i>
+                                        </button>
+                                        <ul class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end" style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; min-width: 180px;">
+                                            <li>
+                                                <a href="{% url 'edit_course' course.id %}" class="dropdown-item d-flex align-items-center gap-2 py-2">
+                                                    <i class="fas fa-edit text-primary"></i>
+                                                    <span>עריכת פרטי קורס</span>
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+                                            <li>
+                                                <form method="post" action="{% url 'delete_course' course.id %}" class="m-0" onsubmit="return confirm('האם למחוק את הקורס?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                        <span>מחיקת קורס</span>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
                                     </div>
                                     {% endif %}
                                 {% endif %}

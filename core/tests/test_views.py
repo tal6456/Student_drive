@@ -180,6 +180,54 @@ class ViewTests(BaseTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Course.objects.filter(id=self.course.id).exists())
 
+    def test_moderator_cannot_delete_other_users_course(self):
+        owner = get_user_model().objects.create_user(
+            username="owner3",
+            email="owner3@example.com",
+            password="StrongPass123!",
+        )
+        self.course.creator = owner
+        self.course.save(update_fields=["creator"])
+
+        moderator = get_user_model().objects.create_user(
+            username="moderator_user",
+            email="moderator@example.com",
+            password="StrongPass123!",
+            role="moderator",
+        )
+        moderator.first_name = "Mod"
+        moderator.save()
+        moderator.profile.phone_number = "0501234567"
+        moderator.profile.save()
+
+        self.client.force_login(moderator)
+        response = self.client.post(reverse("delete_course", args=[self.course.id]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Course.objects.filter(id=self.course.id).exists())
+
+    def test_course_row_shows_three_dots_actions_for_creator(self):
+        self.course.creator = self.user
+        self.course.year = 1
+        self.course.semester = "A"
+        self.course.save(update_fields=["creator", "year", "semester"])
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("home"),
+            {
+                "browse": "true",
+                "university": self.university.id,
+                "major": self.major.id,
+                "year": 1,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "fa-ellipsis-v")
+        self.assertContains(response, reverse("edit_course", args=[self.course.id]))
+        self.assertContains(response, reverse("delete_course", args=[self.course.id]))
+
     def test_add_external_resource_ajax(self):
         self.client.force_login(self.user)
         response = self.client.post(

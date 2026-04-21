@@ -43,7 +43,7 @@ class CoursePermissionMixin(LoginRequiredMixin, UserPassesTestMixin):
 
     def _is_admin(self):
         user = self.request.user
-        return user.is_superuser or user.is_staff or getattr(user, 'role', '') in ['admin', 'moderator']
+        return user.is_superuser or user.is_staff or getattr(user, 'role', '') == 'admin'
 
     def handle_no_permission(self):
         messages.error(

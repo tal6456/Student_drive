@@ -22,7 +22,7 @@
 
     <div class="collapse show" id="collapse-{{ semester_id }}">
         <div class="pt-3 px-1">
-            <div class="list-group list-group-flush border rounded-3 overflow-hidden shadow-sm" style="border-color: var(--gd-border) !important;">
+            <div class="list-group list-group-flush border rounded-3 shadow-sm" style="border-color: var(--gd-border) !important; overflow: visible;">
                 {% for course in courses %}
                     {% include "core/partials/course_row.html" with course=course %}
                 {% empty %}
