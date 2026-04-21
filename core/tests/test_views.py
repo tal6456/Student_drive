@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 from unittest import mock
 
@@ -9,7 +10,7 @@ from django.urls import reverse
 from allauth.socialaccount.models import SocialApp
 from django.contrib.sites.models import Site
 
-from core.models import Course, ExternalResource, Major, University, UserCourseSelection
+from core.models import Course, DownloadLog, Document, ExternalResource, Major, University, UserCourseSelection
 from core.tests.base import BaseTestCase
 
 
@@ -130,3 +131,59 @@ class ViewTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["count"], 0)
+
+    def test_live_search_returns_matching_course(self):
+        response = self.client.get(reverse("live_search"), {"q": "Ther"})
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+        self.assertGreaterEqual(len(payload["results"]), 1)
+        first_result = payload["results"][0]
+        self.assertEqual(first_result["id"], self.course.id)
+        self.assertEqual(first_result["url"], reverse("course_detail", args=[self.course.id]))
+
+    @mock.patch("core.utils.extract_text_from_pdf", return_value="")
+    def test_delete_uploaded_file_via_ajax(self, mocked_extract):
+        self.client.force_login(self.user)
+        pdf_file = SimpleUploadedFile(
+            "delete-me.pdf",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
+            content_type="application/pdf",
+        )
+        document = Document.objects.create(
+            course=self.course,
+            title="delete-me",
+            file=pdf_file,
+            uploaded_by=self.user,
+        )
+
+        response = self.client.post(
+            reverse("delete_item_ajax"),
+            data=json.dumps({"type": "document", "id": document.id}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        self.assertFalse(Document.objects.filter(id=document.id).exists())
+
+    @mock.patch("core.utils.extract_text_from_pdf", return_value="")
+    def test_remove_from_history_deletes_only_the_current_users_log(self, mocked_extract):
+        self.client.force_login(self.user)
+        pdf_file = SimpleUploadedFile(
+            "history.pdf",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
+            content_type="application/pdf",
+        )
+        document = Document.objects.create(
+            course=self.course,
+            title="history",
+            file=pdf_file,
+            uploaded_by=self.user,
+        )
+        log = DownloadLog.objects.create(user=self.user, document=document)
+
+        response = self.client.post(reverse("remove_from_history", args=[log.id]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(DownloadLog.objects.filter(id=log.id).exists())

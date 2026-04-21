@@ -83,7 +83,7 @@ def validate_file_size(value):
         if value.size > limit:
             raise ValidationError('תמונות מוגבלות לגודל של עד 5MB.')
     else:
-        limit = 1 * 1024 * 1024  # Documents up to 1 MB
+        limit = 15 * 1024 * 1024  # Documents up to 15 MB
         if value.size > limit:
             raise ValidationError('מסמכים מוגבלים לגודל של עד 1MB.')
 

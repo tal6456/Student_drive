@@ -109,8 +109,30 @@ class ModelTests(BaseTestCase):
             file=create_pdf_file("shared.pdf"),
             uploaded_by=self.user,
         )
+        notification = Notification.objects.get(user=subscriber, title__contains=self.course.name)
         self.assertTrue(Notification.objects.filter(user=subscriber, title__contains=self.course.name).exists())
         self.assertFalse(Notification.objects.filter(user=self.user, title__contains=self.course.name).exists())
+        self.assertEqual(notification.link, reverse("course_detail", args=[self.course.id]))
+
+    @mock.patch("core.utils.extract_text_from_pdf", return_value="")
+    def test_new_document_notification_links_to_folder_page(self, mocked_extract):
+        subscriber = get_user_model().objects.create_user(
+            username="folder_subscriber", email="folder@example.com", password="StrongPass123!"
+        )
+        UserCourseSelection.objects.create(user=subscriber, course=self.course, is_starred=True)
+        folder = Folder.objects.create(course=self.course, name="הרצאות", created_by=self.user)
+
+        Document.objects.create(
+            course=self.course,
+            folder=folder,
+            title="Folder Notes",
+            file=create_pdf_file("folder.pdf"),
+            uploaded_by=self.user,
+        )
+
+        notification = Notification.objects.get(user=subscriber, title__contains=self.course.name)
+        expected_link = f"{reverse('course_detail_folder', args=[self.course.id, folder.id])}#folder_{folder.id}"
+        self.assertEqual(notification.link, expected_link)
 
     @mock.patch("core.utils.extract_text_from_pdf", return_value="")
     def test_document_without_course_skips_notifications(self, mocked_extract):
