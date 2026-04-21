@@ -20,8 +20,10 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q, Avg
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
+from django.views.generic import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 # Import only the models and forms relevant to the academic area
 from core.models import (
@@ -34,6 +36,84 @@ from core.utils import get_client_ip, process_transaction
 
 
 User = get_user_model()
+
+class CoursePermissionMixin(LoginRequiredMixin, UserPassesTestMixin):
+    model = Course
+    pk_url_kwarg = 'course_id'
+
+    def _is_admin(self):
+        user = self.request.user
+        return user.is_superuser or user.is_staff or getattr(user, 'role', '') in ['admin', 'moderator']
+
+    def handle_no_permission(self):
+        messages.error(
+            self.request,
+            getattr(self, 'permission_denied_message', 'אין לך הרשאה לבצע פעולה זו על הקורס.')
+        )
+        return redirect('course_detail', course_id=self.get_object().id)
+
+
+class CourseCreateView(LoginRequiredMixin, CreateView):
+    model = Course
+    form_class = CourseForm
+    template_name = 'core/add_course.html'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.update({
+            'major': self.request.GET.get('major_id'),
+            'year': self.request.GET.get('year'),
+        })
+        return initial
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.creator = self.request.user
+        self.object.save()
+        process_transaction(self.request.user, 5, tx_type='system', description='בונוס על הוספת קורס חדש 🪙')
+        messages.success(self.request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
+        return redirect('course_detail', course_id=self.object.id)
+
+
+class CourseUpdateView(CoursePermissionMixin, UpdateView):
+    form_class = CourseForm
+    template_name = 'core/add_course.html'
+
+    def test_func(self):
+        course = self.get_object()
+        return self._is_admin() or course.creator_id == self.request.user.id
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_edit_mode'] = True
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'הקורס עודכן בהצלחה.')
+        return super().form_valid(form)
+
+
+class CourseDeleteView(CoursePermissionMixin, DeleteView):
+    success_url = reverse_lazy('home')
+
+    def test_func(self):
+        course = self.get_object()
+        if self._is_admin():
+            return True
+        if course.creator_id != self.request.user.id:
+            self.permission_denied_message = 'רק יוצר הקורס יכול למחוק אותו.'
+            return False
+        if course.folders.exists() or course.document_set.exists():
+            self.permission_denied_message = 'לא ניתן למחוק קורס שמכיל תיקיות או קבצים.'
+            return False
+        return True
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        course_name = self.object.name
+        response = super().post(request, *args, **kwargs)
+        messages.success(request, f"הקורס '{course_name}' נמחק בהצלחה.")
+        return response
 
 # ==========================================
 # 1. Home and search views
@@ -347,19 +427,6 @@ def course_detail(request, course_id, folder_id=None):
         'target_folder_id': open_this_folder,
     }
     return render(request, 'core/course_detail.html', context)
-
-@login_required
-def add_course(request):
-    if request.method == 'POST':
-        form = CourseForm(request.POST)
-        if form.is_valid():
-            c = form.save()
-            process_transaction(request.user, 5, tx_type='system', description='בונוס על הוספת קורס חדש 🪙')
-            messages.success(request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
-            return redirect('course_detail', course_id=c.id)
-    else:
-        form = CourseForm(initial={'major': request.GET.get('major_id'), 'year': request.GET.get('year')})
-    return render(request, 'core/add_course.html', {'form': form})
 
 @login_required
 def toggle_favorite_course(request, course_id):

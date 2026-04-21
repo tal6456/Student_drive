@@ -102,11 +102,17 @@ class CourseForm(BaseStyledModelForm):
         name = self.cleaned_data.get('name')
         if name:
             name_clean = name.strip()
-            exact_match = Course.objects.filter(name=name_clean).first()
+            queryset = Course.objects.filter(name=name_clean)
+            if self.instance and self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            exact_match = queryset.first()
             if exact_match:
                 raise forms.ValidationError(f"הקורס '{exact_match.name}' כבר קיים במערכת! חזור לדף הבית וחפש אותו.")
 
-            similar_course = Course.objects.filter(name__icontains=name_clean).first()
+            similar_qs = Course.objects.filter(name__icontains=name_clean)
+            if self.instance and self.instance.pk:
+                similar_qs = similar_qs.exclude(pk=self.instance.pk)
+            similar_course = similar_qs.first()
             if similar_course:
                 raise forms.ValidationError(
                     f"רגע! כבר קיים במערכת קורס בשם '{similar_course.name}'. האם התכוונת אליו? "

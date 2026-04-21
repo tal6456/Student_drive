@@ -248,6 +248,14 @@ class Course(models.Model):
     track = models.CharField(max_length=50, default='general', verbose_name="מסלול התמחות")
     description = models.TextField(blank=True, verbose_name="תיאור הקורס")
     view_count = models.PositiveIntegerField(default=0, verbose_name="מספר צפיות")
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_courses',
+        verbose_name="יוצר הקורס"
+    )
 
     def create_default_folder_tree(self):
         root_folders_names = ['הרצאות', 'תרגולים', 'מטלות', 'מבחני עבר', 'חומרי עזר נוספים']

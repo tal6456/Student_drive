@@ -48,7 +48,9 @@ urlpatterns = [
     # Favorite toggle route used from the home page
     path('course/<int:course_id>/toggle_favorite/', views.toggle_favorite_course, name='toggle_favorite_course'),
 
-    path('add-course/', views.add_course, name='add_course'),
+    path('add-course/', views.CourseCreateView.as_view(), name='add_course'),
+    path('course/<int:course_id>/edit/', views.CourseUpdateView.as_view(), name='edit_course'),
+    path('course/<int:course_id>/delete/', views.CourseDeleteView.as_view(), name='delete_course'),
     # ==========================================
     # Personal drive routes
     # ==========================================
