@@ -90,6 +90,92 @@ class ViewTests(BaseTestCase):
         selection = UserCourseSelection.objects.get(user=self.user, course=self.course)
         self.assertTrue(selection.is_starred)
 
+    def test_course_creator_can_edit_course(self):
+        self.course.creator = self.user
+        self.course.save(update_fields=["creator"])
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("edit_course", args=[self.course.id]),
+            data={
+                "major": self.major.id,
+                "name": "Thermodynamics Advanced",
+                "course_number": "12345",
+                "year": 1,
+                "semester": "A",
+                "track": "general",
+                "description": "updated",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.course.refresh_from_db()
+        self.assertEqual(self.course.name, "Thermodynamics Advanced")
+
+    def test_non_creator_cannot_edit_course(self):
+        owner = get_user_model().objects.create_user(
+            username="owner",
+            email="owner@example.com",
+            password="StrongPass123!",
+        )
+        self.course.creator = owner
+        self.course.save(update_fields=["creator"])
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("edit_course", args=[self.course.id]),
+            data={
+                "major": self.major.id,
+                "name": "Illegal Edit",
+                "course_number": "12345",
+                "year": 1,
+                "semester": "A",
+                "track": "general",
+                "description": "",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.course.refresh_from_db()
+        self.assertNotEqual(self.course.name, "Illegal Edit")
+
+    def test_creator_cannot_delete_non_empty_course(self):
+        self.course.creator = self.user
+        self.course.save(update_fields=["creator"])
+        Folder.objects.create(course=self.course, name="הרצאות", created_by=self.user)
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse("delete_course", args=[self.course.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Course.objects.filter(id=self.course.id).exists())
+
+    def test_creator_can_delete_empty_course(self):
+        self.course.creator = self.user
+        self.course.save(update_fields=["creator"])
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse("delete_course", args=[self.course.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Course.objects.filter(id=self.course.id).exists())
+
+    def test_admin_can_delete_any_course(self):
+        owner = get_user_model().objects.create_user(
+            username="owner2",
+            email="owner2@example.com",
+            password="StrongPass123!",
+        )
+        self.course.creator = owner
+        self.course.save(update_fields=["creator"])
+        Folder.objects.create(course=self.course, name="תרגולים", created_by=owner)
+
+        admin = get_user_model().objects.create_user(
+            username="admin",
+            email="admin@example.com",
+            password="StrongPass123!",
+            is_staff=True,
+        )
+        self.client.force_login(admin)
+        response = self.client.post(reverse("delete_course", args=[self.course.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Course.objects.filter(id=self.course.id).exists())
+
     def test_add_external_resource_ajax(self):
         self.client.force_login(self.user)
         response = self.client.post(
