@@ -83,9 +83,9 @@ def validate_file_size(value):
         if value.size > limit:
             raise ValidationError('תמונות מוגבלות לגודל של עד 5MB.')
     else:
-        limit = 20 * 1024 * 1024  # Documents up to 20 MB
+        limit = 1 * 1024 * 1024  # Documents up to 1 MB
         if value.size > limit:
-            raise ValidationError('מסמכים מוגבלים לגודל של עד 20MB.')
+            raise ValidationError('מסמכים מוגבלים לגודל של עד 1MB.')
 
 
 # ==============================================
@@ -346,4 +346,3 @@ def process_transaction(user, amount, tx_type='system', description=None, actor=
                 raise
 
     return tx
-

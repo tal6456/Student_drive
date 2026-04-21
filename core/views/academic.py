@@ -312,21 +312,26 @@ def course_detail(request, course_id, folder_id=None):
             if f_id and f_id not in ['root', 'null', 'None']:
                 p_folder = get_object_or_404(Folder, id=f_id, course=course)
 
-            from core.utils import GLOBAL_MAX_FILE_SIZE_MB
+            from django.core.exceptions import ValidationError
+            from core.utils import validate_file_size, validate_file_type
             uploaded_count = 0
             for uploaded_file in uploaded_files:
-                if uploaded_file.size <= GLOBAL_MAX_FILE_SIZE_MB * 1024 * 1024:
-                    Document.objects.create(
-                        course=course,
-                        folder=p_folder,
-                        title=os.path.splitext(uploaded_file.name)[0],
-                        file=uploaded_file,
-                        uploaded_by=request.user,
-                        staff_member=p_folder.staff_member if p_folder else None,
-                        uploader_ip = get_client_ip(request)
-                    )
-                    process_transaction(request.user, 1, tx_type='system', description='בונוס על העלאת מסמך')
-                    uploaded_count += 1
+                try:
+                    validate_file_size(uploaded_file)
+                    validate_file_type(uploaded_file)
+                except ValidationError:
+                    continue
+                Document.objects.create(
+                    course=course,
+                    folder=p_folder,
+                    title=os.path.splitext(uploaded_file.name)[0],
+                    file=uploaded_file,
+                    uploaded_by=request.user,
+                    staff_member=p_folder.staff_member if p_folder else None,
+                    uploader_ip=get_client_ip(request)
+                )
+                process_transaction(request.user, 1, tx_type='system', description='בונוס על העלאת מסמך')
+                uploaded_count += 1
             return JsonResponse({'success': True, 'count': uploaded_count})
 
     all_folders = Folder.objects.filter(course=course).select_related('staff_member')
