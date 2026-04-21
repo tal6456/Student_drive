@@ -70,6 +70,8 @@ class CourseCreateView(LoginRequiredMixin, CreateView):
         self.object = form.save(commit=False)
         self.object.creator = self.request.user
         self.object.save()
+        # Keep newly created courses consistent with existing courses.
+        self.object.create_default_folder_tree()
         process_transaction(self.request.user, 5, tx_type='system', description='בונוס על הוספת קורס חדש 🪙')
         messages.success(self.request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
         return redirect('course_detail', course_id=self.object.id)

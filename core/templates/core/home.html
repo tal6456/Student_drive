@@ -311,7 +311,14 @@ Yovel check
                                 {% if selected_major %}<li class="breadcrumb-item active">{{ selected_major.name }}</li>{% endif %}
                             </ol>
                         </nav>
-                        <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">חזרה ללובי</a>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if step == 'show_courses' and user.is_authenticated %}
+                                <a href="{% url 'add_course' %}?major_id={{ major_id }}&year={{ year }}" class="btn btn-sm btn-primary rounded-pill fw-bold">
+                                    <i class="fas fa-plus ms-1"></i> הוספת קורס
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold">חזרה ללובי</a>
+                        </div>
                     </div>
 
                     {% if step == 'select_uni' or not selected_uni %}

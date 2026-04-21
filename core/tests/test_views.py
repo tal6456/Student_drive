@@ -232,6 +232,50 @@ class ViewTests(BaseTestCase):
         self.assertEqual(first_result["id"], self.course.id)
         self.assertEqual(first_result["url"], reverse("course_detail", args=[self.course.id]))
 
+    def test_home_show_courses_displays_add_course_button(self):
+        self.client.force_login(self.user)
+        self.course.year = 1
+        self.course.semester = "A"
+        self.course.save(update_fields=["year", "semester"])
+
+        response = self.client.get(
+            reverse("home"),
+            {
+                "browse": "true",
+                "university": self.university.id,
+                "major": self.major.id,
+                "year": 1,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        add_course_url = f"{reverse('add_course')}?major_id={self.major.id}&year=1"
+        self.assertContains(response, add_course_url)
+
+    def test_add_course_creates_default_folder_tree(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("add_course"),
+            data={
+                "major": self.major.id,
+                "name": "Operating Systems",
+                "course_number": "236343",
+                "year": 2,
+                "semester": "A",
+                "track": "general",
+                "description": "Core systems course",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        created_course = Course.objects.get(name="Operating Systems", major=self.major, year=2)
+        self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="הרצאות").exists())
+        self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="תרגולים").exists())
+        self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="מטלות").exists())
+        self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="מבחני עבר").exists())
+        self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="חומרי עזר נוספים").exists())
+
     @mock.patch("core.utils.extract_text_from_pdf", return_value="")
     def test_delete_uploaded_file_via_ajax(self, mocked_extract):
         self.client.force_login(self.user)

@@ -37,11 +37,11 @@ class UtilsTests(BaseTestCase):
         validate_file_size(ok_image)
 
     def test_validate_file_size_enforces_document_limit(self):
-        oversized_doc = SimpleNamespace(name="doc.pdf", size=1 * 1024 * 1024 + 1)
+        oversized_doc = SimpleNamespace(name="doc.pdf", size=15 * 1024 * 1024 + 1)
         with self.assertRaises(ValidationError):
             validate_file_size(oversized_doc)
 
-        ok_doc = SimpleNamespace(name="doc.pdf", size=1 * 1024 * 1024)
+        ok_doc = SimpleNamespace(name="doc.pdf", size=15 * 1024 * 1024)
         validate_file_size(ok_doc)
 
     def test_validate_file_type_accepts_pdf_and_resets_cursor(self):
