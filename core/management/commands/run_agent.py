@@ -120,8 +120,8 @@ class MarkdownUXFormatter:
 class Command(BaseCommand):
     help = 'Runs the Advanced AI agent to scan the project, build trees, generate flowcharts, and update PROJECT_MIRROR.md'
 
-    PRIMARY_MODEL = 'gemini-1.5-pro'
-    FALLBACK_MODEL = 'gemini-1.5-flash'
+    PRIMARY_MODEL = 'gemini-2.5-pro'
+    FALLBACK_MODEL = 'gemini-2.5-flash'
     MAX_RETRIES = 3
     INITIAL_BACKOFF_SECONDS = 2
 

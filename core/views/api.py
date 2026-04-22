@@ -43,6 +43,9 @@ def load_majors(request):
 
 @require_POST
 def add_university_ajax(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=401)
+
     try:
         data = json.loads(request.body)
         new_name = data.get('name', '').strip()
@@ -68,6 +71,9 @@ def add_university_ajax(request):
 
 @require_POST
 def add_major_ajax(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=401)
+
     try:
         data = json.loads(request.body)
         new_name = data.get('name', '').strip()

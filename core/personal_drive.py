@@ -156,6 +156,8 @@ def update_resource_tag(request):
         if res_type == 'doc':
             # Look in regular documents
             obj = get_object_or_404(Document, id=res_id)
+            if obj.uploaded_by_id != request.user.id:
+                return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
         else:
             # Look in external resources
             obj = get_object_or_404(ExternalResource, id=res_id, user=request.user)

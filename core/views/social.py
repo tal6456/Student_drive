@@ -15,6 +15,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse
 from django.db.models import Q, Prefetch
+from django.utils.html import escape
 
 # Import only the community-related models
 from core.models import Community, Post, MarketplacePost, VideoPost, Comment
@@ -162,7 +163,7 @@ def add_comment(request, post_id):
                 'success': True,
                 'comment_id': comment.id,
                 'username': comment.user.username,
-                'text': comment.text,
+                'text': escape(comment.text),
                 'created_at': 'עכשיו',
                 'user_img': user_img
             })

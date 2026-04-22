@@ -15,6 +15,7 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_POST
 
 # Import only the models required by this module
 from core.models import Friendship, Notification, Post, Document, ChatRoom, ChatMessage
@@ -83,6 +84,7 @@ def public_profile(request, username):
 
 
 @login_required
+@require_POST
 def send_friend_request(request, username):
     user_to = get_object_or_404(User, username=username)
     if request.user == user_to:

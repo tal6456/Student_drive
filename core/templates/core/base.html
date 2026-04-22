@@ -1313,26 +1313,55 @@ function submitComment(postId) {
                    </button>` 
                 : '';
 
-            const commentHTML = `
-                <div class="d-flex gap-2 mb-2 animate__animated animate__fadeIn" ${data.comment_id ? `id="comment-${data.comment_id}"` : ''}>
-                    ${avatarHTML}
-                    
-                    <div class="py-2 px-3 rounded-4 flex-grow-1 shadow-sm position-relative" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <span class="fw-bold small" style="color: var(--gd-text);">${data.username}</span>
-                            
-                            <div class="d-flex align-items-center">
-                                <span class="me-2" style="font-size: 0.7rem; color: var(--gd-text-muted);">${data.created_at}</span>
-                                ${deleteBtnHTML}
-                            </div>
-                        </div>
-                        
-                        <p class="small mb-0" style="color: var(--gd-text); white-space: pre-wrap; line-height: 1.5;">${data.text}</p>
-                    </div>
-                </div>
-            `;
-            
-            list.insertAdjacentHTML('beforeend', commentHTML);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-flex gap-2 mb-2 animate__animated animate__fadeIn';
+            if (data.comment_id) {
+                wrapper.id = `comment-${data.comment_id}`;
+            }
+
+            wrapper.insertAdjacentHTML('beforeend', avatarHTML);
+
+            const content = document.createElement('div');
+            content.className = 'py-2 px-3 rounded-4 flex-grow-1 shadow-sm position-relative';
+            content.style.backgroundColor = 'var(--gd-bg)';
+            content.style.border = '1px solid var(--gd-border)';
+
+            const header = document.createElement('div');
+            header.className = 'd-flex justify-content-between align-items-start mb-1';
+
+            const usernameSpan = document.createElement('span');
+            usernameSpan.className = 'fw-bold small';
+            usernameSpan.style.color = 'var(--gd-text)';
+            usernameSpan.textContent = data.username;
+
+            const meta = document.createElement('div');
+            meta.className = 'd-flex align-items-center';
+
+            const createdSpan = document.createElement('span');
+            createdSpan.className = 'me-2';
+            createdSpan.style.fontSize = '0.7rem';
+            createdSpan.style.color = 'var(--gd-text-muted)';
+            createdSpan.textContent = data.created_at;
+
+            meta.appendChild(createdSpan);
+            if (data.comment_id) {
+                meta.insertAdjacentHTML('beforeend', deleteBtnHTML);
+            }
+
+            const textP = document.createElement('p');
+            textP.className = 'small mb-0';
+            textP.style.color = 'var(--gd-text)';
+            textP.style.whiteSpace = 'pre-wrap';
+            textP.style.lineHeight = '1.5';
+            textP.textContent = data.text;
+
+            header.appendChild(usernameSpan);
+            header.appendChild(meta);
+            content.appendChild(header);
+            content.appendChild(textP);
+            wrapper.appendChild(content);
+
+            list.appendChild(wrapper);
             input.value = '';
             
             // עדכון מונה התגובות

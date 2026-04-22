@@ -29,6 +29,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 # Import the models and helpers needed by this module
 from core.models import Course, Document, DownloadLog, Major, Report
@@ -189,9 +190,27 @@ def _read_document_text(document):
             pass
 
 
+def _can_user_access_document(user, document):
+    if document.uploaded_by_id == user.id:
+        return True
+
+    # Course-linked files are treated as shared content.
+    if document.course_id:
+        return True
+
+    # Community-linked files may exist in future schema/extensions.
+    if getattr(document, 'community_id', None):
+        return True
+
+    return False
+
+
 @login_required
 def download_file(request, document_id):
     d = get_object_or_404(Document, id=document_id)
+    if not _can_user_access_document(request.user, d):
+        raise Http404("המסמך המבוקש אינו זמין.")
+
     d.download_count += 1
     d.save()
 
@@ -224,6 +243,8 @@ def download_file(request, document_id):
 @login_required
 def document_viewer(request, document_id):
     document = get_object_or_404(Document, id=document_id)
+    if not _can_user_access_document(request.user, document):
+        raise Http404("המסמך המבוקש אינו זמין.")
 
     ext = document.file_extension.replace('.', '').lower()
     file_type = 'other'
@@ -260,12 +281,12 @@ def summarize_document_ai(request, document_id):
 
 
 @login_required
+@require_POST
 def report_document(request, document_id):
-    if request.method == 'POST':
-        d = get_object_or_404(Document, id=document_id)
-        Report.objects.create(document=d, user=request.user, reason=request.POST.get('reason'),
-                              description=request.POST.get('description', ''))
-        messages.success(request, 'הדיווח התקבל וייבדק בהקדם על ידי ההנהלה.')
+    d = get_object_or_404(Document, id=document_id)
+    Report.objects.create(document=d, user=request.user, reason=request.POST.get('reason'),
+                          description=request.POST.get('description', ''))
+    messages.success(request, 'הדיווח התקבל וייבדק בהקדם על ידי ההנהלה.')
     return redirect('course_detail', course_id=d.course.id)
 
 
