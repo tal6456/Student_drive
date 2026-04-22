@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+
+{% block title %}סיום העלאה משיתוף{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0" style="background: var(--gd-card); color: var(--gd-text);">
+                <div class="card-body p-4">
+                    <h1 class="h4 mb-3">סיום העלאה משיתוף</h1>
+                    <p class="text-secondary mb-4">הקבצים התקבלו. בחר פקולטה וקורס כדי לשייך אותם נכון במערכת.</p>
+
+                    <div class="card mb-4" style="background: var(--gd-bg); border-color: var(--gd-border);">
+                        <div class="card-body">
+                            <h2 class="h6 mb-3">קבצים שהתקבלו</h2>
+                            <ul class="list-group list-group-flush">
+                                {% for file in staged_files %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center" style="background: transparent; color: var(--gd-text); border-color: var(--gd-border);">
+                                    <span>{{ file.original_name }}</span>
+                                    <small class="text-secondary">{{ file.size|filesizeformat }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'share_target_finish' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="majorSelect" class="form-label fw-semibold">פקולטה</label>
+                            <select id="majorSelect" class="form-select" name="major_id" required>
+                                <option value="">בחר פקולטה</option>
+                                {% for major in majors %}
+                                <option value="{{ major.id }}">{{ major.university.name }} - {{ major.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="courseSelect" class="form-label fw-semibold">קורס</label>
+                            <select id="courseSelect" class="form-select" name="course_id" required>
+                                <option value="">בחר קורס</option>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}" data-major-id="{% if course.major %}{{ course.major.id }}{% endif %}">
+                                    {{ course.name }}{% if course.major %} ({{ course.major.name }}){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">העלאה סופית</button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">ביטול</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const majorSelect = document.getElementById('majorSelect');
+        const courseSelect = document.getElementById('courseSelect');
+        if (!majorSelect || !courseSelect) return;
+
+        const allCourseOptions = Array.from(courseSelect.querySelectorAll('option'));
+
+        majorSelect.addEventListener('change', function () {
+            const selectedMajorId = majorSelect.value;
+            allCourseOptions.forEach(option => {
+                if (!option.value) {
+                    option.hidden = false;
+                    return;
+                }
+                const optionMajor = option.getAttribute('data-major-id');
+                option.hidden = optionMajor !== selectedMajorId;
+            });
+            courseSelect.value = '';
+        });
+    });
+</script>
+{% endblock %}

@@ -246,14 +246,19 @@ such as the background, top bar, footer, and related layout behavior.
             text-underline-offset: 3px;
         }
 
+        /* === Accessibility Widget (Refactored for Good Citizenship) === */
         #a11y-floating-widget {
             position: fixed;
-            left: 16px;
-            bottom: 18px;
+            inset-block-end: 1.125rem;
+            inset-inline-end: 1rem;
             z-index: 1700;
+            /* Inherits direction: rtl from <body> */
         }
 
         #a11y-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 52px;
             height: 52px;
             border-radius: 50%;
@@ -261,63 +266,81 @@ such as the background, top bar, footer, and related layout behavior.
             background: var(--gd-card);
             color: var(--gd-text);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        #a11y-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
         }
 
         #a11y-menu {
-            margin-top: 12px;
+            position: absolute;
+            inset-block-start: 0;
+            inset-inline-end: 0;
+            margin-block-start: calc(52px + 12px);
             width: 280px;
             border: 1px solid var(--gd-border);
-            border-radius: 18px;
+            border-radius: 16px;
             background: var(--gd-card);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-            padding: 20px;
+            padding: 1.25rem;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            direction: rtl !important;
-            text-align: right !important;
+            gap: 0.75rem;
+            /* Inherits direction: rtl from <body> */
         }
 
         .a11y-control-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
             width: 100%;
-            margin-bottom: 0;
-            padding: 14px 16px !important;
-            border: none !important;
-            background: var(--gd-bg) !important;
-            color: var(--gd-text) !important;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--gd-border);
+            background: var(--gd-bg);
+            color: var(--gd-text);
             border-radius: 12px;
             font-family: 'Heebo', sans-serif;
             font-size: 0.95rem;
             font-weight: 600;
             line-height: 1.6;
+            cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: row-reverse;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            border: 1px solid var(--gd-border) !important;
-            direction: rtl !important;
-            text-align: right !important;
+            text-decoration: none;
+            /* Inherits direction: rtl from <body> */
         }
 
         .a11y-control-btn:hover {
-            background: var(--gd-hover, rgba(26, 115, 232, 0.1)) !important;
+            background: var(--gd-hover-bg);
             box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
             transform: translateY(-2px);
         }
 
+        .a11y-control-btn:focus-visible {
+            outline: 2px solid var(--gd-primary);
+            outline-offset: 2px;
+        }
+
+        .a11y-control-btn span {
+            flex: 1;
+            /* Naturally right-aligned in RTL via inherited direction */
+        }
+
         .a11y-control-btn i {
             font-size: 1.1rem;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
             width: 32px;
             height: 32px;
+            min-width: 32px;
             border-radius: 10px;
             background: linear-gradient(135deg, #5B8DEF 0%, #1a73e8 100%);
             color: white;
-            flex-shrink: 0;
         }
 
         #main-content {
@@ -820,33 +843,34 @@ such as the background, top bar, footer, and related layout behavior.
     <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
     <div id="loading-bar"></div>
 
-    <div id="a11y-floating-widget" dir="rtl">
-        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" title="אפשרויות נגישות">
-            <i class="fas fa-universal-access"></i>
+    <!-- Accessibility Widget: Clean, Semantic, Inherits RTL from Document -->
+    <nav id="a11y-floating-widget" aria-label="תפריט נגישות"><!-- Inherits dir="rtl" from <body> -->
+        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" aria-expanded="false" aria-controls="a11y-menu" title="אפשרויות נגישות">
+            <i class="fas fa-universal-access" aria-hidden="true"></i>
         </button>
-        <div id="a11y-menu" class="d-none" role="menu" aria-label="תפריט נגישות">
-            <button type="button" class="a11y-control-btn" id="a11y-font-increase">
-                <i class="fas fa-plus"></i>
+        <div id="a11y-menu" class="d-none" role="menu" aria-label="אפשרויות נגישות">
+            <button type="button" class="a11y-control-btn" id="a11y-font-increase" role="menuitem">
+                <i class="fas fa-plus" aria-hidden="true"></i>
                 <span>הגדל טקסט</span>
             </button>
-            <button type="button" class="a11y-control-btn" id="a11y-font-decrease">
-                <i class="fas fa-minus"></i>
+            <button type="button" class="a11y-control-btn" id="a11y-font-decrease" role="menuitem">
+                <i class="fas fa-minus" aria-hidden="true"></i>
                 <span>הקטן טקסט</span>
             </button>
-            <button type="button" class="a11y-control-btn" id="a11y-contrast-toggle">
-                <i class="fas fa-adjust"></i>
+            <button type="button" class="a11y-control-btn" id="a11y-contrast-toggle" role="menuitem">
+                <i class="fas fa-adjust" aria-hidden="true"></i>
                 <span>ניגודיות גבוהה</span>
             </button>
-            <button type="button" class="a11y-control-btn" id="a11y-underline-toggle">
-                <i class="fas fa-underline"></i>
+            <button type="button" class="a11y-control-btn" id="a11y-underline-toggle" role="menuitem">
+                <i class="fas fa-underline" aria-hidden="true"></i>
                 <span>קו תחתון לקישורים</span>
             </button>
-            <a href="{% url 'accessibility' %}" class="a11y-control-btn">
-                <i class="fas fa-file-contract"></i>
+            <a href="{% url 'accessibility' %}" class="a11y-control-btn" role="menuitem">
+                <i class="fas fa-file-contract" aria-hidden="true"></i>
                 <span>הצהרת נגישות</span>
             </a>
         </div>
-    </div>
+    </nav>
 
 <nav class="navbar navbar-expand-lg py-1 sd-navbar">
     <div class="container d-flex justify-content-between align-items-center">
@@ -910,18 +934,21 @@ such as the background, top bar, footer, and related layout behavior.
                     <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
 
                     {% if user.is_authenticated %}
-                        <li class="nav-item border-top pt-3 mt-2">
-                            <a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a>
-                            <a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a>
+                        <li class="nav-item border-top pt-3 mt-2"><a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a></li>
+                        <li class="nav-item"><a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a></li>
+                        <li class="nav-item">
                             <a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()">
                                 <i class="fas fa-user-plus"></i> הזמנת חברים
                             </a>
+                        </li>
+                        <li class="nav-item" id="mobile-install-nav-item"><button type="button" class="nav-link py-2 border-0 bg-transparent text-start w-100" onclick="installPWA()"><i class="fas fa-mobile-alt"></i> התקנת אפליקציה</button></li>
 
-                            {% if user.is_staff %}
-                            <a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a>
-                            {% endif %}
+                        {% if user.is_staff %}
+                        <li class="nav-item"><a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a></li>
+                        {% endif %}
 
-                            <form method="post" action="{% url 'account_logout' %}" class="mt-1">
+                        <li class="nav-item mt-1">
+                            <form method="post" action="{% url 'account_logout' %}">
                                 {% csrf_token %}
                                 <button type="submit" class="nav-link text-danger border-0 bg-transparent p-0 w-100 text-end py-2">
                                     <i class="fas fa-sign-out-alt"></i> התנתקות
@@ -1672,6 +1699,13 @@ function copyInviteLink(event) {
 
         const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        const installBtnItem = document.getElementById('mobile-install-nav-item');
+        if (installBtnItem && isStandalone) {
+            // Use Bootstrap's native hiding class and use !important to guarantee it hides
+            installBtnItem.classList.add('d-none');
+            installBtnItem.style.setProperty('display', 'none', 'important');
+        }
         
         if (isApple && !isStandalone) {
             checkAndShowBanner(true);
@@ -1711,7 +1745,19 @@ function copyInviteLink(event) {
     }
 
     function installPWA() {
+        console.log('installPWA triggered');
         const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        console.log('isApple:', isApple);
+        console.log('deferredPrompt:', deferredPrompt);
+        console.log('Swal loaded:', !!window.Swal);
+
+        const showInstallAlert = (options, fallbackText) => {
+            if (window.Swal && typeof Swal.fire === 'function') {
+                Swal.fire(options);
+            } else {
+                alert(fallbackText);
+            }
+        };
 
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -1720,7 +1766,7 @@ function copyInviteLink(event) {
                 deferredPrompt = null; 
             });
         } else if (isApple) {
-            Swal.fire({
+            showInstallAlert({
                 title: 'התקנה באפל 🍏',
                 html: '<div style="text-align: right; font-size: 0.95rem;">' +
                       'כדי להתקין את האפליקציה במכשיר שלך:<br><br>' +
@@ -1729,7 +1775,19 @@ function copyInviteLink(event) {
                 icon: 'info',
                 confirmButtonText: 'הבנתי',
                 confirmButtonColor: '#1a73e8'
-            });
+            }, 'כדי להתקין באייפון: פתח תפריט שיתוף ובחר "הוסף למסך הבית".');
+        } else {
+            console.warn('Install prompt unavailable: deferredPrompt is null on non-Apple platform.');
+            showInstallAlert({
+                title: 'התקנה לא זמינה כרגע',
+                html: '<div style="text-align: right; font-size: 0.95rem;">' +
+                      'נראה שהדפדפן עדיין לא סיפק בקשת התקנה אוטומטית.<br><br>' +
+                      'נסה לרענן את העמוד, להשתמש ב-HTTPS, ואז לפתוח את תפריט הדפדפן ולבחור <b>Install app</b> / <b>Add to Home Screen</b>.' +
+                      '</div>',
+                icon: 'info',
+                confirmButtonText: 'הבנתי',
+                confirmButtonColor: '#1a73e8'
+            }, 'התקנה לא זמינה כרגע. נסה לרענן את הדף או להשתמש באפשרות Install app בתפריט הדפדפן.');
         }
     }
 

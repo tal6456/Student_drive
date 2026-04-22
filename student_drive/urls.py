@@ -79,6 +79,8 @@ urlpatterns = [
     path('document/<int:document_id>/view/', views.document_viewer, name='document_viewer'),
     path('document/<int:document_id>/like/', views.like_document, name='like_document'),
     path('report/<int:document_id>/', views.report_document, name='report_document'),
+    path('upload-shared-file/', views.ShareTargetView.as_view(), name='share_target_upload'),
+    path('upload-shared-file/finish/', views.ShareTargetFinishView.as_view(), name='share_target_finish'),
 
     # Delete objects created by the current user
     path('ajax/delete-item/', views.delete_item_ajax, name='delete_item_ajax'),

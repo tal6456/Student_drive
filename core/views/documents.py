@@ -13,17 +13,161 @@ It covers:
 """
 
 import mimetypes
+import os
+import uuid
 from urllib.parse import quote
+from urllib.parse import urlencode
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, Http404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.files.base import File
+from django.core.files.storage import default_storage
+from django.core.exceptions import ValidationError
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
 # Import the models and helpers needed by this module
-from core.models import Document, DownloadLog, Report
+from core.models import Course, Document, DownloadLog, Major, Report
 from core.ai_utils import generate_smart_summary
-from core.utils import get_client_ip
+from core.utils import get_client_ip, validate_file_size, validate_file_type
 from core.utils import process_transaction
+
+
+def _ensure_session_key(request):
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
+
+
+def _get_staged_shared_files(request):
+    return request.session.get('shared_upload_staged_files', [])
+
+
+def _clear_staged_shared_files(request):
+    staged_files = _get_staged_shared_files(request)
+    for file_info in staged_files:
+        file_path = file_info.get('path')
+        if file_path and default_storage.exists(file_path):
+            default_storage.delete(file_path)
+    request.session.pop('shared_upload_staged_files', None)
+    request.session.modified = True
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ShareTargetView(View):
+    """Handle incoming OS-level shared files and stage them for final upload."""
+
+    def post(self, request, *args, **kwargs):
+        files = request.FILES.getlist('shared_files')
+        if not files:
+            messages.error(request, 'לא התקבלו קבצים לשיתוף.')
+            return redirect('home')
+
+        session_key = _ensure_session_key(request)
+        _clear_staged_shared_files(request)
+        staged_files = []
+
+        for shared_file in files:
+            safe_name = os.path.basename(shared_file.name or 'shared-file')
+            temp_name = f"shared_uploads/{session_key}/{uuid.uuid4().hex}_{safe_name}"
+            stored_path = default_storage.save(temp_name, shared_file)
+            staged_files.append({
+                'path': stored_path,
+                'original_name': safe_name,
+                'size': getattr(shared_file, 'size', 0),
+                'content_type': getattr(shared_file, 'content_type', '')
+            })
+
+        request.session['shared_upload_staged_files'] = staged_files
+        request.session.modified = True
+
+        if not request.user.is_authenticated:
+            login_path = reverse('account_login')
+            finish_path = reverse('share_target_finish')
+            query = urlencode({'next': finish_path})
+            return redirect(f"{login_path}?{query}")
+
+        return redirect('share_target_finish')
+
+
+class ShareTargetFinishView(LoginRequiredMixin, View):
+    template_name = 'core/share_target_finish.html'
+    login_url = '/accounts/login/'
+
+    def get(self, request, *args, **kwargs):
+        staged_files = _get_staged_shared_files(request)
+        if not staged_files:
+            messages.info(request, 'אין כרגע קבצים משותפים שממתינים להעלאה.')
+            return redirect('home')
+
+        majors = Major.objects.select_related('university').order_by('university__name', 'name')
+        courses = Course.objects.select_related('major__university').order_by('name')
+        context = {
+            'staged_files': staged_files,
+            'majors': majors,
+            'courses': courses,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        staged_files = _get_staged_shared_files(request)
+        if not staged_files:
+            messages.error(request, 'לא נמצאו קבצים להעלאה. נסה לשתף שוב מהאפליקציה.')
+            return redirect('home')
+
+        major_id = request.POST.get('major_id')
+        course_id = request.POST.get('course_id')
+        if not major_id or not course_id:
+            messages.error(request, 'יש לבחור קורס לפני סיום ההעלאה.')
+            return redirect('share_target_finish')
+
+        course = get_object_or_404(Course, id=course_id)
+        if not course.major_id or str(course.major_id) != str(major_id):
+            messages.error(request, 'הקורס שנבחר לא שייך לפקולטה שנבחרה.')
+            return redirect('share_target_finish')
+
+        uploaded_count = 0
+
+        for file_info in staged_files:
+            file_path = file_info.get('path')
+            original_name = file_info.get('original_name') or 'shared-file'
+
+            if not file_path or not default_storage.exists(file_path):
+                continue
+
+            with default_storage.open(file_path, 'rb') as staged_file:
+                django_file = File(staged_file, name=original_name)
+                try:
+                    validate_file_size(django_file)
+                    validate_file_type(django_file)
+                except ValidationError:
+                    continue
+
+                Document.objects.create(
+                    course=course,
+                    title=os.path.splitext(original_name)[0],
+                    file=django_file,
+                    uploaded_by=request.user,
+                    uploader_ip=get_client_ip(request)
+                )
+                process_transaction(request.user, 1, tx_type='system', description='בונוס על העלאת מסמך')
+                uploaded_count += 1
+
+            default_storage.delete(file_path)
+
+        request.session.pop('shared_upload_staged_files', None)
+        request.session.modified = True
+
+        if uploaded_count:
+            messages.success(request, f'{uploaded_count} קבצים הועלו בהצלחה לקורס {course.name}.')
+            return redirect('course_detail', course_id=course.id)
+
+        messages.error(request, 'הקבצים לא הועלו. ודא שסוג וגודל הקבצים נתמכים.')
+        return redirect('share_target_finish')
 
 
 @login_required

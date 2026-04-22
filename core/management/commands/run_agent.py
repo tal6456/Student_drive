@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -119,6 +120,104 @@ class MarkdownUXFormatter:
 class Command(BaseCommand):
     help = 'Runs the Advanced AI agent to scan the project, build trees, generate flowcharts, and update PROJECT_MIRROR.md'
 
+    PRIMARY_MODEL = 'gemini-1.5-pro'
+    FALLBACK_MODEL = 'gemini-1.5-flash'
+    MAX_RETRIES = 3
+    INITIAL_BACKOFF_SECONDS = 2
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--debug-api',
+            action='store_true',
+            help='Run a focused API connectivity/model-init debug check for this agent only.'
+        )
+
+    @staticmethod
+    def _is_503_high_demand_error(error_text):
+        text = (error_text or '').lower()
+        return (
+            '503' in text
+            or 'unavailable' in text
+            or 'high demand' in text
+            or 'currently experiencing high demand' in text
+        )
+
+    @staticmethod
+    def _is_model_not_available_error(error_text):
+        text = (error_text or '').lower()
+        return (
+            '404' in text
+            or 'not_found' in text
+            or 'is not found' in text
+            or 'is not supported for generatecontent' in text
+        )
+
+    def _generate_with_retry_and_fallback(self, client, prompt):
+        models_to_try = [self.PRIMARY_MODEL, self.FALLBACK_MODEL]
+        last_error = None
+
+        for model_name in models_to_try:
+            backoff = self.INITIAL_BACKOFF_SECONDS
+
+            for attempt in range(1, self.MAX_RETRIES + 1):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                    )
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f"✅ Model call succeeded with '{model_name}' (attempt {attempt})."
+                        )
+                    )
+                    return response
+
+                except Exception as exc:
+                    last_error = exc
+                    err_text = str(exc)
+                    is_503 = self._is_503_high_demand_error(err_text)
+                    is_model_not_available = self._is_model_not_available_error(err_text)
+
+                    if is_503 and attempt < self.MAX_RETRIES:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"⚠️ {model_name} attempt {attempt} failed with 503/high demand. "
+                                f"Retrying in {backoff}s..."
+                            )
+                        )
+                        time.sleep(backoff)
+                        backoff *= 2
+                        continue
+
+                    if is_503 or is_model_not_available:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"⚠️ {model_name} is unavailable after {attempt} attempts. "
+                                "Trying fallback model..."
+                            )
+                        )
+                        break
+
+                    raise
+
+        raise RuntimeError(
+            f"Both primary ('{self.PRIMARY_MODEL}') and fallback ('{self.FALLBACK_MODEL}') "
+            f"models failed. Last error: {last_error}"
+        )
+
+    def _run_focused_api_debug_test(self, client):
+        self.stdout.write(self.style.NOTICE("🧪 Running focused API debug test for run_agent only..."))
+        debug_prompt = "Reply with exactly: OK"
+
+        try:
+            debug_response = self._generate_with_retry_and_fallback(client, debug_prompt)
+            debug_text = (getattr(debug_response, 'text', '') or '').strip()
+            self.stdout.write(self.style.SUCCESS(f"🧪 Debug response text: {debug_text}"))
+            return True
+        except Exception as exc:
+            self.stdout.write(self.style.ERROR(f"❌ Debug API test failed: {exc}"))
+            return False
+
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.NOTICE("🤖 Advanced Agent starting deep project scan..."))
 
@@ -139,11 +238,15 @@ class Command(BaseCommand):
             return
         self.stdout.write(self.style.WARNING(f"🔑 DEBUG: Using API Key starting with: {str(api_key)[:15]}..."))
 
-        self.stdout.write(
-            self.style.NOTICE("🧠 Generating Flowcharts, Trees and Deep Analysis... (This might take a minute)"))
-
         try:
             client = genai.Client(api_key=api_key)
+
+            if kwargs.get('debug_api'):
+                self._run_focused_api_debug_test(client)
+                return
+
+            self.stdout.write(
+                self.style.NOTICE("🧠 Generating Flowcharts, Trees and Deep Analysis... (This might take a minute)"))
 
             prompt = f"""
             You are an Elite Django Software Architect. Analyze the following project files and the project directory structure.
@@ -172,43 +275,8 @@ class Command(BaseCommand):
             Here are the project files and structure:
             {context_for_ai}
             """
-            prompt = f"""
-            You are an Elite Django Software Architect. Analyze the following project files and the project directory structure.
 
-            Write your response entirely in HEBREW. Format in pure Markdown. Do not wrap the whole response in markdown blocks.
-
-            Your response MUST include exactly these 5 sections in this order:
-
-            ## 🌳 1. עץ הפרויקט ותפקידי הקבצים
-            First, display the project tree layout using a markdown code block. 
-            Then, provide a categorized list of the files (e.g., Configuration, Models, Views). For each file, explain its specific role and how it connects to other files.
-
-            ## 📈 2. תמונת מצב וציון בריאות
-            Give a brief overview of the project state. Give a 'Health Score' out of 100 based on code cleanliness, security, and structure.
-
-            ## 🗺️ 3. מפת ארכיטקטורה (Visual Flowchart)
-            Create a Mermaid.js diagram (`mermaid` block) showing the core architecture. 
-            CRITICAL INSTRUCTION FOR MERMAID: You MUST use a very simple `classDiagram`. 
-            Do NOT use `erDiagram` or complex relationship syntax that might cause syntax errors. 
-            Just show the main models (CustomUser, Course, Document, Post, etc.) and basic arrows (-->) for their relationships. Keep it safe and simple.
-
-            ## 💡 4. ביקורת קוד אדריכלית (Code Review)
-            Provide 3-5 actionable recommendations strictly divided by urgency using these exact emojis and categories:
-            * 🔴 קריטי (Security/Bugs) - סכנות אבטחה, קריסות אפשריות או שגיאות לוגיות חמורות.
-            * 🟡 שיפור ביצועים (Optimization) - עומס על מסד הנתונים (N+1 queries), זמני טעינה איטיים.
-            * 🟢 ניקיון קוד (Clean Code / DRY) - חוב טכני, מניעת כפילויות, ארגון קוד.
-
-            ## ✅ 5. צ'ק-ליסט משימות (Action Items)
-            Create a markdown checklist (using - [ ]) of the top 3 most important technical tasks to fix or build next, based primarily on the 🔴 Critical and 🟡 Optimization findings.
-
-            Here are the project files and structure:
-            {context_for_ai}
-            """
-
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-            )
+            response = self._generate_with_retry_and_fallback(client, prompt)
 
             final_markdown = MarkdownUXFormatter.generate_ui(response.text)
 
