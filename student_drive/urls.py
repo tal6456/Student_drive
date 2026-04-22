@@ -77,7 +77,6 @@ urlpatterns = [
     # File management
     path('download/<int:document_id>/', views.download_file, name='download_file'),
     path('document/<int:document_id>/view/', views.document_viewer, name='document_viewer'),
-    path('document/<int:document_id>/run/', views.run_document_code, name='run_document_code'),
     path('document/<int:document_id>/like/', views.like_document, name='like_document'),
     path('report/<int:document_id>/', views.report_document, name='report_document'),
     path('upload-shared-file/', views.ShareTargetView.as_view(), name='share_target_upload'),

@@ -29,12 +29,10 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 
 # Import the models and helpers needed by this module
 from core.models import Course, Document, DownloadLog, Major, Report
 from core.ai_utils import generate_smart_summary
-from core.services import ExecutionService
 from core.utils import get_client_ip, validate_file_size, validate_file_type, process_transaction
 
 
@@ -171,13 +169,7 @@ class ShareTargetFinishView(LoginRequiredMixin, View):
         return redirect('share_target_finish')
 
 
-CODE_LANGUAGE_BY_EXTENSION = {
-    'py': 'python',
-    'c': 'c',
-    'cpp': 'cpp',
-    'cc': 'cpp',
-    'cxx': 'cpp',
-}
+TEXT_PREVIEW_EXTENSIONS = {'txt', 'py', 'c', 'cpp', 'cc', 'cxx', 'h', 'hpp', 'hh', 'hxx'}
 
 
 def _read_document_text(document):
@@ -236,7 +228,6 @@ def document_viewer(request, document_id):
     ext = document.file_extension.replace('.', '').lower()
     file_type = 'other'
     text_content = None
-    code_language = CODE_LANGUAGE_BY_EXTENSION.get(ext)
 
     if ext in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
         file_type = 'image'
@@ -244,7 +235,7 @@ def document_viewer(request, document_id):
         file_type = 'pdf'
     elif ext in ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']:
         file_type = 'office'
-    elif ext == 'txt' or code_language:
+    elif ext in TEXT_PREVIEW_EXTENSIONS:
         file_type = 'text'
         text_content = _read_document_text(document)
 
@@ -253,44 +244,8 @@ def document_viewer(request, document_id):
         'file_type': file_type,
         'text_content': text_content,
         'absolute_file_url': request.build_absolute_uri(document.file.url),
-        'code_language': code_language,
     }
     return render(request, 'core/document_viewer.html', context)
-
-
-@login_required
-@require_POST
-def run_document_code(request, document_id):
-    document = get_object_or_404(Document, id=document_id)
-    ext = document.file_extension.replace('.', '').lower()
-    language = CODE_LANGUAGE_BY_EXTENSION.get(ext)
-
-    if not language:
-        return JsonResponse({'success': False, 'error': 'Only .py, .c, and .cpp code files are runnable.'}, status=400)
-
-    code = _read_document_text(document)
-    if not code or code.startswith('אירעה שגיאה'):
-        return JsonResponse({'success': False, 'error': 'Unable to read file content for execution.'}, status=400)
-
-    input_data = request.POST.get('input_data', '')
-    result = ExecutionService().run(language, code, input_data=input_data)
-
-    return JsonResponse(
-        {
-            'success': True,
-            'language': language,
-            'status': result.status,
-            'stdout': result.stdout,
-            'stderr': result.stderr,
-            'exit_code': result.exit_code,
-            'timed_out': result.timed_out,
-            'compile_stdout': result.compile_stdout,
-            'compile_stderr': result.compile_stderr,
-            'compile_exit_code': result.compile_exit_code,
-            'rejection_reason': result.rejection_reason,
-            'duration_ms': round(result.duration_ms, 2),
-        }
-    )
 
 
 @login_required
