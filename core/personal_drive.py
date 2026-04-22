@@ -57,7 +57,7 @@ def personal_drive(request):
 
     processed_logs = []
     for log in logs_queryset:
-        log.unique_row_id = f"hist_{log.id}"
+        log.unique_row_id = f"dl_{log.id}"
         log.top_folder_name = "קבצים כלליים"
         if log.document and log.document.folder:
             current = log.document.folder

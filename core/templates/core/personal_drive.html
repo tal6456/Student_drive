@@ -2,16 +2,46 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5" dir="rtl">
-    <div class="row mb-5">
-        <div class="col-12 text-center animate__animated animate__fadeInDown">
-            <h1 class="fw-bold display-5 mb-1" style="color: var(--gd-text);">הדרייב האישי שלי</h1>
-            <p style="color: var(--gd-text-muted);">כל החומר הלימודי שלך במקום אחד</p>
+<div class="container-fluid px-3 px-md-4 py-4" dir="rtl">
+    <div class="drive-hero p-4 p-md-5 mb-4 rounded-5 shadow-sm border animate__animated animate__fadeInDown">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+            <div>
+                <div class="d-inline-flex align-items-center gap-2 badge rounded-pill px-3 py-2 mb-3 drive-kicker">
+                    <i class="fas fa-cloud"></i>
+                    לוח בקרה אישי
+                </div>
+                <h1 class="fw-bold display-6 mb-2" style="color: var(--gd-text);">הדרייב האישי שלי</h1>
+                <p class="mb-0 fs-6" style="color: var(--gd-text-muted);">מבט מהיר על כל הקבצים, התיוגים והפעילות שלך במקום אחד.</p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3">
+                <div class="metric-card">
+                    <span class="metric-icon bg-primary bg-opacity-10 text-primary"><i class="fas fa-file-alt"></i></span>
+                    <div>
+                        <div class="metric-value">{{ uploaded_files|length }}</div>
+                        <div class="metric-label">קבצים שהועלו</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-icon bg-success bg-opacity-10 text-success"><i class="fas fa-download"></i></span>
+                    <div>
+                        <div class="metric-value">{{ download_logs|length }}</div>
+                        <div class="metric-label">הורדות</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-icon bg-warning bg-opacity-10 text-warning"><i class="fas fa-link"></i></span>
+                    <div>
+                        <div class="metric-value">{{ external_resources|length }}</div>
+                        <div class="metric-label">משאבים חיצוניים</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     {# --- Filter row by tags --- #}
-    <div class="tag-filters mb-4 d-flex flex-wrap gap-2 px-2 border-bottom pb-3 animate__animated animate__fadeIn" style="border-color: var(--gd-border) !important;">
+    <div class="tag-filters mb-4 d-flex flex-wrap gap-2 px-2 pb-3 animate__animated animate__fadeIn">
         <span class="ms-2 align-self-center small fw-bold" style="color: var(--gd-text-muted);">סנן לפי תיוג:</span>
         <button class="btn btn-sm btn-primary rounded-pill px-3 active filter-btn" onclick="filterByTag('all', this)">הכל</button>
         <button class="btn btn-sm rounded-pill px-3 filter-btn" style="background-color: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);" onclick="filterByTag('urgent', this)">🔴 חומרי עזר</button>
@@ -20,9 +50,9 @@
         <button class="btn btn-sm rounded-pill px-3 filter-btn" style="background-color: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);" onclick="filterByTag('important', this)">🔵 חשוב</button>
     </div>
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 px-2 animate__animated animate__fadeIn">
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 px-2 animate__animated animate__fadeIn">
         <div class="mobile-scroll-nav">
-            <ul class="nav nav-pills p-2 rounded-4 shadow-sm border flex-nowrap" id="pills-tab" role="tablist" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+            <ul class="nav nav-pills p-2 rounded-4 shadow-sm border flex-nowrap drive-tabs" id="pills-tab" role="tablist">
                 <li class="nav-item flex-shrink-0">
                     <button class="nav-link active rounded-3 fw-bold" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button" role="tab">
                         <i class="fas fa-file-upload ms-2"></i>העלאות שלי
@@ -51,15 +81,19 @@
         <div class="tab-pane fade show active" id="pills-upload" role="tabpanel">
             {% regroup uploaded_files by course.name as upload_course_list %}
             {% for course in upload_course_list %}
-                <div class="course-group mb-3 shadow-sm border rounded-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
-                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
-                        <div class="d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}">
-                            <i class="fas fa-university text-primary ms-3"></i>
-                            <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
+                <div class="course-group mb-4 shadow-sm border rounded-5 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+                    <div class="p-3 p-md-4 border-bottom d-flex align-items-center justify-content-between cursor-pointer course-group-header"
+                         data-bs-toggle="collapse" data-bs-target="#up_course_{{ forloop.counter }}">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="section-icon"><i class="fas fa-university"></i></span>
+                            <div>
+                                <h5 class="mb-1 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
+                                <small style="color: var(--gd-text-muted);">קבצים שנשמרו עבורך בקורס זה</small>
+                            </div>
                         </div>
-                        
+
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge rounded-pill px-3" style="background-color: var(--gd-primary); color: var(--gd-card) !important;">{{ course.list|length }} קבצים</span>
+                            <span class="badge rounded-pill px-3 py-2 course-count">{{ course.list|length }} קבצים</span>
                             <form action="{% url 'delete_entire_course_folder' %}" method="POST" class="delete-folder-form" onsubmit="return confirm('האם אתה בטוח שברצונך למחוק את כל התיקייה מהעלאות שלך?');">
                                 {% csrf_token %}
                                 <input type="hidden" name="course_name" value="{{ course.grouper|default:'ללא קורס' }}">
@@ -71,20 +105,22 @@
                     </div>
 
                     <div class="collapse" id="up_course_{{ forloop.counter }}">
-                        <div class="p-3">
+                        <div class="p-3 p-md-4">
                             {% regroup course.list by top_folder_name as upload_type_list %}
                             {% for type in upload_type_list %}
-                                <div class="mb-3 border rounded-3 type-folder-container" style="border-color: var(--gd-border) !important;">
-                                    <div class="p-2 d-flex align-items-center cursor-pointer border-bottom"
-                                         data-bs-toggle="collapse" data-bs-target="#up_type_{{ parentloop.counter }}_{{ forloop.counter }}" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
-                                        <i class="fas fa-folder text-warning ms-2"></i>
-                                        <span class="fw-bold" style="color: var(--gd-text);">{{ type.grouper }}</span>
-                                        <span class="ms-auto badge border" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">{{ type.list|length }}</span>
+                                <div class="mb-4 border rounded-4 type-folder-container overflow-hidden" style="border-color: var(--gd-border) !important;">
+                                    <div class="p-3 d-flex align-items-center justify-content-between cursor-pointer type-folder-header"
+                                         data-bs-toggle="collapse" data-bs-target="#up_type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-folder text-warning"></i>
+                                            <span class="fw-bold" style="color: var(--gd-text);">{{ type.grouper }}</span>
+                                        </div>
+                                        <span class="badge rounded-pill type-count">{{ type.list|length }}</span>
                                     </div>
                                     <div class="collapse" id="up_type_{{ parentloop.counter }}_{{ forloop.counter }}">
-                                        <div class="list-group list-group-flush">
+                                        <div class="file-grid p-3 p-md-4">
                                             {% for doc in type.list %}
-                                                {% include "core/partials/doc_row.html" with doc=doc unique_id="up_"|add:doc.id show_personal_tags=True %}
+                                                {% include "core/partials/file_grid_card.html" with doc=doc unique_id=doc.unique_row_id show_personal_tags=True %}
                                             {% endfor %}
                                         </div>
                                     </div>
@@ -94,7 +130,11 @@
                     </div>
                 </div>
             {% empty %}
-                <div class="text-center py-5" style="color: var(--gd-text-muted);">עדיין לא העלית קבצים.</div>
+                <div class="empty-state card border-0 shadow-sm rounded-5 text-center py-5" style="background-color: var(--gd-card);">
+                    <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: var(--gd-text-muted); opacity: 0.4;"></i>
+                    <h4 class="fw-bold mb-2" style="color: var(--gd-text);">עדיין לא העלית קבצים</h4>
+                    <p class="mb-0" style="color: var(--gd-text-muted);">אחרי העלאה ראשונה, הקבצים יופיעו כאן בכרטיסיות נוחות לסריקה מהירה.</p>
+                </div>
             {% endfor %}
         </div>
 
@@ -102,16 +142,19 @@
         <div class="tab-pane fade" id="pills-download" role="tabpanel">
             {% regroup download_logs by document.course.name as course_list %}
             {% for course in course_list %}
-                <div class="course-group mb-3 shadow-sm border rounded-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
-                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between cursor-pointer"
-                         style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; border-top-right-radius: 1rem; border-top-left-radius: 1rem;">
-                        <div class="d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}">
-                            <i class="fas fa-university text-primary ms-3"></i>
-                            <h5 class="mb-0 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
+                <div class="course-group mb-4 shadow-sm border rounded-5 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+                    <div class="p-3 p-md-4 border-bottom d-flex align-items-center justify-content-between cursor-pointer course-group-header"
+                         data-bs-toggle="collapse" data-bs-target="#course_{{ forloop.counter }}">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="section-icon"><i class="fas fa-university"></i></span>
+                            <div>
+                                <h5 class="mb-1 fw-bold" style="color: var(--gd-text);">{{ course.grouper|default:"ללא קורס" }}</h5>
+                                <small style="color: var(--gd-text-muted);">קבצים שנפתחו מהיסטוריית ההורדות</small>
+                            </div>
                         </div>
-                        
+
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge rounded-pill px-3" style="background-color: var(--gd-primary); color: var(--gd-card) !important;">{{ course.list|length }} קבצים</span>
+                            <span class="badge rounded-pill px-3 py-2 course-count">{{ course.list|length }} קבצים</span>
                             <form action="{% url 'delete_download_history_folder' %}" method="POST" class="delete-folder-form" onsubmit="return confirm('האם אתה בטוח שברצונך לנקות את היסטוריית ההורדות עבור קורס זה?');">
                                 {% csrf_token %}
                                 <input type="hidden" name="course_name" value="{{ course.grouper|default:'ללא קורס' }}">
@@ -123,20 +166,22 @@
                     </div>
 
                     <div class="collapse" id="course_{{ forloop.counter }}">
-                        <div class="p-3">
+                        <div class="p-3 p-md-4">
                             {% regroup course.list by document.top_folder_name as type_list %}
                             {% for type in type_list %}
-                                <div class="mb-3 border rounded-3 type-folder-container" style="border-color: var(--gd-border) !important;">
-                                    <div class="p-2 d-flex align-items-center cursor-pointer border-bottom"
-                                         data-bs-toggle="collapse" data-bs-target="#type_{{ parentloop.counter }}_{{ forloop.counter }}" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
-                                        <i class="fas fa-folder text-warning ms-2"></i>
-                                        <span class="fw-bold" style="color: var(--gd-text);">{{ type.grouper }}</span>
-                                        <span class="ms-auto badge border" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">{{ type.list|length }}</span>
+                                <div class="mb-4 border rounded-4 type-folder-container overflow-hidden" style="border-color: var(--gd-border) !important;">
+                                    <div class="p-3 d-flex align-items-center justify-content-between cursor-pointer type-folder-header"
+                                         data-bs-toggle="collapse" data-bs-target="#type_{{ parentloop.counter }}_{{ forloop.counter }}">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-folder text-warning"></i>
+                                            <span class="fw-bold" style="color: var(--gd-text);">{{ type.grouper }}</span>
+                                        </div>
+                                        <span class="badge rounded-pill type-count">{{ type.list|length }}</span>
                                     </div>
                                     <div class="collapse" id="type_{{ parentloop.counter }}_{{ forloop.counter }}">
-                                        <div class="list-group list-group-flush">
+                                        <div class="file-grid p-3 p-md-4">
                                             {% for log in type.list %}
-                                                {% include "core/partials/doc_row.html" with doc=log.document unique_id="dl_"|add:log.id is_history=True log_id=log.id show_personal_tags=True %}
+                                                {% include "core/partials/file_grid_card.html" with doc=log.document unique_id=log.unique_row_id is_history=True log_id=log.id show_personal_tags=True %}
                                             {% endfor %}
                                         </div>
                                     </div>
@@ -146,13 +191,17 @@
                     </div>
                 </div>
             {% empty %}
-                <div class="text-center py-5" style="color: var(--gd-text-muted);">אין היסטוריית הורדות.</div>
+                <div class="empty-state card border-0 shadow-sm rounded-5 text-center py-5" style="background-color: var(--gd-card);">
+                    <i class="fas fa-history fa-4x mb-3" style="color: var(--gd-text-muted); opacity: 0.4;"></i>
+                    <h4 class="fw-bold mb-2" style="color: var(--gd-text);">אין היסטוריית הורדות</h4>
+                    <p class="mb-0" style="color: var(--gd-text-muted);">כשתפתח קבצים, הם יופיעו כאן עם פריסה חדשה ונוחה יותר.</p>
+                </div>
             {% endfor %}
         </div>
 
         {# --- External resources tab --- #}
         <div class="tab-pane fade" id="pills-external" role="tabpanel">
-            <div class="card shadow-sm border rounded-4 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+            <div class="card shadow-sm border rounded-5 overflow-hidden" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
                 <div class="list-group list-group-flush border-0">
                     {% for item in external_resources %}
                         <div class="list-group-item d-flex align-items-center justify-content-between py-3 border-0 border-bottom external-row" data-personal-tag="{{ item.personal_tag|default:'none' }}" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
@@ -252,6 +301,44 @@
 
 <style>
     .cursor-pointer { cursor: pointer; }
+    .drive-hero {
+        background: linear-gradient(135deg, rgba(26, 115, 232, 0.08), rgba(108, 117, 125, 0.04));
+        border-color: var(--gd-border) !important;
+    }
+    .drive-kicker {
+        background: rgba(26, 115, 232, 0.1);
+        color: var(--gd-primary);
+        border: 1px solid rgba(26, 115, 232, 0.18);
+        font-size: 0.8rem;
+    }
+    .metric-card {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        min-width: 180px;
+        padding: 1rem 1.1rem;
+        border-radius: 1.25rem;
+        background: var(--gd-card);
+        border: 1px solid var(--gd-border);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+    }
+    .metric-icon,
+    .section-icon {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .section-icon {
+        background: rgba(26, 115, 232, 0.1);
+        color: var(--gd-primary);
+    }
+    .metric-value { font-size: 1.35rem; font-weight: 800; color: var(--gd-text); line-height: 1.1; }
+    .metric-label { font-size: 0.8rem; color: var(--gd-text-muted); }
     .nav-pills .nav-link { color: var(--gd-text-muted); transition: all 0.3s ease; border: 1px solid transparent; }
     .nav-pills .nav-link:hover { color: var(--gd-primary); background-color: rgba(26, 115, 232, 0.05); }
     .nav-pills .nav-link.active { background-color: var(--gd-primary) !important; color: white !important; }
@@ -261,10 +348,84 @@
     .hover-scale:hover { transform: scale(1.2); }
     .mobile-scroll-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; width: 100%; }
     .mobile-scroll-nav::-webkit-scrollbar { display: none; }
+    .drive-tabs { background-color: var(--gd-card); border-color: var(--gd-border) !important; }
     .course-group, .type-folder-container { overflow: visible !important; }
     .collapse.show { overflow: visible !important; }
     .dropdown-menu { z-index: 2000 !important; }
     .tag-badge { font-size: 0.7rem; padding: 0.25rem 0.6rem; vertical-align: middle; }
+    .course-group-header, .type-folder-header { background-color: var(--gd-bg); }
+    .course-count, .type-count, .file-ext-pill, .file-folder-pill {
+        background-color: var(--gd-bg);
+        color: var(--gd-text);
+        border: 1px solid var(--gd-border);
+    }
+    .file-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+    .file-card-shell { min-width: 0; }
+    .file-grid-card {
+        border-radius: 1.5rem;
+        background-color: var(--gd-card);
+        border: 1px solid var(--gd-border);
+        overflow: hidden;
+        min-height: 240px;
+    }
+    .file-grid-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12) !important;
+        border-color: rgba(26, 115, 232, 0.3);
+    }
+    .file-icon-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        color: #fff;
+        box-shadow: inset 0 -1px 0 rgba(255,255,255,0.12);
+    }
+    .file-icon-badge--pdf { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .file-icon-badge--doc { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .file-icon-badge--sheet { background: linear-gradient(135deg, #10b981, #059669); }
+    .file-icon-badge--presentation { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .file-icon-badge--image { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .file-icon-badge--video { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+    .file-icon-badge--audio { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+    .file-icon-badge--archive { background: linear-gradient(135deg, #64748b, #475569); }
+    .file-icon-badge--text { background: linear-gradient(135deg, #84cc16, #65a30d); }
+    .file-icon-badge--default { background: linear-gradient(135deg, #6b7280, #374151); }
+    .file-title { color: var(--gd-text); line-height: 1.35; min-height: 2.7em; }
+    .file-title:hover { color: var(--gd-primary); }
+    .file-meta {
+        font-size: 0.78rem;
+        color: var(--gd-text-muted);
+    }
+    .file-action-btn {
+        background-color: var(--gd-bg);
+        color: var(--gd-text-muted);
+        border: 1px solid var(--gd-border);
+    }
+    .file-like-btn {
+        min-width: 84px;
+    }
+    .file-secondary-btn { border-color: var(--gd-border); }
+    .file-menu { min-width: 220px; }
+    .file-menu-trigger { color: var(--gd-text-muted) !important; }
+    .empty-state { border-color: var(--gd-border) !important; }
+    @media (max-width: 767.98px) {
+        .file-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        .metric-card { min-width: 100%; }
+        .file-grid-card { min-height: 220px; }
+    }
+    @media (max-width: 575.98px) {
+        .file-grid { grid-template-columns: 1fr; }
+        .file-grid-card { min-height: auto; }
+        .file-title { min-height: auto; }
+    }
 </style>
 
 <script>
@@ -347,14 +508,14 @@ function filterByTag(tag, btn) {
     btn.style.backgroundColor = ''; 
     btn.style.color = '';
 
-    // 3. סינון הקבצים (שורות)
-    const docRows = document.querySelectorAll('.doc-row-container');
+    // 3. סינון הקבצים (כרטיסים)
+    const docRows = document.querySelectorAll('.file-card-shell');
     const externalRows = document.querySelectorAll('.external-row');
 
     docRows.forEach(row => {
         const rowTag = row.getAttribute('data-personal-tag') || 'none';
         if (tag === 'all' || rowTag === tag) {
-            row.style.setProperty('display', 'flex', 'important');
+            row.style.setProperty('display', 'block', 'important');
         } else {
             row.style.setProperty('display', 'none', 'important');
         }
@@ -371,7 +532,7 @@ function filterByTag(tag, btn) {
 
     // 4. הסתרת תיקיות ריקות (סוגי קבצים וקורסים)
     document.querySelectorAll('.type-folder-container').forEach(typeFolder => {
-        const hasVisibleFiles = Array.from(typeFolder.querySelectorAll('.doc-row-container'))
+        const hasVisibleFiles = Array.from(typeFolder.querySelectorAll('.file-card-shell'))
                                      .some(row => row.style.display !== 'none');
         
         if (hasVisibleFiles || tag === 'all') {

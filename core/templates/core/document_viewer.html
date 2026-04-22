@@ -30,6 +30,11 @@
                 <a href="{% url 'download_file' document.id %}" class="btn btn-success rounded-pill fw-bold shadow-sm px-4">
                     <i class="fas fa-download"></i> הורדה
                 </a>
+                {% if code_language %}
+                    <button id="run-code-btn" class="btn btn-primary rounded-pill fw-bold shadow-sm px-4" onclick="runCodeFile()">
+                        <i class="fas fa-play"></i> הרץ קוד
+                    </button>
+                {% endif %}
             </div>
         </div>
 
@@ -64,7 +69,87 @@
             {% endif %}
             
         </div>
+
+        {% if code_language %}
+        <div class="rounded-4 shadow-sm border mt-4 p-3 p-md-4" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
+            <h5 class="fw-bold mb-3" style="color: var(--gd-text);">
+                <i class="fas fa-terminal"></i> הרצת קוד ({{ code_language|upper }})
+            </h5>
+
+            <label for="runtime-input" class="form-label fw-semibold" style="color: var(--gd-text);">קלט (stdin) - אופציונלי</label>
+            <textarea id="runtime-input" class="form-control mb-3" rows="4" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);" placeholder="כל שורה תישלח כקלט"></textarea>
+
+            <div id="runtime-status" class="small mb-2" style="color: var(--gd-text-muted);"></div>
+
+            <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                    <h6 class="fw-bold" style="color: var(--gd-text);">STDOUT</h6>
+                    <pre id="runtime-stdout" class="p-3 rounded-3 border mb-0" style="min-height: 120px; white-space: pre-wrap; background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;"></pre>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <h6 class="fw-bold" style="color: var(--gd-text);">STDERR / COMPILE</h6>
+                    <pre id="runtime-stderr" class="p-3 rounded-3 border mb-0" style="min-height: 120px; white-space: pre-wrap; background-color: var(--gd-bg); color: #b02a37; border-color: var(--gd-border) !important;"></pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         
     </div>
 </div>
+
+{% if code_language %}
+<script>
+function runCodeFile() {
+    const runBtn = document.getElementById('run-code-btn');
+    const inputEl = document.getElementById('runtime-input');
+    const statusEl = document.getElementById('runtime-status');
+    const stdoutEl = document.getElementById('runtime-stdout');
+    const stderrEl = document.getElementById('runtime-stderr');
+
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> מריץ...';
+    statusEl.textContent = 'הקוד רץ בסביבת Sandbox...';
+    stdoutEl.textContent = '';
+    stderrEl.textContent = '';
+
+    const formData = new FormData();
+    formData.append('input_data', inputEl.value || '');
+
+    fetch("{% url 'run_document_code' document.id %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            statusEl.textContent = 'נכשלה ההרצה';
+            stderrEl.textContent = data.error || 'Unknown error';
+            return;
+        }
+
+        statusEl.textContent = `Status: ${data.status} | Duration: ${data.duration_ms}ms`;
+        stdoutEl.textContent = data.stdout || '(empty)';
+
+        const errBlocks = [];
+        if (data.rejection_reason) errBlocks.push(`Rejected: ${data.rejection_reason}`);
+        if (data.compile_stderr) errBlocks.push(`Compile stderr:\n${data.compile_stderr}`);
+        if (data.compile_stdout) errBlocks.push(`Compile stdout:\n${data.compile_stdout}`);
+        if (data.stderr) errBlocks.push(`Runtime stderr:\n${data.stderr}`);
+
+        stderrEl.textContent = errBlocks.length ? errBlocks.join('\n\n') : '(empty)';
+    })
+    .catch(error => {
+        statusEl.textContent = 'שגיאת תקשורת';
+        stderrEl.textContent = String(error);
+    })
+    .finally(() => {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="fas fa-play"></i> הרץ קוד';
+    });
+}
+</script>
+{% endif %}
 {% endblock %}

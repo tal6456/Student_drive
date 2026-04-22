@@ -109,6 +109,12 @@ def validate_file_type(file):
         'image/webp'
     ]
 
+    # Text-based files (including source code) usually have no stable magic signature.
+    # We allow them by extension only after a lightweight binary-content sanity check.
+    ALLOWED_TEXT_EXTENSIONS = {
+        '.txt', '.py', '.c', '.cpp', '.cc', '.cxx', '.h', '.hpp', '.hh', '.hxx'
+    }
+
     # קריאת 2048 הבתים הראשונים של הקובץ בלבד
     header = file.read(2048)
 
@@ -118,7 +124,14 @@ def validate_file_type(file):
     # זיהוי הסוג האמיתי של הקובץ מתוך החתימה הבינארית
     kind = filetype.guess(header)
 
+    ext = os.path.splitext(file.name)[1].lower()
+
     if kind is None:
+        if ext in ALLOWED_TEXT_EXTENSIONS:
+            # Reject obvious binary payloads disguised as text/code.
+            if b'\x00' in header:
+                raise ValidationError('הקובץ נראה בינארי למרות הסיומת הטקסטואלית, ולכן נחסם מטעמי אבטחה.')
+            return
         raise ValidationError('המערכת לא הצליחה לזהות את סוג הקובץ. אנא ודא שהקובץ תקין.')
 
     if kind.mime not in ALLOWED_MIMES:

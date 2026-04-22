@@ -1,0 +1,221 @@
+{% with ext=doc.file_extension|default:''|slice:"1:"|lower %}
+<div class="file-card-shell" data-personal-tag="{{ doc.personal_tag|default:'none' }}">
+    <div class="card file-grid-card h-100 border-0 shadow-sm transition-all custom-dropdown-container">
+        <div class="card-body d-flex flex-column gap-3 p-3 p-md-4">
+            <div class="d-flex align-items-start justify-content-between gap-2">
+                <div class="file-icon-badge
+                    {% if ext == 'pdf' %} file-icon-badge--pdf
+                    {% elif ext == 'doc' or ext == 'docx' %} file-icon-badge--doc
+                    {% elif ext == 'xls' or ext == 'xlsx' or ext == 'csv' %} file-icon-badge--sheet
+                    {% elif ext == 'ppt' or ext == 'pptx' %} file-icon-badge--presentation
+                    {% elif ext == 'jpg' or ext == 'jpeg' or ext == 'png' or ext == 'gif' or ext == 'webp' or ext == 'bmp' or ext == 'svg' %} file-icon-badge--image
+                    {% elif ext == 'mp4' or ext == 'mov' or ext == 'avi' or ext == 'mkv' or ext == 'webm' %} file-icon-badge--video
+                    {% elif ext == 'mp3' or ext == 'wav' or ext == 'ogg' or ext == 'm4a' %} file-icon-badge--audio
+                    {% elif ext == 'zip' or ext == 'rar' or ext == '7z' or ext == 'tar' or ext == 'gz' %} file-icon-badge--archive
+                    {% elif ext == 'txt' or ext == 'md' or ext == 'log' or ext == 'json' %} file-icon-badge--text
+                    {% else %} file-icon-badge--default{% endif %}">
+                    {% if ext == 'pdf' %}
+                        <i class="fas fa-file-pdf"></i>
+                    {% elif ext == 'doc' or ext == 'docx' %}
+                        <i class="fas fa-file-word"></i>
+                    {% elif ext == 'xls' or ext == 'xlsx' or ext == 'csv' %}
+                        <i class="fas fa-file-excel"></i>
+                    {% elif ext == 'ppt' or ext == 'pptx' %}
+                        <i class="fas fa-file-powerpoint"></i>
+                    {% elif ext == 'jpg' or ext == 'jpeg' or ext == 'png' or ext == 'gif' or ext == 'webp' or ext == 'bmp' or ext == 'svg' %}
+                        <i class="fas fa-file-image"></i>
+                    {% elif ext == 'mp4' or ext == 'mov' or ext == 'avi' or ext == 'mkv' or ext == 'webm' %}
+                        <i class="fas fa-file-video"></i>
+                    {% elif ext == 'mp3' or ext == 'wav' or ext == 'ogg' or ext == 'm4a' %}
+                        <i class="fas fa-file-audio"></i>
+                    {% elif ext == 'zip' or ext == 'rar' or ext == '7z' or ext == 'tar' or ext == 'gz' %}
+                        <i class="fas fa-file-archive"></i>
+                    {% elif ext == 'txt' or ext == 'md' or ext == 'log' or ext == 'json' %}
+                        <i class="fas fa-file-lines"></i>
+                    {% else %}
+                        <i class="fas fa-file"></i>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex flex-column align-items-end gap-1">
+                    {% if show_personal_tags and doc.personal_tag and doc.personal_tag != 'none' %}
+                        <span class="badge rounded-pill file-tag-pill"
+                              {% if doc.personal_tag == 'urgent' %}style="background-color: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.5);"
+                              {% elif doc.personal_tag == 'exam' %}style="background-color: rgba(255,193,7,0.1); color: #d39e00; border: 1px solid rgba(255,193,7,0.5);"
+                              {% elif doc.personal_tag == 'summary' %}style="background-color: rgba(25,135,84,0.1); color: #198754; border: 1px solid rgba(25,135,84,0.5);"
+                              {% elif doc.personal_tag == 'important' %}style="background-color: rgba(13,110,253,0.1); color: #0d6efd; border: 1px solid rgba(13,110,253,0.5);"
+                              {% endif %}>
+                            <i class="fas fa-tag me-1"></i>{{ doc.get_personal_tag_display }}
+                        </span>
+                    {% endif %}
+                    <span class="badge rounded-pill file-folder-pill">
+                        <i class="fas fa-layer-group me-1"></i>{{ doc.top_folder_name|default:"קבצים כלליים" }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex-grow-1">
+                <a href="{% url 'document_viewer' doc.id %}" target="_blank"
+                   class="text-decoration-none fw-bold fs-6 d-block file-title mb-1">
+                    {{ doc.title }}
+                </a>
+
+                <div class="file-meta d-flex flex-wrap gap-2">
+                    {% if doc.course %}
+                        <span><i class="fas fa-book-open me-1"></i>{{ doc.course.name }}</span>
+                    {% endif %}
+                    <span><i class="far fa-calendar-alt me-1"></i>{{ doc.upload_date|date:"d/m/Y" }}</span>
+                    {% if doc.file_size_bytes %}
+                        <span><i class="fas fa-hdd me-1"></i>{{ doc.file_size_bytes|filesizeformat }}</span>
+                    {% endif %}
+                    {% if ext %}
+                        <span class="badge rounded-pill file-ext-pill">{{ ext|upper }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-auto">
+                {% if user.is_authenticated %}
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <button type="button"
+                                class="btn btn-sm rounded-pill px-3 file-action-btn d-flex align-items-center gap-1 shadow-none"
+                                onclick="document.body.appendChild(document.getElementById('commentModal{{ unique_id|default:doc.id }}'));"
+                                data-bs-toggle="modal" data-bs-target="#commentModal{{ unique_id|default:doc.id }}"
+                                title="שאלות והערות" aria-label="פתח שאלות והערות עבור {{ doc.title }}">
+                            <i class="far fa-comment-dots"></i>
+                            <span class="fw-bold">{{ doc.comments.count }}</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="handleDocumentLike({{ doc.id }}, this)"
+                                class="btn btn-sm rounded-pill px-3 file-action-btn d-flex align-items-center gap-1 shadow-none file-like-btn"
+                                title="אהבתי" aria-label="סמן אהבתי עבור {{ doc.title }}">
+                            <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i>
+                            <span class="like-count-{{ doc.id }} fw-bold">{{ doc.likes.count }}</span>
+                        </button>
+                    </div>
+                {% else %}
+                    <span class="badge rounded-pill file-action-btn">
+                        <i class="far fa-thumbs-up me-1"></i>{{ doc.likes.count }}
+                    </span>
+                {% endif %}
+
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <a href="{% url 'document_viewer' doc.id %}" target="_blank"
+                       class="btn btn-sm btn-outline-primary rounded-pill px-3 file-secondary-btn shadow-none"
+                       title="פתח">
+                        <i class="fas fa-up-right-from-square"></i>
+                    </a>
+                    <a href="{% url 'download_file' doc.id %}"
+                       class="btn btn-sm btn-outline-success rounded-pill px-3 file-secondary-btn shadow-none"
+                       title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <div>
+                        <button type="button" class="btn btn-link p-2 shadow-none hover-bg-light rounded-circle file-menu-trigger"
+                                onclick="toggleCustomMenu(event, 'customMenu{{ unique_id|default:doc.id }}')"
+                                aria-label="פעולות נוספות עבור {{ doc.title }}">
+                            <i class="fas fa-ellipsis-v fs-6 pointer-events-none"></i>
+                        </button>
+
+                        <ul id="customMenu{{ unique_id|default:doc.id }}" class="custom-dropdown-menu shadow-sm border-0 rounded-3 text-end file-menu"
+                            style="background-color: var(--gd-card); border: 1px solid var(--gd-border) !important;">
+                            {% if user.is_authenticated %}
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"
+                                       onclick="const fullUrl = window.location.origin + '{% url 'download_file' doc.id %}'; navigator.clipboard.writeText(fullUrl).then(() => { Swal.fire('הועתק!', 'הקישור הועתק בהצלחה ללוח', 'success'); }); return false;"
+                                       style="color: var(--gd-text);">
+                                        <i class="fas fa-link text-info text-center" style="width: 20px;"></i> העתק קישור
+                                    </a>
+                                </li>
+
+                                {% if is_history %}
+                                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+                                    <li>
+                                        <form method="POST" action="{% url 'remove_from_history' log_id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                                                <i class="fas fa-history text-center" style="width: 20px;"></i> הסר מההיסטוריה
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+
+                                {% if user == doc.uploaded_by or user.is_staff %}
+                                    <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onclick="globalDelete('document', {{ doc.id }})">
+                                            <i class="fas fa-trash-alt text-center" style="width: 20px;"></i> מחק לצמיתות
+                                        </button>
+                                    </li>
+                                {% endif %}
+
+                                <li><hr class="dropdown-divider" style="border-color: var(--gd-border); margin: 0.25rem 0;"></li>
+                                <li>
+                                    <button class="dropdown-item d-flex align-items-center gap-2 py-2" onclick="openGlobalReportModal({{ doc.id }}, '{{ doc.title|escapejs }}')" style="color: var(--gd-text-muted);">
+                                        <i class="fas fa-flag text-secondary text-center" style="width: 20px;"></i> דווח על בעיה
+                                    </button>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+
+{% if user.is_authenticated %}
+<div class="modal fade" id="commentModal{{ unique_id|default:doc.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ unique_id|default:doc.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text);">
+            <div class="modal-header border-bottom" style="border-color: var(--gd-border) !important;">
+                <h5 class="modal-title fw-bold" id="commentModalLabel{{ unique_id|default:doc.id }}">
+                    <i class="far fa-comments me-2 text-primary"></i> שאלות על הקובץ
+                </h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="comments-list-{{ doc.id }}" class="comments-container mb-3 px-1" style="max-height: 350px; overflow-y: auto;">
+                    {% for comment in doc.comments.all %}
+                        <div class="d-flex gap-2 mb-3">
+                            {% if comment.user.profile.profile_picture %}
+                                <img src="{{ comment.user.profile.profile_picture.url }}" alt="תמונת פרופיל של {{ comment.user.username }}" class="rounded-circle flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem; background-color: var(--gd-primary);">
+                                    {{ comment.user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="p-2 rounded-3 w-100" style="background-color: var(--gd-bg); border: 1px solid var(--gd-border);">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold" style="font-size: 0.85rem;">{{ comment.user.username }}</span>
+                                    <small class="text-muted" style="font-size: 0.7rem;">{{ comment.created_at|timesince }}</small>
+                                </div>
+                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">{{ comment.text }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 opacity-50">
+                            <i class="far fa-comment-dots fa-3x mb-2"></i>
+                            <p>אין עדיין שאלות על הקובץ הזה. תהיה הראשון לשאול!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <form action="{% url 'add_comment_doc' doc.id %}" method="POST" class="mt-3 ajax-comment-form" onsubmit="window.submitCommentForm(event, this)">
+                    {% csrf_token %}
+                    <div class="input-group shadow-sm rounded-pill overflow-hidden border" style="border-color: var(--gd-border) !important;">
+                        <input type="text" name="comment_text" class="form-control border-0 px-3 shadow-none"
+                               placeholder="כתוב שאלה או הערה..." required
+                               style="background-color: var(--gd-bg); color: var(--gd-text);">
+                        <button class="btn btn-primary border-0 px-3" type="submit" aria-label="שליחת תגובה">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

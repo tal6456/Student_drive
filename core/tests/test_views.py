@@ -45,6 +45,52 @@ class ViewTests(BaseTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("account_login"), response.url)
 
+    def test_personal_drive_renders_grid_cards_with_icons(self):
+        self.client.login(username="viewer", password=self.password)
+        pdf_file = SimpleUploadedFile(
+            "lecture.pdf",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
+            content_type="application/pdf",
+        )
+        Document.objects.create(
+            course=self.course,
+            title="lecture",
+            file=pdf_file,
+            uploaded_by=self.user,
+            personal_tag="urgent",
+        )
+
+        response = self.client.get(reverse("personal_drive"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "file-grid")
+        self.assertContains(response, "file-grid-card")
+        self.assertContains(response, "fa-file-pdf")
+        self.assertContains(response, 'data-personal-tag="urgent"')
+
+    def test_personal_drive_uses_unique_ids_for_uploads_and_history(self):
+        self.client.login(username="viewer", password=self.password)
+        pdf_file = SimpleUploadedFile(
+            "lecture.pdf",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
+            content_type="application/pdf",
+        )
+        doc = Document.objects.create(
+            course=self.course,
+            title="lecture",
+            file=pdf_file,
+            uploaded_by=self.user,
+        )
+        log = DownloadLog.objects.create(user=self.user, document=doc)
+
+        response = self.client.get(reverse("personal_drive"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"commentModalup_{doc.id}")
+        self.assertContains(response, f"customMenuup_{doc.id}")
+        self.assertContains(response, f"commentModaldl_{log.id}")
+        self.assertContains(response, f"customMenudl_{log.id}")
+
     def test_signup_flow_creates_user(self):
         response = self.client.post(
             reverse("account_signup"),
