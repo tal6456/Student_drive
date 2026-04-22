@@ -194,6 +194,8 @@ def home(request):
             context['selected_major'] = get_object_or_404(Major, id=major_id)
             context['sem_a'] = courses.filter(semester='A')
             context['sem_b'] = courses.filter(semester='B')
+            context['sem_summer'] = courses.filter(semester='summer')
+            context['sem_yearly'] = courses.filter(semester='yearly')
             context['step'] = 'show_courses'
             context['major_id'] = major_id
             context['year'] = year_id

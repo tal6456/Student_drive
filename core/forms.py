@@ -102,7 +102,13 @@ class CourseForm(BaseStyledModelForm):
         name = self.cleaned_data.get('name')
         if name:
             name_clean = name.strip()
-            queryset = Course.objects.filter(name=name_clean)
+            major = self.cleaned_data.get('major') or getattr(self.instance, 'major', None)
+
+            # Duplicate checks are scoped to the selected faculty (major).
+            queryset = Course.objects.filter(name__iexact=name_clean)
+            if major:
+                queryset = queryset.filter(major=major)
+
             if self.instance and self.instance.pk:
                 queryset = queryset.exclude(pk=self.instance.pk)
             exact_match = queryset.first()
@@ -110,6 +116,9 @@ class CourseForm(BaseStyledModelForm):
                 raise forms.ValidationError(f"הקורס '{exact_match.name}' כבר קיים במערכת! חזור לדף הבית וחפש אותו.")
 
             similar_qs = Course.objects.filter(name__icontains=name_clean)
+            if major:
+                similar_qs = similar_qs.filter(major=major)
+
             if self.instance and self.instance.pk:
                 similar_qs = similar_qs.exclude(pk=self.instance.pk)
             similar_course = similar_qs.first()

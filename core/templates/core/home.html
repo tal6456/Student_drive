@@ -362,6 +362,12 @@ Yovel check
                             {% if sem_b %}
                                 {% include "core/partials/collapsible_semester.html" with title="סמסטר ב'" semester_id="sem-b" courses=sem_b icon="sun" color="warning" %}
                             {% endif %}
+                            {% if sem_summer %}
+                                {% include "core/partials/collapsible_semester.html" with title="סמסטר קיץ" semester_id="sem-summer" courses=sem_summer icon="umbrella-beach" color="info" %}
+                            {% endif %}
+                            {% if sem_yearly %}
+                                {% include "core/partials/collapsible_semester.html" with title="שנתי" semester_id="sem-yearly" courses=sem_yearly icon="calendar" color="secondary" %}
+                            {% endif %}
                         </div>
                     {% endif %}
 

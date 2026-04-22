@@ -370,6 +370,50 @@ class ViewTests(BaseTestCase):
         self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="מבחני עבר").exists())
         self.assertTrue(Folder.objects.filter(course=created_course, parent=None, name="חומרי עזר נוספים").exists())
 
+    def test_add_course_allows_same_name_in_different_university(self):
+        self.client.force_login(self.user)
+        other_uni = University.objects.create(name="Other University")
+        other_major = Major.objects.create(name="Engineering", university=other_uni)
+
+        response = self.client.post(
+            reverse("add_course"),
+            data={
+                "major": other_major.id,
+                "name": self.course.name,
+                "course_number": "99999",
+                "year": 1,
+                "semester": "A",
+                "track": "general",
+                "description": "Same name in another university",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Course.objects.filter(name=self.course.name, major=other_major).exists())
+
+    def test_home_show_courses_displays_summer_courses(self):
+        self.client.force_login(self.user)
+        summer_course = Course.objects.create(
+            name="Summer Mechanics",
+            major=self.major,
+            year=1,
+            semester="summer",
+        )
+
+        response = self.client.get(
+            reverse("home"),
+            {
+                "browse": "true",
+                "university": self.university.id,
+                "major": self.major.id,
+                "year": 1,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "סמסטר קיץ")
+        self.assertContains(response, reverse("course_detail", args=[summer_course.id]))
+
     @mock.patch("core.utils.extract_text_from_pdf", return_value="")
     def test_delete_uploaded_file_via_ajax(self, mocked_extract):
         self.client.force_login(self.user)
