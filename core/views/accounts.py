@@ -89,12 +89,20 @@ def complete_profile(request):
                     referrer = referrer_profile.user
                     if referrer != request.user:
                         user_profile.referred_by = referrer
-                        process_transaction(user_profile.user, 20, tx_type='referral',
-                                            description="בונוס הצטרפות מהזמנה")
-                        process_transaction(referrer, 50, tx_type='referral',
-                                            description=f"בונוס על הזמנת {user_profile.user.username}")
+
+                        # הבונוס המעודכן שלנו!
+                        # הישן מקבל 10
+                        process_transaction(referrer, 10, tx_type='referral',
+                                            description=f"בונוס חבר-מביא-חבר! ({user_profile.user.username} הצטרף) 🤝",
+                                            notify=True)
+
+                        # החדש מקבל עוד 5
+                        process_transaction(user_profile.user, 5, tx_type='referral',
+                                            description="בונוס הצטרפות דרך קישור הפניה 🎁", notify=True)
+
                         del request.session['referral_code']
-                        messages.success(request, f"איזה כיף! קיבלת 20 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
+                        messages.success(request,
+                                         f"איזה כיף! קיבלת 5 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
                 except UserProfile.DoesNotExist:
                     pass
 
@@ -197,3 +205,16 @@ def notifications_list(request):
         'unread_count': unread_count
     }
     return render(request, 'core/notifications.html', context)
+
+
+@login_required
+def wallet_view(request):
+    profile = request.user.profile
+    # שליפת היסטוריית התנועות, מהחדשה ביותר לישנה
+    transactions = request.user.coin_transactions.all().order_by('-created_at')
+
+    context = {
+        'profile': profile,
+        'transactions': transactions,
+    }
+    return render(request, 'core/wallet.html', context)

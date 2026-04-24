@@ -16,14 +16,16 @@ such as the background, top bar, footer, and related layout behavior.
     document.documentElement.setAttribute('data-bs-theme', theme);
     </script>
 
-    <link rel="apple-touch-icon" href="{% static 'icon-192.png' %}">
     <meta name="theme-color" content="#1a73e8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/png" href="{% static 'icon-192.png' %}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Student Drive">
 
+    <link rel="icon" type="image/png" href="{% static 'favicon-96x96.png' %}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}" />
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}" />
+    <meta name="apple-mobile-web-app-title" content="Student Drive" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -913,8 +915,13 @@ such as the background, top bar, footer, and related layout behavior.
     </span>
 </a>
     <div class="d-flex align-items-center gap-3">
-
         {% if user.is_authenticated %}
+            <div class="nav-item nav-coin me-3 d-none d-md-flex">
+                <a href="{% url 'wallet' %}" class="text-decoration-none transition hover-scale" title="הארנק שלי">
+                    <i class="fas fa-coins" style="color: var(--gd-coin, #FFD700);"></i>
+                    <span class="fw-bold small" style="color: var(--gd-text);">{{ user.profile.current_balance }}</span>
+                </a>
+            </div>
                 <a href="{% url 'notifications_list' %}" class="position-relative text-decoration-none transition hover-scale me-2" title="התראות" aria-label="התראות">
             <i class="fas fa-bell fs-5" style="color: var(--gd-text);"></i>
             <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger nav-notification-badge" 
@@ -947,6 +954,7 @@ such as the background, top bar, footer, and related layout behavior.
 
                     {% if user.is_authenticated %}
                         <li class="nav-item border-top pt-3 mt-2"><a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a></li>
+                        <li class="nav-item"><a class="nav-link py-2" href="{% url 'wallet' %}"><i class="fas fa-wallet"></i> הארנק שלי</a></li>
                         <li class="nav-item"><a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a></li>
                         <li class="nav-item">
                             <a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()">
@@ -1057,51 +1065,72 @@ such as the background, top bar, footer, and related layout behavior.
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="text/javascript">
-    // פונקציית תרגום אגרסיבית שעוקפת את הבעיה
+    const GT_COOKIE_NAME = 'googtrans';
+    const GT_STORAGE_KEY = 'preferred_lang';
+    const GT_SOURCE_LANG = 'he';
+    const GT_SUPPORTED = ['he', 'en'];
+
+    // פונקציית כתיבת עוגייה אגרסיבית
+    function gtSetCookie(name, value) {
+        const expires = new Date();
+        expires.setFullYear(expires.getFullYear() + 1);
+        const cookieBase = `${name}=${value}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+        
+        // 1. כתיבה ללא דומיין (הכי בטוח ל-Localhost)
+        document.cookie = cookieBase;
+        
+        // 2. כתיבה עם דומיין (עבור שרתים חיים כמו Render/DigitalOcean)
+        const host = window.location.hostname;
+        if (host !== 'localhost' && !host.includes('127.0.0.1')) {
+            document.cookie = `${cookieBase}; domain=.${host}`;
+            document.cookie = `${cookieBase}; domain=${host}`;
+        }
+    }
+
     function forceTranslate(lang) {
-    const domain = window.location.hostname;
-    const cookieVal = (lang === 'he') ? "" : "/he/" + lang;
+        const target = GT_SUPPORTED.includes(lang) ? lang : GT_SOURCE_LANG;
+        localStorage.setItem(GT_STORAGE_KEY, target);
+        
+        console.log("מפעיל תרגום ל:", target);
 
-    // 1. ניקוי אגרסיבי של קוקיז ישנים כדי למנוע התנגשויות
-    const cookies = ["googtrans", "googtrans_"];
-        cookies.forEach(c => {
-            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + domain + "; path=/;";
-            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=." + domain + "; path=/;";
-        });
-
-        // 2. הגדרת הקוקי החדש
-        document.cookie = "googtrans=" + cookieVal + "; path=/";
-        document.cookie = "googtrans=" + cookieVal + "; domain=" + domain + "; path=/";
-        document.cookie = "googtrans=" + cookieVal + "; domain=." + domain + "; path=/";
-
-        // 3. שמירה מקומית וריענון
-        localStorage.setItem('user_lang', lang);
+        if (target === GT_SOURCE_LANG) {
+            // ניקוי עוגיות
+            document.cookie = `${GT_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            const host = window.location.hostname;
+            document.cookie = `${GT_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${host}`;
+        } else {
+            // הגדרת העוגייה שגוגל מחפש
+            gtSetCookie(GT_COOKIE_NAME, `/${GT_SOURCE_LANG}/${target}`);
+        }
+        
+        // טעינה מחדש כדי שהסקריפט של גוגל יקרא את העוגייה החדשה
         window.location.reload();
     }
 
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
-            pageLanguage: 'he',
-            includedLanguages: 'en,he',
+            pageLanguage: GT_SOURCE_LANG,
+            includedLanguages: GT_SUPPORTED.join(','),
             layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
+            autoDisplay: true // שיניתי ל-True כדי שגוגל יזהה את הפקודה מהר יותר
         }, 'google_translate_element');
     }
 
-    // לוגיקה לחיפוש (השארתי לך את זה, זה עובד מצוין)
+    // בדיקה אוטומטית בכל טעינת דף
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('navbarSearchInput');
-        const backdrop = document.getElementById('search-focus-backdrop');
-        if (searchInput && backdrop) {
-            searchInput.addEventListener('focus', function() {
-                backdrop.style.display = 'block';
-                setTimeout(() => backdrop.style.opacity = '1', 10);
-            });
-            searchInput.addEventListener('blur', function() {
-                backdrop.style.opacity = '0';
-                setTimeout(() => backdrop.style.display = 'none', 300);
-            });
+        const preferred = localStorage.getItem(GT_STORAGE_KEY);
+        if (preferred && preferred !== GT_SOURCE_LANG) {
+            const expectedValue = `/${GT_SOURCE_LANG}/${preferred}`;
+            if (!document.cookie.includes(GT_COOKIE_NAME)) {
+                console.log("משחזר עוגיית תרגום חסרה...");
+                gtSetCookie(GT_COOKIE_NAME, expectedValue);
+                // רענון רק אם גוגל לא התחיל לתרגם
+                setTimeout(() => {
+                    if (!document.querySelector('.goog-te-spinner-pos')) {
+                        window.location.reload();
+                    }
+                }, 1000);
+            }
         }
     });
 </script>
@@ -1567,9 +1596,10 @@ function copyInviteLink(event) {
                         <label class="form-label fw-bold small" style="color: var(--gd-text);">סיבת הדיווח:</label>
                         <select name="reason" class="form-select" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);" required>
                             <option value="">בחר סיבה...</option>
+                            <option value="copyright" class="fw-bold text-danger"> פגיעה בזכויות יוצרים</option>
                             <option value="broken">הקובץ פגום / לא נפתח</option>
                             <option value="inappropriate">תוכן פוגעני / לא ראוי</option>
-                            <option value="irrelevant">לא קשור לקורס</option>
+                            <option value="irrelevant">לא רלוונטי לקורס</option>
                         </select>
                     </div>
                     <div class="mb-4">
@@ -1844,6 +1874,30 @@ function copyInviteLink(event) {
         fetch('/ajax/unread-notifications-count/')
             .then(response => response.json())
             .then(data => {
+                // --- חלק חדש: התראה קופצת לאדמינים ---
+                if (data.has_urgent_alert) {
+                    const alertKey = 'urgent_alert_shown_' + data.alert_id;
+                    // בודק אם כבר הראינו את ההתראה הזו בסשן הנוכחי
+                    if (!sessionStorage.getItem(alertKey)) {
+                        Swal.fire({
+                            title: '🚨 דיווח זכויות יוצרים!',
+                            text: data.urgent_message,
+                            icon: 'error',
+                            showCancelButton: true,
+                            confirmButtonText: 'עבור לטיפול',
+                            cancelButtonText: 'סגור',
+                            confirmButtonColor: '#d33',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = data.alert_link;
+                            }
+                        });
+                        sessionStorage.setItem(alertKey, 'true');
+                    }
+                }
+                // ------------------------------------
+    
                 const badge = document.querySelector('.nav-notification-badge');
                 if (badge) {
                     const count = data.unread_count;

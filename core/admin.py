@@ -25,6 +25,9 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib import messages
 from .utils import process_transaction
 
+# Quality bonus default for admin grants
+QUALITY_BONUS_AMOUNT = 10
+
 # Import the models
 from .models import (
     CustomUser, UserProfile, Friendship,
@@ -32,7 +35,7 @@ from .models import (
     Community, Post, MarketplacePost, VideoPost, Comment,DocumentComment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
     Report, Feedback,Notification, UserCourseSelection,
-    CoinTransaction, BountyRequest
+    CoinTransaction
 )
 
 
@@ -110,13 +113,20 @@ class DocumentAdmin(BaseAdmin):
     def grant_quality_bonus(self, request, queryset):
         successes = 0
         failures = []
-        BONUS = 10
+        bonus_amount = QUALITY_BONUS_AMOUNT
         for doc in queryset:
             if not doc.uploaded_by:
                 failures.append((doc.pk, 'No uploader'))
                 continue
             try:
-                process_transaction(doc.uploaded_by, BONUS, tx_type='quality_bonus', description=f'Quality bonus for "{doc.title}"', actor=request.user)
+                process_transaction(
+                    doc.uploaded_by,
+                    bonus_amount,
+                    tx_type='quality_bonus',
+                    description=f'Quality bonus for "{doc.title}"',
+                    actor=request.user,
+                    bonus_increases_lifetime=True,
+                )
                 successes += 1
             except Exception as e:
                 failures.append((doc.pk, str(e)))
@@ -130,11 +140,6 @@ class DocumentAdmin(BaseAdmin):
 
     actions = ['grant_quality_bonus']
 
-
-@admin.register(BountyRequest)
-class BountyRequestAdmin(BaseAdmin):
-    list_display = ('title', 'user', 'course', 'reward_amount', 'is_fulfilled', 'created_at')
-    search_fields = ('title', 'user__username', 'course__name')
 
 # ==========================================
 # 3. Users and economy

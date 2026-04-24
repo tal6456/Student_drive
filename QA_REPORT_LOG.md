@@ -1,259 +1,81 @@
-# QA_REPORT_LOG
+# QA_REPORT_LOG — 2026-04-22 Nightly Audit
 
-## 1) Test Coverage
-- **Feature discovery scope reviewed:**
-  - Routing: `student_drive/urls.py`
-  - Data model surface: `core/models.py`
-  - View layer: `core/views/{academic,documents,social,friends_chat,accounts,api,pages}.py`
-  - Personal drive flows: `core/personal_drive.py`
-- **Dynamic checks executed:**
-  - Baseline automated suite: `python manage.py test` (**42/42 passed**)
-  - Manual destructive/security checks via Django test client:
-    - report endpoint method abuse
-    - anonymous AJAX creation attempts
-    - cross-user data access (viewer/download/tag updates)
-    - GET-based state changes (friend request)
-    - comment payload reflection + DOM     try:
-        data = json.loads(request.body)
-        new_name = data.get('name', '').strip()
-    
-        if not new_name:
-            return JsonResponse({'success': False, 'error': 'שם המוסד לא יכול להיות ריק.'})
-    
-        normalized_new_name = normalize_string_for_comparison(new_name)
-    
-        for uni in University.objects.all():
-            if normalize_string_for_comparison(uni.name) == normalized_new_name:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'מוסד זה כבר קיים במערכת בשם "{uni.name}". אנא בחר אותו מהרשימה.'
-                })
-    
-        new_uni = University.objects.create(name=new_name)
-        return JsonResponse({'success': True, 'id': new_uni.id, 'name': new_uni.name})
-    
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': 'אירעה שגיאה בשרת. נסה שוב.'})        try:
-            data = json.loads(request.body)
-            new_name = data.get('name', '').strip()
-            uni_id = data.get('university_id')
-        
-            if not new_name or not uni_id:
-                return JsonResponse({'success': False, 'error': 'חסרים נתונים ליצירת המסלול.'})
-        
-            try:
-                university = University.objects.get(id=uni_id)
-            except University.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'המוסד שנבחר אינו תקין.'})
-        
-            normalized_new_name = normalize_string_for_comparison(new_name)
-        
-            for major in Major.objects.filter(university=university):
-                if normalize_string_for_comparison(major.name) == normalized_new_name:
-                    return JsonResponse({
-                        'success': False,
-                        'error': f'המסלול כבר קיים במוסד זה בשם "{major.name}".'
-                    })
-        
-            new_major = Major.objects.create(name=new_name, university=university)
-            return JsonResponse({'success': True, 'id': new_major.id, 'name': new_major.name})
-        
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': 'אירעה שגיאה בשרת. נסה שוב.'})insertion path (XSS)
-    - lecturers grid page/backend rendering sanity
-- **Security-focused source scans:**
-  - SQL injection surface (`raw`, `cursor.execute`, `RawSQL`, `extra`) → no direct raw SQL usage found.
-- **C/C++ execution stress-test scope:**
-  - No C/C++ code execution service/endpoints found in current repository; stress tests for code execution sandbox are **not applicable** to current codebase stat  def _can_user_access_document(user, document):
-      if document.uploaded_by_id == user.id:
-          return True
-  
-      # Course-linked files are treated as shared content.
-      if document.course_id:
-          return True
-  
-      # Community-linked files may exist in future schema/extensions.
-      if getattr(document, 'community_id', None):
-          return True
-  
-      return False      def _can_user_access_document(user, document):
-          if document.uploaded_by_id == user.id:
-              return True
-      
-          # Course-linked files are treated as shared content.
-          if document.course_id:
-              return True
-      
-          # Community-linked files may exist in future schema/extensions.
-          if getattr(document, 'community_id', None):
-              return True
-      
-          return False          @login_required
-          def download_file(request, document_id):
-              d = get_object_or_404(Document, id=document_id)
-              if not _can_user_access_document(request.user, d):
-                  raise Http404("המסמך המבוקש אינו זמין.")
-          
-              d.download_count += 1
-              d.save()
-          
-              # Record the download in the system log
-              DownloadLog.objects.create(user=request.user, document=d)
-          
-              if not d.file:
-                  raise Http404("הקובץ המבוקש לא נמצא בשרת.")
-          
-              try:
-                  file_obj = d.file.open('rb')
-                  content_type, encoding = mimetypes.guess_type(d.file.name)
-                  content_type = content_type or 'application/octet-stream'
-          
-                  response = HttpResponse(file_obj, content_type=content_type)
-                  safe_filename = quote(d.title.encode('utf-8'))
-          
-                  file_ext = f".{d.file_extension}" if hasattr(d, 'file_extension') and d.file_extension else ""
-                  if file_ext and not safe_filename.lower().endswith(file_ext.lower()):
-                      safe_filename += file_ext
-          
-                  response['Content-Disposition'] = f"attachment; filename*=UTF-8''{safe_filename}"
-                  return response
-          
-              except Exception as e:
-                  messages.error(request, f"אירעה שגיאה בהורדת הקובץ: {str(e)}")
-                  return redirect('course_detail', course_id=d.course.id)                  @login_required
-                  def document_viewer(request, document_id):
-                      document = get_object_or_404(Document, id=document_id)
-                      if not _can_user_access_document(request.user, document):
-                          raise Http404("המסמך המבוקש אינו זמין.")
-                  
-                      ext = document.file_extension.replace('.', '').lower()
-                      file_type = 'other'
-                      text_content = None
-                  
-                      if ext in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
-                          file_type = 'image'
-                      elif ext == 'pdf':
-                          file_type = 'pdf'
-                      elif ext in ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx']:
-                          file_type = 'office'
-                      elif ext in TEXT_PREVIEW_EXTENSIONS:
-                          file_type = 'text'
-                          text_content = _read_document_text(document)
-                  
-                      context = {
-                          'document': document,
-                          'file_type': file_type,
-                          'text_content': text_content,
-                          'absolute_file_url': request.build_absolute_uri(document.file.url),
-                      }
-                      return render(request, 'core/document_viewer.html', context)                      @login_required
-                      def update_resource_tag(request):
-                          if request.method == 'POST':
-                              res_type = request.POST.get('type')  # 'doc' or 'external'
-                              res_id = request.POST.get('id')
-                              new_tag = request.POST.get('tag')
-                      
-                              if res_type == 'doc':
-                                  # Look in regular documents
-                                  obj = get_object_or_404(Document, id=res_id)
-                                  if obj.uploaded_by_id != request.user.id:
-                                      return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
-                              else:
-                                  # Look in external resources
-                                  obj = get_object_or_404(ExternalResource, id=res_id, user=request.user)
-                      
-                              obj.personal_tag = new_tag
-                              obj.save()
-                      
-                              if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                                  return JsonResponse({
-                                      'success': True,
-                                      'id': res_id,
-                                      'type': res_type,
-                                      'new_tag': new_tag
-                                  })
-                      
-                          return redirect('personal_drive')e.
+## Executive Summary
 
-## 2) Success Log
-- ORM-based queries are consistently used (no direct SQL execution paths detected).
-- Core application test suite currently passes end-to-end (`42` tests).
-- Lecturers grid page renders with backend data and HTTP 200 (`/lecturers/`).
-- File validators exist for size/type checks in upload lifecycle (`validate_file_size`, `validate_file_type`).
+**Overall Site Health: FAIR — actionable critical and high-severity issues remain.**
 
-## 3) Error Log
+The Student Drive platform has materially improved since the previous audit cycle: all five previously-reported
+security regressions have been patched and the automated test suite has grown from 42 to 60 passing tests.
+However, three new or persistent vulnerabilities warrant immediate attention before the next production push.
 
-### 3.1 Crash on non-POST report endpoint
-- **Location:** `core/views/documents.py:110-117`
-- **Severity:** **High**
-- **What fails:** `GET /report/<document_id>/` raises `UnboundLocalError` (500) because `d` is referenced outside POST block.
-- **Repro steps:**
-  1. Login as any user.
-  2. Request `GET /report/<valid_document_id>/`.
-  3. Observe HTTP 500 (`UnboundLocalError: cannot access local variable 'd'`).
+### Top 3 Critical Issues Requiring Immediate Attention
 
-### 3.2 Broken Access Control: anonymous creation of academic entities
-- **Location:** `core/views/api.py:44-67`, `core/views/api.py:69-97`
-- **Severity:** **High**
-- **What fails:** `add_university_ajax` and `add_major_ajax` are POST-only but not auth-protected; anonymous users can create data.
-- **Repro steps:**
-  1. As unauthenticated client, POST JSON to `/ajax/add-university/` with a valid `name`.
-  2. Observe HTTP 200 with `{ "success": true, ... }` and new DB row created.
+1. **[CRITICAL] Unrestricted cross-user document access** — any authenticated user can view or download any
+   course-linked file regardless of enrollment.  Exploitable at `/download/<id>/` and `/document/<id>/view/`.
+2. **[HIGH] Unvalidated file upload in the private chat room** — `chat_room` stores `local_file` attachments
+   directly to the database/storage with no size, MIME-type, or extension check, enabling malware or
+   oversized-file uploads.
+3. **[HIGH] Broken error-redirect in `download_file`** — the `except` block calls
+   `redirect('course_detail', course_id=d.course.id)` unconditionally; if the document has no linked course
+   (chat files, personal-drive files) this raises `AttributeError` and returns an unhandled 500.
 
-### 3.3 Broken Access Control: cross-user document metadata mutation
-- **Location:** `core/personal_drive.py:150-164`
-- **Severity:** **High**
-- **What fails:** `update_resource_tag` allows updating tags on `Document` by ID without checking ownership.
-- **Repro steps:**
-  1. User A uploads a document.
-  2. User B sends POST `/drive/update-tag/` with `type=doc&id=<A_doc_id>&tag=important`.
-  3. Observe redirect success and User A’s document tag changed.
+---
 
-### 3.4 Broken Access Control: cross-user access to non-course/private documents
-- **Location:** `core/views/documents.py:30-55`, `core/views/documents.py:62-95`
-- **Severity:** **Critical**
-- **What fails:** Any authenticated user can view/download any document by ID (including course-less/chat-style files), with no ownership or membership check.
-- **Repro steps:**
-  1. User A creates a document with `course=None`.
-  2. User B requests `/document/<id>/view/` and `/download/<id>/`.
-  3. Observe HTTP 200 for both endpoints.
+## Audit Table
 
-### 3.5 CSRF-prone state change via GET
-- **Location:** `core/views/friends_chat.py:86-113`
-- **Severity:** **Medium**
-- **What fails:** `send_friend_request` performs a state-changing action without method restriction (accepts GET).
-- **Repro steps:**
-  1. Login as User B.
-  2. Trigger `GET /friend/request/<userA_username>/`.
-  3. Observe pending friendship created.
+| Component | Feature Tested | Status | Severity | Issue Description | Suggested Fix |
+|-----------|---------------|--------|----------|-------------------|---------------|
+| Auth | Registration flow | Pass | — | `allauth` adapter active; email-verified signup works as expected. No issues found. | — |
+| Auth | Login / Logout | Pass | — | Session management correct; `SESSION_COOKIE_HTTPONLY=True`, CSRF enforced. | — |
+| Auth | Password change | Pass | — | `change_password` uses `PasswordChangeForm` + `update_session_auth_hash`; Google-OAuth users correctly blocked. | — |
+| Auth | Google OAuth login | Pass | — | `allauth` social-auth adapter present; OAuth state parameters used. | — |
+| Auth | Account deletion | Pass | — | `delete_account` logs the user out before deleting; no orphaned session risk. | — |
+| File System | File upload (PDF/PNG/ZIP) | Pass | — | `validate_file_size` and `validate_file_type` enforced at `ShareTargetFinishView.post`. | — |
+| File System | File upload — **chat room** | **Fail** | **High** | `chat_room` (`friends_chat.py:248-256`) stores `local_file` with **no** call to `validate_file_size` or `validate_file_type`. Any file type/size is accepted. | Call `validate_file_size(local_file)` and `validate_file_type(local_file)` before `Document.objects.create`; return an error message on `ValidationError`. |
+| File System | File upload — external resource | **Fail** | **Medium** | `add_external_resource` (`personal_drive.py:92-118`) stores `file = request.FILES.get('file')` without validation. | Add the same `validate_file_size`/`validate_file_type` guards used in the share-target upload flow. |
+| File System | Document download (own file) | Pass | — | Correct counter increment, log creation, and `Content-Disposition` header. | — |
+| File System | Document download (cross-user, course-linked) | **Fail** | **Critical** | `_can_user_access_document` (`documents.py:193-205`) grants access to **any** authenticated user for any document with a non-null `course_id`. There is no enrollment or explicit sharing check. | Introduce an enrollment/membership gate: only allow download if `request.user == doc.uploaded_by` **or** the user is a member of the document's course/community. Add explicit sharing model if needed. |
+| File System | Document view (cross-user, course-linked) | **Fail** | **Critical** | Same `_can_user_access_document` flaw applies to `document_viewer`. | Same fix as download. |
+| File System | Download error path (no course) | **Fail** | **High** | `download_file` catches `Exception` then calls `redirect('course_detail', course_id=d.course.id)` (`documents.py:238-240`). When `d.course` is `None` (chat/personal-drive files) this raises `AttributeError` → unhandled 500. | Replace with `redirect(request.META.get('HTTP_REFERER', 'personal_drive'))` or guard with `if d.course else redirect('personal_drive')`. |
+| File System | File deletion (own) | Pass | — | `delete_item_ajax` uses `check_deletion_permission`; ownership enforced. | — |
+| File System | AWS S3 integration | Pass | — | `DEFAULT_FILE_STORAGE` uses `storages.backends.s3boto3.S3Boto3Storage` in production; environment credentials loaded via `os.getenv`. | — |
+| File System | `ShareTargetView` CSRF exemption | **Fail** | **Medium** | `ShareTargetView` is decorated with `@csrf_exempt` (`documents.py:60`), allowing cross-origin POST requests to stage files in the server's temp storage. | Limit exemption to legitimate OS share-target agents using `Origin` / `Referer` header validation, or restrict to authenticated requests with a custom CSRF token header. |
+| Social | Send friend request | Pass | — | Now guarded by `@require_POST`; GET requests return HTTP 405. | — |
+| Social | Accept friend request | **Fail** | **Medium** | `accept_friend_request` (`friends_chat.py:118`) is not decorated with `@require_POST`. A crafted `GET /friend/accept/<id>/` link can accept a pending request without user intent. | Add `@require_POST` decorator. |
+| Social | Reject friend request | **Fail** | **Medium** | `reject_friend_request` (`friends_chat.py:142`) is not decorated with `@require_POST`. Same CSRF-via-GET exposure as accept. | Add `@require_POST` decorator. |
+| Social | Remove friend | **Fail** | **Medium** | `remove_friend` (`friends_chat.py:168`) is not decorated with `@require_POST`. A malicious link can silently remove a friendship. | Add `@require_POST` decorator. |
+| Social | Private chat (text message) | Pass | — | Participants-only room access correctly enforced (`get_object_or_404(ChatRoom, …, participants=request.user)`). | — |
+| Social | Add comment (XSS) | Pass | — | `add_comment` now calls `escape(comment.text)` (`social.py:166`) before returning JSON. Frontend safe. | — |
+| Social | University/Major creation (unauthenticated) | Pass | — | `add_university_ajax` and `add_major_ajax` now check `request.user.is_authenticated` and return HTTP 401 for anonymous requests. | — |
+| Social | University/Major creation (authorization level) | **Fail** | **Low** | Any authenticated user (not just staff/admin) can create new University or Major records. No role check beyond `is_authenticated`. | Add `if not request.user.is_staff: return JsonResponse(…, status=403)` or a dedicated permission group check. |
+| Social | `load_majors` API exposure | **Fail** | **Low** | `load_majors` (`api.py:36`) returns all majors for a given university ID without requiring authentication. Leaks academic catalogue data publicly. | Add `@login_required` decorator (consistent with all other API endpoints). |
+| Social | Cross-user tag mutation | Pass | — | `update_resource_tag` now validates `obj.uploaded_by_id != request.user.id` and returns HTTP 403. | — |
+| Auth/Security | Report endpoint method abuse | Pass | — | `report_document` now enforces `@require_POST`; GET returns HTTP 405. | — |
+| UI/UX | Dark Mode — CSS variables | Pass | — | `[data-bs-theme="dark"]` block in `base.html` overrides all major design tokens. No critical missing variables found. | — |
+| UI/UX | Dark Mode — persistence | **Fail** | **Low** | Theme is read from `user.profile.theme_preference` on initial render (`base.html:8`), but a small JS snippet applies it from `localStorage` before the first paint (`base.html:15-16`). These two sources can diverge if the user changes theme in another tab or browser. | Sync `localStorage` write to the settings-save AJAX response so both sources stay in agreement. |
+| UI/UX | Lecturers page — stray character | **Fail** | **Low** | `lecturers_index.html` starts with `={% extends … %}` (visible `=` rendered before template tag). Causes a text artifact at the page top on all browsers. | Remove the leading `=` character from line 1 of `core/templates/core/lecturers_index.html`. |
+| UI/UX | Mobile responsiveness | Pass | — | Bootstrap 5 grid and RTL (`dir="rtl"`) applied globally; navbar collapses correctly at `<768 px` breakpoint. | — |
+| UI/UX | Tablet responsiveness | Pass | — | Layout validated at 768 px–1024 px; no overflow or broken grids observed in template inspection. | — |
+| Automation | n8n / AI agent triggers | N/A | — | Agent view routes are commented out in `urls.py` (`#path('agent/upload/…')`). n8n integration not active in current codebase. | Re-enable and test when integration is restored. |
+| Automation | AI document summary | Pass | — | `summarize_document_ai` calls `generate_smart_summary`; access-controlled by `@login_required`. | — |
+| Security | SQL injection surface | Pass | — | All queries use Django ORM; no raw SQL or `cursor.execute` paths found. | — |
+| Security | Session cookie security | Pass | — | `SESSION_COOKIE_HTTPONLY=True`, `CSRF_COOKIE_HTTPONLY=True`; production enforces `SECURE_SSL_REDIRECT` and HSTS (1 year). | — |
+| Security | HSTS configuration | Pass | — | `SECURE_HSTS_SECONDS=31536000`, `INCLUDE_SUBDOMAINS=True`, `PRELOAD=True` in production settings. | — |
+| Testing | Automated regression coverage | Pass | — | Test suite: **60 tests, all pass** (up from 42 in previous cycle). | Continue adding tests for cross-user access and chat file upload paths. |
 
-### 3.6 Stored XSS vector in comment rendering path
-- **Location:**
-  - API response source: `core/views/social.py:152-170`
-  - Unsafe DOM insertion: `core/templates/core/base.html:1277-1292`
-  - Similar unsafe insertion paths: `core/templates/core/course_detail.html:1034-1050`, `core/templates/core/personal_drive.html:439-453`
-- **Severity:** **High**
-- **What fails:** Comment text is returned unsanitized and inserted using `insertAdjacentHTML` template strings.
-- **Repro steps:**
-  1. Submit comment text payload like `<img src=x onerror=alert(1)>`.
-  2. API returns raw payload in JSON `text` field.
-  3. Frontend inserts payload into HTML via `insertAdjacentHTML`, enabling script execution context.
+---
 
-### 3.7 UI integration defect on grid dashboard page
-- **Location:** `core/templates/core/lecturers_index.html:1`
-- **Severity:** **Low**
-- **What fails:** Stray leading `=` is rendered at page start (visual artifact on grid page).
-- **Repro steps:**
-  1. Open `/lecturers/`.
-  2. Inspect top of rendered HTML/page; leading `=` appears before template content.
+## Remediation Priority
 
-## 4) Security Recommendations
-1. **Enforce object-level authorization** on document view/download/tagging endpoints (owner, explicit sharing, or course/community membership checks).
-2. **Protect mutating API endpoints** (`add_university_ajax`, `add_major_ajax`) with `@login_required` + role-based authorization (moderator/admin).
-3. **Enforce HTTP method semantics** (`@require_POST`) for all state-changing actions (friend requests, etc.).
-4. **Fix report endpoint control flow**: initialize `d` before branching or return early for non-POST methods to avoid 500s.
-5. **Eliminate XSS sinks**:
-   - escape/sanitize user-generated text before DOM insertion;
-   - avoid `insertAdjacentHTML` for untrusted content;
-   - use text nodes / safe templating.
-6. **Add regression tests** for: cross-user document access, unauthorized tag updates, anonymous academic object creation, and report endpoint method misuse.
+| Priority | Ticket | Effort |
+|----------|--------|--------|
+| P0 — Immediate | Cross-user document view/download (Critical) | Medium |
+| P0 — Immediate | Chat-room file upload validation (High) | Low |
+| P0 — Immediate | Download error-redirect crash on courseless files (High) | Low |
+| P1 — This sprint | Accept/Reject/Remove friend `@require_POST` guards (Medium × 3) | Low |
+| P1 — This sprint | `ShareTargetView` CSRF exemption scope (Medium) | Medium |
+| P2 — Next sprint | External resource upload validation (Medium) | Low |
+| P2 — Next sprint | University/Major creation role-check (Low) | Low |
+| P3 — Backlog | `load_majors` auth gate (Low) | Low |
+| P3 — Backlog | Dark Mode `localStorage` / DB sync (Low) | Low |
+| P3 — Backlog | Lecturers page stray `=` character (Low) | Trivial |

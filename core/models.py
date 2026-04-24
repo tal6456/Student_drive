@@ -93,6 +93,7 @@ class UserProfile(models.Model):
     # --- Economy and reputation ---
     current_balance = models.PositiveIntegerField(default=0, verbose_name="יתרת מטבעות לשימוש")
     lifetime_coins = models.PositiveIntegerField(default=0, verbose_name="מוניטין (סך כל המטבעות שהורווחו מעשייה)")
+    last_daily_bonus = models.DateField(null=True, blank=True, verbose_name="תאריך בונוס יומי אחרון")
 
     favorite_courses = models.ManyToManyField('Course', related_name='favorited_by_users', blank=True,
                                               verbose_name="קורסים מועדפים")
@@ -508,6 +509,8 @@ class AcademicStaff(models.Model):
     email = models.EmailField(blank=True, null=True, verbose_name="אימייל (אופציונלי)")
     image = models.ImageField(upload_to='staff_images/', null=True, blank=True, verbose_name="תמונה", validators=[validate_file_size])
     average_rating = models.FloatField(default=0.0, verbose_name="דירוג ממוצע")
+    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+                                   verbose_name="הוסף על ידי")
 
     @property
     def privacy_name(self):
@@ -695,6 +698,8 @@ class CoinTransaction(BaseActivity):
     )
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='coin_transactions')
+    actor = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='granted_transactions', verbose_name="גורם מבצע")
     amount = models.IntegerField(verbose_name='amount')
     transaction_type = models.CharField(max_length=30, choices=TX_TYPE_CHOICES, default='system')
     description = models.CharField(max_length=500, blank=True, null=True)
@@ -705,19 +710,6 @@ class CoinTransaction(BaseActivity):
 
     def __str__(self):
         return f"{self.user.username}: {self.amount} ({self.transaction_type})"
-
-
-class BountyRequest(BaseActivity):
-    """Users can create bounty requests for course-related tasks."""
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='bounty_requests')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
-    title = models.CharField(max_length=255)
-    reward_amount = models.PositiveIntegerField(default=0)
-    is_fulfilled = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Bounty: {self.title} ({self.reward_amount}) by {self.user.username}"
-
 
 class UserCourseSelection(models.Model):
     """Link a user to a course and track whether the course is starred."""

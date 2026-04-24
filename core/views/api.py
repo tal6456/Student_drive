@@ -145,7 +145,25 @@ def delete_item_ajax(request):
 
 @login_required
 def unread_notifications_count(request):
-    """Return the count of unread notifications for the authenticated user."""
-    from core.models import Notification
+    """
+    מחזיר את מספר ההתראות שלא נקראו.
+    עבור אדמינים: בודק גם אם יש דיווח זכויות יוצרים פתוח שדורש Pop-up.
+    """
+    from core.models import Notification, Report
+
+    # 1. ספירת התראות רגילה לכל משתמש
     count = Notification.objects.filter(user=request.user, is_read=False).count()
-    return JsonResponse({'unread_count': count})
+    data = {'unread_count': count}
+
+    # 2. בדיקה מיוחדת לאדמינים (צוות האתר)
+    if request.user.is_staff:
+        # מחפשים את הדיווח האחרון על זכויות יוצרים שטרם טופל
+        urgent_report = Report.objects.filter(reason='copyright', is_resolved=False).order_by('-created_at').first()
+
+        if urgent_report:
+            data['has_urgent_alert'] = True
+            data['urgent_message'] = f"התקבל דיווח על הפרת זכויות יוצרים בקובץ: {urgent_report.document.title}"
+            data['alert_id'] = urgent_report.id
+            data['alert_link'] = f"/admin/core/report/{urgent_report.id}/change/"
+
+    return JsonResponse(data)

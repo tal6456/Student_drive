@@ -74,10 +74,4 @@ except Exception as e:
 print("🎉 Setup script completed!")
 END
 
-# ==========================================
-# Run the documentation and intelligence agent
-# ==========================================
-echo "🤖 Running AI Documentation Agent..."
-python manage.py run_agent
-
 echo "🚀 Build script finished successfully!"

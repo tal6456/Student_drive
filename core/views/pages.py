@@ -15,6 +15,12 @@ from django.db.models import Count, Sum, Q
 from core.models import Document, Course, UserProfile, Report, Feedback, Notification
 from django.core.paginator import Paginator
 from core.models import Notification
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 # ==========================================
@@ -129,3 +135,56 @@ def resolve_notification(request, pk):
         return redirect(notification.link)
     else:
         return redirect('profile')
+
+
+@login_required
+def report_document(request, doc_id):
+    if request.method == 'POST':
+        doc = get_object_or_404(Document, id=doc_id)
+        reason = request.POST.get('reason')
+        description = request.POST.get('description', '')
+
+        # יצירת הדיווח במסד הנתונים
+        report = Report.objects.create(
+            document=doc,
+            user=request.user,
+            reason=reason,
+            description=description
+        )
+
+        # אם מדובר בזכויות יוצרים - מפעילים את כל ה"אזעקות"
+        if reason == 'copyright':
+            admins = User.objects.filter(is_staff=True)
+            admin_emails = [admin.email for admin in admins if admin.email]
+
+            # 1. יצירת התראה במערכת לכל אדמין
+            for admin in admins:
+                Notification.objects.create(
+                    user=admin,
+                    notification_type='system',  # או סוג אדמין אם הגדרת
+                    title="🚨 דיווח דחוף: זכויות יוצרים",
+                    message=f"הקובץ '{doc.title}' דווח כהפרת זכויות יוצרים על ידי {request.user.username}.",
+                    link=f"/admin/core/report/{report.id}/change/"
+                )
+
+            # 2. שליחת מייל דחוף
+            subject = f"🔴 דחוף: הפרת זכויות יוצרים - {doc.title}"
+            message = f"""
+            שלום אדמין,
+            התקבל דיווח על הפרת זכויות יוצרים ב-Student Drive.
+
+            פרטי הקובץ: {doc.title}
+            דווח על ידי: {request.user.username}
+            פירוט הדיווח: {description}
+
+            יש לטפל בזה בהקדם!
+            לטיפול באדמין: {request.build_absolute_uri(f'/admin/core/report/{report.id}/change/')}
+            """
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, admin_emails)
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+        return JsonResponse({'success': True, 'message': 'הדיווח התקבל ויטופל בהקדם.'})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
