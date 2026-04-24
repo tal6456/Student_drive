@@ -48,19 +48,29 @@ class ProjectStructureScanner(BaseScanner):
 
 
 class DjangoCoreScanner(BaseScanner):
+    """Scans only core architectural files to save AI tokens."""
     def __init__(self, base_dir, app_name='core'):
         super().__init__(base_dir)
         self.app_dir = self.base_dir / app_name
-        self.target_files = ['models.py', 'views_legacy.py', 'urls.py', 'forms.py']
 
     def scan(self):
-        for file_name in self.target_files:
-            file_path = self.app_dir / file_name
-            if file_path.exists():
-                with open(file_path, 'r', encoding='utf-8') as f:
+        # קבצי ליבה חשובים בלבד כדי לא לחרוג ממגבלת הטוקנים של גוגל
+        important_files = ['models.py', 'urls.py', 'utils.py', 'signals.py', 'personal_drive.py']
+
+        for filepath in self.app_dir.rglob('*.py'):
+            # דילוג על תיקיות כבדות ולא רלוונטיות למבנה הכללי
+            if any(x in str(filepath) for x in ['migrations', 'tests', 'management', 'templatetags']):
+                continue
+
+            # ניקח את הקובץ רק אם הוא ברשימה החשובה, או שהוא בתוך תיקיית views
+            is_important = filepath.name in important_files
+            is_view = 'views' in str(filepath)
+
+            if is_important or is_view:
+                with open(filepath, 'r', encoding='utf-8') as f:
                     self.files_data.append({
-                        'name': file_name,
-                        'path': str(file_path.relative_to(self.base_dir)),
+                        'name': filepath.name,
+                        'path': str(filepath.relative_to(self.base_dir)),
                         'content': f.read()
                     })
         return self
@@ -120,7 +130,7 @@ class MarkdownUXFormatter:
 class Command(BaseCommand):
     help = 'Runs the Advanced AI agent to scan the project, build trees, generate flowcharts, and update PROJECT_MIRROR.md'
 
-    PRIMARY_MODEL = 'gemini-2.5-pro'
+    PRIMARY_MODEL = 'gemini-2.5-flash'
     FALLBACK_MODEL = 'gemini-2.5-flash'
     MAX_RETRIES = 3
     INITIAL_BACKOFF_SECONDS = 2

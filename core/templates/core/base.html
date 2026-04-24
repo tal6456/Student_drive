@@ -1059,37 +1059,124 @@ such as the background, top bar, footer, and related layout behavior.
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="text/javascript">
-    // פונקציית תרגום אגרסיבית שעוקפת את הבעיה
-    function forceTranslate(lang) {
-    const domain = window.location.hostname;
-    const cookieVal = (lang === 'he') ? "" : "/he/" + lang;
+    const GT_COOKIE_NAME = 'googtrans';
+    const GT_STORAGE_KEY = 'preferred_lang';
+    const GT_SOURCE_LANG = 'he';
+    const GT_SUPPORTED = ['he', 'en'];
+    const GT_RELOAD_KEY = 'gt_reload_once';
 
-    // 1. ניקוי אגרסיבי של קוקיז ישנים כדי למנוע התנגשויות
-    const cookies = ["googtrans", "googtrans_"];
-        cookies.forEach(c => {
-            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + domain + "; path=/;";
-            document.cookie = c + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=." + domain + "; path=/;";
+    function gtIsIpHost(hostname) {
+        return /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname) || hostname.includes(':');
+    }צ
+
+    function gtIsLocalHost(hostname) {
+        return hostname === 'localhost' || hostname.endsWith('.localhost');
+    }
+
+    function gtGetCookie(name) {
+        const parts = document.cookie.split(';').map(part => part.trim());
+        const match = parts.find(part => part.startsWith(name + '='));
+        return match ? decodeURIComponent(match.split('=')[1]) : '';
+    }
+
+    function gtBuildCookie(name, value, maxAgeSeconds, domain) {
+        const parts = [`${name}=${encodeURIComponent(value)}`, 'path=/', 'SameSite=Lax'];
+        if (typeof maxAgeSeconds === 'number') {
+            parts.push(`Max-Age=${maxAgeSeconds}`);
+        }
+        if (window.location.protocol === 'https:') {
+            parts.push('Secure');
+        }
+        if (domain) {
+            parts.push(`domain=${domain}`);
+        }
+        return parts.join('; ');
+    }
+
+    function gtSetCookieHostOnly(name, value, maxAgeSeconds) {
+        document.cookie = gtBuildCookie(name, value, maxAgeSeconds);
+    }
+
+    function gtClearCookieHostOnly(name) {
+        document.cookie = gtBuildCookie(name, '', 0);
+    }
+
+    function gtSetGoogtrans(lang) {
+        const cookieValue = `/${GT_SOURCE_LANG}/${lang}`;
+        // Host-only cookie is the most reliable across modern browsers and PWAs.
+        gtSetCookieHostOnly(GT_COOKIE_NAME, cookieValue, 60 * 60 * 24 * 365);
+    }
+
+    function gtLogState(context, extra = {}) {
+        const cookieValue = gtGetCookie(GT_COOKIE_NAME);
+        const storedLang = localStorage.getItem(GT_STORAGE_KEY);
+        console.log('[Translate]', context, {
+            hostname: window.location.hostname,
+            protocol: window.location.protocol,
+            cookie: cookieValue,
+            storage: storedLang,
+            ...extra
         });
+    }
 
-        // 2. הגדרת הקוקי החדש
-        document.cookie = "googtrans=" + cookieVal + "; path=/";
-        document.cookie = "googtrans=" + cookieVal + "; domain=" + domain + "; path=/";
-        document.cookie = "googtrans=" + cookieVal + "; domain=." + domain + "; path=/";
+    function gtEnsurePreferredLanguage() {
+        const storedLang = localStorage.getItem(GT_STORAGE_KEY);
+        const preferred = GT_SUPPORTED.includes(storedLang) ? storedLang : GT_SOURCE_LANG;
+        const currentCookie = gtGetCookie(GT_COOKIE_NAME);
+        const desiredCookie = preferred === GT_SOURCE_LANG ? '' : `/${GT_SOURCE_LANG}/${preferred}`;
 
-        // 3. שמירה מקומית וריענון
-        localStorage.setItem('user_lang', lang);
+        if (preferred === GT_SOURCE_LANG) {
+            if (currentCookie) {
+                gtClearCookieHostOnly(GT_COOKIE_NAME);
+                if (!sessionStorage.getItem(GT_RELOAD_KEY)) {
+                    sessionStorage.setItem(GT_RELOAD_KEY, 'cleared');
+                    gtLogState('cleared cookie -> reload');
+                    window.location.reload();
+                }
+            } else {
+                gtLogState('source language active');
+            }
+            return;
+        }
+
+        if (currentCookie !== desiredCookie) {
+            gtSetGoogtrans(preferred);
+            if (!sessionStorage.getItem(GT_RELOAD_KEY)) {
+                sessionStorage.setItem(GT_RELOAD_KEY, 'set');
+                gtLogState('set cookie -> reload', { desiredCookie });
+                window.location.reload();
+            }
+        } else {
+            gtLogState('cookie matches preferred', { desiredCookie });
+        }
+    }
+
+    function forceTranslate(lang) {
+        const target = GT_SUPPORTED.includes(lang) ? lang : GT_SOURCE_LANG;
+        localStorage.setItem(GT_STORAGE_KEY, target);
+        sessionStorage.removeItem(GT_RELOAD_KEY);
+
+        if (target === GT_SOURCE_LANG) {
+            gtClearCookieHostOnly(GT_COOKIE_NAME);
+        } else {
+            gtSetGoogtrans(target);
+        }
+
+        gtLogState(`forceTranslate(${target})`, { target });
+        sessionStorage.setItem(GT_RELOAD_KEY, 'forced');
         window.location.reload();
     }
 
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
-            pageLanguage: 'he',
-            includedLanguages: 'en,he',
+            pageLanguage: GT_SOURCE_LANG,
+            includedLanguages: GT_SUPPORTED.join(','),
             layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false
         }, 'google_translate_element');
     }
+
+    gtEnsurePreferredLanguage();
 
     // לוגיקה לחיפוש (השארתי לך את זה, זה עובד מצוין)
     document.addEventListener('DOMContentLoaded', function() {
