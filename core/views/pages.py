@@ -138,9 +138,9 @@ def resolve_notification(request, pk):
 
 
 @login_required
-def report_document(request, doc_id):
+def report_document(request, document_id):
     if request.method == 'POST':
-        doc = get_object_or_404(Document, id=doc_id)
+        doc = get_object_or_404(Document, id=document_id)
         reason = request.POST.get('reason')
         description = request.POST.get('description', '')
 
@@ -161,7 +161,7 @@ def report_document(request, doc_id):
             for admin in admins:
                 Notification.objects.create(
                     user=admin,
-                    notification_type='system',  # או סוג אדמין אם הגדרת
+                    notification_type='system',
                     title="🚨 דיווח דחוף: זכויות יוצרים",
                     message=f"הקובץ '{doc.title}' דווח כהפרת זכויות יוצרים על ידי {request.user.username}.",
                     link=f"/admin/core/report/{report.id}/change/"

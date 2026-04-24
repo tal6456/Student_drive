@@ -289,17 +289,6 @@ def summarize_document_ai(request, document_id):
 
     return JsonResponse({'success': False, 'error': s})
 
-
-@login_required
-@require_POST
-def report_document(request, document_id):
-    d = get_object_or_404(Document, id=document_id)
-    Report.objects.create(document=d, user=request.user, reason=request.POST.get('reason'),
-                          description=request.POST.get('description', ''))
-    messages.success(request, 'הדיווח התקבל וייבדק בהקדם על ידי ההנהלה.')
-    return redirect('course_detail', course_id=d.course.id)
-
-
 @login_required
 def like_document(request, document_id):
     if request.method == 'POST':

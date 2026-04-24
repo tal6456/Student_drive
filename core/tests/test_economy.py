@@ -18,19 +18,15 @@ class EconomyBalanceTests(BaseTestCase):
             password="StrongPass123!",
             first_name="Summary",
         )
+
+        # --- הפתרון: חוסמים את הבונוס היומי כדי שלא יפריע למתמטיקה ---
+        self.user.profile.last_daily_bonus = date(2026, 4, 25)
+        # --------------------------------------------------------
+
         self.user.profile.phone_number = "0501234567"
-        self.user.profile.save(update_fields=["phone_number"])
-        self.client.force_login(self.user)
-
-        # --- התוספת שלנו ---
-        # אנחנו מבצעים קריאה אחת כדי "לשרוף" את הבונוס היומי
-        self.client.get(reverse("home"))
-
-        # עכשיו, אחרי שהבונוס ניתן, אנחנו מאפסים את הארנק בדיוק ל-20
         self.user.profile.current_balance = 20
         self.user.profile.lifetime_coins = 20
-        self.user.profile.save(update_fields=["current_balance", "lifetime_coins"])
-        # ------------------
+        self.user.profile.save(update_fields=["phone_number", "current_balance", "lifetime_coins", "last_daily_bonus"])
 
         university = University.objects.create(name="Summary University")
         major = Major.objects.create(name="Summary Major", university=university)
@@ -46,6 +42,7 @@ class EconomyBalanceTests(BaseTestCase):
             file=doc_file,
             uploaded_by=self.user,
         )
+        self.client.force_login(self.user)
 
     def test_current_balance_and_lifetime_update_for_add_and_spend(self):
         profile = self.user.profile
