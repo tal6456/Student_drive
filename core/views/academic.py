@@ -94,7 +94,7 @@ class CourseUpdateView(CoursePermissionMixin, UpdateView):
 
 
 class CourseDeleteView(CoursePermissionMixin, DeleteView):
-    success_url = reverse_lazy('home')
+    # הסרנו את ה-success_url הקבוע
 
     def test_func(self):
         course = self.get_object()
@@ -107,6 +107,15 @@ class CourseDeleteView(CoursePermissionMixin, DeleteView):
             self.permission_denied_message = 'לא ניתן למחוק קורס שמכיל תיקיות או קבצים.'
             return False
         return True
+
+    def get_success_url(self):
+        # תופס את העמוד שממנו המשתמש הגיע
+        referer = self.request.META.get('HTTP_REFERER')
+
+        # אם המשתמש בתוך הקורס שכרגע נמחק - נזרוק אותו הביתה, אחרת נחזיר לאותו עמוד
+        if referer and f"/course/{self.object.id}/" in referer:
+            return reverse_lazy('home')
+        return referer or reverse_lazy('home')
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
