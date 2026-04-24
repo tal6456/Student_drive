@@ -1,6 +1,6 @@
 {
-  "name": "הדרייב הסטודנטיאלי",
-  "short_name": "הדרייב",
+  "name": "Student Drive",
+  "short_name": "Student Drive",
   "icons": [
     {
       "src": "/static/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#1a73e8",
-  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "background_color": "#1a5b9b",
   "display": "standalone"
 }
