@@ -35,7 +35,7 @@ from .models import (
     Community, Post, MarketplacePost, VideoPost, Comment,DocumentComment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
     Report, Feedback,Notification, UserCourseSelection,
-    CoinTransaction, BountyRequest
+    CoinTransaction
 )
 
 
@@ -140,11 +140,6 @@ class DocumentAdmin(BaseAdmin):
 
     actions = ['grant_quality_bonus']
 
-
-@admin.register(BountyRequest)
-class BountyRequestAdmin(BaseAdmin):
-    list_display = ('title', 'user', 'course', 'reward_amount', 'is_fulfilled', 'created_at')
-    search_fields = ('title', 'user__username', 'course__name')
 
 # ==========================================
 # 3. Users and economy

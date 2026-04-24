@@ -34,7 +34,7 @@ from django.views.decorators.http import require_POST
 # Import the models and helpers needed by this module
 from core.models import Course, Document, DownloadLog, Major, Report
 from core.ai_utils import generate_smart_summary
-from core.utils import get_client_ip, validate_file_size, validate_file_type, process_transaction
+from core.utils import get_client_ip, validate_file_size, validate_file_type, process_transaction, check_daily_limit
 
 
 def _ensure_session_key(request):
@@ -154,7 +154,9 @@ class ShareTargetFinishView(LoginRequiredMixin, View):
                     uploaded_by=request.user,
                     uploader_ip=get_client_ip(request)
                 )
-                process_transaction(request.user, 1, tx_type='system', description='בונוס על העלאת מסמך')
+                # הבונוס המוגן: 5 מטבעות, עד 5 ביום
+                if check_daily_limit(request.user, 'document_upload', 5):
+                    process_transaction(request.user, 5, 'document_upload', "בונוס על העלאת חומר לימוד 📄", notify=True)
                 uploaded_count += 1
 
             default_storage.delete(file_path)
@@ -272,10 +274,18 @@ def document_viewer(request, document_id):
 @login_required
 def summarize_document_ai(request, document_id):
     d, p = get_object_or_404(Document, id=document_id), request.user.profile
+
+    # 1. בדיקת יתרה
+    if p.current_balance < 2:
+        return JsonResponse({'success': False, 'error': 'אין לך מספיק מטבעות (נדרשים 2 מטבעות לסיכום).'})
+
+    # 2. הרצת ה-AI
     s = generate_smart_summary(d)
 
     if "שגיאה" not in s:
-        return JsonResponse({'success': True, 'summary': s, 'new_coins': p.current_balance})
+        # 3. גביית תשלום (מינוס 2) רק אם הסיכום הצליח
+        process_transaction(request.user, -2, 'ai_summary', f"תשלום על בקשת סיכום למסמך '{d.title}'", notify=False)
+        return JsonResponse({'success': True, 'summary': s, 'new_coins': p.current_balance - 2})
 
     return JsonResponse({'success': False, 'error': s})
 
@@ -300,14 +310,15 @@ def like_document(request, document_id):
         else:
             doc.likes.add(request.user)
             liked = True
-            # בדיקה שהמעלה קיים ושהוא לא הלייקר (כדי שלא ייתן לעצמו לייקים בשביל כסף)
-            if doc.uploaded_by and doc.uploaded_by != request.user:
-                # שימוש במערכת הטרנזקציות החדשה
+            # מחקנו את התשלום על כל לייק בודד, ועברנו לבונוס איכות של 10 לייקים
+            if doc.total_likes == 10 and doc.uploaded_by:
                 process_transaction(
                     user=doc.uploaded_by,
-                    amount=1,
-                    tx_type='system',
-                    description=f'קיבלת מטבע על לייק לקובץ: {doc.title}'
+                    amount=10,
+                    tx_type='quality_bonus',
+                    description=f"בונוס איכות! הקובץ '{doc.title}' שובר שיאים וקיבל 10 לייקים 🔥",
+                    notify=True,
+                    bonus_increases_lifetime=True
                 )
 
         return JsonResponse({'liked': liked, 'total_likes': doc.total_likes})

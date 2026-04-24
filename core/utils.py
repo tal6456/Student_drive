@@ -288,6 +288,25 @@ class InsufficientFunds(Exception):
     pass
 
 
+def check_daily_limit(user, tx_type, limit):
+    """
+    מנוע אנטי-ספאם: בודק כמה פעמים המשתמש קיבל מטבעות על הפעולה הזו היום.
+    מחזיר True אם מותר לתת לו, או False אם הוא חרג מהמכסה.
+    """
+    from django.utils import timezone
+    from .models import CoinTransaction
+
+    today = timezone.localtime().date()
+
+    # סופרים כמה פעולות כאלו המשתמש עשה היום
+    count_today = CoinTransaction.objects.filter(
+        user=user,
+        transaction_type=tx_type,
+        created_at__date=today
+    ).count()
+
+    return count_today < limit
+
 def process_transaction(user, amount, tx_type='system', description=None, actor=None, notify=True, bonus_increases_lifetime=True):
     """Process a coin transaction for a user.
 
@@ -329,6 +348,7 @@ def process_transaction(user, amount, tx_type='system', description=None, actor=
         # Create ledger entry
         tx = CoinTransaction.objects.create(
             user=user,
+            actor=actor,
             amount=amount,
             transaction_type=tx_type,
             description=description or '',
@@ -336,10 +356,8 @@ def process_transaction(user, amount, tx_type='system', description=None, actor=
             balance_after=balance_after,
         )
 
-        # Create notification (if requested) inside the transaction so any failure rolls back the whole operation
-        # Create notification (if requested) inside the transaction
+        # Create notification (if requested)
         if notify:
-            # הגדרת כותרת חכמה יותר לפי סוג הפעולה
             if amount > 0:
                 title = f"🪙 קיבלת {amount} מטבעות!"
             else:
@@ -354,8 +372,10 @@ def process_transaction(user, amount, tx_type='system', description=None, actor=
                     link=None,
                 )
             except Exception as e:
-                # מדפיסים ללוג כדי שנדע מה קרה, ומעלים את השגיאה ל-Rollback
-                print(f"Notification failed: {e}")
-                raise
+                # התיקון הקריטי: אנחנו רק מדפיסים את השגיאה,
+                # ולא עושים 'raise' כדי שהטרנזקציה של הכסף תישמר גם אם ההתראה נכשלה!
+                print(f"Notification failed, but transaction saved: {e}")
 
     return tx
+
+

@@ -96,6 +96,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('complete-profile/', views.complete_profile, name='complete_profile'),
     path('analytics/', views.analytics_dashboard, name='analytics'),
+    path('wallet/', views.wallet_view, name='wallet'),
 
     # Settings, privacy, and accessibility
     path('settings/', views.settings_view, name='settings'),

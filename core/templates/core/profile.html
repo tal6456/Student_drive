@@ -101,25 +101,33 @@
                     </div>
 
                     {# Visual achievements row #}
+                    {# Visual achievements row #}
                     <div class="row g-3 px-md-4 mb-5">
                         <div class="col-4">
-                            <div class="achievement-card">
-                                <i class="fas fa-coins text-warning mb-2 fs-4"></i>
-                                <div class="stat-value text-warning">{{ user.profile.current_balance }}</div>
-                                <span class="stat-text">מטבעות</span>
-                            </div>
+                            {# קישור לארנק על כרטיס המטבעות #}
+                            <a href="{% url 'wallet' %}" class="text-decoration-none" style="color: inherit; display: block;">
+                                <div class="achievement-card">
+                                    <i class="fas fa-coins text-warning mb-2 fs-4"></i>
+                                    <div class="stat-value text-warning">{{ user.profile.current_balance }}</div>
+                                    <span class="stat-text">מטבעות</span>
+                                </div>
+                            </a>
                         </div>
                         <div class="col-4">
-                            <div class="achievement-card">
-                                <i class="fas fa-star text-primary mb-2 fs-4"></i>
-                                <div class="stat-value text-primary">{{ user.profile.lifetime_coins }}</div>
-                                <span class="stat-text">מוניטין</span>
-                            </div>
+                            {# קישור לארנק על כרטיס המוניטין #}
+                            <a href="{% url 'wallet' %}" class="text-decoration-none" style="color: inherit; display: block;">
+                                <div class="achievement-card">
+                                    <i class="fas fa-star text-primary mb-2 fs-4"></i>
+                                    <div class="stat-value text-primary">{{ user.profile.lifetime_coins }}</div>
+                                    <span class="stat-text">מוניטין</span>
+                                </div>
+                            </a>
                         </div>
                         <div class="col-4">
+                            {# כרטיס הקבצים נשאר רגיל ללא קישור #}
                             <div class="achievement-card">
                                 <i class="fas fa-file-alt text-success mb-2 fs-4"></i>
-                                <div class="stat-value text-success">{{ user_documents.count }}</div>
+                                <div class="stat-value text-success">{{ uploaded_files.count }}</div>
                                 <span class="stat-text">קבצים</span>
                             </div>
                         </div>

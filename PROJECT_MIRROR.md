@@ -19,8 +19,9 @@
 
 ## 🌳 1. עץ הפרויקט ותפקידי הקבצים
 
+להלן מבנה עץ הספריות של הפרויקט:
+
 ```
-Project Directory Structure:
 📂 student_drive/
     📄 build.sh
     📄 import_courses.py
@@ -147,396 +148,221 @@ Project Directory Structure:
     📂 templates/
         📂 admin/
             📄 base_site.html
-
 ```
 
-**רשימת קבצים ותפקידיהם:**
+### פירוט תפקידי הקבצים:
 
-*   **סקריפטים וכלים כלליים:**
-    *   `build.sh`: סקריפט מעטפת המשמש לבנייה, פריסה או הגדרת סביבת הפרויקט.
-    *   `import_courses.py`: סקריפט Python המשמש ככל הנראה לייבוא נתונים התחלתיים לקורסים, אולי בזמן פריסה או עבור סביבות פיתוח/בדיקה.
-    *   `manage.py`: כלי שורת הפקודה של Django, המשמש לביצוע פעולות ניהוליות כמו הרצת השרת, ביצוע מיגרציות, הרצת בדיקות ועוד.
-    *   `PROJECT_MIRROR.md`, `QA_REPORT_LOG.md`: קבצי תיעוד ולוגים, ככל הנראה לניהול פרויקט ודיווח QA.
+**קבצי שורש הפרויקט (`student_drive/`):**
 
-*   **הגדרות פרויקט (student_drive/student_drive):**
-    *   `asgi.py`, `wsgi.py`: נקודות כניסה לשרתי יישומים אסינכרוניים (ASGI) וסינכרוניים (WSGI) בהתאמה, המשמשים להפעלת יישום Django בסביבת ייצור.
-    *   `settings.py`: קובץ התצורה המרכזי של פרויקט Django. הוא מגדיר את כל ההיבטים של היישום, כולל הגדרות אבטחה (SECRET_KEY), בסיס נתונים (DATABASES), אפליקציות מותקנות (INSTALLED_APPS), מתווכים (MIDDLEWARE), הגדרות אימייל, AWS S3 ועוד. הוא מייבא משתני סביבה מ-.env.
-    *   `urls.py`: קובץ ניתוב ה-URL הראשי של הפרויקט. הוא מפנה בקשות HTTP לאפליקציית `core` ולספריות `allauth` עבור ניהול משתמשים.
+*   `build.sh`: **סקריפטים / CI/CD**. קובץ Bash המשמש כנראה להגדרת סביבת ההרצה או תהליכי Build/Deployment.
+*   `import_courses.py`: **סקריפטים / Data Seeding**. סקריפט Python המשמש לייבוא נתונים ראשוניים, כגון קורסים, למערכת. מתקשר למודלים ב-`core/models.py`.
+*   `manage.py`: **כלי ניהול Django**. כלי שורת הפקודה הסטנדרטי של Django, המשמש לביצוע פעולות כמו `runserver`, `makemigrations`, `migrate`, `createsuperuser` ופקודות ניהול מותאמות אישית. מתחבר ל-`student_drive/settings.py` עבור הגדרות הפרויקט.
+*   `PROJECT_MIRROR.md`: **תיעוד**. קובץ Markdown המתאר את מבנה הפרויקט, ככל הנראה לצרכי תיעוד פנימי.
+*   `QA_REPORT_LOG.md`: **תיעוד / לוגים**. קובץ Markdown המשמש לתיעוד דוחות QA או לוגים של בדיקות.
+*   `documents/`: **אחסון קבצים**. ספרייה ריקה המשמשת ככל הנראה כמקום אחסון זמני או מקומי לקבצים שהועלו, לפני מעבר אפשרי לאחסון ענן (כפי שמוגדר ב-`settings.py` עבור S3).
+*   `locale/`: **בינאום (i18n)**. ספרייה המכילה קבצי תרגום עבור שפות שונות (כאן `en`). Django משתמשת בקבצים אלו כדי להציג טקסטים בשפה המתאימה למשתמש, כפי שמוגדר ב-`settings.py` וב-`LANGUAGE_CODE`.
 
-*   **אפליקציית הליבה (core/):**
-    *   `__init__.py`: מציין ש`core` היא חבילת פייתון.
-    *   `adapters.py`: מכיל מחלקות Adapter של `django-allauth`, כמו `CustomAccountAdapter` ו-`CustomSocialAccountAdapter`. אלו מאפשרות התאמה אישית של תהליכי ההרשמה וההתחברות, לדוגמה הפניה למסך השלמת פרופיל לאחר הרשמה.
-    *   `admin.py`: קובץ תצורה של ממשק הניהול של Django. ככל הנראה, הוא רושם את מודלי האפליקציה לממשק זה ומגדיר את אופן התצוגה והניהול שלהם.
-    *   `agent_brain.py` (לא סופק): ככל הנראה מכיל את הלוגיקה העסקית והאינטגרציה עם מודלי בינה מלאכותית (כגון Gemini API) עבור "מוח" הסוכן החכם של הסטודנט, כולל יכולות כמו סיכום טקסט, יצירת שאלות וכדומה.
-    *   `agent_views.py`: מכיל פונקציות View המטפלות בבקשות הקשורות לסוכן הבינה המלאכותית. לדוגמה, `upload_agent_file` מקבלת קבצים מהמשתמש, שומרת אותם כ-`AgentKnowledge` (מהמודל `models.py`), שולפת טקסט באמצעות `agent_brain` ומייצרת סיכום. `ask_agent_question` מטפלת בשאילתות משתמש, מייבאת מודלים כמו `AgentKnowledge` ו-`Course` כדי לבנות קונטקסט ולשלוח אותו ל-`agent_brain` ליצירת תשובות. כולל `@csrf_exempt` ו-`@login_required`.
-    *   `ai_utils.py`: קובץ עזר לפונקציות הקשורות לבינה מלאכותית, כמו `generate_smart_summary` המוזכר ב-`documents.py`.
-    *   `apps.py`: הגדרות עבור אפליקציית `core`, כולל השם המוצג שלה והגדרת מוכנות לאותות (signals).
-    *   `context_processors.py`: מכיל פונקציות המוסיפות משתנים גלובליים לכל הקונטקסט של התבניות (לדוגמה, `global_counts` המוזכר ב-`settings.py` יכול לספק ספירות של התראות או קבצים).
-    *   `forms.py`: מכיל את טפסי ה-Django המשמשים לאיסוף קלט מהמשתמש, כמו `CourseForm` ו-`UserProfileForm` (המוזכרים ב-`academic.py` ו-`accounts.py`) ו-`CustomSignupForm` (המוזכר ב-`settings.py`).
-    *   `middleware.py`: מכיל את `ProfileCompletionMiddleware` שמבצע בדיקות (למשל, האם פרופיל המשתמש הושלם) ומפנה משתמשים בהתאם.
-    *   `models.py`: קובץ המודלים המרכזי של האפליקציה, המגדיר את כל מבני הנתונים, הישויות והקשרים ביניהם (לדוגמה: `CustomUser`, `UserProfile`, `University`, `Course`, `Document`, `Post`, `Community`, `Notification`, `AgentKnowledge`). הוא כולל גם לוגיקה פנימית כמו `generate_referral_code` ו-`compress_to_webp` (המויבא מ-`utils.py`) וקשירות ל-`signals.py` באמצעות ה-`@receiver` דקורטור.
-    *   `personal_drive.py`: מכיל Views המנהלות את ה"דרייב האישי" של המשתמש. הוא מאפשר צפייה בקבצים שהועלו, היסטוריית הורדות ומשאבים חיצוניים. הוא מייבא את המודלים `Document`, `DownloadLog`, `Vote`, `ExternalResource` ומשתמש בהם כדי לאחזר ולעבד נתונים ספציפיים למשתמש.
-    *   `signals.py`: מכיל פונקציות המגיבות לאירועים ספציפיים במודלים, כגון `notify_students_on_new_file` ששולחת התראות (באמצעות המודל `Notification`) למשתמשים שסימנו קורס בכוכב, כאשר קובץ חדש (מודל `Document`) מועלה לקורס זה. מייבא `Document`, `Notification`, `UserCourseSelection` ו-`reverse` (לקישורי התראות).
-    *   `student_agent.py` (לא סופק): ככל הנראה מכיל הגדרות נוספות או לוגיקה ספציפית לסוכן הסטודנט, אולי הגדרות קונפיגורציה או הרחבות לפונקציונליות שלו.
-    *   `utils.py`: קובץ עזר כללי המכיל מגוון פונקציות שימושיות הנחוצות במקומות שונים בפרויקט. לדוגמה, `compress_to_webp` לדחיסת תמונות, `validate_file_size` ו-`validate_file_type` (אבטחה חזקה) לאימות קבצים, `check_deletion_permission` לבדיקת הרשאות מחיקה, `extract_text_from_pdf` ו-`extract_text_from_docx` לחילוץ טקסט, `get_client_ip` לקבלת IP של משתמש, `send_notification` ו-`process_transaction` לניהול התראות ועסקאות מטבעות.
-    *   `management/commands/`:
-        *   `run_agent.py`: פקודה מותאמת אישית לניהול Django, המיועדת ככל הנראה להפעלה או לניהול של סוכן הבינה המלאכותית.
-        *   `seed_academic_data.py`: פקודה מותאמת אישית לניהול Django, המשמשת ליצירת נתונים אקדמיים ראשוניים עבור הפרויקט (אוניברסיטאות, מסלולים, קורסים).
+**הגדרות פרויקט Django (`student_drive/student_drive/`):**
 
-*   **תבניות (core/templates/core):**
-    *   מכיל את קבצי ה-HTML של אפליקציית `core`, המגדירים את מבנה ותוכן הדפים המוצגים למשתמש. לדוגמה: `home.html`, `course_detail.html`, `profile.html`, `chat_room.html` ועוד רבים. כולל גם ספריית `partials/` לקטעי קוד HTML הניתנים לשימוש חוזר.
+*   `asgi.py`: **שרת אסינכרוני**. נקודת כניסה לשרתי ASGI (כמו Daphne או Uvicorn), המשמשת לאפליקציות הדורשות תקשורת דו-כיוונית בזמן אמת (WebSockets), למשל צ'אט. מתחבר להגדרות ה-ASGI ב-`settings.py`.
+*   `settings.py`: **הגדרות מערכת**. קובץ ההגדרות הראשי של הפרויקט. הוא מגדיר את מסד הנתונים, אפליקציות מותקנות, הגדרות אבטחה, נתיבי קבצים סטטיים ומדיה, אימות משתמשים (Allauth), ו-AWS S3. הוא מייבא משתני סביבה באמצעות `python-dotenv`.
+*   `urls.py`: **ניתוב כתובות (URL Routing)**. קובץ ניתוב ה-URL הראשי של הפרויקט, המקשר כתובות URL נכנסות לפונקציות View באפליקציות השונות. הוא כולל נתיבי URL מהאפליקציה `core` ומ-Allauth.
+*   `wsgi.py`: **שרת סינכרוני**. נקודת כניסה לשרתי WSGI (כמו Gunicorn או uWSGI), המשמשת לאפליקציות ווב רגילות. מתחבר להגדרות ה-WSGI ב-`settings.py`.
 
-*   **קבצים סטטיים (core/static/core):**
-    *   מכיל קבצי CSS ו-JavaScript ספציפיים לאפליקציית `core`, המשמשים לעיצוב ולפונקציונליות צד-לקוח.
+**אפליקציית הליבה (`student_drive/core/`):**
 
-*   **בדיקות (core/tests):**
-    *   `__init__.py`: מציין ש`tests` היא חבילת פייתון.
-    *   `base.py`: ככל הנראה מכיל מחלקת בסיס לבדיקות או הגדרות עזר משותפות לבדיקות.
-    *   `test_a11y_widget.py`, `test_integration.py`, `test_models.py`, `test_security_regressions.py`, `test_utils.py`, `test_views.py`: קבצים אלו מכילים בדיקות יחידה (unit tests) ובדיקות אינטגרציה עבור רכיבים שונים בפרויקט, כגון מודלים, Views, כלי עזר, אבטחה ונגישות.
+*   `adapters.py`: **התאמות Allauth**. מרחיב את התנהגות ברירת המחדל של `django-allauth` עבור רישום והתחברות. לדוגמה, `CustomAccountAdapter` ו-`CustomSocialAccountAdapter` מאפשרים הפניה אוטומטית למסך השלמת פרופיל למשתמשים חדשים. מתחבר ל-`settings.py` (ACCOUNT_ADAPTER, SOCIALACCOUNT_ADAPTER).
+*   `admin.py`: **ממשק ניהול Django**. מגדיר אילו מודלים מ-`models.py` יוצגו בממשק הניהול של Django וכיצד.
+*   `agent_brain.py` (בדיקה בקבצים שסופקו מראה שהוא לא נכלל, אך מוזכר ב-`agent_views.py`): **לוגיקת AI**. מכיל את המימוש של לוגיקת ה-AI המרכזית עבור סוכן הסטודנט, ככל הנראה באמצעות שילוב עם Google Gemini. `agent_views.py` מייבא ומאתחל מחלקה מתוכו (`StudentAgentBrain`).
+*   `agent_views.py`: **Views של סוכן AI**. מטפל בבקשות HTTP הקשורות לסוכן ה-AI. מיישם נקודות קצה (endpoints) להעלאת קבצים לסוכן (`upload_agent_file`) ולשאילתות (`ask_agent_question`). מייבא `models` ו-`agent_brain`.
+*   `ai_utils.py` (בדיקה בקבצים שסופקו מראה שהוא לא נכלל, אך מוזכר ב-`documents.py`): **כלי עזר AI**. קובץ המכיל פונקציות עזר הקשורות לבינה מלאכותית, כמו `generate_smart_summary` המשמש ב-`documents.py`.
+*   `apps.py`: **תצורת אפליקציה**. מגדיר את תצורת אפליקציית `core`, כולל שם האפליקציה וטעינת Signals.
+*   `context_processors.py`: **מעבדי קונטקסט**. מספק מידע גלובלי (כגון ספירת התראות) לכל תבניות ה-HTML, ללא צורך להעביר אותו במפורש מכל View.
+*   `forms.py` (בדיקה בקבצים שסופקו מראה שהוא לא נכלל, אך מוזכר ב-`academic.py` ו-`accounts.py`): **טפסים**. מגדיר טפסים מבוססי מודלים או טפסים רגילים לאיסוף קלט ממשתמשים, כגון `CourseForm` ו-`UserProfileForm`.
+*   `middleware.py`: **Middleware מותאם אישית**. מכיל `ProfileCompletionMiddleware` המבטיח שמשתמשים חדשים ישלימו את הפרופיל שלהם לפני גישה לדפים מסוימים. קובץ זה מופעל עבור כל בקשה (request) כפי שמוגדר ב-`settings.py`.
+*   `models.py`: **מודלי נתונים**. קובץ הליבה המגדיר את מבנה מסד הנתונים של האפליקציה (Users, Courses, Documents, Community, etc.). הוא כולל קשרים בין מודלים (ForeignKey, ManyToMany), ולידה של `signals.py` ו-`utils.py`.
+*   `personal_drive.py`: **Views של דרייב אישי**. מטפל בהצגת קבצים שהועלו על ידי המשתמש, היסטוריית הורדות ומשאבים חיצוניים. הוא מייבא `models` ומשתמש ב-`utils` לפעולות עזר.
+*   `signals.py`: **אותות Django**. מכיל פונקציות שמגיבות לאירועים ספציפיים (לדוגמה: `post_save` על `Document` המפעיל שליחת התראות). הוא מייבא `models` ו-`reverse`.
+*   `student_agent.py` (בדיקה בקבצים שסופקו מראה שהוא לא נכלל, אך מוזכר בעץ): ככל הנראה מהווה חלק מלוגיקת ה-AI, בדומה ל-`agent_brain.py`.
+*   `utils.py`: **פונקציות עזר גלובליות**. מרכז פונקציות נפוצות וחוזרות על עצמן, כגון דחיסת תמונות (WebP), אימות גודל/סוג קובץ (Magic Numbers), לוגיקת הרשאות מחיקה, חילוץ טקסט מ-PDF/DOCX ועיבוד טרנזקציות מטבעות. מיובא על ידי `models` ורוב קבצי ה-Views.
+*   `__init__.py`: מציין ש-`core` היא חבילת Python.
 
-*   **Views מפוצלים (core/views/):**
-    *   `__init__.py`: מייבא את כל הפונקציות והמחלקות מתוך תתי-קבצי ה-Views (לדוגמה `from .academic import *`), כדי לאפשר ייבוא נוח מ-`core.views` לקובץ ה-`urls.py` של הפרויקט.
-    *   `academic.py`: מכיל Views הקשורים לניהול אקדמי: דף הבית, חיפוש קורסים, פרטי קורס, יצירה ועריכת קורסים ותיקיות, ניהול סגל אקדמי ודירוגם. מייבא מודלים אקדמיים (University, Course, Folder, AcademicStaff), `CourseForm` ופונקציות עזר כמו `get_client_ip` ו-`process_transaction`.
-    *   `accounts.py`: מכיל Views לניהול חשבון המשתמש: פרופיל אישי, הגדרות, השלמת פרופיל, שינוי סיסמה ומחיקת חשבון. מייבא מודלים כמו `UserProfile`, `Document`, `DownloadLog`, `Notification` ומשתמש ב-`UserProfileForm` וב-`process_transaction`.
-    *   `api.py`: מכיל נקודות קצה (API endpoints) עבור בקשות AJAX, כגון טעינת מסלולי לימוד, הוספת אוניברסיטאות ומסלולים, ומחיקת פריטים באופן גנרי עם בדיקת הרשאות באמצעות `check_deletion_permission` מ-`utils.py`.
-    *   `documents.py`: מטפל במחזור החיים של מסמכים: העלאה (גם משיתוף מערכת הפעלה), הורדה מאובטחת, הצגת מסמכים בדפדפן, יצירת סיכומי AI (באמצעות `ai_utils.py`), לייקים ודיווחים על מסמכים. מייבא מודלים רלוונטיים ופונקציות עזר מ-`utils.py` לטיפול בקבצים ועסקאות.
-    *   `friends_chat.py`: Views לניהול חברים וצ'אט פרטי: פרופילים ציבוריים, שליחה ואישור בקשות חברות, רשימת חברים וחדרי צ'אט עם אפשרות לצירוף קבצים. מייבא מודלים חברתיים (Friendship, ChatRoom, ChatMessage) ומשתמש ב-`send_notification` מ-`utils.py`.
-    *   `pages.py`: Views עבור דפים סטטיים וכלליים: תנאי שימוש, נגישות, תרומות, דף פידבק ולוח מחוונים אנליטיקה למנהלים. מטפל גם בדפי שגיאה 404/500 ומציג רשימת התראות.
-    *   `social.py`: Views עבור פיד הקהילה: הצגת פוסטים (רגילים, מכירה, וידאו), הצטרפות לקהילות, גילוי קהילות, הוספת תגובות ולייקים לפוסטים. מייבא מודלי קהילה ופוסטים (Community, Post, MarketplacePost, VideoPost, Comment) עם אופטימיזציות שאילתות.
+**פקודות ניהול מותאמות אישית (`core/management/commands/`):**
 
-*   **ספריות אחרות ברמה העליונה:**
-    *   `documents/`: ככל הנראה ספריה לאחסון קבצים שהועלו על ידי משתמשים (אם לא נעשה שימוש ב-S3).
-    *   `locale/`: מכילה קבצי תרגום (לדוגמה: .po, .mo) עבור תמיכה בריבוי שפות (לוקליזציה).
-    *   `templates/admin/`: תבניות HTML ספציפיות להתאמה אישית של ממשק הניהול של Django.
+*   `run_agent.py`: **פקודת ניהול**. פקודה מותאמת אישית המאפשרת להריץ את סוכן ה-AI מתוך שורת הפקודה.
+*   `seed_academic_data.py`: **פקודת ניהול / Data Seeding**. פקודה מותאמת אישית למילוי מסד הנתונים בנתונים אקדמיים (מוסדות, קורסים) לצורך פיתוח או בדיקות.
+
+**קבצים סטטיים (`core/static/core/`):**
+
+*   `css/`, `js/`: **קבצי עיצוב וסקריפטים**. ספרייה המכילה קבצי CSS ו-JavaScript ספציפיים לאפליקציית `core`, המשמשים לעיצוב ולוגיקת צד-לקוח.
+
+**תבניות HTML (`core/templates/`):**
+
+*   `404.html`, `500.html`: **דפי שגיאה**. תבניות לדפי שגיאות 404 (לא נמצא) ו-500 (שגיאת שרת).
+*   `account/`: **תבניות Allauth**. מכיל תבניות של ספריית `django-allauth` להתחברות, הרשמה, אימות אימייל, איפוס סיסמה ועוד.
+*   `core/`: **תבניות אפליקציית הליבה**. כולל את רוב תבניות ה-HTML הייעודיות לאפליקציה, כגון דף הבית, פרטי קורס, פרופיל אישי, צ'אט, הזנות קהילתיות ועוד.
+*   `core/partials/`: **חלקי תבניות**. מכיל קטעי HTML קטנים וניתנים לשימוש חוזר (כמו כרטיסי פוסטים, שורות קורסים), המשמשים בתוך תבניות אחרות כדי למנוע כפילויות.
+*   `socialaccount/`: **תבניות Allauth Social**. מכיל תבניות של ספריית `django-allauth.socialaccount` עבור התחברות דרך שירותים חיצוניים (כמו Google).
+
+**בדיקות (`core/tests/`):**
+
+*   `base.py`, `test_models.py`, `test_views.py`, וכו': **קבצי בדיקה**. מכילים קוד לבדיקות יחידה ואינטגרציה עבור מודלים, Views, כלי עזר, אבטחה, ועוד, המבטיחים את תקינות הפרויקט.
+
+**Views (לוגיקה עסקית) (`core/views/`):**
+
+*   `__init__.py`: **מאחד Views**. מאגד את כל מודולי ה-Views השונים תחת קובץ אחד, ומאפשר ייבוא נוח שלהם מ-`student_drive/urls.py`. ההסבר בתוך הקובץ מתאר את מטרת הפיצול (Separation of Concerns).
+*   `academic.py`: **Views אקדמיים**. מטפל בניהול קורסים, סגל אקדמי, חיפוש גלובלי, דף הבית ו-Views קשורים למוסדות. מייבא מודלים אקדמיים, טפסים מ-`forms.py` ופונקציות עזר מ-`utils.py`.
+*   `accounts.py`: **Views של חשבון ופרופיל**. מטפל בפרופילים אישיים, הגדרות חשבון, התראות ושינוי סיסמה. מייבא מודלים, טפסים ופונקציות עזר.
+*   `api.py`: **Views של API / AJAX**. מספק נקודות קצה עבור אינטראקציות דינמיות בצד הלקוח, כמו טעינת Majors, הוספת אוניברסיטאות/Majors ב-AJAX ומחיקת פריטים גנרית. מייבא מודלים ו-`utils.py` לבדיקות הרשאות.
+*   `documents.py`: **Views של מסמכים**. מנהל את מחזור חיי המסמכים: העלאה, הורדה, צפייה (Viewer), דיווחי התעללות, סיכומים AI. מייבא `models`, `ai_utils` ו-`utils`.
+*   `friends_chat.py`: **Views של חברים וצ'אט**. מטפל בבקשות חברות, רשימות חברים וחדרי צ'אט פרטיים עם אפשרות לצירוף קבצים. מייבא מודלים ו-`utils`.
+*   `pages.py`: **Views של עמודי מידע**. מטפל בדפים סטטיים כמו תנאי שימוש, פרטיות, נגישות, תרומות, דף משוב ודשבורד אנליטיקס (לצוות). מייבא מודלים.
+*   `social.py`: **Views של קהילות ופיד חברתי**. מנהל את הפיד הקהילתי, פוסטים, תגובות, לייקים וגילוי קהילות. מייבא מודלים.
+
+**תבניות Admin מותאמות אישית (`templates/admin/`):**
+
+*   `base_site.html`: **התאמה אישית של Admin**. תבנית המשמשת להתאמה אישית של דף הבית בממשק הניהול של Django.
 
 ## 📈 2. תמונת מצב וציון בריאות
 
-**סקירה כללית על מצב הפרויקט:**
-הפרויקט "Student Drive" הוא פלטפורמה אקדמית-חברתית מקיפה הבנויה על Django. הוא מציע מגוון רחב של פיצ'רים, כולל שיתוף קבצי לימוד, דרייב אישי לכל סטודנט, מערכת קהילות עם פיד פוסטים מרובי-סוגים, צ'אט בין חברים, אינטגרציה עם בינה מלאכותית (לסיכומים וסוכן עזר), מערכת גיימיפיקציה מבוססת מטבעות, וכלים לניהול סגל אקדמי ומוסדות לימוד. הפרויקט מראה השקעה רבה בארכיטקטורה מודולרית (במיוחד בפיצול ה-Views) ובשיקולי אבטחה וביצועים.
+פרויקט `student_drive` מציג תמונת מצב חיובית מאוד של מערכת Django מודרנית ומתוכננת היטב. הוא מפותח תוך דגש על הפרדת אחריויות (Separation of Concerns), שימוש נרחב בפיצ'רים מובנים של Django (כמו Signals, Custom Management Commands) ושילוב של ספריות צד שלישי (Allauth, `python-dotenv`, `storages` ל-S3).
 
-**ציון בריאות: 88/100**
+**נקודות חזקות:**
 
-**ניתוח לפי קטגוריות:**
+*   **ארכיטקטורה מודולרית:** הפיצול של קבצי ה-Views למוקדמים ספציפיים (Academic, Documents, Social וכו') הוא דוגמה מצוינת לארכיטקטורה נקייה וקריאה.
+*   **מודלים מקיפים:** קובץ `models.py` מפורט ועשיר, עם קשרים מורכבים, Validators, ופונקציות עזר רבות, המעיד על הבנה עמוקה של הדומיין.
+*   **שימוש ב-Utils:** ריכוז פונקציות עזר גלובליות ב-`utils.py` (למשל, אימות קבצים, דחיסת תמונות, טיפול בטרנזקציות) הוא פרקטיקה מעולה המבטיחה עקביות ומונעת שכפול קוד.
+*   **אבטחה בסיסית טובה:** הגדרות `settings.py` מציגות מודעות גבוהה לאבטחה, כולל שימוש ב-`SECRET_KEY` ממשתני סביבה, CSRF/Session cookies `httponly`, HSTS, ושימוש ב-`Argon2PasswordHasher`.
+*   **טיפול בקבצים:** שילוב דחיסת תמונות ל-WebP ואימות קפדני של קבצים (גודל, סוג באמצעות Magic Numbers) ב-`utils.py` הם קריטיים לביצועים ולאבטחה.
+*   **AI Integration:** קיימת אינטגרציה מתוכננת של AI עם רכיבים כמו `agent_views.py`, `agent_brain.py`, `ai_utils.py` ו-`AgentKnowledge` ב-`models.py`, המרמזת על פונקציונליות מתקדמת.
+*   **Gamification & Notifications:** מודלים לטרנזקציות מטבעות (CoinTransaction) ומערכת התראות מובנית עם GenericForeignKey מציגות מחשבה על חווית משתמש ואנגייג'מנט.
+*   **ניהול תבניות:** שימוש בחלקי תבניות (`partials`) והפרדה בין תבניות Allauth לתבניות האפליקציה שומר על סדר.
+*   **Test-aware settings:** הגדרת `SECRET_KEY` שונה לסביבת בדיקות מראה מודעות לסביבות שונות.
 
-*   **ניקיון קוד ומבנה (Code Cleanliness and Structure): 9/10**
-    *   **יתרונות:**
-        *   **מודולריות View מצוינת:** פיצול ספריית ה-`views` ל-7 קבצים ממוקדים (academic, documents, social וכו') הוא דוגמה מצוינת ל-Separation of Concerns ומשפר מאוד את הקריאות והתחזוקה.
-        *   **מודל `models.py` מקיף ומסודר:** למרות גודלו, הוא מאורגן היטב עם קטגוריות ברורות והערות.
-        *   **שימוש ב-Signals:** שימוש חכם ב-`signals.py` ללוגיקה מנותקת (כגון התראות על העלאת קבצים חדשים).
-        *   **ניהול טפסים ומורשת (Allauth Adapters):** שימוש ב-`adapters.py` להתאמה אישית של Allauth ו-`forms.py` לטיפול בקלט משתמש.
-        *   **טיפול בביצועים:** שימוש עקבי ב-`select_related` ו-`prefetch_related` ב-Views למניעת בעיות N+1 Query.
-    *   **שיפורים אפשריים:**
-        *   **קובץ `utils.py` גדול מדי:** למרות שהוא מפורט היטב עם הערות, הוא מהווה "סלסלת כלים" גדולה מאוד. פיצולו לקבצים קטנים וספציפיים יותר (לדוגמה: `file_processing_utils.py`, `security_utils.py`, `notification_utils.py`, `transaction_utils.py`) ישפר עוד יותר את הקריאות והמודולריות.
-        *   **ייבוא `*` ב-`views/__init__.py`:** ייבוא כללי (`import *`) ב-`__init__.py` עלול לגרום להתנגשויות שמות (name collisions) ולחוסר בהירות לגבי המקור של כל פונקציה. עדיף לייבא פונקציות ספציפיות או מודולים מלאים (לדוגמה `from .academic import home`).
+**נקודות לשיפור:**
 
-*   **אבטחה (Security): 9/10**
-    *   **יתרונות:**
-        *   **אימות קבצים חזק:** הטמעת `validate_file_size` ו-`validate_file_type` עם בדיקות Magic Numbers ב-`utils.py` היא קריטית ומונעת העלאת קבצים זדוניים או מזויפים. זהו הישג אבטחה משמעותי.
-        *   **הגדרות Django כלליות:** שימוש בהגדרות אבטחה ב-`settings.py` כמו `SECRET_KEY` מוגן ב-.env, `PasswordHashers` חזקים, `AUTH_PASSWORD_VALIDATORS`, `SESSION_COOKIE_HTTPONLY`, `CSRF_COOKIE_HTTPONLY`, `SECURE_BROWSER_XSS_FILTER`, `SECURE_CONTENT_TYPE_NOSNIFF`, ו-`SECURE_SSL_REDIRECT`/`HSTS` ב-Production.
-        *   **בקרת הרשאות מחיקה:** `check_deletion_permission` ב-`utils.py` מספק בקרת גישה מפורטת למחיקת אובייקטים, כולל הגנה על תוכן קהילתי.
-        *   **Allauth ו-Google SSO:** שימוש בפתרון אימות מוכח ובתקני OAuth2/PKCE ל-Google SSO.
-    *   **שיפורים אפשריים:**
-        *   **`@csrf_exempt` ב-`agent_views.py`:** ה-`@csrf_exempt` על `upload_agent_file` ו-`ask_agent_question` מעקף את הגנת CSRF של Django. יש להעריך האם הוא נחוץ, ואם כן, לוודא קיומם של אמצעי אבטחה חלופיים חזקים (כגון אימות מבוסס טוקן, מפתחות API, או בדיקת CORS קפדנית) כדי למנוע התקפות Cross-Site Request Forgery.
+*   **עומס על Views מסוימים:** קבצי Views כמו `academic.py` ו-`personal_drive.py` עשויים להיות עמוסים מדי בלוגיקה (במיוחד בטיפול ב-POST requests מרובים ובלוגיקת סינון מורכבת), מה שמקשה על תחזוקה.
+*   **הפרדת לוגיקה עסקית:** חלק מהלוגיקה העסקית המשמעותית נמצאת ישירות ב-Views (למשל, `process_transaction` שמופעל ישירות), במקום בשכבת שירותים נפרדת או מנהלי מודלים.
+*   **אסינכרוניות (AI/PDF):** פעולות כבדות כמו חילוץ טקסט מ-PDF ושימוש ב-AI עלולות לחסום את שרשרת הבקשה/תגובה של המשתמש.
+*   **ממשק API:** נקודות הקצה ב-`api.py` מטפלות ב-JSON אבל אינן ממומשות במלואן כ-API מובנה (למשל, באמצעות Django Rest Framework), מה שעלול להקשות על הרחבות עתידיות או שימוש מצד אפליקציות צד שלישי.
+*   **לוגים/ניטור:** קיימות פקודות `print()` ל-DEBUG, אך מערכת לוגים מקיפה (כמו Sentry) או ניטור ביצועים חסרה בתיאור.
 
-*   **יכולת הרחבה וביצועים (Scalability & Performance): 8.5/10**
-    *   **יתרונות:**
-        *   **אופטימיזציות ORM:** שימוש נרחב ב-`select_related` ו-`prefetch_related` ב-Views הוא קריטי לביצועי שאילתות DB.
-        *   **דחיסת תמונות:** `compress_to_webp` ב-`utils.py` ושימוש בו במודלים (UserProfile, University, Post, Document) משפר משמעותית את מהירות טעינת התמונות ומפחית את נפח האחסון.
-        *   **Lazy Imports:** ייבוא PyPDF2 ו-DocxReader רק בתוך פונקציות ב-`utils.py` מונע טעינת ספריות כבדות אלה שלא לצורך.
-        *   **AWS S3 אינטגרציה:** תמיכה ב-S3 לאחסון קבצים תורמת לסקלביליות גבוהה של אחסון.
-    *   **שיפורים אפשריים:**
-        *   **עיבוד קבצים אסינכרוני:** חילוץ טקסט מ-PDF/DOCX ויצירת סיכומי AI (שמתרחשים כיום ב-`Document.save()` וב-`summarize_document_ai`) הם תהליכים שעלולים להיות עתירי משאבים ואיטיים. העברתם למשימות רקע אסינכרוניות (למשל, עם Celery) תשפר מאוד את חווית המשתמש ותמנע חסימת בקשות HTTP.
-        *   **מנגנון Cache:** בהתחשב בכמות הנתונים הפוטנציאלית (קורסים, מסמכים, פוסטים), הטמעת מנגנון Cache (כמו Redis) עבור נתונים נצפים בתדירות גבוהה יכולה לשפר ביצועים נוספים.
+**ציון בריאות (מתוך 100): 88**
 
-**סיכום:**
-הפרויקט מציג רמה גבוהה של מקצועיות, הבנה עמוקה של Django וגישה מודעת לאבטחה וארכיטקטורה. נקודות החוזק כוללות את מבנה ה-Views המודולרי, אימות קבצים חזק, שימוש ב-Django best practices ל-ORM ודחיסת תמונות. שיפורים יתמקדו בעיקר באופטימיזציה של תהליכי רקע כבדים ובסקירה ביקורתית של נקודות אבטחה ספציפיות.
+הציון משקף פרויקט חזק, מובנה ומאובטח באופן יחסי, עם בסיס מצוין להתרחבות. הנקודות לשיפור הן בעיקר שדרוגים אדריכליים שנדרשים בפרויקטים בקנה מידה זה, ולא בהכרח כשלים מהותיים.
 
 ## 🗺️ 3. מפת ארכיטקטורה (Visual Flowchart)
 
 ```mermaid
 erDiagram
-    CustomUser {
-        int id PK
-        string username
-        string role
-        string email
-    }
+    CustomUser ||--o{ UserProfile : has
+    CustomUser ||--o{ Friendship : initiates
+    CustomUser }o--|| Friendship : receives
+    CustomUser ||--o{ Course : creates
+    CustomUser ||--o{ Document : uploads
+    CustomUser ||--o{ AgentKnowledge : owns
+    CustomUser ||--o{ Community : joins
+    CustomUser ||--o{ Post : creates
+    CustomUser ||--o{ Comment : creates
+    CustomUser ||--o{ Notification : receives
+    CustomUser ||--o{ CoinTransaction : performs
+    CustomUser ||--o{ DownloadLog : logs
+    CustomUser ||--o{ StaffReview : reviews
+    CustomUser ||--o{ BountyRequest : creates
 
-    UserProfile {
-        int id PK
-        int user_id FK
-        int university_id FK
-        int major_id FK
-        int current_balance
-        int lifetime_coins
-        string theme_preference
-    }
+    UserProfile ||--o| University : studies_at
+    UserProfile ||--o| Major : majors_in
+    UserProfile ||--o{ Course : favors
 
-    University {
-        int id PK
-        string name
-        string brand_color
-    }
+    University ||--o{ Major : has
+    University ||--o{ Community : hosts
+    University ||--o{ AcademicStaff : employs
 
-    Major {
-        int id PK
-        int university_id FK
-        string name
-    }
+    Major ||--o{ Course : includes
 
-    Course {
-        int id PK
-        int major_id FK
-        int creator_id FK
-        string name
-        string course_number
-        int year
-        string semester
-        int view_count
-    }
+    Course ||--o{ Folder : organizes
+    Course ||--o{ Document : contains
+    Course ||--o{ CourseSemesterStaff : has_staff_for
+    Course ||--o{ UserCourseSelection : selected_by
 
-    Folder {
-        int id PK
-        int course_id FK
-        int parent_id FK "self-referencing"
-        int created_by_id FK
-        int staff_member_id FK
-        string name
-    }
+    Folder ||--o{ Document : contains
+    Folder }o--o| Folder : is_subfolder_of
 
-    Document {
-        int id PK
-        int course_id FK
-        int folder_id FK
-        int uploaded_by_id FK
-        int staff_member_id FK
-        string title
-        string file_extension
-        text file_content "Extracted text for search"
-        int download_count
-    }
+    Document ||--o{ Report : reported_as
+    Document ||--o{ DownloadLog : downloaded_as
+    Document ||--o{ Vote : receives
+    Document ||--o{ DocumentComment : receives
 
-    DownloadLog {
-        int id PK
-        int user_id FK
-        int document_id FK
-        datetime download_date
-    }
+    Community ||--o{ Post : contains
 
-    AcademicStaff {
-        int id PK
-        int university_id FK
-        string name
-        float average_rating
-    }
+    Post ||--o{ Comment : has
+    Post ||--o{ CustomUser : liked_by
+    Post ||--o| MarketplacePost : is_a
+    Post ||--o| VideoPost : is_a
 
-    Lecturer }|--|| AcademicStaff : "inherits"
-    TeachingAssistant }|--|| AcademicStaff : "inherits"
+    AcademicStaff ||--o{ StaffReview : receives
+    AcademicStaff ||--o| Lecturer : is_a
+    AcademicStaff ||--o| TeachingAssistant : is_a
 
-    StaffReview {
-        int id PK
-        int staff_member_id FK
-        int user_id FK
-        int rating
-        text review_text
-    }
+    Notification ||--o| ContentType : targets_object
+    Notification ||--o| CustomUser : targets_sender
 
-    Community {
-        int id PK
-        int university_id FK
-        int major_id FK
-        string name
-        string community_type
-    }
+    CoinTransaction ||--o{ CustomUser : relates_to
 
-    Post {
-        int id PK
-        int user_id FK
-        int community_id FK
-        int university_id FK
-        text content
-        datetime created_at
-        int total_likes
-    }
+    AgentKnowledge ||--o| Document : stores_file
 
-    MarketplacePost }|--|| Post : "inherits"
-    VideoPost }|--|| Post : "inherits"
+    BountyRequest ||--o| Course : relates_to
 
-    Comment {
-        int id PK
-        int post_id FK
-        int user_id FK
-        text text
-    }
+    ChatMessage ||--o| ChatRoom : belongs_to
+    ChatMessage ||--o| CustomUser : sent_by
+    ChatMessage ||--o| Document : attached_to
+    ChatRoom ||--o{ CustomUser : participates_in
 
-    Friendship {
-        int id PK
-        int user_from_id FK
-        int user_to_id FK
-        string status "pending, accepted, blocked"
-    }
-
-    ChatRoom {
-        int id PK
-        datetime created_at
-    }
-
-    ChatMessage {
-        int id PK
-        int room_id FK
-        int sender_id FK
-        int attached_file_id FK
-        text content
-        datetime timestamp
-    }
-
-    Notification {
-        int id PK
-        int user_id FK
-        int sender_id FK
-        string notification_type
-        string title
-        text message
-        string link
-        int content_type_id FK
-        int object_id
-        boolean is_read
-    }
-
-    AgentKnowledge {
-        int id PK
-        int owner_id FK
-        string course_name
-        text extracted_text
-    }
-
-    CoinTransaction {
-        int id PK
-        int user_id FK
-        int amount
-        string transaction_type
-        text description
-        int balance_before
-        int balance_after
-    }
-
-    UserCourseSelection {
-        int id PK
-        int user_id FK
-        int course_id FK
-        boolean is_starred
-    }
-
-
-    CustomUser ||--o{ UserProfile : "יש לו"
-    CustomUser ||--o{ Friendship : "שולח/מקבל בקשות"
-    CustomUser ||--o{ Post : "מפרסם"
-    CustomUser ||--o{ Document : "מעלה"
-    CustomUser ||--o{ Notification : "מקבל"
-    CustomUser ||--o{ AgentKnowledge : "שייך לו"
-    CustomUser ||--o{ CoinTransaction : "מבצע"
-    CustomUser ||--o{ UserCourseSelection : "בוחר/מסמן"
-    CustomUser ||--o{ ChatRoom : "משתתף ב"
-    CustomUser ||--o{ ChatMessage : "שולח"
-    CustomUser ||--o{ StaffReview : "מדרג"
-
-    UserProfile ||--o| University : "לומד ב"
-    UserProfile ||--o| Major : "המסלול שלו"
-    UserProfile ||--o{ Course : "קורסים מועדפים"
-
-    University ||--o{ Major : "כולל"
-    University ||--o{ Course : "מציע"
-    University ||--o{ Community : "קשור ל"
-    University ||--o{ AcademicStaff : "מעסיק"
-
-    Major ||--o{ Course : "כולל"
-
-    Course ||--o{ Folder : "יש לו"
-    Course ||--o{ Document : "מכיל"
-
-    Folder ||--o{ Document : "מכיל"
-    Folder ||--o| Folder : "הורה"
-
-    Document ||--o{ DownloadLog : "נרשם כהורדה"
-    Document ||--o{ Report : "דווח עליו"
-    Document ||--o{ DocumentComment : "מגיב עליו"
-    Document ||--o{ ChatMessage : "מצורף להודעה"
-
-    Post ||--o{ Comment : "מקבל תגובות"
-
-    Community ||--o{ Post : "מארח"
-    Community ||--o{ CustomUser : "חברים ב"
-
-    AcademicStaff ||--o{ StaffReview : "מקבל דירוגים"
-    AcademicStaff ||--o{ Document : "קשור למסמך"
-    AcademicStaff ||--o{ Folder : "קשור לתיקייה"
-
-    Notification ||--o{ CustomUser : "שולח"
-    Notification ||--o{ ContentType : "קשור לאובייקט"
-
-    ChatRoom }o--o{ CustomUser : "משתתפים"
-    ChatRoom ||--o{ ChatMessage : "מכיל הודעות"
 ```
 
 ## 💡 4. ביקורת קוד אדריכלית (Code Review)
 
-להלן 4 המלצות אדריכליות ברמה גבוהה, ניתנות לפעולה, לשיפור הפרויקט:
+להלן 3-5 המלצות אדריכליות ברמה גבוהה:
 
-1.  **DRY / ארגון קוד: פיצול `core/utils.py` לתתי-מודולים ספציפיים**
-    *   **הביקורת:** קובץ `core/utils.py` הפך ל"תיבת כלים" מרכזית המכילה פונקציונליות מגוונת מאוד, החל מטיפול בקבצים ודחיסת תמונות, דרך בדיקות אבטחה, חילוץ טקסט מ-PDF/DOCX, ועד ניהול התראות ועסקאות מטבעות. למרות שהוא מתועד היטב, גודלו ורוחב מגוון תפקידיו מקשים על הקריאות, התחזוקה ואיתור באגים.
-    *   **ההמלצה:** פצל את `core/utils.py` למספר קבצים קטנים יותר, ממוקדים וקשורי-היגיון. לדוגמה:
-        *   `core/file_processing.py`: יכלול את `compress_to_webp`, `validate_file_size`, `validate_file_type`, `extract_text_from_pdf`, `extract_text_from_docx`.
-        *   `core/security_helpers.py`: יכלול את `check_deletion_permission`, `get_client_ip`.
-        *   `core/notification_helpers.py`: יכלול את `send_notification`.
-        *   `core/transaction_helpers.py`: יכלול את `process_transaction` (אולי גם את `InsufficientFunds`).
-    *   **תועלת:** שיפור דרמטי בקריאות הקוד, הקלה על עבודה מקבילית של מפתחים, וצמצום הסיכון לשגיאות עקב שינויים בקובץ אחד שמשפיעים על פונקציונליות בלתי קשורה.
+1.  **מינוף Celery/Redis למשימות אסינכרוניות כבדות (Performance / User Experience):**
+    *   **הביקורת:** פעולות כבדות כמו חילוץ טקסט מ-PDF/DOCX (`utils.py`), יצירת סיכומי AI (`documents.py`, `agent_views.py`) ועיבוד תמונות (`utils.py`, `models.py` עבור WebP) מבוצעות כרגע באופן סינכרוני בשרשרת הבקשה/תגובה. זה עלול לגרום לחווית משתמש איטית (תגובה ארוכה, תקיעות UI) וליצור צווארי בקבוק בביצועי השרת, במיוחד תחת עומס.
+    *   **ההמלצה:** הטמעת תור משימות (Task Queue) כמו Celery עם Redis כ-Broker. את המשימות הללו יש להעביר לרקע, ולעדכן את המשתמש באמצעות WebSockets (Daphne/Channels) או Poll Request כאשר המשימה הושלמה.
+    *   **פעולות נדרשות:**
+        *   התקנת והגדרת Celery ו-Redis.
+        *   המרת פונקציות חילוץ/עיבוד ל-Celery tasks.
+        *   הטמעת מנגנון לדיווח התקדמות או סיום למשתמש.
 
-2.  **ביצועים: הטמעת עיבוד אסינכרוני למשימות כבדות (AI וחילוץ טקסט)**
-    *   **הביקורת:** פונקציות חילוץ טקסט מ-PDF/DOCX (ב-`Document.save()`) ויצירת סיכומי AI (ב-`summarize_document_ai`) הן פעולות שעלולות להיות איטיות, עתירות CPU וזיכרון, ולגרום לחסימת שרשור ה-HTTP הראשי. זה יוביל לזמני תגובה ארוכים עבור המשתמש, ואף לפסק זמן (timeout) בבקשות.
-    *   **ההמלצה:** העבר את המשימות האלה לפעולות רקע אסינכרוניות באמצעות ספריית כמו Celery (עם RabbitMQ או Redis כ-broker). לדוגמה:
-        *   ב-`Document.save()`, במקום לקרוא ישירות ל-`extract_text_from_pdf` / `docx`, שלח את המסמך למשימת Celery שתבצע את החילוץ ברקע ותעדכן את שדה `file_content` לאחר מכן.
-        *   ב-`summarize_document_ai`, שלח בקשה ליצירת סיכום למשימת Celery, והחזיר למשתמש תשובה מיידית (לדוגמה, "הסיכום שלך בדרך...") עם מנגנון עדכון מאוחר יותר (כגון באמצעות WebSockets או polling).
-    *   **תועלת:** שיפור דרמטי בחווית המשתמש על ידי מתן תגובה מיידית, מניעת חסימות שרת, ושיפור הסקלביליות של המערכת תחת עומס.
+2.  **הפרדת לוגיקה עסקית ל"שכבת שירותים" (DRY / Maintainability / Scalability):**
+    *   **הביקורת:** לוגיקה עסקית משמעותית, כגון ניהול טרנזקציות מטבעות (`process_transaction` ב-`utils.py`), יצירת קהילות אוטומטית (`signals.py`) או פעולות על קבצים (`documents.py`), מפוזרת בין קבצי `utils`, `signals` ו-`views`. זה מקשה על איתור, בדיקה ותחזוקת הלוגיקה במקום מרכזי. לדוגמה, `process_transaction` הוא פונקציה מצוינת אך מופעלת ישירות מה-Views.
+    *   **ההמלצה:** יצירת שכבת שירותים (Services Layer) ייעודית בתוך האפליקציה `core`. כל שירות (לדוגמה: `core/services/transaction_service.py`, `core/services/course_service.py`) יכלול מחלקות או פונקציות סטטיות שיבצעו את הלוגיקה העסקית, יתקשרו עם המודלים וינהלו את הטרנזקציות. ה-Views יקראו לשירותים אלה במקום לבצע את הלוגיקה ישירות.
+    *   **פעולות נדרשות:**
+        *   הקמת ספריית `services` בתוך `core`.
+        *   העברת לוגיקה מורכבת מ-Views ו-Signals לשירותים חדשים.
+        *   עדכון ה-Views וה-Signals לקרוא לשירותים.
 
-3.  **אבטחה: הערכה מחדש של `@csrf_exempt` ב-`core/agent_views.py`**
-    *   **הביקורת:** השימוש ב-`@csrf_exempt` ב-`upload_agent_file` ו-`ask_agent_question` ב-`agent_views.py` מנטרל את הגנת ה-Cross-Site Request Forgery (CSRF) של Django. בעוד שזה לעיתים הכרחי עבור API הנצרכים על ידי לקוחות שאינם דפדפנים, הוא יוצר חור אבטחה אם לא קיימים אמצעי הגנה חלופיים חזקים. תוקף פוטנציאלי יכול להשתמש בחולשה זו כדי לשלוח בקשות בשם משתמשים מאומתים.
-    *   **ההמלצה:** בדוק האם ניתן להחזיר את הגנת ה-CSRF בנקודות קצה אלה. אם לא, יש להטמיע מנגנון אימות חלופי חזק. אפשרויות כוללות:
-        *   **אימות מבוסס טוקן:** דרוש מהלקוח לשלוח אסימון אימות (למשל JWT) בכותרת ה-`Authorization` עבור כל בקשה.
-        *   **מפתחות API:** אם ה"סוכן" הוא מערכת צד-שלישי, ספק לו מפתח API ייחודי.
-        *   **בדיקת Origin/Referer חזקה:** הגבלת המקורות מהם ניתן לשלוח בקשות אלה באמצעות הגדרות CORS קפדניות בצד השרת.
-    *   **תועלת:** הגנה על המערכת מפני התקפות CSRF, שיפור האבטחה הכללית של יישום ה-AI והעלאת הקבצים.
+3.  **אכיפת הרשאות ברמת האובייקט (Security / Robustness):**
+    *   **הביקורת:** קיימת פונקציה `check_deletion_permission` ב-`utils.py` שהיא התחלה טובה, אך נדרשת גישה עקבית ורחבה יותר לאכיפת הרשאות. יש לבדוק היטב שכל פעולת CRUD (יצירה, קריאה, עדכון, מחיקה) של אובייקטים רגישים (כמו מסמכים, פוסטים, פרופילים) נבדקת מול הרשאות המשתמש באופן עקבי וחזק.
+    *   **ההמלצה:** הטמעת מערכת הרשאות מפורטת יותר, במיוחד עבור אובייקטים. ניתן להשתמש ב-Django Guardian עבור הרשאות ברמת האובייקט (object-level permissions), או ליצור Mixins ו-Decorators מותאמים אישית שיבדקו לא רק את תפקיד המשתמש, אלא גם את יחסו לאובייקט הספציפי.
+    *   **פעולות נדרשות:**
+        *   סקר מקיף של כל פעולות ה-CRUD ב-Views.
+        *   הטמעת Decorators או Mixins לבדיקת הרשאות מפורטות על מודלים ספציפיים (לדוגמה, "רק יוצר מסמך יכול לערוך אותו").
+        *   שקילה של שילוב עם ספרייה כמו Django Guardian אם מורכבות ההרשאות תעלה.
 
-4.  **מבנה / תחזוקה: ייבוא מפורש במקום `import *` ב-`core/views/__init__.py`**
-    *   **הביקורת:** הקובץ `core/views/__init__.py` משתמש בייבוא כללי (`from .module import *`) כדי לאחד את כל ה-Views תחת `core.views`. גישה זו אמנם נוחה, אך היא מזהמת את מרחב השמות של `core.views`, מקשה לדעת מאיפה פונקציה מסוימת מגיעה, ומגבירה את הסיכון להתנגשויות שמות אם שני מודולי Views יגדירו בטעות פונקציה באותו שם.
-    *   **ההמלצה:** שנה את הייבוא ב-`core/views/__init__.py` לייבוא מפורש של פונקציות או ייבוא של המודולים עצמם:
-        *   **אפשרות 1 (ייבוא מפורש):** `from .academic import home, course_detail, CourseCreateView`
-        *   **אפשרות 2 (ייבוא מודולים):** `import academic as academic_views`, `import documents as documents_views` ואז השתמש ב-`academic_views.home` ב-`urls.py`.
-    *   **תועלת:** שיפור ניכר בקריאות הקוד, צמצום סיכוני התנגשות שמות, והקלה על ניפוי באגים והבנת זרימת הקוד.
+4.  **שיפור טיפול בשגיאות ולוגינג (Robustness / Maintainability):**
+    *   **הביקורת:** בקובצי Views וב-`utils.py` קיימות הדפסות `print(f"Error: {e}")` במקרה של שגיאות (לדוגמה, בחילוץ טקסט מ-PDF). הדפסות אלו אינן מספיקות בסביבת Production, ואינן מספקות מידע עשיר מספיק ל-Debugging.
+    *   **ההמלצה:** הטמעת מערכת לוגינג מסודרת באמצעות מודול `logging` של Python בשילוב עם פלטפורמה חיצונית לניטור שגיאות כמו Sentry. זה יאפשר איסוף מידע מפורט על שגיאות, עקיבות (tracebacks), הקשר של בקשות (Request Context) וקבלת התראות בזמן אמת.
+    *   **פעולות נדרשות:**
+        *   הגדרת מודול `logging` ב-`settings.py`.
+        *   החלפת כל פקודות `print()` המטפלות בשגיאות בקריאות ל-`logger.error()` או `logger.exception()`.
+        *   שילוב עם Sentry (או שירות דומה) לניטור שגיאות מרוכז.
 
 ## ✅ 5. צ'ק-ליסט משימות (Action Items)
 
-להלן 3 המשימות הטכניות החשובות ביותר לתיקון או בנייה בשלב הבא:
+להלן 3 המשימות הטכניות החשובות ביותר לתיקון או בנייה בהקדם:
 
-- [ ] **הטמעת עיבוד אסינכרוני לקבצים ו-AI:**
-    *   **תיאור:** עבר את פונקציות חילוץ הטקסט מ-PDF/DOCX (ב-`Document.save()`) ויצירת סיכומי AI (ב-`summarize_document_ai`) למשימות רקע אסינכרוניות.
-    *   **פעולות:**
-        1.  התקן והגדר Celery (או כלי דומה) עם broker מתאים (Redis/RabbitMQ).
-        2.  הגדר משימות Celery נפרדות לחילוץ טקסט ולסיכומי AI.
-        3.  שנה את `Document.save()` כדי לשגר משימת חילוץ טקסט ברקע.
-        4.  שנה את `summarize_document_ai` כדי לשגר משימת סיכום AI ברקע, והחזר למשתמש סטטוס מיידי עם מנגנון לעדכון התוצאה לאחר סיום.
-- [ ] **שיפור אבטחת נקודות קצה של Agent (CSRF):**
-    *   **תיאור:** בדוק מחדש את השימוש ב-`@csrf_exempt` ב-`core/agent_views.py` והחלף אותו במנגנון אבטחה חזק יותר, או השב את הגנת ה-CSRF במידת האפשר.
-    *   **פעולות:**
-        1.  הערך האם `@csrf_exempt` אכן נחוץ ללקוח של הסוכן.
-        2.  אם כן, הטמע מנגנון אימות מבוסס טוקן (לדוגמה, באמצעות Django REST Framework Token Authentication או JWT) עבור נקודות הקצה `upload_agent_file` ו-`ask_agent_question`.
-        3.  אם הלקוח הוא דפדפן, נסה להחזיר את הגנת ה-CSRF ולהבטיח שהלקוח שולח את אסימון ה-CSRF כנדרש.
-- [ ] **ארגון מחדש ופיצול של קובץ Utilities (`core/utils.py`):**
-    *   **תיאור:** פצל את קובץ ה-Utilities הגדול למספר קבצים קטנים וספציפיים יותר, בהתאם לתחומי האחריות.
-    *   **פעולות:**
-        1.  צור קבצים חדשים בספריית `core/` כגון `file_processing.py`, `security_helpers.py`, `notification_helpers.py`, `transaction_helpers.py`.
-        2.  העבר את הפונקציות הרלוונטיות מ-`utils.py` לקבצים החדשים.
-        3.  עדכן את כל הייבואים בקבצים אחרים בפרויקט (מודלים, Views, Signals) כדי שיפנו לקבצים החדשים במקום ל-`utils.py`.
-        4.  מחק את הקובץ `core/utils.py` הריק (או השאר אותו עם פונקציות כלליות בודדות אם נחוץ).
+- [ ] **הטמעת Celery למשימות רקע:** העברת פעולות כמו חילוץ טקסט מקבצים (PDF/DOCX), דחיסת תמונות (WebP) וסיכומי AI למשימות אסינכרוניות באמצעות Celery. זה ישפר דרמטית את ביצועי האתר ואת חווית המשתמש על ידי מניעת חסימות ב-UI.
+- [ ] **הפרדת לוגיקה עסקית לשכבת שירותים (`core/services/`):** ריכוז הלוגיקה העסקית המרכזית (כגון ניהול מטבעות, יצירת אובייקטים מורכבים, ניהול אינטראקציות חברתיות) במודולים ייעודיים בתיקיית `services`. זה יפשט את ה-Views, ישפר את קריאות הקוד, יקל על בדיקות יחידה ויסייע בסקיילביליות.
+- [ ] **הגדרת מערכת לוגינג וניטור שגיאות (Sentry):** החלפת הדפסות ה-`print()` הטיפול בשגיאות בקריאות למערכת לוגינג מובנית (Python `logging`) ושילוב עם פלטפורמת ניטור כמו Sentry. זה יאפשר זיהוי, ניתוח וטיפול מהיר יותר בשגיאות בסביבת Production, ויספק תמונה מלאה יותר של בריאות המערכת.
 
 ---
 *נבנה באהבה על ידי סוכן ה-AI שלך 🤖 | מופעל באמצעות Gemini 2.5 Flash*

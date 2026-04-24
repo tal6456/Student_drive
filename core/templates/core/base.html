@@ -915,8 +915,13 @@ such as the background, top bar, footer, and related layout behavior.
     </span>
 </a>
     <div class="d-flex align-items-center gap-3">
-
         {% if user.is_authenticated %}
+            <div class="nav-item nav-coin me-3 d-none d-md-flex">
+                <a href="{% url 'wallet' %}" class="text-decoration-none transition hover-scale" title="הארנק שלי">
+                    <i class="fas fa-coins" style="color: var(--gd-coin, #FFD700);"></i>
+                    <span class="fw-bold small" style="color: var(--gd-text);">{{ user.profile.current_balance }}</span>
+                </a>
+            </div>
                 <a href="{% url 'notifications_list' %}" class="position-relative text-decoration-none transition hover-scale me-2" title="התראות" aria-label="התראות">
             <i class="fas fa-bell fs-5" style="color: var(--gd-text);"></i>
             <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger nav-notification-badge" 
@@ -949,6 +954,7 @@ such as the background, top bar, footer, and related layout behavior.
 
                     {% if user.is_authenticated %}
                         <li class="nav-item border-top pt-3 mt-2"><a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a></li>
+                        <li class="nav-item"><a class="nav-link py-2" href="{% url 'wallet' %}"><i class="fas fa-wallet"></i> הארנק שלי</a></li>
                         <li class="nav-item"><a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a></li>
                         <li class="nav-item">
                             <a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()">
@@ -1063,107 +1069,41 @@ such as the background, top bar, footer, and related layout behavior.
     const GT_STORAGE_KEY = 'preferred_lang';
     const GT_SOURCE_LANG = 'he';
     const GT_SUPPORTED = ['he', 'en'];
-    const GT_RELOAD_KEY = 'gt_reload_once';
 
-    function gtIsIpHost(hostname) {
-        return /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname) || hostname.includes(':');
-    }צ
-
-    function gtIsLocalHost(hostname) {
-        return hostname === 'localhost' || hostname.endsWith('.localhost');
-    }
-
-    function gtGetCookie(name) {
-        const parts = document.cookie.split(';').map(part => part.trim());
-        const match = parts.find(part => part.startsWith(name + '='));
-        return match ? decodeURIComponent(match.split('=')[1]) : '';
-    }
-
-    function gtBuildCookie(name, value, maxAgeSeconds, domain) {
-        const parts = [`${name}=${encodeURIComponent(value)}`, 'path=/', 'SameSite=Lax'];
-        if (typeof maxAgeSeconds === 'number') {
-            parts.push(`Max-Age=${maxAgeSeconds}`);
-        }
-        if (window.location.protocol === 'https:') {
-            parts.push('Secure');
-        }
-        if (domain) {
-            parts.push(`domain=${domain}`);
-        }
-        return parts.join('; ');
-    }
-
-    function gtSetCookieHostOnly(name, value, maxAgeSeconds) {
-        document.cookie = gtBuildCookie(name, value, maxAgeSeconds);
-    }
-
-    function gtClearCookieHostOnly(name) {
-        document.cookie = gtBuildCookie(name, '', 0);
-    }
-
-    function gtSetGoogtrans(lang) {
-        const cookieValue = `/${GT_SOURCE_LANG}/${lang}`;
-        // Host-only cookie is the most reliable across modern browsers and PWAs.
-        gtSetCookieHostOnly(GT_COOKIE_NAME, cookieValue, 60 * 60 * 24 * 365);
-    }
-
-    function gtLogState(context, extra = {}) {
-        const cookieValue = gtGetCookie(GT_COOKIE_NAME);
-        const storedLang = localStorage.getItem(GT_STORAGE_KEY);
-        console.log('[Translate]', context, {
-            hostname: window.location.hostname,
-            protocol: window.location.protocol,
-            cookie: cookieValue,
-            storage: storedLang,
-            ...extra
-        });
-    }
-
-    function gtEnsurePreferredLanguage() {
-        const storedLang = localStorage.getItem(GT_STORAGE_KEY);
-        const preferred = GT_SUPPORTED.includes(storedLang) ? storedLang : GT_SOURCE_LANG;
-        const currentCookie = gtGetCookie(GT_COOKIE_NAME);
-        const desiredCookie = preferred === GT_SOURCE_LANG ? '' : `/${GT_SOURCE_LANG}/${preferred}`;
-
-        if (preferred === GT_SOURCE_LANG) {
-            if (currentCookie) {
-                gtClearCookieHostOnly(GT_COOKIE_NAME);
-                if (!sessionStorage.getItem(GT_RELOAD_KEY)) {
-                    sessionStorage.setItem(GT_RELOAD_KEY, 'cleared');
-                    gtLogState('cleared cookie -> reload');
-                    window.location.reload();
-                }
-            } else {
-                gtLogState('source language active');
-            }
-            return;
-        }
-
-        if (currentCookie !== desiredCookie) {
-            gtSetGoogtrans(preferred);
-            if (!sessionStorage.getItem(GT_RELOAD_KEY)) {
-                sessionStorage.setItem(GT_RELOAD_KEY, 'set');
-                gtLogState('set cookie -> reload', { desiredCookie });
-                window.location.reload();
-            }
-        } else {
-            gtLogState('cookie matches preferred', { desiredCookie });
+    // פונקציית כתיבת עוגייה אגרסיבית
+    function gtSetCookie(name, value) {
+        const expires = new Date();
+        expires.setFullYear(expires.getFullYear() + 1);
+        const cookieBase = `${name}=${value}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+        
+        // 1. כתיבה ללא דומיין (הכי בטוח ל-Localhost)
+        document.cookie = cookieBase;
+        
+        // 2. כתיבה עם דומיין (עבור שרתים חיים כמו Render/DigitalOcean)
+        const host = window.location.hostname;
+        if (host !== 'localhost' && !host.includes('127.0.0.1')) {
+            document.cookie = `${cookieBase}; domain=.${host}`;
+            document.cookie = `${cookieBase}; domain=${host}`;
         }
     }
 
     function forceTranslate(lang) {
         const target = GT_SUPPORTED.includes(lang) ? lang : GT_SOURCE_LANG;
         localStorage.setItem(GT_STORAGE_KEY, target);
-        sessionStorage.removeItem(GT_RELOAD_KEY);
+        
+        console.log("מפעיל תרגום ל:", target);
 
         if (target === GT_SOURCE_LANG) {
-            gtClearCookieHostOnly(GT_COOKIE_NAME);
+            // ניקוי עוגיות
+            document.cookie = `${GT_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            const host = window.location.hostname;
+            document.cookie = `${GT_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${host}`;
         } else {
-            gtSetGoogtrans(target);
+            // הגדרת העוגייה שגוגל מחפש
+            gtSetCookie(GT_COOKIE_NAME, `/${GT_SOURCE_LANG}/${target}`);
         }
-
-        gtLogState(`forceTranslate(${target})`, { target });
-        sessionStorage.setItem(GT_RELOAD_KEY, 'forced');
+        
+        // טעינה מחדש כדי שהסקריפט של גוגל יקרא את העוגייה החדשה
         window.location.reload();
     }
 
@@ -1172,25 +1112,25 @@ such as the background, top bar, footer, and related layout behavior.
             pageLanguage: GT_SOURCE_LANG,
             includedLanguages: GT_SUPPORTED.join(','),
             layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
+            autoDisplay: true // שיניתי ל-True כדי שגוגל יזהה את הפקודה מהר יותר
         }, 'google_translate_element');
     }
 
-    gtEnsurePreferredLanguage();
-
-    // לוגיקה לחיפוש (השארתי לך את זה, זה עובד מצוין)
+    // בדיקה אוטומטית בכל טעינת דף
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('navbarSearchInput');
-        const backdrop = document.getElementById('search-focus-backdrop');
-        if (searchInput && backdrop) {
-            searchInput.addEventListener('focus', function() {
-                backdrop.style.display = 'block';
-                setTimeout(() => backdrop.style.opacity = '1', 10);
-            });
-            searchInput.addEventListener('blur', function() {
-                backdrop.style.opacity = '0';
-                setTimeout(() => backdrop.style.display = 'none', 300);
-            });
+        const preferred = localStorage.getItem(GT_STORAGE_KEY);
+        if (preferred && preferred !== GT_SOURCE_LANG) {
+            const expectedValue = `/${GT_SOURCE_LANG}/${preferred}`;
+            if (!document.cookie.includes(GT_COOKIE_NAME)) {
+                console.log("משחזר עוגיית תרגום חסרה...");
+                gtSetCookie(GT_COOKIE_NAME, expectedValue);
+                // רענון רק אם גוגל לא התחיל לתרגם
+                setTimeout(() => {
+                    if (!document.querySelector('.goog-te-spinner-pos')) {
+                        window.location.reload();
+                    }
+                }, 1000);
+            }
         }
     });
 </script>

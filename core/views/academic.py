@@ -32,7 +32,7 @@ from core.models import (
     UserProfile, UserCourseSelection, Comment, DocumentComment
 )
 from core.forms import CourseForm
-from core.utils import get_client_ip, process_transaction
+from core.utils import get_client_ip, process_transaction, check_daily_limit
 
 
 User = get_user_model()
@@ -70,10 +70,8 @@ class CourseCreateView(LoginRequiredMixin, CreateView):
         self.object = form.save(commit=False)
         self.object.creator = self.request.user
         self.object.save()
-        # Keep newly created courses consistent with existing courses.
         self.object.create_default_folder_tree()
-        process_transaction(self.request.user, 5, tx_type='system', description='בונוס על הוספת קורס חדש 🪙')
-        messages.success(self.request, 'הקורס נוסף בהצלחה! קיבלת 5 מטבעות דרייב 🪙')
+        messages.success(self.request, 'הקורס נוסף בהצלחה! הקהילה מודה לך 📚')
         return redirect('course_detail', course_id=self.object.id)
 
 
@@ -336,9 +334,13 @@ def course_detail(request, course_id, folder_id=None):
                     )
                     folder_to_edit.staff_member = new_lecturer
 
-                    # בונוס על הוספת מרצה חדש למערכת
+                    # בונוס על הוספת מרצה חדש (1 מטבע, עד 2 ביום)
                     if staff_created:
-                        process_transaction(request.user, 2, tx_type='system', description='בונוס על הוספת מרצה חדש 🎓')
+                        new_lecturer.created_by = request.user
+                        new_lecturer.save()
+                        if check_daily_limit(request.user, 'add_lecturer', 2):
+                            process_transaction(request.user, 1, tx_type='system',
+                                                description='בונוס על הוספת מרצה חדש 🎓')
 
                 elif staff_id_select and staff_id_select.strip().isdigit():
                     folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
@@ -364,10 +366,11 @@ def course_detail(request, course_id, folder_id=None):
                         folder_to_edit.staff_member.average_rating = round(avg, 1)
                         folder_to_edit.staff_member.save()
 
-                    # חלוקת בונוס על דירוג בפעם הראשונה ויצירת התראה!
-                    if review_created:
-                        process_transaction(request.user, 2, tx_type='quality_bonus',
-                                            description='בונוס על דירוג איש סגל ✨')
+                        # חלוקת בונוס על דירוג (1 מטבע, עד 2 ביום)
+                        if review_created:
+                            if check_daily_limit(request.user, 'add_review', 2):
+                                process_transaction(request.user, 1, tx_type='quality_bonus',
+                                                    description='בונוס על דירוג איש סגל ✨')
 
                         # כפיית יצירת התראה לפעמון (כדי שיקפוץ מיד העדכון למשתמש)
                         from core.utils import send_notification
@@ -530,7 +533,20 @@ def rate_staff(request, staff_id):
             staff.save()
 
             if created:
-                process_transaction(request.user, 2, tx_type='system', description='בונוס על דירוג איש סגל ✨')
+                if check_daily_limit(request.user, 'add_review', 2):
+                    process_transaction(request.user, 1, tx_type='system', description='בונוס על דירוג איש סגל ✨')
+
+                # מנגנון בונוס האיכות! אם המרצה הגיע ל-10 דירוגים, מי שיצר אותו מקבל 5 מטבעות
+            if staff.reviews.count() == 10 and getattr(staff, 'created_by', None):
+                process_transaction(
+                    user=staff.created_by,
+                    amount=5,
+                    tx_type='quality_bonus',
+                    description=f"בונוס איכות! המרצה שהוספת ({staff.name}) הגיע ל-10 דירוגים 🔥",
+                    notify=True,
+                    bonus_increases_lifetime=True
+                )
+
             messages.success(request, 'הדירוג עודכן בהצלחה! ✨')
     return redirect('staff_detail', staff_id=staff.id)
 

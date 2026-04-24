@@ -16,6 +16,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from .models import Document, Notification, UserCourseSelection
+from django.contrib.auth.signals import user_logged_in
+from django.utils import timezone
+from .utils import process_transaction
 
 
 @receiver(post_save, sender=Document)
@@ -79,3 +82,36 @@ def notify_students_on_new_file(sender, instance, created, **kwargs):
             print(f"DEBUG: נוצרו {len(notifications_to_create)} התראות בהצלחה.")
         except Exception as e:
             print(f"Error creating notifications: {e}")
+
+
+# ==========================================
+# Daily Login Bonus
+# ==========================================
+@receiver(user_logged_in)
+def grant_daily_login_bonus(sender, user, request, **kwargs):
+    """מעניק 1 מטבעות למשתמש על התחברות ראשונה באותו יום."""
+    # מוודאים שיש למשתמש פרופיל
+    if not hasattr(user, 'profile'):
+        return
+
+    today = timezone.localtime().date()
+    profile = user.profile
+
+    # בודקים אם עדיין לא קיבל בונוס היום
+    if profile.last_daily_bonus != today:
+        try:
+            process_transaction(
+                user=user,
+                amount=1,
+                tx_type='system',
+                description="בונוס התחברות יומי! איזה כיף שחזרת אלינו 🎁",
+                actor=None,
+                notify=True,
+                bonus_increases_lifetime=True
+            )
+            # מעדכנים את תאריך הבונוס להיום ושומרים
+            profile.last_daily_bonus = today
+            profile.save(update_fields=['last_daily_bonus'])
+            print(f"DEBUG: בונוס יומי הוענק בהצלחה ל-{user.username}")
+        except Exception as e:
+            print(f"Failed to grant daily bonus to {user.username}: {e}")

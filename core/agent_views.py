@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import AgentKnowledge, Course  # Ensure the `Course` import remains valid
 import json
@@ -9,7 +9,7 @@ from .agent_brain import StudentAgentBrain
 
 agent_brain = StudentAgentBrain()
 @login_required
-@csrf_exempt
+@require_POST
 def upload_agent_file(request):
     """Receive a file from the floating agent, save it, and return an initial summary."""
     if request.method == 'POST' and request.FILES.get('file'):
@@ -45,7 +45,7 @@ def upload_agent_file(request):
 
 
 @login_required
-@csrf_exempt
+@require_POST
 def ask_agent_question(request):
     """Handle course-aware quiz generation, with a general-knowledge fallback when needed."""
     if request.method == 'POST':
