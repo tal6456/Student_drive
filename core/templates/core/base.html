@@ -1596,9 +1596,10 @@ function copyInviteLink(event) {
                         <label class="form-label fw-bold small" style="color: var(--gd-text);">סיבת הדיווח:</label>
                         <select name="reason" class="form-select" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);" required>
                             <option value="">בחר סיבה...</option>
+                            <option value="copyright" class="fw-bold text-danger"> פגיעה בזכויות יוצרים</option>
                             <option value="broken">הקובץ פגום / לא נפתח</option>
                             <option value="inappropriate">תוכן פוגעני / לא ראוי</option>
-                            <option value="irrelevant">לא קשור לקורס</option>
+                            <option value="irrelevant">לא רלוונטי לקורס</option>
                         </select>
                     </div>
                     <div class="mb-4">
@@ -1873,6 +1874,30 @@ function copyInviteLink(event) {
         fetch('/ajax/unread-notifications-count/')
             .then(response => response.json())
             .then(data => {
+                // --- חלק חדש: התראה קופצת לאדמינים ---
+                if (data.has_urgent_alert) {
+                    const alertKey = 'urgent_alert_shown_' + data.alert_id;
+                    // בודק אם כבר הראינו את ההתראה הזו בסשן הנוכחי
+                    if (!sessionStorage.getItem(alertKey)) {
+                        Swal.fire({
+                            title: '🚨 דיווח זכויות יוצרים!',
+                            text: data.urgent_message,
+                            icon: 'error',
+                            showCancelButton: true,
+                            confirmButtonText: 'עבור לטיפול',
+                            cancelButtonText: 'סגור',
+                            confirmButtonColor: '#d33',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = data.alert_link;
+                            }
+                        });
+                        sessionStorage.setItem(alertKey, 'true');
+                    }
+                }
+                // ------------------------------------
+    
                 const badge = document.querySelector('.nav-notification-badge');
                 if (badge) {
                     const count = data.unread_count;
