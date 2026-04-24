@@ -340,7 +340,7 @@ def course_detail(request, course_id, folder_id=None):
                         new_lecturer.save()
                         if check_daily_limit(request.user, 'add_lecturer', 2):
                             process_transaction(request.user, 1, tx_type='system',
-                                                description='בונוס על הוספת מרצה חדש 🎓')
+                                                description='בונוס על הוספת מרצה חדש 🎓 קיבלת מטבע 1.')
 
                 elif staff_id_select and staff_id_select.strip().isdigit():
                     folder_to_edit.staff_member = get_object_or_404(AcademicStaff, id=staff_id_select.strip())
@@ -370,7 +370,7 @@ def course_detail(request, course_id, folder_id=None):
                         if review_created:
                             if check_daily_limit(request.user, 'add_review', 2):
                                 process_transaction(request.user, 1, tx_type='quality_bonus',
-                                                    description='בונוס על דירוג איש סגל ✨')
+                                                    description='בונוס על דירוג איש סגל ✨ קיבלת מטבע 1.')
 
                         # כפיית יצירת התראה לפעמון (כדי שיקפוץ מיד העדכון למשתמש)
                         from core.utils import send_notification
@@ -534,7 +534,7 @@ def rate_staff(request, staff_id):
 
             if created:
                 if check_daily_limit(request.user, 'add_review', 2):
-                    process_transaction(request.user, 1, tx_type='system', description='בונוס על דירוג איש סגל ✨')
+                    process_transaction(request.user, 1, tx_type='system', description='בונוס על דירוג איש סגל ✨ קיבלת מטבע 1.')
 
                 # מנגנון בונוס האיכות! אם המרצה הגיע ל-10 דירוגים, מי שיצר אותו מקבל 5 מטבעות
             if staff.reviews.count() == 10 and getattr(staff, 'created_by', None):
