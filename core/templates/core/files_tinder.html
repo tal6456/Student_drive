@@ -399,292 +399,89 @@
             <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">חזור לדף הבית</a>
         </section>
         {% endif %}
-    </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-{{ block.super }}
+<!-- ===== TINDER JAVASCRIPT - FRESH START ===== -->
 <script>
-(function () {
-    const card = document.getElementById('activeCard');
-    document.body.classList.add('files-tinder-mode');
-    if (!card) {
-        console.error('[Swipe] activeCard not found');
-        return;
-    }
+console.log('%c[TINDER] SCRIPT START', 'color: lime; font-weight: bold; font-size: 16px;');
 
+function initTinder() {
+    const card = document.getElementById('activeCard');
     const likeBtn = document.getElementById('likeBtn');
     const dislikeBtn = document.getElementById('dislikeBtn');
-    
-    if (!likeBtn || !dislikeBtn) {
-        console.error('[Swipe] Buttons not found:', {likeBtn: !!likeBtn, dislikeBtn: !!dislikeBtn});
+
+    console.log('%c[TINDER] Elements check:', 'color: cyan;', { card: !!card, likeBtn: !!likeBtn, dislikeBtn: !!dislikeBtn });
+
+    if (!card || !likeBtn || !dislikeBtn) {
+        console.error('%c[TINDER] Missing elements!', 'color: red;');
         return;
     }
-    
-    console.log('[Swipe] Script initialized, buttons found');
-    const SWIPE_THRESHOLD = 110;
-    let isDragging = false;
-    let startX = 0;
-    let currentX = 0;
-    let activePointerId = null;
+
+    console.log('%c[TINDER] ✅ INIT START', 'color: lime; font-weight: bold;');
+    document.body.classList.add('files-tinder-mode');
+
     let isSubmitting = false;
+    let dragActive = false;
+    let dragPointerId = null;
+    let dragStartX = 0, dragStartY = 0, dragCurrentX = 0;
+    const SWIPE_THRESHOLD = 80;
 
-    function getCsrfToken() {
-        const inputToken = document.querySelector('#csrfForm input[name="csrfmiddlewaretoken"]');
-        if (inputToken && inputToken.value) return inputToken.value;
-        const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
-        return match ? decodeURIComponent(match[1]) : '';
+    function getCsrf() {
+        const el = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]');
+        return el ? el.value : (document.cookie.match(/csrftoken=([^;]+)/) ? decodeURIComponent(document.cookie.match(/csrftoken=([^;]+)/)[1]) : '');
     }
 
-    function resetCardTransform() {
-        card.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    function snapBack() {
+        card.style.transition = 'transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275)';
         card.style.transform = '';
-        card.style.opacity = '1';
-        card.classList.remove('dragging', 'show-like', 'show-nope');
+        card.classList.remove('show-like', 'show-nope', 'dragging');
     }
 
-    function applyDragVisuals(deltaX) {
-        const rotate = Math.max(-12, Math.min(12, deltaX / 16));
-        card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
-
-        // Show stamps
-        if (deltaX > 25) {
-            card.classList.add('show-like');
-            card.classList.remove('show-nope');
-        } else if (deltaX < -25) {
-            card.classList.add('show-nope');
-            card.classList.remove('show-like');
-        } else {
-            card.classList.remove('show-like', 'show-nope');
-        }
+    function flyOut(action, cb) {
+        const dir = action === 'like' ? 1 : -1;
+        card.style.transition = 'transform 0.38s ease-in';
+        card.style.transform = `translateX(${dir * 110}vw) rotate(${dir * 25}deg)`;
+        setTimeout(cb, 400);
     }
 
-    function animateSwipeOut(action, done) {
-        card.classList.remove('dragging');
-        if (action === 'like') {
-            card.style.transition = 'transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
-            card.style.transform = 'translateX(150vw) rotate(30deg)';
-        } else {
-            card.style.transition = 'transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
-            card.style.transform = 'translateX(-150vw) rotate(-30deg)';
-        }
-        setTimeout(done, 450);
+    function setDragVisual(dx) {
+        const rot = Math.max(-14, Math.min(14, dx / 15));
+        card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+        card.classList.toggle('show-like', dx > 30);
+        card.classList.toggle('show-nope', dx < -30);
     }
 
-    function renderPreview(nextCard) {
-        const mediaPanel = document.getElementById('mediaPanel');
-        mediaPanel.innerHTML = '';
-
-        if (nextCard.preview_type === 'image') {
-            const img = document.createElement('img');
-            img.src = nextCard.file_url;
-            img.alt = `תצוגה מקדימה של ${nextCard.title}`;
-            mediaPanel.appendChild(img);
-        } else if (nextCard.preview_type === 'pdf') {
-            const frame = document.createElement('iframe');
-            frame.src = `${nextCard.file_url}#page=1&view=FitH`;
-            frame.title = 'תצוגת PDF';
-            mediaPanel.appendChild(frame);
-        } else {
-            const fallback = document.createElement('div');
-            fallback.className = 'media-file-fallback';
-            if (nextCard.preview_type === 'text') {
-                fallback.innerHTML = `<i class="fas fa-align-left"></i><div>${nextCard.text_preview || 'אין תצוגה מקדימה לטקסט.'}</div>`;
-            } else {
-                fallback.innerHTML = `<i class="fas fa-file-alt"></i><div>תצוגה מהירה לא זמינה עבור קובץ ${nextCard.file_extension.toUpperCase()}</div>`;
-            }
-            mediaPanel.appendChild(fallback);
-        }
-
-        const overlay = document.createElement('div');
-        overlay.className = 'media-gradient-overlay';
-        overlay.innerHTML = `
-            <p class="media-title" id="mediaTitle">${nextCard.title}</p>
-            <div class="media-meta" id="mediaMeta">
-                <span><i class="fas fa-user"></i> ${nextCard.uploader}</span>
-                <span><i class="fas fa-heart"></i> ${nextCard.likes}</span>
-                <span><i class="fas fa-comments"></i> ${nextCard.comments}</span>
-                <span><i class="fas fa-download"></i> ${nextCard.downloads}</span>
-                <span><i class="fas fa-calendar"></i> ${nextCard.uploaded_at}</span>
-            </div>
-        `;
-        mediaPanel.appendChild(overlay);
-        
-        // Ensure buttons in the clone have listeners too (though here we just re-render inside existing card)
-    }
-
-    // Initialize interaction
-    (function init() {
-        if (!likeBtn || !dislikeBtn) {
-            console.error('[Swipe] Buttons missing, cannot initialize');
-            return;
-        }
-
-        const handleAction = (action) => (e) => {
-            console.log(`[Swipe] ${action} button pressed`);
-            e.preventDefault();
-            e.stopPropagation();
-            if (isSubmitting) return;
-            triggerSwipe(action);
-        };
-
-        // Attach to BOTH mousedown and click for maximum compatibility
-        likeBtn.onclick = (e) => handleAction('like')(e);
-        dislikeBtn.onclick = (e) => handleAction('dislike')(e);
-
-        // Prevent pointerdown from bubbling up to card
-        [likeBtn, dislikeBtn].forEach(btn => {
-            btn.addEventListener('pointerdown', (e) => {
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-            }, { capture: true });
-            btn.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-            }, { capture: true });
-        });
-
-        console.log('[Swipe] Global interaction initialized - Buttons moved outside card');
-    })();
-
-    function renderNext(nextCard) {
-        if (!nextCard) {
-            document.getElementById('swipeContainer').innerHTML = `
-                <section class="empty-state" id="emptyState">
-                    <h3>סיימת את כל ההמלצות</h3>
-                    <p class="text-muted mb-3">כל הכבוד. חזור מחר לעוד קבצים חכמים לפי הלמידה שלך.</p>
-                    <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">חזור לדף הבית</a>
-                </section>
-            `;
-            return;
-        }
-
-        resetCardTransform();
-        card.dataset.documentId = nextCard.id;
-        renderPreview(nextCard);
-        
-        // Update title and metadata
-        document.getElementById('cardTitle').textContent = nextCard.title;
-        document.getElementById('cardMeta').innerHTML = `<i class="fas fa-heart"></i> ${nextCard.likes} לייקים <span class="mx-2">|</span> <i class="fas fa-comments"></i> ${nextCard.comments} תגובות <span class="mx-2">|</span> <i class="fas fa-download"></i> ${nextCard.downloads} הורדות <span class="mx-2">|</span> <i class="fas fa-calendar"></i> ${nextCard.uploaded_at}`;
-        
-        // Update button URLs
-        const previewBtn = document.getElementById('previewBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        if (previewBtn) previewBtn.setAttribute('href', nextCard.view_url);
-        if (copyBtn) copyBtn.setAttribute('href', nextCard.copy_url);
-
-        // Update badges
-        const badges = card.querySelectorAll('.swipe-badge');
-        if (badges.length >= 3) {
-            badges[0].innerHTML = `<i class="fas fa-book"></i> ${nextCard.course_name}`;
-            badges[1].innerHTML = `<i class="fas fa-university"></i> ${nextCard.university_name}`;
-            badges[2].innerHTML = `<i class="fas fa-user-friends"></i> ${nextCard.uploader}`;
-        }
-
-        // Update reason chips
-        const whyRow = document.getElementById('whyRow');
-        if (whyRow) {
-            whyRow.innerHTML = '';
-            (nextCard.reasons || []).forEach(reason => {
-                const chip = document.createElement('span');
-                chip.className = 'why-chip';
-                chip.innerHTML = `<i class="fas fa-star"></i> ${reason}`;
-                whyRow.appendChild(chip);
-            });
-        }
-
-        // Update tips
-        const tipsWrap = document.getElementById('tipsWrap');
-        if (tipsWrap) {
-            tipsWrap.innerHTML = '';
-            (nextCard.tips || []).forEach(tip => {
-                const el = document.createElement('div');
-                el.className = 'tip';
-                el.textContent = tip;
-                tipsWrap.appendChild(el);
-            });
-        }
-        
-        // Scroll card-content to top so user sees the beginning
-        const cardContent = card.querySelector('.card-content');
-        if (cardContent) {
-            cardContent.scrollTop = 0;
-        }
-    }
-
-    async function sendSwipe(action) {
+    async function doAction(action) {
+        console.log('%c[TINDER] 🚀 ACTION:', 'color: orange; font-weight: bold;', action);
         if (isSubmitting) return;
         isSubmitting = true;
         likeBtn.disabled = true;
         dislikeBtn.disabled = true;
 
-        const params = new URLSearchParams();
-        params.append('document_id', card.dataset.documentId);
-        params.append('action', action);
-
         try {
-            // If "like" action, first copy the file to personal drive
             if (action === 'like') {
                 const copyBtn = document.getElementById('copyBtn');
-                if (copyBtn) {
-                    const copyUrl = copyBtn.getAttribute('href');
-                    console.log('[Swipe] Copying file from:', copyUrl);
-                    try {
-                        const copyResponse = await fetch(copyUrl, {
-                            method: 'GET',
-                            credentials: 'same-origin',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                        });
-                        console.log('[Swipe] Copy response:', {status: copyResponse.status, ok: copyResponse.ok});
-                        if (!copyResponse.ok) {
-                            console.warn('[Swipe] Copy failed, but continuing with vote:', copyResponse.status);
-                        } else {
-                            const copyData = await copyResponse.json();
-                            console.log('[Swipe] Copy result:', copyData);
-                        }
-                    } catch (copyError) {
-                        console.warn('[Swipe] Copy fetch error, continuing:', copyError.message);
-                    }
-                } else {
-                    console.warn('[Swipe] Copy button not found, skipping copy');
+                if (copyBtn?.href) {
+                    await fetch(copyBtn.href, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
                 }
             }
 
-            // Now record the vote/like
-            console.log('[Swipe] Sending vote request:', {action, documentId: card.dataset.documentId});
-            const response = await fetch("{% url 'files_tinder_swipe' %}", {
+            const body = new URLSearchParams({ document_id: card.dataset.documentId, action });
+            const res = await fetch("{% url 'files_tinder_swipe' %}", {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: {
-                    'X-CSRFToken': getCsrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                },
-                body: params.toString(),
+                headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
             });
 
-            console.log('[Swipe] Vote response:', {status: response.status, ok: response.ok, action});
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: Failed to save vote`);
+            const data = await res.json();
+            if (data.success) {
+                console.log('%c[TINDER] ✅ SUCCESS!', 'color: lime; font-weight: bold;');
+                if (data.next_card) setTimeout(() => location.reload(), 100);
             }
-            
-            const data = await response.json();
-            console.log('[Swipe] Vote response data:', data);
-            
-            if (!data || !data.success) {
-                throw new Error(data?.error || 'אירעה שגיאה בעדכון ההמלצה.');
-            }
-
-            console.log('[Swipe] Next card:', data.next_card);
-            renderNext(data.next_card);
-        } catch (error) {
-            console.error('[Swipe] Error:', error);
-            alert(error.message || 'אירעה שגיאה. נסה שוב.');
-            resetCardTransform();
+        } catch (err) {
+            console.error('%c[TINDER] ERROR:', 'color: red;', err);
+            alert(err.message);
+            snapBack();
         } finally {
             isSubmitting = false;
             likeBtn.disabled = false;
@@ -692,120 +489,61 @@
         }
     }
 
-    function triggerSwipe(action) {
-        if (isSubmitting) return;
-        console.log('[Swipe] Triggering swipe:', action);
-        animateSwipeOut(action, () => {
-            console.log('[Swipe] Animation complete, sending swipe');
-            sendSwipe(action);
-        });
+    function onLike(e) {
+        console.log('%c[TINDER] ❤️ LIKE!', 'color: #1cc273; font-weight: bold; font-size: 16px;');
+        e?.preventDefault?.();
+        e?.stopPropagation?.();
+        if (!isSubmitting) flyOut('like', () => doAction('like'));
     }
 
-    function shouldIgnoreDrag(target) {
-        // If the target or any parent is a button or link, ignore the drag
-        const isInteractive = target.closest('button, a, .swipe-actions');
-        if (isInteractive) {
-            console.log('[Swipe] Ignoring drag on interactive element:', target.tagName);
-        }
-        return Boolean(isInteractive);
+    function onDislike(e) {
+        console.log('%c[TINDER] ❌ DISLIKE!', 'color: #f35c6a; font-weight: bold; font-size: 16px;');
+        e?.preventDefault?.();
+        e?.stopPropagation?.();
+        if (!isSubmitting) flyOut('dislike', () => doAction('dislike'));
     }
 
-    let startY = 0;
+    likeBtn.onclick = onLike;
+    dislikeBtn.onclick = onDislike;
+    likeBtn.addEventListener('click', onLike, true);
+    dislikeBtn.addEventListener('click', onDislike, true);
 
-    card.addEventListener('pointerdown', (event) => {
-        // KILL DRAG if clicking buttons/links
-        const isInteractive = event.target.closest('.swipe-actions, .cta-row, button, a');
-        if (isInteractive) {
-            console.log('[Swipe] pointerdown on interactive element, ignoring drag');
-            return;
-        }
+    console.log('%c[TINDER] ✅ BUTTONS READY!', 'color: lime;');
 
-        if (isSubmitting) return;
-        
-        isDragging = true;
-        activePointerId = event.pointerId;
-        startX = event.clientX;
-        startY = event.clientY;
-        currentX = startX;
-        card.classList.add('dragging');
-        card.setPointerCapture(event.pointerId);
+    card.addEventListener('pointerdown', (e) => {
+        if (isSubmitting || e.target.closest('button, a, .swipe-actions, iframe')) return;
+        dragActive = true;
+        dragPointerId = e.pointerId;
+        dragStartX = dragCurrentX = e.clientX;
+        dragStartY = e.clientY;
+        card.setPointerCapture(e.pointerId);
     });
 
-    card.addEventListener('pointermove', (event) => {
-        if (!isDragging || event.pointerId !== activePointerId) return;
-        
-        const deltaX = event.clientX - startX;
-        const deltaY = event.clientY - startY;
-
-        // If moving vertically MUCH more than horizontally at the start, don't swipe
-        if (Math.abs(deltaY) > Math.abs(deltaX) * 1.5 && Math.abs(deltaX) < 20) {
-            return; 
-        }
-
-        event.preventDefault(); // Prevent scrolling while swiping
-        currentX = event.clientX;
-        applyDragVisuals(deltaX);
+    card.addEventListener('pointermove', (e) => {
+        if (!dragActive || e.pointerId !== dragPointerId) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        if (Math.abs(dy) > Math.abs(dx) * 2 && Math.abs(dx) < 15) return;
+        dragCurrentX = e.clientX;
+        setDragVisual(dx);
     });
 
-    function endDrag(event) {
-        if (!isDragging || event.pointerId !== activePointerId) return;
-
-        const deltaX = currentX - startX;
-        isDragging = false;
-        activePointerId = null;
-        card.releasePointerCapture(event.pointerId);
-
-        console.log('[Swipe] pointerup:', {deltaX, threshold: SWIPE_THRESHOLD});
-
-        if (deltaX >= SWIPE_THRESHOLD) {
-            triggerSwipe('like');
-        } else if (deltaX <= -SWIPE_THRESHOLD) {
-            triggerSwipe('dislike');
-        } else {
-            resetCardTransform();
-        }
-    }
-
-    card.addEventListener('pointerup', endDrag);
-    card.addEventListener('pointercancel', (event) => {
-        console.log('[Swipe] pointercancel');
-        endDrag(event);
+    card.addEventListener('pointerup', (e) => {
+        if (!dragActive || e.pointerId !== dragPointerId) return;
+        dragActive = false;
+        const dx = dragCurrentX - dragStartX;
+        if (dx >= SWIPE_THRESHOLD) flyOut('like', () => doAction('like'));
+        else if (dx <= -SWIPE_THRESHOLD) flyOut('dislike', () => doAction('dislike'));
+        else snapBack();
     });
 
-    // Ensure buttons are ready before attaching listeners
-    const attachButtonListeners = () => {
-        if (likeBtn && dislikeBtn) {
-            const handleForceAction = (action) => (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                console.log(`[ForceButton] ${action} triggered`);
-                triggerSwipe(action);
-            };
+    console.log('%c[TINDER] ✅✅✅ READY!', 'color: lime; font-weight: bold; font-size: 16px;');
+}
 
-            likeBtn.onpointerdown = handleForceAction('like');
-            dislikeBtn.onpointerdown = handleForceAction('dislike');
-            
-            likeBtn.onmousedown = handleForceAction('like');
-            dislikeBtn.onmousedown = handleForceAction('dislike');
-
-            likeBtn.ontouchstart = handleForceAction('like');
-            dislikeBtn.ontouchstart = handleForceAction('dislike');
-
-            likeBtn.onclick = handleForceAction('like');
-            dislikeBtn.onclick = handleForceAction('dislike');
-
-            console.log('[Button] Global force listeners attached');
-        }
-    };
-
-    // Try to attach immediately
-    attachButtonListeners();
-
-    if (document.readyState === 'loading') {
-    } else {
-        attachButtonListeners();
-    }
-})();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTinder);
+} else {
+    initTinder();
+}
 </script>
 {% endblock %}
