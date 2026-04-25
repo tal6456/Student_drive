@@ -562,6 +562,8 @@ def copy_file_to_my_drive(request, document_id):
         file=original_doc.file
     ).exists()
 
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
     if not already_exists:
         Document.objects.create(
             uploaded_by=request.user,
@@ -570,11 +572,23 @@ def copy_file_to_my_drive(request, document_id):
             course=original_doc.course,
             uploader_ip = get_client_ip(request)
         )
-        messages.success(request, f"הקובץ '{original_doc.title}' נוסף לדרייב שלך!")
+        message = f"הקובץ '{original_doc.title}' נוסף לדרייב שלך!"
+        if not is_ajax:
+            messages.success(request, message)
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': message})
     else:
-        messages.info(request, "הקובץ כבר קיים בדרייב האישי שלך.")
+        message = "הקובץ כבר קיים בדרייב האישי שלך."
+        if not is_ajax:
+            messages.info(request, message)
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': message, 'already_existed': True})
 
+    if is_ajax:
+        return JsonResponse({'success': True, 'message': message})
+    
     return redirect(request.META.get('HTTP_REFERER', 'home'))
+
 
 @login_required
 def delete_entire_course_folder(request):

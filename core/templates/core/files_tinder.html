@@ -210,6 +210,8 @@
 
     .card-content {
         padding: 0.95rem 1rem 1.05rem;
+        overflow-y: auto;
+        max-height: calc(100dvh - 350px);
     }
 
     .card-title {
@@ -362,28 +364,26 @@
                 </div>
 
                 <div class="cta-row">
-                    <a id="previewBtn" class="btn btn-outline-primary btn-sm" href="{{ first_card.view_url }}">
+                    <a id="previewBtn" class="btn btn-outline-primary btn-sm" href="{{ first_card.view_url }}" target="_blank">
                         <i class="fas fa-eye"></i> תצוגה מקדימה
                     </a>
-                    <a id="copyBtn" class="btn btn-outline-success btn-sm" href="{{ first_card.copy_url }}">
-                        <i class="fas fa-copy"></i> העתק לדרייב שלי
-                    </a>
+                    <span id="copyBtnContainer">
+                        <a id="copyBtn" class="btn btn-outline-success btn-sm" href="{{ first_card.copy_url }}" style="display:none;">
+                            <i class="fas fa-copy"></i> העתק לדרייב שלי
+                        </a>
+                    </span>
                 </div>
 
                 <div class="swipe-actions">
-                    <button class="btn btn-outline-danger" id="dislikeBtn" type="submit" form="swipeForm" name="action" value="dislike">
+                    <button class="btn btn-outline-danger" id="dislikeBtn" type="button">
                         <i class="fas fa-times"></i> לא מתאים
                     </button>
-                    <button class="btn btn-success" id="likeBtn" type="submit" form="swipeForm" name="action" value="like">
+                    <button class="btn btn-success" id="likeBtn" type="button">
                         <i class="fas fa-heart"></i> מתאים לי
                     </button>
                 </div>
             </div>
         </article>
-        <form id="swipeForm" action="{% url 'files_tinder_swipe' %}" method="post" class="d-none">
-            {% csrf_token %}
-            <input type="hidden" id="swipeDocumentId" name="document_id" value="{{ first_card.id }}">
-        </form>
         {% else %}
         <section class="empty-state" id="emptyState">
             <h3>נגמרו הקבצים כרגע</h3>
@@ -500,38 +500,55 @@
 
         resetCardTransform();
         card.dataset.documentId = nextCard.id;
-        const docInput = document.getElementById('swipeDocumentId');
-        if (docInput) {
-            docInput.value = nextCard.id;
-        }
         renderPreview(nextCard);
+        
+        // Update title and metadata
         document.getElementById('cardTitle').textContent = nextCard.title;
         document.getElementById('cardMeta').innerHTML = `<i class="fas fa-heart"></i> ${nextCard.likes} לייקים <span class="mx-2">|</span> <i class="fas fa-comments"></i> ${nextCard.comments} תגובות <span class="mx-2">|</span> <i class="fas fa-download"></i> ${nextCard.downloads} הורדות <span class="mx-2">|</span> <i class="fas fa-calendar"></i> ${nextCard.uploaded_at}`;
-        document.getElementById('previewBtn').setAttribute('href', nextCard.view_url);
-        document.getElementById('copyBtn').setAttribute('href', nextCard.copy_url);
+        
+        // Update button URLs
+        const previewBtn = document.getElementById('previewBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        if (previewBtn) previewBtn.setAttribute('href', nextCard.view_url);
+        if (copyBtn) copyBtn.setAttribute('href', nextCard.copy_url);
 
+        // Update badges
         const badges = card.querySelectorAll('.swipe-badge');
-        badges[0].innerHTML = `<i class="fas fa-book"></i> ${nextCard.course_name}`;
-        badges[1].innerHTML = `<i class="fas fa-university"></i> ${nextCard.university_name}`;
-        badges[2].innerHTML = `<i class="fas fa-user-friends"></i> ${nextCard.uploader}`;
+        if (badges.length >= 3) {
+            badges[0].innerHTML = `<i class="fas fa-book"></i> ${nextCard.course_name}`;
+            badges[1].innerHTML = `<i class="fas fa-university"></i> ${nextCard.university_name}`;
+            badges[2].innerHTML = `<i class="fas fa-user-friends"></i> ${nextCard.uploader}`;
+        }
 
+        // Update reason chips
         const whyRow = document.getElementById('whyRow');
-        whyRow.innerHTML = '';
-        (nextCard.reasons || []).forEach(reason => {
-            const chip = document.createElement('span');
-            chip.className = 'why-chip';
-            chip.innerHTML = `<i class="fas fa-star"></i> ${reason}`;
-            whyRow.appendChild(chip);
-        });
+        if (whyRow) {
+            whyRow.innerHTML = '';
+            (nextCard.reasons || []).forEach(reason => {
+                const chip = document.createElement('span');
+                chip.className = 'why-chip';
+                chip.innerHTML = `<i class="fas fa-star"></i> ${reason}`;
+                whyRow.appendChild(chip);
+            });
+        }
 
+        // Update tips
         const tipsWrap = document.getElementById('tipsWrap');
-        tipsWrap.innerHTML = '';
-        nextCard.tips.forEach(tip => {
-            const el = document.createElement('div');
-            el.className = 'tip';
-            el.textContent = tip;
-            tipsWrap.appendChild(el);
-        });
+        if (tipsWrap) {
+            tipsWrap.innerHTML = '';
+            (nextCard.tips || []).forEach(tip => {
+                const el = document.createElement('div');
+                el.className = 'tip';
+                el.textContent = tip;
+                tipsWrap.appendChild(el);
+            });
+        }
+        
+        // Scroll card-content to top so user sees the beginning
+        const cardContent = card.querySelector('.card-content');
+        if (cardContent) {
+            cardContent.scrollTop = 0;
+        }
     }
 
     async function sendSwipe(action) {
@@ -545,23 +562,60 @@
         params.append('action', action);
 
         try {
+            // If "like" action, first copy the file to personal drive
+            if (action === 'like') {
+                const copyUrl = document.getElementById('copyBtn').getAttribute('href');
+                console.log('[Swipe] Copying file from:', copyUrl);
+                try {
+                    const copyResponse = await fetch(copyUrl, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    console.log('[Swipe] Copy response:', {status: copyResponse.status, ok: copyResponse.ok});
+                    if (!copyResponse.ok) {
+                        console.warn('[Swipe] Copy failed, but continuing with vote:', copyResponse.status);
+                    } else {
+                        const copyData = await copyResponse.json();
+                        console.log('[Swipe] Copy result:', copyData);
+                    }
+                } catch (copyError) {
+                    console.warn('[Swipe] Copy fetch error, continuing:', copyError.message);
+                }
+            }
+
+            // Now record the vote/like
+            console.log('[Swipe] Sending vote request:', {action, documentId: card.dataset.documentId});
             const response = await fetch("{% url 'files_tinder_swipe' %}", {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 },
                 body: params.toString(),
             });
 
+            console.log('[Swipe] Vote response:', {status: response.status, ok: response.ok, action});
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: Failed to save vote`);
+            }
+            
             const data = await response.json();
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || 'אירעה שגיאה בעדכון ההמלצה.');
+            console.log('[Swipe] Vote response data:', data);
+            
+            if (!data || !data.success) {
+                throw new Error(data?.error || 'אירעה שגיאה בעדכון ההמלצה.');
             }
 
+            console.log('[Swipe] Next card:', data.next_card);
             renderNext(data.next_card);
         } catch (error) {
+            console.error('[Swipe] Error:', error);
             alert(error.message || 'אירעה שגיאה. נסה שוב.');
             resetCardTransform();
         } finally {
@@ -590,12 +644,15 @@
         currentX = startX;
         card.classList.add('dragging');
         card.setPointerCapture(event.pointerId);
+        console.log('[Swipe] pointerdown:', {pointerType: event.pointerType, startX, pointerId: event.pointerId});
     });
 
     card.addEventListener('pointermove', (event) => {
         if (!isDragging || event.pointerId !== activePointerId) return;
         currentX = event.clientX;
-        applyDragVisuals(currentX - startX);
+        const deltaX = currentX - startX;
+        applyDragVisuals(deltaX);
+        if (Math.abs(deltaX) % 50 === 0) console.log('[Swipe] pointermove:', {deltaX});
     });
 
     function endDrag(event) {
@@ -604,6 +661,8 @@
         const deltaX = currentX - startX;
         isDragging = false;
         activePointerId = null;
+
+        console.log('[Swipe] pointerup:', {deltaX, threshold: SWIPE_THRESHOLD, triggered: Math.abs(deltaX) >= SWIPE_THRESHOLD});
 
         if (Math.abs(deltaX) >= SWIPE_THRESHOLD) {
             triggerSwipe(deltaX > 0 ? 'like' : 'dislike');
@@ -614,7 +673,10 @@
     }
 
     card.addEventListener('pointerup', endDrag);
-    card.addEventListener('pointercancel', endDrag);
+    card.addEventListener('pointercancel', (event) => {
+        console.log('[Swipe] pointercancel');
+        endDrag(event);
+    });
 
     likeBtn.addEventListener('click', (event) => {
         event.preventDefault();
