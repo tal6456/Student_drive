@@ -106,6 +106,19 @@ class ViewTests(BaseTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(get_user_model().objects.filter(username="newuser").exists())
 
+    def test_referral_code_is_preserved_for_anonymous_user_before_login_redirect(self):
+        inviter = get_user_model().objects.create_user(
+            username="ref_inviter",
+            email="ref_inviter@example.com",
+            password="StrongPass123!",
+        )
+
+        response = self.client.get(reverse("home"), {"ref": inviter.profile.referral_code})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("account_login"), response.url)
+        self.assertEqual(self.client.session.get("referral_code"), inviter.profile.referral_code)
+
     def test_new_user_starts_with_10_coins(self):
         new_user = get_user_model().objects.create_user(
             username="coins_user",

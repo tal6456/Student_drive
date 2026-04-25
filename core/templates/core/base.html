@@ -1511,7 +1511,7 @@ function getAISummary(docId, event) {
 </nav>
 <script>
 function openInviteModal() {
-    const inviteLink = "https://student-drive-8d8o9.ondigitalocean.app/"; // הקישור לאתר שלך
+    const inviteLink = "{{ request.scheme }}://{{ request.get_host }}/?ref={{ user.profile.referral_code|default:'' }}";
 
     Swal.fire({
         title: 'שתפו את האתר!',

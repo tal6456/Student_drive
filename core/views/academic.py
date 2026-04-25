@@ -135,12 +135,13 @@ def home(request):
     year_id = request.GET.get('year')
     browse_all = request.GET.get('browse')
 
-    if not request.user.is_authenticated and not any([search_query, uni_id, major_id, year_id, browse_all]):
-        return redirect('account_login')
-
+    # Persist referral code as early as possible so it survives auth redirects.
     ref_code = request.GET.get('ref')
     if ref_code:
         request.session['referral_code'] = ref_code
+
+    if not request.user.is_authenticated and not any([search_query, uni_id, major_id, year_id, browse_all]):
+        return redirect('account_login')
 
     if request.user.is_authenticated:
         profile = request.user.profile
