@@ -197,6 +197,7 @@ def create_or_save_user_profile(sender, instance, created, **kwargs):
             current_balance=NEW_USER_STARTING_COINS,
             lifetime_coins=NEW_USER_STARTING_COINS,
         )
+        # Notification for initial 10 coins is sent in complete_profile view
     else:
         # Avoid profile `save()` recursion that can clash with deletes or migrations
         if hasattr(instance, 'profile'):

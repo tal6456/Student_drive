@@ -85,27 +85,49 @@ def complete_profile(request):
             user_profile = form.save()
             request.session['onboarding_complete'] = True
 
+            # Send notification about 10 starting coins
+            Notification.objects.create(
+                user=request.user,
+                notification_type='coin_bonus',
+                title="ברוך הבא! 🎉",
+                message="קיבלת 10 מטבעות ראשוניים כמתנה בעל ההרשמה! 🎁",
+                link="/wallet/"
+            )
+            messages.success(request, "🎉 קיבלת 10 מטבעות ראשוניים! בדוק את הארנק שלך.")
+
+            # Handle referral bonus
             ref_code_session = request.session.get('referral_code')
             if ref_code_session and not user_profile.referred_by:
                 try:
                     referrer_profile = UserProfile.objects.get(referral_code=ref_code_session)
                     referrer = referrer_profile.user
                     if referrer != request.user:
+                        # Set referrer relationship
                         user_profile.referred_by = referrer
                         user_profile.save(update_fields=['referred_by'])
 
+                        # Give bonus to inviter
                         process_transaction(referrer, INVITER_REFERRAL_BONUS, tx_type='referral',
                                             description=f"בונוס חבר-מביא-חבר! ({user_profile.user.username} הצטרף) 🤝",
                                             notify=True)
 
+                        # Give bonus to invited user
                         process_transaction(user_profile.user, INVITEE_REFERRAL_BONUS, tx_type='referral',
                                             description="בונוס הצטרפות דרך קישור הפניה 🎁", notify=True)
 
-                        del request.session['referral_code']
+                        # Clean up session
+                        if 'referral_code' in request.session:
+                            del request.session['referral_code']
+                        
                         messages.success(request,
-                                         f"איזה כיף! קיבלת 5 מטבעות בונוס כי הוזמנת על ידי {referrer.username}")
+                                         f"🎉 אתה קיבלת 5 מטבעות בונוס נוספים! {referrer.username} גם קיבל 5 מטבעות על שהזמין אותך! 💝")
                 except UserProfile.DoesNotExist:
-                    pass
+                    # Log invalid referral code
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Invalid referral code: {ref_code_session} for user {request.user.username}")
+                    if 'referral_code' in request.session:
+                        del request.session['referral_code']
 
             messages.success(request, "הפרופיל הושלם בהצלחה! ברוך הבא לקהילה. ✨")
             return redirect('home')
