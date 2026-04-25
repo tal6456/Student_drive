@@ -33,7 +33,7 @@
         gap: 0.8rem;
         padding: 0.85rem 1rem;
         background: linear-gradient(120deg, rgba(123, 97, 255, 0.14), rgba(78, 141, 255, 0.12), rgba(52, 168, 83, 0.1));
-        border-bottom: 1px solid var(--gd-border);
+        border-bottom: none;
     }
 
     .topbar h1 {
@@ -48,17 +48,17 @@
     }
 
     .swipe-card {
-        border: 1px solid var(--gd-border);
-        border-radius: 24px;
+        border: none;
+        border-radius: 0;
         background: var(--gd-card);
-        box-shadow: 0 22px 45px rgba(15, 23, 42, 0.12);
+        box-shadow: none;
         overflow: hidden;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         touch-action: pan-y;
         position: relative;
-        border-radius: 0;
         min-height: calc(100dvh - 68px);
-        box-shadow: none;
+        display: flex;
+        flex-direction: column;
     }
 
     .swipe-card:hover {
@@ -209,9 +209,11 @@
     }
 
     .card-content {
-        padding: 0.95rem 1rem 1.05rem;
+        padding: 1rem;
         overflow-y: auto;
-        max-height: calc(100dvh - 350px);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     .card-title {
@@ -239,17 +241,47 @@
     }
 
     .swipe-actions {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(120px, 1fr));
-        gap: 0.8rem;
-        margin-top: 0.7rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: auto;
+        padding: 1.5rem 1rem 2rem;
+        background: var(--gd-card);
     }
 
     .swipe-actions .btn {
-        border-radius: 999px;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
         font-weight: 700;
-        padding-top: 0.7rem;
-        padding-bottom: 0.7rem;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .swipe-actions .btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .swipe-actions .btn:active {
+        transform: scale(0.95);
+    }
+
+    #dislikeBtn {
+        background: linear-gradient(135deg, #f35c6a 0%, #d63447 100%);
+        color: white;
+    }
+
+    #likeBtn {
+        background: linear-gradient(135deg, #1cc273 0%, #16a34a 100%);
+        color: white;
     }
 
     .cta-row {
@@ -373,15 +405,14 @@
                         </a>
                     </span>
                 </div>
-
-                <div class="swipe-actions">
-                    <button class="btn btn-outline-danger" id="dislikeBtn" type="button">
-                        <i class="fas fa-times"></i> לא מתאים
-                    </button>
-                    <button class="btn btn-success" id="likeBtn" type="button">
-                        <i class="fas fa-heart"></i> מתאים לי
-                    </button>
-                </div>
+            </div>
+            <div class="swipe-actions">
+                <button class="btn btn-outline-danger" id="dislikeBtn" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button class="btn btn-success" id="likeBtn" type="button">
+                    <i class="fas fa-heart"></i>
+                </button>
             </div>
         </article>
         {% else %}
@@ -401,10 +432,20 @@
 (function () {
     const card = document.getElementById('activeCard');
     document.body.classList.add('files-tinder-mode');
-    if (!card) return;
+    if (!card) {
+        console.error('[Swipe] activeCard not found');
+        return;
+    }
 
     const likeBtn = document.getElementById('likeBtn');
     const dislikeBtn = document.getElementById('dislikeBtn');
+    
+    if (!likeBtn || !dislikeBtn) {
+        console.error('[Swipe] Buttons not found:', {likeBtn: !!likeBtn, dislikeBtn: !!dislikeBtn});
+        return;
+    }
+    
+    console.log('[Swipe] Script initialized, buttons found');
     const SWIPE_THRESHOLD = 110;
     let isDragging = false;
     let startX = 0;
@@ -564,25 +605,30 @@
         try {
             // If "like" action, first copy the file to personal drive
             if (action === 'like') {
-                const copyUrl = document.getElementById('copyBtn').getAttribute('href');
-                console.log('[Swipe] Copying file from:', copyUrl);
-                try {
-                    const copyResponse = await fetch(copyUrl, {
-                        method: 'GET',
-                        credentials: 'same-origin',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-                    console.log('[Swipe] Copy response:', {status: copyResponse.status, ok: copyResponse.ok});
-                    if (!copyResponse.ok) {
-                        console.warn('[Swipe] Copy failed, but continuing with vote:', copyResponse.status);
-                    } else {
-                        const copyData = await copyResponse.json();
-                        console.log('[Swipe] Copy result:', copyData);
+                const copyBtn = document.getElementById('copyBtn');
+                if (copyBtn) {
+                    const copyUrl = copyBtn.getAttribute('href');
+                    console.log('[Swipe] Copying file from:', copyUrl);
+                    try {
+                        const copyResponse = await fetch(copyUrl, {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+                        console.log('[Swipe] Copy response:', {status: copyResponse.status, ok: copyResponse.ok});
+                        if (!copyResponse.ok) {
+                            console.warn('[Swipe] Copy failed, but continuing with vote:', copyResponse.status);
+                        } else {
+                            const copyData = await copyResponse.json();
+                            console.log('[Swipe] Copy result:', copyData);
+                        }
+                    } catch (copyError) {
+                        console.warn('[Swipe] Copy fetch error, continuing:', copyError.message);
                     }
-                } catch (copyError) {
-                    console.warn('[Swipe] Copy fetch error, continuing:', copyError.message);
+                } else {
+                    console.warn('[Swipe] Copy button not found, skipping copy');
                 }
             }
 
@@ -627,7 +673,11 @@
 
     function triggerSwipe(action) {
         if (isSubmitting) return;
-        animateSwipeOut(action, () => sendSwipe(action));
+        console.log('[Swipe] Triggering swipe:', action);
+        animateSwipeOut(action, () => {
+            console.log('[Swipe] Animation complete, sending swipe');
+            sendSwipe(action);
+        });
     }
 
     function shouldIgnoreDrag(target) {
@@ -680,10 +730,14 @@
 
     likeBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        event.stopPropagation();
+        console.log('[Button] Like button clicked');
         triggerSwipe('like');
     });
     dislikeBtn.addEventListener('click', (event) => {
         event.preventDefault();
+        event.stopPropagation();
+        console.log('[Button] Dislike button clicked');
         triggerSwipe('dislike');
     });
 })();
