@@ -110,6 +110,11 @@ def send_friend_request(request, username):
             }
         )
         messages.success(request, f"בקשת חברות נשלחה אל {username}!")
+    else:
+        if existing_relation.status == 'pending':
+            messages.info(request, "בקשת חברות ממתינה כבר נשלחה.")
+        elif existing_relation.status == 'accepted':
+            messages.info(request, "אתם כבר חברים!")
 
     return redirect('public_profile', username=username)
 
@@ -227,39 +232,86 @@ def chat_room(request, room_id):
     all_chat_messages = room.messages.all().order_by('timestamp')
     my_documents = Document.objects.filter(uploaded_by=request.user)
 
+    # Get the other participant
+    other_participant = room.participants.exclude(id=request.user.id).first()
+
     if request.method == 'POST':
-        content = request.POST.get('content')
-        drive_file_id = request.POST.get('drive_file_id')
-        local_file = request.FILES.get('local_file')
+        # Check if it's AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            import json
+            from django.http import JsonResponse
+            
+            content = request.POST.get('content', '').strip()
+            drive_file_id = request.POST.get('drive_file_id')
+            local_file = request.FILES.get('local_file')
 
-        if content or drive_file_id or local_file:
-            msg = ChatMessage.objects.create(
-                room=room,
-                sender=request.user,
-                content=content
-            )
+            if not (content or drive_file_id or local_file):
+                return JsonResponse({'success': False, 'error': 'המסר ריק'}, status=400)
 
-            if drive_file_id:
-                try:
-                    msg.attached_file = Document.objects.get(id=drive_file_id, uploaded_by=request.user)
-                except Document.DoesNotExist:
-                    pass
-
-            elif local_file:
-                # Files uploaded in chat are intentionally stored without a course
-                new_doc = Document.objects.create(
-                    uploaded_by=request.user,
-                    title=local_file.name,
-                    file=local_file,
-                    course=None
+            try:
+                msg = ChatMessage.objects.create(
+                    room=room,
+                    sender=request.user,
+                    content=content or ''
                 )
-                msg.attached_file = new_doc
 
-            msg.save()
+                if drive_file_id:
+                    try:
+                        doc = Document.objects.get(id=drive_file_id, uploaded_by=request.user)
+                        msg.attached_file = doc
+                        msg.save()
+                    except Document.DoesNotExist:
+                        pass
+                elif local_file:
+                    new_doc = Document.objects.create(
+                        uploaded_by=request.user,
+                        title=local_file.name,
+                        file=local_file,
+                        course=None
+                    )
+                    msg.attached_file = new_doc
+                    msg.save()
+
+                return JsonResponse({
+                    'success': True,
+                    'message_id': msg.id,
+                    'timestamp': msg.timestamp.strftime('%H:%M')
+                })
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        else:
+            # Regular form submission (fallback)
+            content = request.POST.get('content')
+            drive_file_id = request.POST.get('drive_file_id')
+            local_file = request.FILES.get('local_file')
+
+            if content or drive_file_id or local_file:
+                msg = ChatMessage.objects.create(
+                    room=room,
+                    sender=request.user,
+                    content=content
+                )
+
+                if drive_file_id:
+                    try:
+                        msg.attached_file = Document.objects.get(id=drive_file_id, uploaded_by=request.user)
+                    except Document.DoesNotExist:
+                        pass
+                elif local_file:
+                    new_doc = Document.objects.create(
+                        uploaded_by=request.user,
+                        title=local_file.name,
+                        file=local_file,
+                        course=None
+                    )
+                    msg.attached_file = new_doc
+
+                msg.save()
             return redirect('chat_room', room_id=room.id)
 
-    return render(request, 'core/chat_room.html', {
+    return render(request, 'core/chat_room_enhanced.html', {
         'room': room,
         'chat_messages': all_chat_messages,
-        'my_documents': my_documents
+        'my_documents': my_documents,
+        'other_participant': other_participant
     })

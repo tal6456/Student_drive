@@ -56,9 +56,12 @@
                         <i class="fas fa-check ms-1"></i> אשר חברות
                     </a>
                 {% else %}
-                    <a href="{% url 'send_friend_request' target_user.username %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                        <i class="fas fa-user-plus ms-1"></i> הוסף לרשת שלי
-                    </a>
+                    <form method="POST" action="{% url 'send_friend_request' target_user.username %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="fas fa-user-plus ms-1"></i> הוסף לרשת שלי
+                        </button>
+                    </form>
                 {% endif %}
             {% else %}
                 <a href="{% url 'settings' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">ערוך פרופיל ציבורי</a>
@@ -113,9 +116,12 @@
                 </div>
                 <h5 class="fw-bold mb-2">הגישה לקבצים חסומה</h5>
                 <p class="text-muted mb-4 px-md-5">עליך להיות חבר של <strong>{{ target_user.username }}</strong> כדי שתוכלו להחליף מידע אקדמי ולהוריד קבצים אחד מהשני.</p>
-                <a href="{% url 'send_friend_request' target_user.username %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                    שלח בקשת הצטרפות לרשת
-                </a>
+                <form method="POST" action="{% url 'send_friend_request' target_user.username %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        שלח בקשת הצטרפות לרשת
+                    </button>
+                </form>
             </div>
         {% endif %}
     </div>
