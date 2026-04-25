@@ -24,6 +24,9 @@ from core.utils import process_transaction
 
 User = get_user_model()
 
+INVITER_REFERRAL_BONUS = 5
+INVITEE_REFERRAL_BONUS = 5
+
 @login_required
 def profile(request):
     uploaded_files = Document.objects.filter(uploaded_by=request.user).select_related('course').order_by('-upload_date')
@@ -89,15 +92,13 @@ def complete_profile(request):
                     referrer = referrer_profile.user
                     if referrer != request.user:
                         user_profile.referred_by = referrer
+                        user_profile.save(update_fields=['referred_by'])
 
-                        # הבונוס המעודכן שלנו!
-                        # הישן מקבל 10
-                        process_transaction(referrer, 10, tx_type='referral',
+                        process_transaction(referrer, INVITER_REFERRAL_BONUS, tx_type='referral',
                                             description=f"בונוס חבר-מביא-חבר! ({user_profile.user.username} הצטרף) 🤝",
                                             notify=True)
 
-                        # החדש מקבל עוד 5
-                        process_transaction(user_profile.user, 5, tx_type='referral',
+                        process_transaction(user_profile.user, INVITEE_REFERRAL_BONUS, tx_type='referral',
                                             description="בונוס הצטרפות דרך קישור הפניה 🎁", notify=True)
 
                         del request.session['referral_code']

@@ -1,3 +1,4 @@
+from datetime import date
 import json
 from types import SimpleNamespace
 from unittest import mock
@@ -104,6 +105,77 @@ class ViewTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(get_user_model().objects.filter(username="newuser").exists())
+
+    def test_new_user_starts_with_10_coins(self):
+        new_user = get_user_model().objects.create_user(
+            username="coins_user",
+            email="coins_user@example.com",
+            password="StrongPass123!",
+        )
+        profile = new_user.profile
+        self.assertEqual(profile.current_balance, 10)
+        self.assertEqual(profile.lifetime_coins, 10)
+
+    def test_invitation_signup_grants_5_to_both_users(self):
+        inviter = get_user_model().objects.create_user(
+            username="inviter",
+            email="inviter@example.com",
+            password="StrongPass123!",
+            first_name="Inviter",
+            last_name="User",
+        )
+        invited = get_user_model().objects.create_user(
+            username="invited",
+            email="invited@example.com",
+            password="StrongPass123!",
+        )
+
+        invited.profile.last_daily_bonus = date.today()
+        invited.profile.save(update_fields=["last_daily_bonus"])
+
+        self.client.force_login(invited)
+        session = self.client.session
+        session["referral_code"] = inviter.profile.referral_code
+        session.save()
+
+        response = self.client.post(
+            reverse("complete_profile"),
+            data={
+                "first_name": "Invited",
+                "last_name": "User",
+                "phone_number": "0501234567",
+                "terms_accepted": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        inviter.profile.refresh_from_db()
+        invited.profile.refresh_from_db()
+
+        self.assertEqual(inviter.profile.current_balance, 15)
+        self.assertEqual(inviter.profile.lifetime_coins, 15)
+        self.assertEqual(invited.profile.current_balance, 15)
+        self.assertEqual(invited.profile.lifetime_coins, 15)
+        self.assertEqual(invited.profile.referred_by, inviter)
+
+        session = self.client.session
+        session["referral_code"] = inviter.profile.referral_code
+        session.save()
+        self.client.post(
+            reverse("complete_profile"),
+            data={
+                "first_name": "Invited",
+                "last_name": "User",
+                "phone_number": "0501234567",
+                "terms_accepted": "on",
+            },
+        )
+
+        inviter.profile.refresh_from_db()
+        invited.profile.refresh_from_db()
+        self.assertEqual(inviter.profile.current_balance, 15)
+        self.assertEqual(invited.profile.current_balance, 15)
 
     def test_login_flow_authenticates_user(self):
         response = self.client.post(

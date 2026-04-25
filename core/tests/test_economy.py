@@ -177,6 +177,7 @@ class CoinTransactionModelTests(BaseTestCase):
 class DailyBonusLogicTests(BaseTestCase):
     # מותאם לקוד שלך - בונוס של מטבע אחד
     DAILY_BONUS_AMOUNT = 1
+    STARTING_COINS = 10
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(
@@ -204,8 +205,8 @@ class DailyBonusLogicTests(BaseTestCase):
 
         profile = self.user.profile
         profile.refresh_from_db()
-        self.assertEqual(profile.current_balance, self.DAILY_BONUS_AMOUNT)
-        self.assertEqual(profile.lifetime_coins, self.DAILY_BONUS_AMOUNT)
+        self.assertEqual(profile.current_balance, self.STARTING_COINS + self.DAILY_BONUS_AMOUNT)
+        self.assertEqual(profile.lifetime_coins, self.STARTING_COINS + self.DAILY_BONUS_AMOUNT)
         self.assertEqual(getattr(profile, "last_daily_bonus", None), date(2026, 4, 25))
 
     @mock.patch("django.utils.timezone.localdate", return_value=date(2026, 4, 25))
@@ -215,8 +216,8 @@ class DailyBonusLogicTests(BaseTestCase):
 
         profile = self.user.profile
         profile.refresh_from_db()
-        # וודא שהאיזון נשאר 1 ולא עלה ל-2
-        self.assertEqual(profile.current_balance, self.DAILY_BONUS_AMOUNT)
+        # וודא שהאיזון נשאר בונוס יומי יחיד מעל הבסיס של משתמש חדש
+        self.assertEqual(profile.current_balance, self.STARTING_COINS + self.DAILY_BONUS_AMOUNT)
 
 
 class AiSummaryCostTests(BaseTestCase):
@@ -233,7 +234,8 @@ class AiSummaryCostTests(BaseTestCase):
         self.user.profile.phone_number = "0501234567"
         self.user.profile.current_balance = 20
         self.user.profile.lifetime_coins = 20
-        self.user.profile.save(update_fields=["phone_number", "current_balance", "lifetime_coins"])
+        self.user.profile.last_daily_bonus = date.today()
+        self.user.profile.save(update_fields=["phone_number", "current_balance", "lifetime_coins", "last_daily_bonus"])
 
         university = University.objects.create(name="Summary University")
         major = Major.objects.create(name="Summary Major", university=university)

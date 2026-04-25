@@ -48,6 +48,9 @@ TAG_CHOICES = [
     ('summary', 'סיכום'),
     ('important', 'חשוב'),
 ]
+
+NEW_USER_STARTING_COINS = 10
+
 def generate_referral_code():
     """Generate a random referral code made of letters and digits."""
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
@@ -189,7 +192,11 @@ class UserProfile(models.Model):
 def create_or_save_user_profile(sender, instance, created, **kwargs):
     """Create a profile automatically for every new user, using the safe path."""
     if created:
-        UserProfile.objects.create(user=instance)
+        UserProfile.objects.create(
+            user=instance,
+            current_balance=NEW_USER_STARTING_COINS,
+            lifetime_coins=NEW_USER_STARTING_COINS,
+        )
     else:
         # Avoid profile `save()` recursion that can clash with deletes or migrations
         if hasattr(instance, 'profile'):
