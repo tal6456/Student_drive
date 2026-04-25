@@ -49,205 +49,80 @@
 
     .swipe-card {
         border: none;
-        border-radius: 0;
-        background: var(--gd-card);
-        box-shadow: none;
+        border-radius: 20px;
+        background: #000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         overflow: hidden;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
-        touch-action: pan-y;
+        touch-action: none;
         position: relative;
-        min-height: calc(100dvh - 68px);
+        height: 80vh; /* Fixed height for the card like Tinder */
+        width: 100%;
+        max-width: 450px;
+        margin: 10px auto;
         display: flex;
         flex-direction: column;
     }
 
-    .swipe-card:hover {
-        transform: none;
-        box-shadow: none;
-    }
-
-    .swipe-card.dragging {
-        transition: none !important;
-        cursor: grabbing;
-    }
-
-    .swipe-card.swipe-out-right {
-        transition: transform 0.28s ease, opacity 0.28s ease;
-        transform: translateX(130%) rotate(18deg);
-        opacity: 0.12;
-    }
-
-    .swipe-card.swipe-out-left {
-        transition: transform 0.28s ease, opacity 0.28s ease;
-        transform: translateX(-130%) rotate(-18deg);
-        opacity: 0.12;
-    }
-
-    .swipe-decision {
-        position: absolute;
-        top: 16px;
-        z-index: 4;
-        padding: 0.38rem 0.82rem;
-        border-radius: 999px;
-        border: 2px solid;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        opacity: 0;
-        transform: scale(0.94);
-        transition: opacity 0.18s ease, transform 0.18s ease;
-        pointer-events: none;
-        backdrop-filter: blur(4px);
-    }
-
-    .swipe-like {
-        right: 16px;
-        color: #1cc273;
-        border-color: #1cc273;
-        background: rgba(28, 194, 115, 0.15);
-    }
-
-    .swipe-nope {
-        left: 16px;
-        color: #f35c6a;
-        border-color: #f35c6a;
-        background: rgba(243, 92, 106, 0.15);
-    }
-
-    .swipe-card.show-like .swipe-like,
-    .swipe-card.show-nope .swipe-nope {
-        opacity: 1;
-        transform: scale(1);
-    }
-
     .media-panel {
-        position: relative;
-        min-height: clamp(320px, 54vh, 620px);
-        overflow: hidden;
-        background: linear-gradient(160deg, rgba(40, 46, 72, 0.95), rgba(26, 39, 75, 0.9));
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        width: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background: #000;
+        z-index: 1;
+        display: block;
+        margin: 0;
+        padding: 0;
     }
 
-    .media-panel img,
+    .media-panel img {
+        width: 100%;
+        height: auto;
+        min-height: 100%;
+        display: block;
+        object-fit: contain;
+        pointer-events: none; /* Crucial: clicks go to the panel which handles the touch scroll */
+    }
+
     .media-panel iframe {
         width: 100%;
         height: 100%;
         border: 0;
-        object-fit: cover;
-    }
-
-    .media-panel iframe {
-        pointer-events: none;
-    }
-
-    .media-file-fallback {
-        text-align: center;
-        color: #f3f7ff;
-        padding: 2rem 1rem;
-    }
-
-    .media-file-fallback i {
-        font-size: 2.4rem;
-        display: block;
-        margin-bottom: 0.8rem;
-    }
-
-    .media-gradient-overlay {
-        position: absolute;
-        inset: auto 0 0 0;
-        background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.65));
-        color: #f6f7ff;
-        padding: 1rem;
-    }
-
-    .media-title {
-        margin: 0;
-        font-weight: 800;
-        font-size: clamp(1.05rem, 2.6vw, 1.35rem);
-    }
-
-    .media-meta {
-        margin-top: 0.35rem;
-        opacity: 0.95;
-        font-size: 0.9rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.6rem;
-    }
-
-    .swipe-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        padding: 0.35rem 0.75rem;
-        border: 1px solid var(--gd-border);
-        background: var(--sd-surface-soft);
-        color: var(--gd-text);
-    }
-
-    .why-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .why-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        padding: 0.28rem 0.62rem;
-        border: 1px solid rgba(123, 97, 255, 0.28);
-        background: rgba(123, 97, 255, 0.12);
-        color: var(--gd-text);
-        font-weight: 600;
+        pointer-events: auto;
     }
 
     .card-content {
-        padding: 1rem;
-        overflow-y: auto;
-        flex: 1;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 3rem 1.2rem 1.2rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
+        color: white;
+        z-index: 2;
+        pointer-events: none;
         display: flex;
         flex-direction: column;
+        max-height: 40%;
     }
 
-    .card-title {
-        font-weight: 800;
-        margin-bottom: 0.3rem;
-    }
-
-    .card-meta {
-        color: var(--gd-text-muted);
-        margin-bottom: 0.8rem;
-    }
-
-    .tips {
-        display: grid;
-        gap: 0.55rem;
-        margin-bottom: 0.85rem;
-    }
-
-    .tip {
-        border-inline-start: 3px solid var(--gd-primary);
-        background: var(--sd-surface-soft);
-        border-radius: 11px;
-        padding: 0.62rem 0.8rem;
-        font-size: 0.95rem;
+    .card-content > * {
+        pointer-events: auto;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     }
 
     .swipe-actions {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 1.5rem;
-        margin-top: auto;
-        padding: 1.5rem 1rem 2rem;
-        background: var(--gd-card);
+        gap: 2rem;
+        padding: 1rem;
+        z-index: 3;
+        position: relative;
+        background: transparent;
     }
 
     .swipe-actions .btn {
@@ -525,7 +400,35 @@
             </div>
         `;
         mediaPanel.appendChild(overlay);
+        
+        // Ensure buttons in the clone have listeners too (though here we just re-render inside existing card)
     }
+
+    // Initialize interaction
+    (function init() {
+        if (!likeBtn || !dislikeBtn) {
+            console.error('[Swipe] Buttons missing, cannot initialize');
+            return;
+        }
+
+        const handleAction = (action) => (e) => {
+            console.log(`[Swipe] ${action} button triggered`);
+            e.preventDefault();
+            e.stopPropagation();
+            if (isSubmitting) return;
+            triggerSwipe(action);
+        };
+
+        // Use pointerdown to preempt the card dragging engine
+        likeBtn.onpointerdown = handleAction('like');
+        dislikeBtn.onpointerdown = handleAction('dislike');
+
+        // Fallbacks for older browsers
+        likeBtn.onclick = handleAction('like');
+        dislikeBtn.onclick = handleAction('dislike');
+
+        console.log('[Swipe] Global interaction initialized with pointer-priority');
+    })();
 
     function renderNext(nextCard) {
         if (!nextCard) {
@@ -681,28 +584,47 @@
     }
 
     function shouldIgnoreDrag(target) {
-        return Boolean(target.closest('a, button'));
+        // If the target or any parent is a button or link, ignore the drag
+        const isInteractive = target.closest('button, a, .swipe-actions');
+        if (isInteractive) {
+            console.log('[Swipe] Ignoring drag on interactive element:', target.tagName);
+        }
+        return Boolean(isInteractive);
     }
 
-    card.addEventListener('pointerdown', (event) => {
-        if (isSubmitting || shouldIgnoreDrag(event.target)) return;
-        if (event.pointerType === 'mouse' && event.button !== 0) return;
+    let startY = 0;
 
+    card.addEventListener('pointerdown', (event) => {
+        // KILL DRAG if clicking buttons/links
+        if (event.target.closest('.swipe-actions, .cta-row, button, a')) {
+            return;
+        }
+
+        if (isSubmitting) return;
+        
         isDragging = true;
         activePointerId = event.pointerId;
         startX = event.clientX;
+        startY = event.clientY;
         currentX = startX;
         card.classList.add('dragging');
         card.setPointerCapture(event.pointerId);
-        console.log('[Swipe] pointerdown:', {pointerType: event.pointerType, startX, pointerId: event.pointerId});
     });
 
     card.addEventListener('pointermove', (event) => {
         if (!isDragging || event.pointerId !== activePointerId) return;
+        
+        const deltaX = event.clientX - startX;
+        const deltaY = event.clientY - startY;
+
+        // SCROLL vs SWIPE: If moving more vertically than horizontally, let it scroll
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            card.style.transform = '';
+            return; 
+        }
+
         currentX = event.clientX;
-        const deltaX = currentX - startX;
         applyDragVisuals(deltaX);
-        if (Math.abs(deltaX) % 50 === 0) console.log('[Swipe] pointermove:', {deltaX});
     });
 
     function endDrag(event) {
@@ -728,18 +650,34 @@
         endDrag(event);
     });
 
-    likeBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        console.log('[Button] Like button clicked');
-        triggerSwipe('like');
-    });
-    dislikeBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        console.log('[Button] Dislike button clicked');
-        triggerSwipe('dislike');
-    });
+    // Ensure buttons are ready before attaching listeners
+    const attachButtonListeners = () => {
+        if (likeBtn && dislikeBtn) {
+            likeBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('[Button] Like button clicked');
+                triggerSwipe('like');
+            });
+            dislikeBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('[Button] Dislike button clicked');
+                triggerSwipe('dislike');
+            });
+            console.log('[Button] Listeners attached successfully');
+        } else {
+            console.error('[Button] Buttons not available for listener attachment');
+        }
+    };
+
+    // Try to attach immediately, or on next frame
+    attachButtonListeners();
+
+    if (document.readyState === 'loading') {
+    } else {
+        attachButtonListeners();
+    }
 })();
 </script>
 {% endblock %}
