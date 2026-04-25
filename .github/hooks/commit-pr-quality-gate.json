@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "windows": "powershell -NoProfile -ExecutionPolicy Bypass -File ./.github/hooks/scripts/commit-pr-quality-gate.ps1",
+        "linux": "bash ./.github/hooks/scripts/commit-pr-quality-gate.sh",
+        "osx": "bash ./.github/hooks/scripts/commit-pr-quality-gate.sh",
+        "timeout": 1800
+      }
+    ]
+  }
+}

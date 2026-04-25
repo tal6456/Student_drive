@@ -33,3 +33,4 @@ media/
 mission.json
 # Ignore any worktree folders
 *.worktrees/
+.github/
