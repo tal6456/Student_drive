@@ -156,33 +156,36 @@
         align-items: center;
         gap: 2rem;
         padding: 1.5rem 1rem;
-        z-index: 1000; /* Ensure it is above everything else */
-        position: relative; /* Keep it outside the card flow */
-        background: var(--gd-card);
+        z-index: 10000; /* Extremely high z-index */
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         width: 100%;
         max-width: 450px;
-        margin: 0 auto;
-        border-top: 1px solid var(--gd-border);
+        margin: 0;
+        pointer-events: none;
     }
 
     .swipe-actions .btn {
-        width: 70px;
-        height: 70px;
+        pointer-events: auto;
+        width: 75px; /* Slightly larger for easier tapping */
+        height: 75px;
         border-radius: 50%;
         font-weight: 700;
         padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        transition: all 0.2s ease;
-        border: none;
+        font-size: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 4px solid white; /* Add white border like Tinder */
     }
 
     .swipe-actions .btn:hover {
         transform: scale(1.1);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
 
     .swipe-actions .btn:active {
@@ -204,32 +207,31 @@
     /* Swipe Decision Stamps */
     .swipe-decision {
         position: absolute;
-        top: 40px;
+        top: 20%;
         z-index: 10;
         padding: 0.5rem 1.5rem;
         border-radius: 10px;
-        border: 4px solid;
+        border: 8px solid;
         font-weight: 900;
-        font-size: 2.5rem;
+        font-size: 3.5rem;
         text-transform: uppercase;
-        transform: rotate(-10deg);
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.1s ease;
     }
 
     .swipe-like {
-        right: 40px;
+        left: 40px;
         color: #1cc273;
         border-color: #1cc273;
-        transform: rotate(-15deg);
+        transform: rotate(-20deg);
     }
 
     .swipe-nope {
-        left: 40px;
+        right: 40px;
         color: #f35c6a;
         border-color: #f35c6a;
-        transform: rotate(15deg);
+        transform: rotate(20deg);
     }
 
     .swipe-card.show-like .swipe-like { opacity: 1; }
@@ -255,30 +257,44 @@
         .tinder-wrap {
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden !important;
             height: 100dvh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .topbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1001;
         }
 
         .swipe-card {
-            height: clamp(65vh, 72vh, 75vh);
-            margin: 0 auto;
-            border-radius: 0; /* Full width edge to edge on mobile like Tinder */
+            height: calc(100svh - 150px); /* Specific height for SVH */
+            width: 94vw;
+            margin: 10px auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         .swipe-actions {
-            padding: 1rem 0.5rem 2.5rem; /* More bottom padding for safe area */
-            background: #fff; /* White bar at bottom of app */
+            bottom: 30px;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 20000;
         }
         
         .swipe-actions .btn {
-            width: 62px;
-            height: 62px;
-            font-size: 1.5rem;
+            width: 70px;
+            height: 70px;
+            font-size: 1.8rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         }
 
         .card-content {
-            padding: 2.5rem 1rem 1rem;
-            max-height: 55%;
+            padding: 3rem 1.2rem 5rem;
+            max-height: 50%;
         }
     }
 </style>
@@ -422,15 +438,17 @@
     }
 
     function resetCardTransform() {
-        card.style.transition = 'transform 0.2s ease';
+        card.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         card.style.transform = '';
-        card.classList.remove('dragging', 'show-like', 'show-nope', 'swipe-out-left', 'swipe-out-right');
+        card.style.opacity = '1';
+        card.classList.remove('dragging', 'show-like', 'show-nope');
     }
 
     function applyDragVisuals(deltaX) {
         const rotate = Math.max(-12, Math.min(12, deltaX / 16));
         card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
 
+        // Show stamps
         if (deltaX > 25) {
             card.classList.add('show-like');
             card.classList.remove('show-nope');
@@ -444,8 +462,14 @@
 
     function animateSwipeOut(action, done) {
         card.classList.remove('dragging');
-        card.classList.add(action === 'like' ? 'swipe-out-right' : 'swipe-out-left');
-        setTimeout(done, 280);
+        if (action === 'like') {
+            card.style.transition = 'transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
+            card.style.transform = 'translateX(150vw) rotate(30deg)';
+        } else {
+            card.style.transition = 'transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
+            card.style.transform = 'translateX(-150vw) rotate(-30deg)';
+        }
+        setTimeout(done, 450);
     }
 
     function renderPreview(nextCard) {
@@ -506,16 +530,19 @@
         };
 
         // Attach to BOTH mousedown and click for maximum compatibility
-        likeBtn.addEventListener('mousedown', handleAction('like'));
-        dislikeBtn.addEventListener('mousedown', handleAction('dislike'));
-        
-        likeBtn.addEventListener('click', handleAction('like'));
-        dislikeBtn.addEventListener('click', handleAction('dislike'));
+        likeBtn.onclick = (e) => handleAction('like')(e);
+        dislikeBtn.onclick = (e) => handleAction('dislike')(e);
 
         // Prevent pointerdown from bubbling up to card
         [likeBtn, dislikeBtn].forEach(btn => {
-            btn.addEventListener('pointerdown', (e) => e.stopPropagation());
-            btn.addEventListener('touchstart', (e) => e.stopPropagation());
+            btn.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }, { capture: true });
+            btn.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }, { capture: true });
         });
 
         console.log('[Swipe] Global interaction initialized - Buttons moved outside card');
@@ -687,7 +714,9 @@
 
     card.addEventListener('pointerdown', (event) => {
         // KILL DRAG if clicking buttons/links
-        if (event.target.closest('.swipe-actions, .cta-row, button, a')) {
+        const isInteractive = event.target.closest('.swipe-actions, .cta-row, button, a');
+        if (isInteractive) {
+            console.log('[Swipe] pointerdown on interactive element, ignoring drag');
             return;
         }
 
@@ -708,12 +737,12 @@
         const deltaX = event.clientX - startX;
         const deltaY = event.clientY - startY;
 
-        // SCROLL vs SWIPE: If moving more vertically than horizontally, let it scroll
-        if (Math.abs(deltaY) > Math.abs(deltaX)) {
-            card.style.transform = '';
+        // If moving vertically MUCH more than horizontally at the start, don't swipe
+        if (Math.abs(deltaY) > Math.abs(deltaX) * 1.5 && Math.abs(deltaX) < 20) {
             return; 
         }
 
+        event.preventDefault(); // Prevent scrolling while swiping
         currentX = event.clientX;
         applyDragVisuals(deltaX);
     });
@@ -724,15 +753,17 @@
         const deltaX = currentX - startX;
         isDragging = false;
         activePointerId = null;
+        card.releasePointerCapture(event.pointerId);
 
-        console.log('[Swipe] pointerup:', {deltaX, threshold: SWIPE_THRESHOLD, triggered: Math.abs(deltaX) >= SWIPE_THRESHOLD});
+        console.log('[Swipe] pointerup:', {deltaX, threshold: SWIPE_THRESHOLD});
 
-        if (Math.abs(deltaX) >= SWIPE_THRESHOLD) {
-            triggerSwipe(deltaX > 0 ? 'like' : 'dislike');
-            return;
+        if (deltaX >= SWIPE_THRESHOLD) {
+            triggerSwipe('like');
+        } else if (deltaX <= -SWIPE_THRESHOLD) {
+            triggerSwipe('dislike');
+        } else {
+            resetCardTransform();
         }
-
-        resetCardTransform();
     }
 
     card.addEventListener('pointerup', endDrag);
@@ -744,32 +775,27 @@
     // Ensure buttons are ready before attaching listeners
     const attachButtonListeners = () => {
         if (likeBtn && dislikeBtn) {
-            likeBtn.addEventListener('mousedown', (event) => {
+            const handleForceAction = (action) => (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('[Button] Like button triggered');
-                triggerSwipe('like');
-            });
-            dislikeBtn.addEventListener('mousedown', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                console.log('[Button] Dislike button triggered');
-                triggerSwipe('dislike');
-            });
-            
-            // Also for touch
-            likeBtn.addEventListener('touchstart', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                triggerSwipe('like');
-            });
-            dislikeBtn.addEventListener('touchstart', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                triggerSwipe('dislike');
-            });
+                event.stopImmediatePropagation();
+                console.log(`[ForceButton] ${action} triggered`);
+                triggerSwipe(action);
+            };
 
-            console.log('[Button] Hard listeners attached');
+            likeBtn.onpointerdown = handleForceAction('like');
+            dislikeBtn.onpointerdown = handleForceAction('dislike');
+            
+            likeBtn.onmousedown = handleForceAction('like');
+            dislikeBtn.onmousedown = handleForceAction('dislike');
+
+            likeBtn.ontouchstart = handleForceAction('like');
+            dislikeBtn.ontouchstart = handleForceAction('dislike');
+
+            likeBtn.onclick = handleForceAction('like');
+            dislikeBtn.onclick = handleForceAction('dislike');
+
+            console.log('[Button] Global force listeners attached');
         }
     };
 
