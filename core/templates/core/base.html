@@ -951,6 +951,7 @@ such as the background, top bar, footer, and related layout behavior.
                 <ul class="navbar-nav flex-column">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> דף הבית</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'files_tinder' %}"><i class="fas fa-fire"></i> פייל-מאץ'</a></li>
 
                     {% if user.is_authenticated %}
                         <li class="nav-item border-top pt-3 mt-2"><a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a></li>
@@ -1503,6 +1504,10 @@ function getAISummary(docId, event) {
     <a href="{% url 'community_feed' %}" class="nav-item {% if request.resolver_match.url_name == 'community_feed' %}active{% endif %}">
         <i class="fas fa-users"></i>
         <span>קהילה</span>
+    </a>
+    <a href="{% url 'files_tinder' %}" class="nav-item {% if request.resolver_match.url_name == 'files_tinder' %}active{% endif %}">
+        <i class="fas fa-fire"></i>
+        <span>Match</span>
     </a>
     <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
         <i class="fas fa-user-circle"></i>

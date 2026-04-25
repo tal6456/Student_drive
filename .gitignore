@@ -34,3 +34,4 @@ mission.json
 # Ignore any worktree folders
 *.worktrees/
 .github/
+.githooks/
