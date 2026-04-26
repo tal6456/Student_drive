@@ -874,42 +874,43 @@ such as the background, top bar, footer, and related layout behavior.
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 48px !important;
-            height: 48px !important;
-            background: var(--gd-primary) !important;
+            width: 52px !important;
+            height: 52px !important;
+            background-color: #8ab4f8 !important; /* צבע התכלת מהתמונה */
             color: #ffffff !important;
             border: none !important;
-            border-radius: 8px 0 0 8px !important; 
-            box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.15) !important;
+            border-radius: 14px 0 0 14px !important; /* מעוגל משמאל, נדבק לימין */
+            box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.15) !important;
             cursor: pointer !important;
             transition: width 0.2s ease !important;
             padding: 0 !important;
         }
         #a11y-toggle:hover {
-            width: 54px !important;
+            width: 58px !important;
         }
-        #a11y-toggle i {
-            font-size: 1.6rem !important;
-            pointer-events: none !important;
+        /* פותר את באג הלחיצה - מתעלם מלחיצות על הציור עצמו */
+        #a11y-toggle svg {
+            pointer-events: none !important; 
         }
         #a11y-menu {
             position: absolute !important;
             top: 50% !important;
-            right: 58px !important;
+            right: 65px !important;
             transform: translateY(-50%) !important;
             z-index: 10000 !important;
+            width: 260px !important;
         }
     </style>
     <nav id="a11y-floating-widget" class="d-none d-lg-block" aria-label="תפריט נגישות">
-        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" onclick="event.stopPropagation(); document.getElementById('a11y-menu').classList.toggle('d-none');">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="15" cy="5" r="2.5" fill="currentColor" stroke="none"></circle>
-                <path d="M15 8v6"></path>
-                <path d="M17 14h-7l-2.5 4h-2"></path>
-                <path d="M15 10h-4l-1 1.5"></path>
-                <circle cx="15" cy="18" r="4"></circle>
-                <path d="M8 12l-1.5 -2.5" stroke-width="2.5"></path>
-                <path d="M5.5 12h4" stroke-width="2.5"></path>
+                <path d="M15 8v5"></path>
+                <path d="M15 13h-5l-2 3.5h-2"></path>
+                <path d="M15 10h-4l-1.5 2"></path>
+                <circle cx="14" cy="17" r="4"></circle>
+                <path d="M8.5 12l-1.5 -2.5" stroke-width="2.5"></path>
+                <path d="M5 12h4" stroke-width="2.5"></path>
             </svg>
         </button>
         <div id="a11y-menu" class="d-none" role="menu" aria-label="אפשרויות נגישות">
@@ -2044,9 +2045,21 @@ function copyInviteLink(event) {
         setToggleState('a11yHighContrast', 'a11y-high-contrast');
         setToggleState('a11yUnderlineLinks', 'a11y-underline-links');
 
+        // Desktop Toggle Button Logic
         if (a11yToggle && a11yMenu) {
-            a11yToggle.addEventListener('click', () => {
-                a11yMenu.classList.toggle('d-none');
+            // מאזין גלובלי אחד שעוטף גם פתיחה וגם סגירה, ומונע התנגשויות
+            document.addEventListener('click', (e) => {
+                const toggleBtnClicked = e.target.closest('#a11y-toggle');
+                
+                if (toggleBtnClicked) {
+                    // אם לחצו על הכפתור - פותחים/סוגרים
+                    e.preventDefault();
+                    e.stopPropagation();
+                    a11yMenu.classList.toggle('d-none');
+                } else if (!a11yMenu.classList.contains('d-none') && !a11yMenu.contains(e.target)) {
+                    // אם התפריט פתוח ולחצו בשטח ריק - סוגרים
+                    a11yMenu.classList.add('d-none');
+                }
             });
         }
 
