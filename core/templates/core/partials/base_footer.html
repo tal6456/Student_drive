@@ -1,0 +1,92 @@
+<!-- Included by core/base.html. Owns the shared footer, support modal, and authenticated report modal. -->
+<footer class="footer py-3 mt-auto border-top" style="background: var(--gd-card, #fff);">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold fs-6 notranslate" style="color: var(--gd-text) !important;">Student Drive</span>
+                <small class="text-muted">© 2026</small>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                <div class="footer-lang-bar notranslate d-flex gap-2 m-0">
+                    <a href="javascript:void(0)" onclick="forceTranslate('en')" class="lang-btn-footer small text-decoration-none">English</a>
+                    <a href="javascript:void(0)" onclick="forceTranslate('he')" class="lang-btn-footer small text-decoration-none">עברית</a>
+                </div>
+
+                <div style="border-left: 1px solid #dee2e6; height: 15px;"></div>
+
+                <a href="{% url 'submit_feedback' %}" class="text-decoration-none fw-bold small">
+                    <i class="fas fa-comment-dots text-primary me-1"></i>הצעות ייעול
+                </a>
+
+                <div style="border-left: 1px solid #dee2e6; height: 15px;"></div>
+
+                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold small text-danger d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#supportModal">
+                    <i class="fas fa-heart me-1"></i>תמיכה ביוצר
+                </button>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center">
+                <a href="{% url 'terms' %}" class="text-muted small text-decoration-none">תנאים</a>
+                <a href="{% url 'privacy' %}" class="text-muted small text-decoration-none">פרטיות</a>
+                <a href="{% url 'accessibility' %}" class="text-muted small text-decoration-none">נגישות</a>
+            </div>
+        </div>
+    </div>
+    <div id="google_translate_element" style="display:none;"></div>
+</footer>
+
+<div class="modal fade" id="supportModal" tabindex="-1" aria-labelledby="supportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--gd-card, #fff); border: 1px solid var(--gd-border, #eee);">
+            <div class="modal-header border-0 pb-0" dir="rtl" style="background-color: var(--gd-card, #fff); color: var(--gd-text, #212529);">
+                <h5 class="modal-title fw-bold" id="supportModalLabel">אהבתם את האתר? ✨</h5>
+                <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4" dir="rtl">
+                <p class="text-muted mb-4 small">
+                    בנינו את הדרייב באהבה כדי לעשות לכולנו חיים קלים יותר בתואר. אם האתר עזר לכם לסגור פינה, נשמח אם תעזרו לנו לשמור על השרתים באוויר (או פשוט תזמינו אותנו לקפה של תקופת מבחנים ☕)
+                </p>
+                <div class="mt-2">
+                    <a href="https://links.payboxapp.com/gPGtQIuOr1b" target="_blank" class="btn btn-primary w-100 rounded-3 fw-bold py-2">
+                        <i class="fas fa-external-link-alt me-2"></i>מעבר לפייבוקס
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="modal fade" id="globalReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text); border: 1px solid var(--gd-border) !important;">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle ms-2"></i> דיווח על קובץ</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="globalReportForm" method="post" action="{% url 'report_document' 0 %}">
+                {% csrf_token %}
+                <div class="modal-body p-4 text-end">
+                    <p class="small text-muted mb-3" style="color: var(--gd-text-muted) !important;">דיווח על: <strong id="reportDocTitle" style="color: var(--gd-text);"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small" style="color: var(--gd-text);">סיבת הדיווח:</label>
+                        <select name="reason" class="form-select" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);" required>
+                            <option value="">בחר סיבה...</option>
+                            <option value="copyright" class="fw-bold text-danger"> פגיעה בזכויות יוצרים</option>
+                            <option value="broken">הקובץ פגום / לא נפתח</option>
+                            <option value="inappropriate">תוכן פוגעני / לא ראוי</option>
+                            <option value="irrelevant">לא רלוונטי לקורס</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small" style="color: var(--gd-text);">פירוט נוסף:</label>
+                        <textarea name="description" class="form-control" rows="2" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border);"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill shadow-sm">שלח דיווח לחמ"ל</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}

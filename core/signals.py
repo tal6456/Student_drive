@@ -93,11 +93,18 @@ def notify_students_on_new_file(sender, instance, created, **kwargs):
 @receiver(user_logged_in)
 def grant_daily_login_bonus(sender, user, request, **kwargs):
     """מעניק 1 מטבעות למשתמש על התחברות ראשונה באותו יום."""
+    # Ignore synthetic/auth helper logins (for example force_login in tests)
+    # and only reward real login form submissions.
+    method = (getattr(request, 'method', '') or '').upper()
+    if not request or method != 'POST':
+        return
+
     # מוודאים שיש למשתמש פרופיל
     if not hasattr(user, 'profile'):
         return
 
-    today = timezone.localtime().date()
+    # Use localdate() so tests and timezone-aware logic can patch/override day boundaries consistently.
+    today = timezone.localdate()
     profile = user.profile
 
     # בודקים אם עדיין לא קיבל בונוס היום

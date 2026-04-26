@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q, Avg
+from django.utils import timezone
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
@@ -145,6 +146,24 @@ def home(request):
 
     if request.user.is_authenticated:
         profile = request.user.profile
+
+        # Daily bonus is granted on first visit of the day.
+        today = timezone.localdate()
+        if profile.last_daily_bonus != today:
+            try:
+                process_transaction(
+                    user=request.user,
+                    amount=1,
+                    tx_type='system',
+                    description="בונוס התחברות יומי! איזה כיף שחזרת אלינו 🎁",
+                    actor=None,
+                    notify=True,
+                    bonus_increases_lifetime=True,
+                )
+                profile.last_daily_bonus = today
+                profile.save(update_fields=['last_daily_bonus'])
+            except Exception:
+                pass
 
         # הבדיקה הקשוחה: האם יש טלפון? האם הוזן שם?
         # (אם המשתמש סטודנט, הטופס ב-HTML כבר ידאג שהוא ימלא גם אוניברסיטה)

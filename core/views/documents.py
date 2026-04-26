@@ -191,15 +191,29 @@ def _get_friend_ids(user):
 def _file_discovery_queryset(user):
     profile = user.profile
     favorite_course_ids = list(profile.favorite_courses.values_list('id', flat=True))
+    favorite_major_ids = list(
+        Course.objects.filter(id__in=favorite_course_ids).values_list('major_id', flat=True).distinct()
+    )
+    favorite_university_ids = list(
+        Course.objects.filter(id__in=favorite_course_ids).values_list('major__university_id', flat=True).distinct()
+    )
     voted_ids = list(Vote.objects.filter(user=user).values_list('document_id', flat=True))
+    voted_course_ids = list(
+        Vote.objects.filter(user=user, document__course_id__isnull=False)
+        .values_list('document__course_id', flat=True)
+        .distinct()
+    )
 
     # Relevant universe: favorites, same faculty (major), and personal drive files.
     discovery_filter = Q(uploaded_by=user) | Q(course_id__in=favorite_course_ids)
 
-    if profile.major_id:
-        discovery_filter |= Q(course__major_id=profile.major_id)
-    elif profile.university_id:
-        discovery_filter |= Q(course__major__university_id=profile.university_id)
+    major_ids = [profile.major_id] if profile.major_id else favorite_major_ids
+    university_ids = [profile.university_id] if profile.university_id else favorite_university_ids
+
+    if major_ids:
+        discovery_filter |= Q(course__major_id__in=major_ids)
+    elif university_ids:
+        discovery_filter |= Q(course__major__university_id__in=university_ids)
 
     return (
         Document.objects
@@ -207,6 +221,7 @@ def _file_discovery_queryset(user):
         .prefetch_related('likes')
         .filter(discovery_filter)
         .exclude(id__in=voted_ids)
+        .exclude(course_id__in=voted_course_ids)
         .exclude(file='')
     )
 
@@ -214,6 +229,14 @@ def _file_discovery_queryset(user):
 def _rank_discovery_queryset(user, queryset):
     profile = user.profile
     favorite_course_ids = list(profile.favorite_courses.values_list('id', flat=True))
+    favorite_major_ids = list(
+        Course.objects.filter(id__in=favorite_course_ids).values_list('major_id', flat=True).distinct()
+    )
+    favorite_university_ids = list(
+        Course.objects.filter(id__in=favorite_course_ids).values_list('major__university_id', flat=True).distinct()
+    )
+    major_ids = [profile.major_id] if profile.major_id else favorite_major_ids
+    university_ids = [profile.university_id] if profile.university_id else favorite_university_ids
 
     return queryset.annotate(
         likes_count=Count('likes', distinct=True),
@@ -222,11 +245,11 @@ def _rank_discovery_queryset(user, queryset):
             # 1) Favorite courses first
             When(course_id__in=favorite_course_ids, then=Value(1)),
             # 2) Faculty files next (same major)
-            When(course__major_id=profile.major_id, then=Value(2)),
+            When(course__major_id__in=major_ids, then=Value(2)),
             # 3) Personal drive after faculty
             When(uploaded_by=user, then=Value(3)),
             # 4) Fallback (for users without major set, same university docs)
-            When(course__major__university_id=profile.university_id, then=Value(4)),
+            When(course__major__university_id__in=university_ids, then=Value(4)),
             default=Value(5),
             output_field=IntegerField(),
         ),
