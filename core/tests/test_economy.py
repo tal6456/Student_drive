@@ -175,7 +175,6 @@ class CoinTransactionModelTests(BaseTestCase):
 
 
 class DailyBonusLogicTests(BaseTestCase):
-    # מותאם לקוד שלך - בונוס של מטבע אחד
     DAILY_BONUS_AMOUNT = 1
     STARTING_COINS = 10
 
@@ -198,8 +197,9 @@ class DailyBonusLogicTests(BaseTestCase):
             "UserProfile.last_daily_bonus field is missing.",
         )
 
-    @mock.patch("django.utils.timezone.localdate", return_value=date(2026, 4, 25))
-    def test_first_visit_of_day_grants_daily_bonus_and_updates_last_daily_bonus(self, _mock_today):
+    def test_first_visit_of_day_grants_daily_bonus_and_updates_last_daily_bonus(self):
+        from datetime import date
+
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
 
@@ -207,16 +207,15 @@ class DailyBonusLogicTests(BaseTestCase):
         profile.refresh_from_db()
         self.assertEqual(profile.current_balance, self.STARTING_COINS + self.DAILY_BONUS_AMOUNT)
         self.assertEqual(profile.lifetime_coins, self.STARTING_COINS + self.DAILY_BONUS_AMOUNT)
-        self.assertEqual(getattr(profile, "last_daily_bonus", None), date(2026, 4, 25))
+        # בודק לפי התאריך האמיתי של היום!
+        self.assertEqual(getattr(profile, "last_daily_bonus", None), date.today())
 
-    @mock.patch("django.utils.timezone.localdate", return_value=date(2026, 4, 25))
-    def test_user_cannot_receive_daily_bonus_twice_same_day(self, _mock_today):
+    def test_user_cannot_receive_daily_bonus_twice_same_day(self):
         self.client.get(reverse("home"))
         self.client.get(reverse("home"))
 
         profile = self.user.profile
         profile.refresh_from_db()
-        # וודא שהאיזון נשאר בונוס יומי יחיד מעל הבסיס של משתמש חדש
         self.assertEqual(profile.current_balance, self.STARTING_COINS + self.DAILY_BONUS_AMOUNT)
 
 
@@ -274,3 +273,62 @@ class AiSummaryCostTests(BaseTestCase):
         self.assertFalse(payload.get("success"))
         # חיפוש הודעה בעברית כפי שמופיעה בקוד שלך
         self.assertIn("אין לך מספיק", payload.get("error", ""))
+
+
+class LikeBonusEconomyTests(BaseTestCase):
+    def setUp(self):
+        user_model = get_user_model()
+
+        # מוסיפים first_name ומספר טלפון למעלה הקובץ
+        self.uploader = user_model.objects.create_user(
+            username="uploader_user", password="StrongPass123!", first_name="Upload"
+        )
+        self.uploader.profile.phone_number = "0501234567"
+        self.uploader.profile.current_balance = 0
+        self.uploader.profile.lifetime_coins = 0
+        self.uploader.profile.save(update_fields=["phone_number", "current_balance", "lifetime_coins"])
+
+        # מוסיפים first_name וטלפון לכל הסטודנטים שעושים לייק
+        self.likers = []
+        for i in range(1, 7):
+            liker = user_model.objects.create_user(
+                username=f"liker{i}", password="StrongPass123!", first_name=f"Liker{i}"
+            )
+            liker.profile.phone_number = f"050000000{i}"
+            liker.profile.save(update_fields=["phone_number"])
+            self.likers.append(liker)
+
+        university = University.objects.create(name="Like Uni")
+        major = Major.objects.create(name="Like Major", university=university)
+        course = Course.objects.create(name="Like Course", major=major)
+
+        doc_file = SimpleUploadedFile("doc.pdf", b"%PDF-1.4...", content_type="application/pdf")
+        self.document = Document.objects.create(
+            course=course,
+            title="Awesome Summary",
+            file=doc_file,
+            uploaded_by=self.uploader,
+        )
+
+    def test_five_likes_grants_five_coins(self):
+        url = reverse('like_document', args=[self.document.id])
+
+        for i in range(4):
+            self.client.force_login(self.likers[i])
+            response = self.client.post(url)
+            self.assertEqual(response.status_code, 200)
+
+        self.uploader.profile.refresh_from_db()
+        self.assertEqual(self.uploader.profile.current_balance, 0, "No coins should be given for 4 likes")
+
+        self.client.force_login(self.likers[4])
+        self.client.post(url)
+
+        self.uploader.profile.refresh_from_db()
+        self.assertEqual(self.uploader.profile.current_balance, 5, "5th like must grant exactly 5 coins")
+
+        self.client.force_login(self.likers[5])
+        self.client.post(url)
+
+        self.uploader.profile.refresh_from_db()
+        self.assertEqual(self.uploader.profile.current_balance, 5, "6th like should NOT grant extra coins")

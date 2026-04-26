@@ -427,7 +427,6 @@ def course_detail(request, course_id, folder_id=None):
                     staff_member=p_folder.staff_member if p_folder else None,
                     uploader_ip=get_client_ip(request)
                 )
-                process_transaction(request.user, 1, tx_type='system', description='בונוס על העלאת מסמך')
                 uploaded_count += 1
             return JsonResponse({'success': True, 'count': uploaded_count})
 

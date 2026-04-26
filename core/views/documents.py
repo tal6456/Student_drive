@@ -156,9 +156,6 @@ class ShareTargetFinishView(LoginRequiredMixin, View):
                     uploaded_by=request.user,
                     uploader_ip=get_client_ip(request)
                 )
-                # הבונוס המוגן: 5 מטבעות, עד 5 ביום
-                if check_daily_limit(request.user, 'document_upload', 5):
-                    process_transaction(request.user, 5, 'document_upload', "בונוס על העלאת חומר לימוד 📄", notify=True)
                 uploaded_count += 1
 
             default_storage.delete(file_path)
@@ -521,6 +518,7 @@ def summarize_document_ai(request, document_id):
 
     return JsonResponse({'success': False, 'error': s})
 
+
 @login_required
 def like_document(request, document_id):
     if request.method == 'POST':
@@ -531,13 +529,14 @@ def like_document(request, document_id):
         else:
             doc.likes.add(request.user)
             liked = True
-            # מחקנו את התשלום על כל לייק בודד, ועברנו לבונוס איכות של 10 לייקים
-            if doc.total_likes == 10 and doc.uploaded_by:
+
+            # מעבר למודל "איכות על פני כמות": בונוס על הגעה ל-5 לייקים בדיוק
+            if doc.total_likes == 5 and doc.uploaded_by:
                 process_transaction(
                     user=doc.uploaded_by,
-                    amount=10,
+                    amount=5,
                     tx_type='quality_bonus',
-                    description=f"בונוס איכות! הקובץ '{doc.title}' שובר שיאים וקיבל 10 לייקים 🔥",
+                    description=f"בונוס איכות! הקובץ '{doc.title}' הגיע ל-5 לייקים והרווחת 5 מטבעות! 🔥",
                     notify=True,
                     bonus_increases_lifetime=True
                 )
