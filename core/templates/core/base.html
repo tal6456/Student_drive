@@ -903,37 +903,26 @@ such as the background, top bar, footer, and related layout behavior.
     </style>
     <nav id="a11y-floating-widget" class="d-none d-lg-block" aria-label="תפריט נגישות">
         <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
                 <circle cx="15" cy="5" r="2.5" fill="currentColor" stroke="none"></circle>
-                <path d="M15 8v5"></path>
-                <path d="M15 13h-5l-2 3.5h-2"></path>
-                <path d="M15 10h-4l-1.5 2"></path>
-                <circle cx="14" cy="17" r="4"></circle>
-                <path d="M8.5 12l-1.5 -2.5" stroke-width="2.5"></path>
-                <path d="M5 12h4" stroke-width="2.5"></path>
+                <path d="M15 8v6"></path>
+                <path d="M17 14h-7l-2.5 4h-2"></path>
+                <path d="M15 10h-4l-1 1.5"></path>
+                <circle cx="15" cy="18" r="4"></circle>
+                <path d="M8 12l-1.5 -2.5" stroke-width="2.5"></path>
+                <path d="M5.5 12h4" stroke-width="2.5"></path>
             </svg>
         </button>
-        <div id="a11y-menu" class="d-none" role="menu" aria-label="אפשרויות נגישות">
-            <button type="button" class="a11y-control-btn a11y-font-increase-btn" role="menuitem">
-                <i class="fas fa-plus" aria-hidden="true"></i>
-                <span>הגדל טקסט</span>
-            </button>
-            <button type="button" class="a11y-control-btn a11y-font-decrease-btn" role="menuitem">
-                <i class="fas fa-minus" aria-hidden="true"></i>
-                <span>הקטן טקסט</span>
-            </button>
-            <button type="button" class="a11y-control-btn a11y-contrast-toggle-btn" role="menuitem">
-                <i class="fas fa-adjust" aria-hidden="true"></i>
-                <span>ניגודיות גבוהה</span>
-            </button>
-            <button type="button" class="a11y-control-btn a11y-underline-toggle-btn" role="menuitem">
-                <i class="fas fa-underline" aria-hidden="true"></i>
-                <span>קו תחתון לקישורים</span>
-            </button>
-            <a href="{% url 'accessibility' %}" class="a11y-control-btn" role="menuitem">
-                <i class="fas fa-file-contract" aria-hidden="true"></i>
-                <span>הצהרת נגישות</span>
-            </a>
+        <div id="a11y-menu" class="d-none shadow-lg" role="menu" aria-label="אפשרויות נגישות" style="background: var(--gd-card); border: 1px solid var(--gd-border); border-radius: 16px; padding: 1rem; width: 230px;">
+            <h6 class="fw-bold mb-3 text-center" style="color: var(--gd-text);">הגדרות נגישות</h6>
+            <ul class="list-unstyled m-0 d-flex flex-column gap-2">
+                <li><button type="button" class="btn text-start w-100 a11y-font-increase-btn shadow-none d-flex align-items-center gap-3 hover-scale" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border); border-radius: 10px; padding: 0.5rem 1rem;"><i class="fas fa-plus text-primary" style="width: 16px; text-align: center;"></i> הגדל טקסט</button></li>
+                <li><button type="button" class="btn text-start w-100 a11y-font-decrease-btn shadow-none d-flex align-items-center gap-3 hover-scale" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border); border-radius: 10px; padding: 0.5rem 1rem;"><i class="fas fa-minus text-primary" style="width: 16px; text-align: center;"></i> הקטן טקסט</button></li>
+                <li><button type="button" class="btn text-start w-100 a11y-contrast-toggle-btn shadow-none d-flex align-items-center gap-3 hover-scale" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border); border-radius: 10px; padding: 0.5rem 1rem;"><i class="fas fa-adjust text-primary" style="width: 16px; text-align: center;"></i> ניגודיות</button></li>
+                <li><button type="button" class="btn text-start w-100 a11y-underline-toggle-btn shadow-none d-flex align-items-center gap-3 hover-scale" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border); border-radius: 10px; padding: 0.5rem 1rem;"><i class="fas fa-underline text-primary" style="width: 16px; text-align: center;"></i> קו תחתון</button></li>
+                <li><hr class="my-1" style="border-color: var(--gd-border);"></li>
+                <li><a href="{% url 'accessibility' %}" class="btn text-start w-100 shadow-none d-flex align-items-center gap-3" style="background: transparent; color: var(--gd-text); padding: 0.25rem 1rem;"><i class="fas fa-file-contract text-secondary" style="width: 16px; text-align: center;"></i> הצהרת נגישות</a></li>
+            </ul>
         </div>
     </nav>
 
@@ -2047,17 +2036,16 @@ function copyInviteLink(event) {
 
         // Desktop Toggle Button Logic
         if (a11yToggle && a11yMenu) {
-            // מאזין גלובלי אחד שעוטף גם פתיחה וגם סגירה, ומונע התנגשויות
             document.addEventListener('click', (e) => {
-                const toggleBtnClicked = e.target.closest('#a11y-toggle');
-                
-                if (toggleBtnClicked) {
-                    // אם לחצו על הכפתור - פותחים/סוגרים
+                const isClickOnToggle = a11yToggle.contains(e.target);
+                const isClickInsideMenu = a11yMenu.contains(e.target);
+    
+                if (isClickOnToggle) {
+                    // אם לחצו על הכפתור, פותחים/סוגרים
                     e.preventDefault();
-                    e.stopPropagation();
                     a11yMenu.classList.toggle('d-none');
-                } else if (!a11yMenu.classList.contains('d-none') && !a11yMenu.contains(e.target)) {
-                    // אם התפריט פתוח ולחצו בשטח ריק - סוגרים
+                } else if (!isClickInsideMenu && !a11yMenu.classList.contains('d-none')) {
+                    // אם התפריט פתוח ולחצו בחוץ (לא על הכפתור ולא בתוך התפריט), סוגרים אותו
                     a11yMenu.classList.add('d-none');
                 }
             });
