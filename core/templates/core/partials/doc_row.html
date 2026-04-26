@@ -113,7 +113,9 @@ The template also includes a modal for viewing and adding comments related to th
             </span>
         {% endif %}
 
-        <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
+        <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank" 
+           onclick="handlePWADownload(event, '{% url 'download_file' doc.id %}', '{{ doc.title|escapejs }}', '{{ doc.file_extension|default:''|escapejs }}')" 
+           class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
         <div>
@@ -228,6 +230,62 @@ The template also includes a modal for viewing and adding comments related to th
         }
     }
 </style>
+    
+<script>
+    // אנחנו בודקים אם הפונקציה קיימת כדי שלא תוגדר פעמיים אם יש הרבה קבצים ברשימה
+    if (typeof window.handlePWADownload === 'undefined') {
+        window.handlePWADownload = async function(event, url, filename, ext) {
+            
+            // זיהוי אם מדובר באייפד/אייפון ואם אנחנו רצים כאפליקציה ממסך הבית
+            const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            // אם זה אייפד כאפליקציה - אנחנו עוצרים את הפתיחה הרגילה ולוקחים פיקוד!
+            if (isApple && isStandalone && navigator.canShare) {
+                event.preventDefault(); 
+                
+                const btn = event.currentTarget;
+                const originalHTML = btn.innerHTML;
+                
+                // אפקט "טוען" כדי שהמשתמש ידע שזה עובד
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="d-none d-sm-inline fw-bold">מכין...</span>';
+                btn.style.pointerEvents = 'none';
+
+                try {
+                    // מוודאים ששם הקובץ מסתיים בסיומת (כמו .pdf) כדי שאפל תציע את האפליקציות הנכונות
+                    let fullFilename = filename;
+                    if (ext && !fullFilename.toLowerCase().endsWith('.' + ext.toLowerCase())) {
+                        fullFilename += '.' + ext;
+                    }
+
+                    // שואבים את הקובץ ויוצרים ממנו אובייקט שיודע לעבור שיתוף
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    const file = new File([blob], fullFilename, { type: blob.type });
+
+                    // פותחים את תפריט השיתוף הנייטיב של אפל (Notability, AirDrop וכו')
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: fullFilename
+                        });
+                    } else {
+                        // גיבוי למקרה שהדפדפן לא תומך
+                        window.open(url, '_blank');
+                    }
+                } catch (error) {
+                    // אם המשתמש ביטל את השיתוף או שקרתה תקלה
+                    console.log('Share action:', error);
+                } finally {
+                    // החזרת הכפתור למצב רגיל
+                    btn.innerHTML = originalHTML;
+                    btn.style.pointerEvents = 'auto';
+                }
+            }
+            // אם אתה גולש מהדפדפן הרגיל, או ממחשב, הקוד הזה מדלג על הכל ומוריד כרגיל!
+        };
+    }
+</script>
 <div class="modal fade" id="commentModal{{ doc.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ doc.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text);">
