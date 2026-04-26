@@ -113,8 +113,8 @@ The template also includes a modal for viewing and adding comments related to th
             </span>
         {% endif %}
 
-        <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank" 
-           onclick="handlePWADownload(event, '{% url 'download_file' doc.id %}', '{{ doc.title|escapejs }}', '{{ doc.file_extension|default:''|escapejs }}')" 
+        <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank"
+           onclick="handlePWADownload(event, '{% url 'download_file' doc.id %}', '{{ doc.title|escapejs }}', '{{ doc.file_extension|default:''|escapejs }}')"
            class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
@@ -201,11 +201,11 @@ The template also includes a modal for viewing and adding comments related to th
     /* מרחיבים את הטווח ל-1180px כדי לתפוס גם iPad Pro קטנים ו-Landscape */
     @media (max-width: 1180px) {
         .doc-row-responsive {
-            padding-top: 0.5rem !important; 
-            padding-bottom: 0.5rem !important;
-            min-height: auto !important; /* מבטל גובה מינימלי קודם */
+            padding-top: 0.2rem !important; 
+            padding-bottom: 0.2rem !important;
+            min-height: auto !important;
         }
-        
+
         .doc-row-responsive .flex-shrink-0[style*="width: 45px"] {
              width: 35px !important; /* הקטנת המיכל של האייקון */
         }
@@ -214,11 +214,11 @@ The template also includes a modal for viewing and adding comments related to th
             font-size: 1.4rem !important; /* הקטנה משמעותית יותר של האייקון */
             margin-top: 0 !important;
         }
-        
+
         .doc-row-responsive a.fw-bold.fs-6 {
             font-size: 0.9rem !important; /* הקטנת הכותרת הראשית */
         }
-        
+
         /* הקטנת הטקסט של התאריך ושם המעלה */
         .doc-row-responsive .gap-2[style*="font-size: 0.75rem"] {
             font-size: 0.7rem !important;
@@ -230,23 +230,23 @@ The template also includes a modal for viewing and adding comments related to th
         }
     }
 </style>
-    
+
 <script>
     // אנחנו בודקים אם הפונקציה קיימת כדי שלא תוגדר פעמיים אם יש הרבה קבצים ברשימה
     if (typeof window.handlePWADownload === 'undefined') {
         window.handlePWADownload = async function(event, url, filename, ext) {
-            
+
             // זיהוי אם מדובר באייפד/אייפון ואם אנחנו רצים כאפליקציה ממסך הבית
             const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
             // אם זה אייפד כאפליקציה - אנחנו עוצרים את הפתיחה הרגילה ולוקחים פיקוד!
             if (isApple && isStandalone && navigator.canShare) {
-                event.preventDefault(); 
-                
+                event.preventDefault();
+
                 const btn = event.currentTarget;
                 const originalHTML = btn.innerHTML;
-                
+
                 // אפקט "טוען" כדי שהמשתמש ידע שזה עובד
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="d-none d-sm-inline fw-bold">מכין...</span>';
                 btn.style.pointerEvents = 'none';

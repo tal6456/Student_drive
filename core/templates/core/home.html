@@ -186,6 +186,24 @@ Yovel check
             padding-bottom: 5px;
         }
     }
+    /* --- דיאטה גלובלית לשורות קורסים וניווט (לאנדרואיד PWA ואייפד) --- */
+    @media (max-width: 1180px) {
+        /* כיווץ מועדפים (הסמסטר שלי) */
+        .premium-list-row { margin-bottom: 6px !important; border-radius: 12px !important; }
+        .premium-list-row .py-3 { padding-top: 8px !important; padding-bottom: 8px !important; }
+        .premium-list-row .fa-folder { font-size: 1.2rem !important; }
+        .premium-list-row .fs-6 { font-size: 0.95rem !important; }
+        .premium-list-row .favorite-btn { padding: 10px !important; }
+        
+        /* כיווץ שורות בחיפוש ומוסדות */
+        .nav-item-card { padding: 10px 14px !important; border-radius: 12px !important; }
+        .nav-item-card .fs-5 { font-size: 1rem !important; }
+        .nav-item-card .gap-2 { margin-bottom: 2px !important; }
+        
+        /* כיווץ כרטיסיות שנים */
+        .year-selector-card { padding: 12px !important; }
+        .year-selector-card .display-6 { font-size: 1.8rem !important; }
+    }
 </style>
 
 <div class="container mt-4 mb-5 home-container" dir="rtl">
