@@ -453,8 +453,11 @@ def download_file(request, document_id):
 
     try:
         file_obj = d.file.open('rb')
-        content_type, encoding = mimetypes.guess_type(d.file.name)
-        content_type = content_type or 'application/octet-stream'
+
+        # הקסם שפותר את הבעיה באייפד ובאייפון!
+        # אנחנו מכריחים את הדפדפן להתייחס לקובץ כאל "מידע בינארי" ולא כ-PDF
+        # ככה Safari לא ינסה לפתוח אותו, אלא יפתח חלונית "האם ברצונך להוריד?"
+        content_type = 'application/octet-stream'
 
         response = HttpResponse(file_obj, content_type=content_type)
         safe_filename = quote(d.title.encode('utf-8'))
