@@ -901,8 +901,16 @@ such as the background, top bar, footer, and related layout behavior.
         }
     </style>
     <nav id="a11y-floating-widget" class="d-none d-lg-block" aria-label="תפריט נגישות">
-        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות">
-            <i class="fas fa-universal-access" aria-hidden="true"></i>
+        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" onclick="event.stopPropagation(); document.getElementById('a11y-menu').classList.toggle('d-none');">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                <circle cx="15" cy="5" r="2.5" fill="currentColor" stroke="none"></circle>
+                <path d="M15 8v6"></path>
+                <path d="M17 14h-7l-2.5 4h-2"></path>
+                <path d="M15 10h-4l-1 1.5"></path>
+                <circle cx="15" cy="18" r="4"></circle>
+                <path d="M8 12l-1.5 -2.5" stroke-width="2.5"></path>
+                <path d="M5.5 12h4" stroke-width="2.5"></path>
+            </svg>
         </button>
         <div id="a11y-menu" class="d-none" role="menu" aria-label="אפשרויות נגישות">
             <button type="button" class="a11y-control-btn a11y-font-increase-btn" role="menuitem">
