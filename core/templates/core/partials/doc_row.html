@@ -7,7 +7,7 @@ showing different information based on the context and screen size.
 The template also includes a modal for viewing and adding comments related to the document, which is only accessible to authenticated users.
 -->
 
-<div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between border-0 border-bottom py-2 transition-all doc-row-responsive custom-dropdown-container doc-row-container"
+<div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between border-0 border-bottom py-1 transition-all doc-row-responsive custom-dropdown-container doc-row-container"
      style="background-color: transparent; border-color: var(--gd-border) !important; position: relative; --bs-list-group-hover-bg: var(--gd-hover-bg);"
      data-personal-tag="{{ doc.personal_tag|default:'none' }}">
 
@@ -35,7 +35,8 @@ The template also includes a modal for viewing and adding comments related to th
                     {{ doc.title }}
                 </a>
 
-                <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank" class="d-block d-md-none text-decoration-none fw-bold fs-6 hover-primary mb-1 text-truncate" style="color: var(--gd-text);">                    {{ doc.title }}
+                <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank" class="d-block d-md-none text-decoration-none fw-bold fs-6 hover-primary mb-0 text-truncate" style="color: var(--gd-text);">
+                    {{ doc.title }}
                 </a>
 
                 {% if show_personal_tags and doc.personal_tag and doc.personal_tag != 'none' %}
@@ -112,7 +113,7 @@ The template also includes a modal for viewing and adding comments related to th
             </span>
         {% endif %}
 
-        <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
+        <a href="{% url 'download_file' doc.id %}" download="{{ doc.title }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3 d-flex align-items-center gap-1 hover-scale shadow-none download-btn-responsive" title="הורד קובץ" aria-label="הורד את {{ doc.title }}">
             <i class="fas fa-download"></i> <span class="d-none d-sm-inline fw-bold">הורדה</span>
         </a>
         <div>
