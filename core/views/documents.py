@@ -454,10 +454,9 @@ def download_file(request, document_id):
     try:
         file_obj = d.file.open('rb')
 
-        # הקסם שפותר את הבעיה באייפד ובאייפון!
-        # אנחנו מכריחים את הדפדפן להתייחס לקובץ כאל "מידע בינארי" ולא כ-PDF
-        # ככה Safari לא ינסה לפתוח אותו, אלא יפתח חלונית "האם ברצונך להוריד?"
-        content_type = 'application/octet-stream'
+        # מחזירים את הזיהוי החכם של סוג הקובץ
+        content_type, encoding = mimetypes.guess_type(d.file.name)
+        content_type = content_type or 'application/octet-stream'
 
         response = HttpResponse(file_obj, content_type=content_type)
         safe_filename = quote(d.title.encode('utf-8'))
@@ -466,7 +465,10 @@ def download_file(request, document_id):
         if file_ext and not safe_filename.lower().endswith(file_ext.lower()):
             safe_filename += file_ext
 
-        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{safe_filename}"
+        # שינוי קריטי עבור אפל (אייפד/אייפון):
+        # שינינו את 'attachment' (שמכריח הורדה עיוורת) ל-'inline' (שמאפשר הצגה בדפדפן אם נתמך).
+        # ככה באייפד ייפתח PDF בלשונית חדשה, ומשם יוכלו לשתף לכל אפליקציה!
+        response['Content-Disposition'] = f"inline; filename*=UTF-8''{safe_filename}"
         return response
 
     except Exception as e:

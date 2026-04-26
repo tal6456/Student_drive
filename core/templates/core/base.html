@@ -781,24 +781,28 @@ such as the background, top bar, footer, and related layout behavior.
 .custom-invite-popup {
     border-radius: 20px !important;
     padding: 20px !important;
-    max-width: 320px !important; /* Make the box smaller */
-    background: rgba(255, 255, 255, 0.96) !important;
+    max-width: 320px !important;
+    /* שימוש במשתנה הרקע של הכרטיסיות שתומך במצב לילה */
+    background: var(--gd-card, #ffffff) !important;
+    border: 1px solid var(--gd-border, #ddd) !important;
     backdrop-filter: blur(10px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
 }
 
 .custom-invite-title {
     font-size: 1.2rem !important;
-    color: var(--gd-primary, #1a73e8) !important;
+    /* שימוש במשתנה הטקסט הראשי כדי שייראה טוב בלילה */
+    color: var(--gd-text, #212529) !important;
     font-weight: 700 !important;
     margin-bottom: 10px !important;
 }
 
 .custom-invite-input {
     font-size: 0.85rem !important;
-    border-radius: 50px !important; /* Fully rounded corners */
-    border: 1px solid #ddd !important;
-    background: #f1f3f4 !important;
+    border-radius: 50px !important;
+    border: 1px solid var(--gd-border, #ddd) !important;
+    /* שאיבת צבע הרקע של האינפוט (כהה בלילה) */
+    background: var(--gd-input-bg, #f1f3f4) !important;
     color: var(--gd-text, #212529) !important;
 }
 

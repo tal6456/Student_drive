@@ -194,6 +194,40 @@ The template also includes a modal for viewing and adding comments related to th
 </div>
 
 {% if user.is_authenticated %}
+<style>
+    /* --- הקטנת שורות מיוחדת לאייפדים וטאבלטים --- */
+    /* מרחיבים את הטווח ל-1180px כדי לתפוס גם iPad Pro קטנים ו-Landscape */
+    @media (max-width: 1180px) {
+        .doc-row-responsive {
+            padding-top: 0.5rem !important; 
+            padding-bottom: 0.5rem !important;
+            min-height: auto !important; /* מבטל גובה מינימלי קודם */
+        }
+        
+        .doc-row-responsive .flex-shrink-0[style*="width: 45px"] {
+             width: 35px !important; /* הקטנת המיכל של האייקון */
+        }
+
+        .doc-row-responsive .fas.fa-2x {
+            font-size: 1.4rem !important; /* הקטנה משמעותית יותר של האייקון */
+            margin-top: 0 !important;
+        }
+        
+        .doc-row-responsive a.fw-bold.fs-6 {
+            font-size: 0.9rem !important; /* הקטנת הכותרת הראשית */
+        }
+        
+        /* הקטנת הטקסט של התאריך ושם המעלה */
+        .doc-row-responsive .gap-2[style*="font-size: 0.75rem"] {
+            font-size: 0.7rem !important;
+        }
+
+        .doc-actions-group .btn {
+            padding: 0.2rem 0.5rem !important; /* כפתורים עוד יותר קטנים */
+            font-size: 0.75rem !important;
+        }
+    }
+</style>
 <div class="modal fade" id="commentModal{{ doc.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ doc.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="background-color: var(--gd-card); color: var(--gd-text);">
