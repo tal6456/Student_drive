@@ -862,15 +862,54 @@ such as the background, top bar, footer, and related layout behavior.
     <div id="loading-bar"></div>
 
     <!-- Accessibility Widget: Clean, Semantic, Inherits RTL from Document -->
+    <style>
+        #a11y-floating-widget {
+            position: fixed !important;
+            top: 60% !important; /* קצת מתחת לאמצע המסך */
+            bottom: auto !important;
+            right: 0 !important;
+            left: auto !important;
+            transform: translateY(-50%) !important;
+            z-index: 9999 !important;
+        }
+        #a11y-toggle {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 50px !important;
+            height: 56px !important;
+            background: var(--gd-primary) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 12px 0 0 12px !important; /* שטוח בימין, מעוגל בשמאל */
+            box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.2) !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            padding: 0 !important;
+        }
+        #a11y-toggle:hover {
+            width: 58px !important; /* מתרחב יפה במעבר עכבר */
+            background: var(--gd-btn-gradient-hover) !important;
+        }
+        #a11y-menu {
+            position: absolute !important;
+            top: 50% !important;
+            bottom: auto !important;
+            right: 60px !important; /* קופץ הצידה מהכפתור */
+            transform: translateY(-50%) !important;
+            z-index: 10000 !important;
+        }
+    </style>
     <nav id="a11y-floating-widget" class="d-none d-lg-block" aria-label="תפריט נגישות">
-        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" aria-expanded="false" aria-controls="a11y-menu" title="אפשרויות נגישות">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="9" cy="16" r="5"></circle>
-                <path d="M14 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
-                <path d="M14 5v7h-4"></path>
-                <path d="M14 8h3"></path>
-                <path d="M21 11l-2 4h-3l1-4h4z"></path>
-                <path d="M14 12v4"></path>
+        <button id="a11y-toggle" type="button" aria-label="פתח תפריט נגישות" onclick="document.getElementById('a11y-menu').classList.toggle('d-none');">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="pointer-events: none;">
+                <circle cx="8" cy="18" r="4"></circle>
+                <circle cx="9" cy="5" r="2.5" fill="currentColor" stroke="none"></circle>
+                <path d="M9 8v6"></path>
+                <path d="M7 14h5l2.5 4"></path>
+                <path d="M9 11h4.5"></path>
+                <path d="M14.5 13.5l1.5-2.5h3"></path>
+                <path d="M14.5 13.5h4"></path>
             </svg>
         </button>
         <div id="a11y-menu" class="d-none" role="menu" aria-label="אפשרויות נגישות">
@@ -970,6 +1009,25 @@ such as the background, top bar, footer, and related layout behavior.
                                 <div>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
                                         <circle cx="9" cy="16" r="5"></circle><path d="M14 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path><path d="M14 5v7h-4"></path><path d="M14 8h3"></path><path d="M21 11l-2 4h-3l1-4h4z"></path><path d="M14 12v4"></path>
+                                    </svg>
+                                    נגישות
+                                </div>
+                                <i class="fas fa-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <div class="collapse" id="mobileA11yMenu">
+                                <ul class="list-unstyled pe-3 pb-2 m-0 d-flex flex-column gap-2 mt-2">
+                                    <li><button type="button" class="btn btn-sm text-start w-100 a11y-font-increase-btn shadow-none d-flex align-items-center gap-2" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);"><i class="fas fa-plus text-primary"></i> הגדל טקסט</button></li>
+                                    <li><button type="button" class="btn btn-sm text-start w-100 a11y-font-decrease-btn shadow-none d-flex align-items-center gap-2" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);"><i class="fas fa-minus text-primary"></i> הקטן טקסט</button></li>
+                                    <li><button type="button" class="btn btn-sm text-start w-100 a11y-contrast-toggle-btn shadow-none d-flex align-items-center gap-2" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);"><i class="fas fa-adjust text-primary"></i> שינוי ניגודיות</button></li>
+                                    <li><button type="button" class="btn btn-sm text-start w-100 a11y-underline-toggle-btn shadow-none d-flex align-items-center gap-2" style="background: var(--gd-bg); color: var(--gd-text); border: 1px solid var(--gd-border);"><i class="fas fa-underline text-primary"></i> קו תחתון</button></li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item d-lg-none border-top mt-2 pt-2">
+                            <a class="nav-link py-2 d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#mobileA11yMenu" role="button" aria-expanded="false">
+                                <div class="d-flex align-items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="8" cy="18" r="4"></circle><circle cx="9" cy="5" r="2.5" fill="currentColor" stroke="none"></circle><path d="M9 8v6"></path><path d="M7 14h5l2.5 4"></path><path d="M9 11h4.5"></path><path d="M14.5 13.5l1.5-2.5h3"></path><path d="M14.5 13.5h4"></path>
                                     </svg>
                                     נגישות
                                 </div>
@@ -1149,9 +1207,6 @@ such as the background, top bar, footer, and related layout behavior.
 
     // בדיקה אוטומטית בכל טעינת דף
     document.addEventListener('DOMContentLoaded', function () {
-        const a11yToggle = document.getElementById('a11y-toggle');
-        const a11yMenu = document.getElementById('a11y-menu');
-
         const applyFontScale = (scale) => {
             const clamped = Math.max(0.9, Math.min(1.4, scale));
             document.documentElement.style.fontSize = `${clamped * 100}%`;
@@ -1168,13 +1223,7 @@ such as the background, top bar, footer, and related layout behavior.
         setToggleState('a11yHighContrast', 'a11y-high-contrast');
         setToggleState('a11yUnderlineLinks', 'a11y-underline-links');
 
-        if (a11yToggle && a11yMenu) {
-            a11yToggle.addEventListener('click', () => {
-                a11yMenu.classList.toggle('d-none');
-            });
-        }
-
-        // חיבור כל הכפתורים - גם במחשב וגם בתפריט מובייל
+        // חיבור כל כפתורי הנגישות (גם במסך מחשב וגם במובייל) ללוגיקה
         document.querySelectorAll('.a11y-font-increase-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const current = parseFloat(localStorage.getItem('a11yFontScale') || '1');
