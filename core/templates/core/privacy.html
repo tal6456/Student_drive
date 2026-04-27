@@ -1,67 +1,102 @@
 {% extends "core/base.html" %}
 
-{% block title %}מדיניות פרטיות - הדרייב הסטודנטיאלי{% endblock %}
+{% block title %}מדיניות פרטיות - Student Drive{% endblock %}
 
 {% block content %}
-<div class="container d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;" dir="rtl">
+<div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 85vh;" dir="rtl">
     <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 920px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; color: var(--gd-text);">
+        
         <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
             <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3 shadow-sm">
                 <i class="fas fa-user-shield fa-2x text-primary"></i>
             </div>
-            <h1 class="fw-bold mb-1" style="color: var(--gd-text);">מדיניות פרטיות</h1>
-            <p class="small mb-0" style="color: var(--gd-text-muted);">עודכן לאחרונה: מרץ 2026</p>
+            <h1 class="fw-bold mb-1" style="color: var(--gd-text);">מדיניות פרטיות - Student Drive</h1>
+            <p class="small mb-0" style="color: var(--gd-text-muted);">עודכן לאחרונה: {% now "j בF Y" %}</p>
         </div>
 
         <div class="card-body p-4 p-md-5 pt-2 text-end" style="direction: rtl; text-align: right; font-family: 'Heebo', sans-serif; line-height: 1.6;">
-            <p class="lead" style="color: var(--gd-text); text-align: right !important;">ברוכים הבאים ל"דרייב הסטודנטיאלי". <strong>הפרטיות</strong> שלכם חשובה לנו מאוד. מסמך זה מפרט איזה מידע אנחנו אוספים, כיצד אנו משתמשים בו, וכיצד אנו שומרים עליו. בעצם השימוש באתר, אתם מסכימים למדיניות זו.</p>
+            
+            <p class="lead mb-4" style="color: var(--gd-text); text-align: right !important;">
+                <strong>מבוא</strong><br>
+                אנו Student Drive (להלן: "האתר" או "המערכת") מכבדים את פרטיות המשתמשים שלנו ומחויבים להגן עליה. מדיניות פרטיות זו מפרטת איזה מידע אישי אנו אוספים, כיצד אנו עושים בו שימוש, כיצד הוא נשמר, ומהן זכויותיך בנוגע למידע זה. בעצם השימוש באתר ופתיחת החשבון, הנך מסכים לאיסוף ולשימוש במידע כמפורט במסמך זה.
+            </p>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                <strong>תנאי שימוש:</strong> מדיניות פרטיות זו מהווה חלק בלתי נפרד מתקנון ותנאי השימוש של האתר. לקריאת הכללים המלאים החלים על השימוש בפלטפורמה, העלאת קבצים והתנהגות בקהילה, אנא עיין במסמך תנאי השימוש בקישור הבא: <a href="{% url 'terms' %}" class="text-primary text-decoration-none fw-bold">תנאי שימוש</a>. בעצם אישור מדיניות פרטיות זו והשימוש באתר, הנך מצהיר כי קראת והסכמת גם לאמור בתנאי השימוש.
+            </p>
 
-            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-database me-2"></i> 1. איזה מידע אנו אוספים?</h4>
-            <p style="color: var(--gd-text); text-align: right !important;">אנו אוספים מידע שאתם מספקים לנו באופן אקטיבי בעת ההרשמה והשימוש באתר, כולל:</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-database me-2"></i> 1. המידע שאנו אוספים</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">אנו אוספים מידע בשתי דרכים עיקריות:</p>
             <ul style="color: var(--gd-text); text-align: right !important;">
-                <li><strong>פרטי חשבון:</strong> כתובת אימייל, שם משתמש (שיוצג בפומבי), וסיסמה (אשר נשמרת באופן מוצפן).</li>
-                <li><strong>פרטי לימודים:</strong> מוסד לימודים, תואר/מסלול, ושנת לימוד (על מנת להתאים עבורכם את הקורסים הרלוונטיים).</li>
-                <li><strong>תוכן גולשים (UGC):</strong> קבצים, סיכומים, מבחנים, וביקורות על מרצים שאתם מעלים למערכת.</li>
-                <li><strong>נתוני פעילות:</strong> אילו קבצים הורדתם, לאילו קבצים עשיתם "לייק", וכמות "מטבעות הדרייב" שצברתם.</li>
+                <li><strong>מידע שאתה מוסר לנו אקטיבית:</strong> בעת ההרשמה לאתר ופתיחת הפרופיל, תתבקש למסור מידע אישי בסיסי כגון שם מלא, כתובת דוא"ל, מוסד אקדמי, שנת לימודים ותחום לימוד (Major).</li>
+                <li><strong>מידע הנאסף באופן אוטומטי:</strong> בעת השימוש באתר, אנו אוספים מידע טכני וסטטיסטי, לרבות: כתובת ה IP-שלך, סוג הדפדפן, היסטוריית חיפושים באתר, קבצים שהורדת או העלית, אינטראקציות בפיד (כגון "לייקים" ותגובות), ונתוני אנליטיקה (Analytics) אודות אופן השימוש שלך בפלטפורמה.</li>
             </ul>
 
-            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-cookie-bite me-2"></i> 2. שימוש בעוגיות (Cookies) ואחסון מקומי</h4>
-            <p style="color: var(--gd-text); text-align: right !important;">האתר עושה שימוש בטכנולוגיות כגון Cookies ו-Local Storage בדפדפן שלכם כדי:</p>
-            <ul style="color: var(--gd-text); text-align: right !important;">
-                <li>לשמור את החיבור שלכם לאתר (Log in session).</li>
-                <li>לזכור את העדפות התצוגה שלכם (מצב לילה / מצב יום).</li>
-                <li>לשמור את הגדרות הנגישות שבחרתם (כגון גודל טקסט או ניגודיות).</li>
-            </ul>
-            <p style="color: var(--gd-text); text-align: right !important;">תוכלו למחוק או לחסום עוגיות דרך הגדרות הדפדפן שלכם, אך הדבר עשוי לפגוע בחווית השימוש (למשל, תצטרכו להתחבר מחדש בכל כניסה).</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-child me-2"></i> 2. איסוף מידע מקטינים (הגבלת גיל)</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                המערכת אינה אוספת ביודעין מידע אישי מילדים מתחת לגיל 13. בהתאם לחוקי הגנת הפרטיות, איסוף ועיבוד נתונים של קטינים בין הגילאים 13 ל-18 מותנה בהסכמת הורה או אפוטרופוס חוקי.<br>
+                עצם ההרשמה לאתר והשימוש בו על ידי משתמש מתחת לגיל 18, מהווה הצהרה מפורשת כי המשתמש יידע את הוריו או את האפוטרופוס החוקי שלו, וכי הם נתנו את הסכמתם המלאה והמפורשת לאיסוף, שמירה ועיבוד של המידע האישי שלו כמפורט במדיניות פרטיות זו. במידה ויתגלה כי נאסף מידע על קטין ללא קבלת הסכמה כאמור, הנהלת האתר תפעל למחיקת המידע ולסגירת החשבון לאלתר.
+            </p>
 
-            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-robot me-2"></i> 3. שירותי צד שלישי ובינה מלאכותית (AI)</h4>
-            <p style="color: var(--gd-text); text-align: right !important;">באתר קיימת אפשרות ליצירת <strong>"סיכום חכם"</strong> לקבצים באמצעות מנועי בינה מלאכותית (AI). בעת בקשת סיכום:</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-bullseye me-2"></i> 3. מטרות השימוש במידע</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">המידע שנאסף משמש אותנו למטרות הבאות:</p>
             <ul style="color: var(--gd-text); text-align: right !important;">
-                <li>הטקסט של הקובץ עשוי להישלח באופן מאובטח לשרתי צד-שלישי לצורך עיבוד הסיכום.</li>
-                <li>אנו לא משתפים מידע אישי מזהה שלכם (כמו אימייל) עם ספקי הבינה המלאכותית.</li>
-                <li>עיבוד תשתיות ושירותים משלימים עשוי להיעשות דרך ספקי ענן חיצוניים, כולל <strong>AWS</strong> ו-<strong>DigitalOcean</strong>.</li>
+                <li><strong>תפעול שוטף והתאמה אישית:</strong> כדי לאפשר לך גישה לדרייב האישי, וכדי להתאים את התכנים בפיד הקהילה (Feed) למוסד הלימודים ולמסלול הספציפי שלך.</li>
+                <li><strong>סריקה ועיבוד אוטומטיים:</strong> המערכת מבצעת סריקה ועיבוד אלגוריתמיים של הקבצים המועלים אליה. תהליך זה נועד לשיפור מנוע החיפוש הפנימי, אופטימיזציה של גודל הקבצים, זיהוי קוד זדוני אווירוסים (Malware), ומניעת הפצת דואר זבל (Spam) בקהילה.</li>
+                <li><strong>תקשורת אבטחה ועדכונים:</strong> שליחת הודעות מערכת, איפוס סיסמאות, ועדכונים קריטיים בנוגע לחשבונך.</li>
+                <li><strong>מחקר ושיפור המערכת:</strong> ניתוח מידע סטטיסטי מצרפי (אנונימי) לצורך שיפור חוויית המשתמש ופיתוח פיצ'רים חדשים.</li>
             </ul>
 
-            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-lock me-2"></i> 4. אבטחת מידע</h4>
-            <p style="color: var(--gd-text); text-align: right !important;">אנו נוקטים באמצעי אבטחה מקובלים ומתקדמים (כגון תקן הצפנה של סביבת Django) כדי להגן על המידע שלכם. עם זאת, אין מערכת המאובטחת ב-100%, ולכן איננו יכולים להבטיח חסינות מוחלטת מפני פריצות וגישה בלתי מורשית.</p>
-
-            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-user-edit me-2"></i> 5. הזכויות שלכם</h4>
-            <p style="color: var(--gd-text); text-align: right !important;">בכל עת תוכלו:</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-users me-2"></i> 4. נראות במרחב הציבורי (Community Feed)</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">חשוב להבין את ההבדל בין המרחב האישי לציבורי באתר:</p>
             <ul style="color: var(--gd-text); text-align: right !important;">
-                <li>לערוך את פרטי הפרופיל שלכם בעמוד ההגדרות והפרופיל.</li>
-                <li>לבקש למחוק קבצים שהעליתם.</li>
-                <li>לפנות אלינו בבקשה למחיקת החשבון והמידע האישי שלכם לחלוטין.</li>
+                <li><strong>הדרייב האישי:</strong> קבצים שמועלים לתיקייה האישית שלך מסומנים כפרטיים ואינם חשופים למשתמשים אחרים.</li>
+                <li><strong>המרחב הציבורי:</strong> כאשר אתה בוחר להשתתף בקהילה, לפרסם פוסט, להגיב או לשתף קובץ בפיד הכללי, המידע הבסיסי של הפרופיל שלך (שם מלא, תמונת פרופיל, מוסד ותחום לימוד) יהיה גלוי לכלל משתמשי האתר. אנו ממליצים להפעיל שיקול דעת בטרם פרסום מידע אישי או רגיש במרחב הפומבי.</li>
             </ul>
 
-            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-balance-scale me-2"></i> 6. תכני גולשים וזכויות יוצרים</h4>
-            <p style="color: var(--gd-text); text-align: right !important;">המשתמשים באתר מתחייבים לא להעלות חומרים המפרים זכויות יוצרים. אין לנו שליטה מלאה על התוכן המועלה. במידה וגיליתם שתוכן שלכם הועלה ללא אישור, אנא דווחו לנו מיד (דרך כפתור "דווח" או ביצירת קשר), ואנו נסיר אותו בהתאם לנהלי הודעה והסרה הנהוגים בחוק.</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-robot me-2"></i> 5. העברת מידע לצדדים שלישיים ולכלי בינה מלאכותית (AI)</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">כדי לספק את שירותי הפלטפורמה המתקדמים ביותר, המערכת משלבת כלים טכנולוגיים ותשתיות ענן של צדדים שלישיים. אנו שקופים לגבי אופן העברת המידע לגורמים אלו:</p>
+            <ul style="color: var(--gd-text); text-align: right !important;">
+                <li><strong>ספקי שירותי ענן ואחסון:</strong> המידע האישי שלך והקבצים המועלים לאתר (לאזור אישי או לפיד הקהילה) מאוחסנים ומעובדים בשרתים מאובטחים של ספקי ענן צד-שלישי מובילים (כגון AWS ו-דיגיטל אושן) אשר עשויים להיות ממוקמים מחוץ לגבולות מדינת ישראל.</li>
+                <li><strong>שירותי בינה מלאכותית (AI):</strong> המערכת מציעה פיצ'רים המבוססים על מודלים של בינה מלאכותית. בעת הפעלה ושימוש בכלים אלו (למשל לצורך סיכום קבצים, צ'אט אקדמי או עיבוד טקסט), התכנים שאתה מזין (Prompts) והמסמכים שאתה בוחר לנתח עשויים להיות מועברים בזמן אמת לעיבוד בשרתים של ספקי Al חיצוניים.</li>
+                <li><strong>מטרת העברת המידע ל- AI:</strong> המידע מועבר למנועי הבינה המלאכותית אך ורק לצורך קבלת השירות הספציפי שביקשת (כגון יצירת סיכום) והחזרת התוצר למערכת, ולא לשום מטרה מסחרית אחרת מצדנו. אנו עושים מאמצים להתקשר עם ספקי Al שאינם משתמשים במידע האישי או בקבצים שלך לצורך אימון המודלים הציבוריים שלהם.</li>
+                <li><strong>אזהרת פרטיות בשימוש ב- AI:</strong> למרות אמצעי האבטחה, חלה עליך האחריות הבלעדית להימנע מהזנת מידע אישי, פרטי, או רגיש (שלך או של צדדים שלישיים) אל תוך כלי הבינה המלאכותית באתר, מעבר למידע האקדמי ההכרחי הנדרש לצורכי הלמידה.</li>
+                <li><strong>היעדר סחר במידע:</strong> מובהר בזאת כי הנהלת האתר אינה מוכרת, סוחרת או משכירה את פרטיך האישיים (כגון כתובת הדוא"ל שלך) לצדדים שלישיים למטרות שיווקיות ללא הסכמתך.</li>
+            </ul>
+
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-cookie-bite me-2"></i> 6. עוגיות(Cookies</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                האתר עושה שימוש בקבצי "עוגיות (Cookies)" ובטכנולוגיות מעקב דומות (כגוןLocal Storage) לצורך תפעולו השוטף. העוגיות משמשות בין היתר לשמירת מצב ההתחברות שלך( Log-in Session) לאיסוף נתונים סטטיסטיים, ולהתאמת חוויית הגלישה. באפשרותך לשנות את הגדרות הדפדפן שלך כך שידחה עוגיות, אך הדבר עשוי לפגוע בתפקודן של חלק ממערכות האתר.
+            </p>
+
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-user-edit me-2"></i> 7. זכויות המשתמש ושליטה במידע (Right to be Forgotten)</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">אנו מעניקים לך שליטה מלאה על המידע שלך:</p>
+            <ul style="color: var(--gd-text); text-align: right !important;">
+                <li><strong>עיון ועדכון:</strong> באפשרותך לעיין במידע האישי שמסרת ולעדכן אותו בכל עת דרך הגדרות הפרופיל (אזור אישי) באתר.</li>
+                <li><strong>מחיקת חשבון:</strong> אם ברצונך להפסיק את השימוש בשירות, תוכל למחוק את חשבונך לצמיתות דרך פאנל ההגדרות. פעולה זו תנתק את זהותך מהמערכת ותסיר את הפרופיל שלך.</li>
+                <li><strong>מחיקת גיבויים:</strong> לתשומת ליבך: בשל אופן הפעולה של מערכות גיבוי ענן המבוזרות שלנו, כאשר אתה מוחק קובץ או את חשבונך, הגישה למידע נחסמת באופן מיידי, אך עשוי לחלוף פרק זמן של עד (למשל: 30 ימים) עד שהמידע והקבצים יימחקו לחלוטין מכל שרתי הגיבוי והארכיון של המערכת.</li>
+            </ul>
+
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-lock me-2"></i> 8. אבטחת מידע</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                אנו נוקטים באמצעים טכנולוגיים וארגוניים מקובלים (לרבות הצפנת תעבורת הנתונים בפרוטוקול (SSL) כדי להגן על המידע השמור במערכת מפני גישה, שימוש או חשיפה בלתי מורשים. עם זאת, אין מערכת המוגנת באופן מוחלט מפני פריצות, ולכן איננו יכולים להבטיח חסינות הרמטית לחלוטין מפני גישה בלתי מורשית.
+            </p>
+
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-sync-alt me-2"></i> 9. שינויים במדיניות הפרטיות</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                אנו עשויים לעדכן את מדיניות הפרטיות מעת לעת. במקרה של שינויים מהותיים הנוגעים לאופן השימוש במידע שלך, תפורסם על כך הודעה בולטת באתר או שתישלח הודעה לכתובת הדוא"ל המעודכנת בחשבונך. המשך השימוש באתר לאחר פרסום המדיניות המעודכנת ייחשב כהסכמה מצידך לשינויים.
+            </p>
+
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-headset me-2"></i> 10. יצירת קשר ופניות בנושאי פרטיות</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                אנו זמינים עבורך לכל שאלה הקשורה לפרטיותך באתר. אם ברצונך לממש את זכויותיך על פי חוק (לרבות בקשה לעיון במידע האישי שנאסף אודותיך, תיקונו, או מחיקתו), או אם יש לך שאלות או חששות בנוגע למדיניות פרטיות זו, הנך מוזמן לפנות אלינו באמצעות דואר אלקטרוני לכתובת: או הקישור לטופס יצירת הקשר באתר אנו מתחייבים לעשות את מירב המאמצים כדי לבחון כל פנייה ולטפל בה במהירות האפשרית ובהתאם להוראות הדין.
+            </p>
 
             <div class="mt-5 p-4 rounded-4 border text-center" style="background-color: rgba(26, 115, 232, 0.08); border-color: var(--gd-border) !important;">
                 <h5 class="fw-bold mb-3" style="color: var(--gd-text);"><i class="fas fa-envelope text-primary ms-1"></i> יצירת קשר</h5>
-                <p class="mb-0" style="color: var(--gd-text);">לכל שאלה בנושא פרטיות או בקשה למחיקת מידע, ניתן לפנות לצוות האתר דרך טופס צור קשר או במייל:<br>
+                <p class="mb-0" style="color: var(--gd-text);">
                 <a href="mailto:studentdrive10@gmail.com" class="fw-bold text-decoration-none" style="color: var(--gd-primary);">studentdrive10@gmail.com</a></p>
                 <p class="mt-3 mb-0 small" style="color: var(--gd-text-muted);">
-                    <a href="{% url 'terms' %}" class="text-decoration-none fw-bold" style="color: var(--gd-primary);">חזרה לתקנון ותנאי השימוש</a>
+                    <a href="{% url 'terms' %}" class="text-decoration-none fw-bold" style="color: var(--gd-primary);">למעבר לתקנון ותנאי השימוש</a>
                 </p>
             </div>
 
