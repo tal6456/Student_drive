@@ -335,41 +335,25 @@ class Document(models.Model):
         verbose_name="תיוג אישי"
     )
     def save(self, *args, **kwargs):
+        # 1. פעולות קלילות ומהירות בלבד! (שליפת סיומת וגודל)
         if self.file:
-            # 1. Update the file extension and size
             self.file_extension = os.path.splitext(self.file.name)[1].lower()
             try:
                 self.file_size_bytes = self.file.size
             except:
                 pass
 
-            # 2. Extract text for smart search (PDF + Word)
-            if not self.file_content:
-                try:
-                    if self.file_extension == '.pdf':
-                        from .utils import extract_text_from_pdf
-                        self.file_content = extract_text_from_pdf(self.file)
-                    
-                    elif self.file_extension == '.docx':
-                        from .utils import extract_text_from_docx
-                        self.file_content = extract_text_from_docx(self.file)
-                except Exception as e:
-                    print(f"Text extraction failed: {e}")
-
-            # 3. Compress uploaded images to WebP when applicable
-            image_extensions = ['.jpg', '.jpeg', '.png']
-            if self.file_extension in image_extensions and not self.file.name.endswith('.webp'):
-                try:
-                    from .utils import compress_to_webp
-                    compressed_image = compress_to_webp(self.file)
-                    if compressed_image:
-                        self.file = compressed_image
-                        self.file_extension = '.webp'
-                        self.file_size_bytes = self.file.size
-                except Exception as e:
-                    print(f"Image compression failed: {e}")
-
+        # 2. שומרים את הקובץ בבסיס הנתונים (לוקח שבריר שנייה)
         super().save(*args, **kwargs)
+
+        # 3. קסם האסינכרוניות: שולחים את העבודה הכבדה ל-Celery
+        # אנחנו מוודאים ש-update_fields ריק כדי שהשמירה ש-Celery עושה בעצמו בסוף
+        # לא תפעיל את המשימה הזו שוב ושוב בלולאה אינסופית!
+        if kwargs.get('update_fields') is None:
+            from core.tasks import process_document_task
+            from django.db import transaction
+            # on_commit מבטיח שהמשימה תישלח לרקע *רק* אחרי שהמסמך נשמר סופית במסד הנתונים
+            transaction.on_commit(lambda: process_document_task.delay(self.id))
 
 
     @property
