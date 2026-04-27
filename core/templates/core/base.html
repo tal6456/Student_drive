@@ -4,8 +4,7 @@
 <html lang="he" dir="rtl" data-bs-theme="{{ user.profile.theme_preference|default:'light' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>{% block title %}Student Drive{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">    <title>{% block title %}Student Drive{% endblock %}</title>
     <script>
     const theme = "{{ user.profile.theme_preference|default:'light' }}";
     document.documentElement.setAttribute('data-bs-theme', theme);
@@ -37,6 +36,7 @@
     {% endblock %}
 </head>
 <body>
+    <a href="#main-content" class="skip-link">דלג לתוכן המרכזי</a>
     {% include "core/partials/base_body_top.html" %}
 
     <main id="main-content" class="{% block container_class %}container{% endblock %} mb-5 mt-4">

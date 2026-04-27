@@ -1,5 +1,3 @@
-<!-- Included by core/base.html. Owns the top-of-page shell: skip link, accessibility widget, navbar, and mobile nav. -->
-<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
 <div id="search-focus-backdrop"></div>
 <div id="csrf-wrapper" style="display:none;">{% csrf_token %}</div>
 <div id="loading-bar"></div>
@@ -32,14 +30,14 @@
     </div>
 </nav>
 
-<nav class="navbar navbar-expand-lg py-1 sd-navbar">
+<nav class="navbar navbar-expand-lg py-1 sd-navbar" aria-label="תפריט ראשי">
     <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate site-logo" href="{% url 'home' %}" aria-label="Student Drive">
-            <span class="site-logo-text">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold transition hover-scale notranslate site-logo" href="{% url 'home' %}" aria-label="Student Drive, דף הבית">
+            <span class="site-logo-text" aria-hidden="true">
                 <span class="site-logo-mark">
                     <span class="site-logo-word">Student</span>
                     <span class="site-logo-drive">Driv<span class="site-logo-e">e
-                        <span class="site-logo-cap" aria-hidden="true">
+                        <span class="site-logo-cap">
                             <svg viewBox="0 0 96 72" role="presentation" focusable="false">
                                 <defs>
                                     <linearGradient id="studentDriveCapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -61,63 +59,65 @@
         <div class="d-flex align-items-center gap-3">
             {% if user.is_authenticated %}
                 <div class="nav-item nav-coin me-3 d-none d-md-flex">
-                    <a href="{% url 'wallet' %}" class="text-decoration-none transition hover-scale" title="הארנק שלי">
-                        <i class="fas fa-coins" style="color: var(--gd-coin, #FFD700);"></i>
-                        <span class="fw-bold small" style="color: var(--gd-text);">{{ user.profile.current_balance }}</span>
+                    <a href="{% url 'wallet' %}" class="text-decoration-none transition hover-scale" title="הארנק שלי" aria-label="הארנק שלי, יתרת מטבעות {{ user.profile.current_balance }}">
+                        <i class="fas fa-coins" aria-hidden="true" style="color: var(--gd-coin, #FFD700);"></i>
+                        <span class="fw-bold small" aria-hidden="true" style="color: var(--gd-text);">{{ user.profile.current_balance }}</span>
                     </a>
                 </div>
-                <a href="{% url 'notifications_list' %}" class="position-relative text-decoration-none transition hover-scale me-2" title="התראות" aria-label="התראות">
-                    <i class="fas fa-bell fs-5" style="color: var(--gd-text);"></i>
+                <a href="{% url 'notifications_list' %}" class="position-relative text-decoration-none transition hover-scale me-2" title="התראות">
+                    <i class="fas fa-bell fs-5" aria-hidden="true" style="color: var(--gd-text);"></i>
+                    <span class="visually-hidden">התראות</span>
                     <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger nav-notification-badge" style="font-size: 0.55rem; padding: 2px 5px; {% if not unread_notifications_count %}display: none;{% endif %}">
-                        {{ unread_notifications_count|default:"0" }}
+                        <span aria-hidden="true">{{ unread_notifications_count|default:"0" }}</span>
+                        <span class="visually-hidden">, {{ unread_notifications_count|default:"0" }} הודעות שלא נקראו</span>
                     </span>
                 </a>
             {% endif %}
 
             <div class="nav-hover-wrapper d-flex align-items-center position-relative">
-                <button class="navbar-toggler border-0 shadow-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="פתח תפריט ניווט">
-                    <i class="fas fa-bars fs-3" style="color: var(--gd-text);"></i>
+                <button class="navbar-toggler border-0 shadow-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="פתח תפריט ניווט ראשי">
+                    <i class="fas fa-bars fs-3" aria-hidden="true" style="color: var(--gd-text);"></i>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <form class="mb-4" action="{% url 'global_search' %}" method="GET">
+                    <form class="mb-4" action="{% url 'global_search' %}" method="GET" role="search">
                         <div class="input-group shadow-sm rounded-pill overflow-hidden border">
                             <button class="btn" style="background-color: var(--gd-card, #fff); color: var(--gd-text-muted, #6c757d); border: none; padding-left: 1rem; padding-right: 1rem;" type="submit" aria-label="בצע חיפוש">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-search" aria-hidden="true"></i>
                             </button>
-                            <input id="navbarSearchInput" class="form-control border-0" style="background-color: var(--gd-card, #fff); color: var(--gd-text, #212529);" type="search" name="q" placeholder="חיפוש..." value="{{ request.GET.q }}" required>
+                            <input id="navbarSearchInput" class="form-control border-0" style="background-color: var(--gd-card, #fff); color: var(--gd-text, #212529);" type="search" name="q" placeholder="חיפוש..." aria-label="חיפוש חומרי לימוד באתר" value="{{ request.GET.q }}" required>
                         </div>
                     </form>
 
                     <ul class="navbar-nav flex-column">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> דף הבית</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users"></i> הקהילה שלי</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'files_tinder' %}"><i class="fas fa-fire"></i> פייל-מאץ'</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home" aria-hidden="true"></i> דף הבית</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users" aria-hidden="true"></i> הקהילה שלי</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'files_tinder' %}"><i class="fas fa-fire" aria-hidden="true"></i> פייל-מאץ'</a></li>
 
                         {% if user.is_authenticated %}
-                            <li class="nav-item border-top pt-3 mt-2"><a class="nav-link py-2" href="{% url 'profile' %}" aria-label="פרופיל משתמש"><i class="fas fa-user-circle"></i> פרופיל</a></li>
-                            <li class="nav-item"><a class="nav-link py-2" href="{% url 'wallet' %}"><i class="fas fa-wallet"></i> הארנק שלי</a></li>
-                            <li class="nav-item"><a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog"></i> הגדרות</a></li>
-                            <li class="nav-item"><a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()"><i class="fas fa-user-plus"></i> הזמנת חברים</a></li>
-                            <li class="nav-item" id="mobile-install-nav-item"><button type="button" class="nav-link py-2 border-0 bg-transparent text-start w-100" onclick="installPWA()"><i class="fas fa-mobile-alt"></i> התקנת אפליקציה</button></li>
+                            <li class="nav-item border-top pt-3 mt-2"><a class="nav-link py-2" href="{% url 'profile' %}"><i class="fas fa-user-circle" aria-hidden="true"></i> פרופיל</a></li>
+                            <li class="nav-item"><a class="nav-link py-2" href="{% url 'wallet' %}"><i class="fas fa-wallet" aria-hidden="true"></i> הארנק שלי</a></li>
+                            <li class="nav-item"><a class="nav-link py-2" href="{% url 'settings' %}"><i class="fas fa-cog" aria-hidden="true"></i> הגדרות</a></li>
+                            <li class="nav-item"><a class="nav-link py-2" href="javascript:void(0)" onclick="openInviteModal()"><i class="fas fa-user-plus" aria-hidden="true"></i> הזמנת חברים</a></li>
+                            <li class="nav-item" id="mobile-install-nav-item"><button type="button" class="nav-link py-2 border-0 bg-transparent text-start w-100" onclick="installPWA()"><i class="fas fa-mobile-alt" aria-hidden="true"></i> התקנת אפליקציה</button></li>
                             {% if user.is_staff %}
-                                <li class="nav-item"><a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> אנליטיקס אדמין</a></li>
+                                <li class="nav-item"><a class="nav-link py-2 admin-link" href="{% url 'analytics' %}"><i class="fas fa-chart-line" aria-hidden="true"></i> אנליטיקס אדמין</a></li>
                             {% endif %}
                             <li class="nav-item mt-1">
                                 <form method="post" action="{% url 'account_logout' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link text-danger border-0 bg-transparent p-0 w-100 text-end py-2"><i class="fas fa-sign-out-alt"></i> התנתקות</button>
+                                    <button type="submit" class="nav-link text-danger border-0 bg-transparent p-0 w-100 text-end py-2"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> התנתקות</button>
                                 </form>
                             </li>
                         {% else %}
                             <li class="nav-item border-top pt-3 mt-2">
                                 {% if request.resolver_match.url_name == 'account_login' %}
-                                    <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_signup' %}"><i class="fas fa-user-plus ms-1"></i> יצירת חשבון</a>
+                                    <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_signup' %}"><i class="fas fa-user-plus ms-1" aria-hidden="true"></i> יצירת חשבון</a>
                                 {% elif request.resolver_match.url_name == 'account_signup' %}
-                                    <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt ms-1"></i> התחברות</a>
+                                    <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt ms-1" aria-hidden="true"></i> התחברות</a>
                                 {% else %}
-                                    <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt ms-1"></i> התחברות</a>
-                                    <a class="btn rounded-pill w-100 mb-2 fw-bold hover-scale" href="{% url 'account_signup' %}" style="background-color: var(--gd-card); border: 1px solid var(--gd-primary); color: var(--gd-primary);"><i class="fas fa-user-plus ms-1"></i> יצירת חשבון</a>
+                                    <a class="btn btn-primary rounded-pill w-100 mb-2 fw-bold shadow-sm hover-scale" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt ms-1" aria-hidden="true"></i> התחברות</a>
+                                    <a class="btn rounded-pill w-100 mb-2 fw-bold hover-scale" href="{% url 'account_signup' %}" style="background-color: var(--gd-card); border: 1px solid var(--gd-primary); color: var(--gd-primary);"><i class="fas fa-user-plus ms-1" aria-hidden="true"></i> יצירת חשבון</a>
                                 {% endif %}
                             </li>
                         {% endif %}
@@ -128,12 +128,12 @@
     </div>
 </nav>
 
-<div id="smart-app-banner" class="d-none align-items-center justify-content-between shadow-sm px-3 py-2" dir="rtl">
+<div id="smart-app-banner" class="d-none align-items-center justify-content-between shadow-sm px-3 py-2" dir="rtl" role="alert" aria-live="polite">
     <div class="d-flex align-items-center gap-3">
-        <button onclick="dismissAppBanner()" class="btn btn-link p-0 text-muted shadow-none" style="font-size: 1.2rem;">
-            <i class="fas fa-times"></i>
+        <button onclick="dismissAppBanner()" class="btn btn-link p-0 text-muted shadow-none" style="font-size: 1.2rem;" aria-label="סגור חלונית התקנה">
+            <i class="fas fa-times" aria-hidden="true"></i>
         </button>
-        <div class="app-banner-icon d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #7b61ff, #34a853);">
+        <div class="app-banner-icon d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #7b61ff, #34a853);" aria-hidden="true">
             <i class="fas fa-graduation-cap text-white fs-6"></i>
         </div>
         <div class="d-flex flex-column">
@@ -142,29 +142,29 @@
         </div>
     </div>
     <button id="app-banner-btn" class="btn btn-primary btn-sm rounded-pill fw-bold px-3 shadow-sm hover-scale" style="font-size: 0.85rem;" onclick="installPWA()">
-        <i class="fas fa-download me-1"></i> התקן
+        <i class="fas fa-download me-1" aria-hidden="true"></i> התקן
     </button>
 </div>
 
-<nav class="mobile-bottom-nav d-lg-none notranslate">
+<nav class="mobile-bottom-nav d-lg-none notranslate" aria-label="תפריט ניווט תחתון">
     <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-        <i class="fas fa-home"></i>
+        <i class="fas fa-home" aria-hidden="true"></i>
         <span>ראשי</span>
     </a>
     <a href="{% url 'global_search' %}" class="nav-item {% if request.resolver_match.url_name == 'global_search' %}active{% endif %}">
-        <i class="fas fa-search"></i>
+        <i class="fas fa-search" aria-hidden="true"></i>
         <span>חיפוש</span>
     </a>
     <a href="{% url 'community_feed' %}" class="nav-item {% if request.resolver_match.url_name == 'community_feed' %}active{% endif %}">
-        <i class="fas fa-users"></i>
+        <i class="fas fa-users" aria-hidden="true"></i>
         <span>קהילה</span>
     </a>
     <a href="{% url 'files_tinder' %}" class="nav-item {% if request.resolver_match.url_name == 'files_tinder' %}active{% endif %}">
-        <i class="fas fa-fire"></i>
+        <i class="fas fa-fire" aria-hidden="true"></i>
         <span>Match</span>
     </a>
     <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-        <i class="fas fa-user-circle"></i>
+        <i class="fas fa-user-circle" aria-hidden="true"></i>
         <span>פרופיל</span>
     </a>
 </nav>
