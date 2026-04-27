@@ -319,3 +319,13 @@ if os.getenv('AWS_ACCESS_KEY_ID'):
     STORAGES["default"] = {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     }
+# ==========================================
+# Celery & Redis Configuration (Background Tasks)
+# ==========================================
+# שואב את כתובת הרדיס ממשתני הסביבה (בייצור) או משתמש בברירת מחדל מקומית
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE

@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}{{ document.title }} - בית הסטודנט{% endblock %}
+{% block title %}{{ document.title }} - Student Drive{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center animate__animated animate__fadeIn">
@@ -9,18 +9,18 @@
         
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 rounded-4 shadow-sm border gap-3" style="background-color: var(--gd-card); border-color: var(--gd-border) !important;">
             <div>
-                <h3 class="mb-1 fw-bold d-flex align-items-center gap-2" style="color: var(--gd-text);">
+                <h1 class="h3 mb-1 fw-bold d-flex align-items-center gap-2" style="color: var(--gd-text);">
                     {% if file_type == 'image' %}
-                        <i class="fas fa-file-image text-success"></i>
+                        <i class="fas fa-file-image text-success" aria-hidden="true"></i>
                     {% elif file_type == 'pdf' %}
-                        <i class="fas fa-file-pdf text-danger"></i>
+                        <i class="fas fa-file-pdf text-danger" aria-hidden="true"></i>
                     {% elif file_type == 'office' %}
-                        <i class="fas fa-file-word text-primary"></i>
+                        <i class="fas fa-file-word text-primary" aria-hidden="true"></i>
                     {% else %}
-                        <i class="fas fa-file-alt text-info"></i>
+                        <i class="fas fa-file-alt text-info" aria-hidden="true"></i>
                     {% endif %}
                     {{ document.title }}
-                </h3>
+                </h1>
                 <small style="color: var(--gd-text-muted);">
                     הועלה ע"י {{ document.uploaded_by.username|default:"אנונימי" }} | סוג: <span class="badge border" style="background-color: var(--gd-bg); color: var(--gd-text); border-color: var(--gd-border) !important;">{{ document.file_extension|slice:"1:"|upper }}</span>
                 </small>
@@ -29,8 +29,9 @@
             <div class="d-flex gap-2">
                 <a href="{% url 'download_file' document.id %}" download="{{ document.title }}" target="_blank"
                    onclick="if(window.handlePWADownload) { window.handlePWADownload(event, '{% url 'download_file' document.id %}', '{{ document.title|escapejs }}', '{{ document.file_extension|default:''|escapejs }}'); }" 
-                   class="btn btn-success rounded-pill fw-bold shadow-sm px-4">
-                    <i class="fas fa-download"></i> הורדה
+                   class="btn btn-success rounded-pill fw-bold shadow-sm px-4"
+                   aria-label="הורד את הקובץ: {{ document.title }}">
+                    <i class="fas fa-download" aria-hidden="true"></i> הורדה
                 </a>
             </div>
         </div>
@@ -38,16 +39,16 @@
         <div class="rounded-4 shadow-sm overflow-hidden border d-flex justify-content-center align-items-center position-relative" style="min-height: 75vh; background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
             
             {% if file_type == 'image' %}
-                <img src="{{ document.file.url }}" alt="{{ document.title }}" class="img-fluid p-3" style="max-height: 80vh; object-fit: contain;">
+                <img src="{{ document.file.url }}" alt="תצוגה מקדימה של התמונה: {{ document.title }}" class="img-fluid p-3" style="max-height: 80vh; object-fit: contain;">
                 
             {% elif file_type == 'pdf' %}
-                <iframe src="{{ document.file.url }}" width="100%" height="750px" style="border: none;"></iframe>
+                <iframe src="{{ document.file.url }}" title="תצוגת מסמך PDF: {{ document.title }}" width="100%" height="750px" style="border: none;"></iframe>
                 
             {% elif file_type == 'office' %}
                 <div class="w-100 h-100 position-absolute top-0 start-0 d-flex justify-content-center align-items-center" style="z-index: 0;">
-                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">טוען...</span></div>
+                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">טוען תצוגה מקדימה...</span></div>
                 </div>
-                <iframe src="https://docs.google.com/viewer?url={{ absolute_file_url|urlencode }}&embedded=true" width="100%" height="750px" style="border: none; position: relative; z-index: 1;"></iframe>
+                <iframe src="https://docs.google.com/viewer?url={{ absolute_file_url|urlencode }}&embedded=true" title="תצוגת מסמך אופיס: {{ document.title }}" width="100%" height="750px" style="border: none; position: relative; z-index: 1;"></iframe>
             
             {% elif file_type == 'text' %}
                 <div class="w-100 h-100 p-4 p-md-5 overflow-auto text-end" style="max-height: 75vh; direction: rtl;">
@@ -56,18 +57,16 @@
                 
             {% else %}
                 <div class="text-center p-5">
-                    <i class="fas fa-file-archive fa-5x mb-3" style="color: var(--gd-text-muted);"></i>
+                    <i class="fas fa-file-archive fa-5x mb-3" aria-hidden="true" style="color: var(--gd-text-muted);"></i>
                     <h4 class="fw-bold" style="color: var(--gd-text);">אין תצוגה מקדימה זמינה</h4>
                     <p style="color: var(--gd-text-muted);">ניתן להוריד את הקובץ למחשב כדי לצפות בו.</p>
                     <a href="{% url 'download_file' document.id %}" class="btn btn-primary mt-3 rounded-pill px-4">
-                        <i class="fas fa-download"></i> הורד קובץ
+                        <i class="fas fa-download" aria-hidden="true"></i> הורד קובץ
                     </a>
                 </div>
             {% endif %}
             
         </div>
-
-        
     </div>
 </div>
 {% endblock %}

@@ -1,44 +1,66 @@
 {% extends "core/base.html" %}
 
-{% block title %}הצהרת נגישות - הדרייב הסטודנטיאלי{% endblock %}
+{% block title %}הצהרת נגישות - Student Drive{% endblock %}
 
 {% block content %}
-<div class="container d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;" dir="rtl">
-    <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 920px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; color: var(--gd-text); font-family: 'Heebo', sans-serif;">
+<div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 85vh;" dir="rtl">
+    <div class="card shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeIn" style="max-width: 920px; width: 100%; background-color: var(--gd-card); border: 1px solid var(--gd-border) !important; color: var(--gd-text);">
+        
         <div class="card-header bg-transparent border-0 pt-5 pb-3 text-center">
             <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-3 mb-3 shadow-sm">
                 <i class="fas fa-universal-access fa-2x text-primary"></i>
             </div>
             <h1 class="fw-bold mb-1" style="color: var(--gd-text);">הצהרת נגישות</h1>
-            <p class="small mb-0" style="color: var(--gd-text-muted);">אנו מחויבים להנגשה, שוויון שימוש וחוויית שירות נגישה לכלל המשתמשים.</p>
+            <p class="small mb-0" style="color: var(--gd-text-muted);">עודכן לאחרונה: {% now "j בF Y" %}</p>
         </div>
 
         <div class="card-body p-4 p-md-5 pt-2 text-end" style="direction: rtl; text-align: right; font-family: 'Heebo', sans-serif; line-height: 1.6;">
-            <p style="color: var(--gd-text); text-align: right !important;">אנו ב"דרייב הסטודנטיאלי" רואים חשיבות עליונה בהנגשת האתר לאנשים עם מוגבלויות, מתוך אמונה כי לכל אדם מגיעה הזדמנות שווה לקבל שירות וללמוד בצורה נוחה ועצמאית. אנו משקיעים מאמצים ומשאבים רבים כדי להפוך את האתר לנגיש ככל האפשר, בהתאם לחוק שוויון זכויות לאנשים עם מוגבלויות, תשנ"ח-1998 ולתקנות שהותקנו מכוחו.</p>
+            
+            <p class="lead mb-4" style="color: var(--gd-text); text-align: right !important;">
+                <strong>מבוא</strong><br>
+                האינטרנט מהווה כיום את המאגר הגדול ביותר לחופש המידע עבור כלל המשתמשים. אנו ב-<strong>Student Drive</strong> רואים חשיבות עליונה במתן שוויון הזדמנויות לאנשים עם מוגבלויות, ופועלים רבות בכדי להנגיש את הפלטפורמה שלנו לכלל הסטודנטים והגולשים, בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998 ולתקנות שהותקנו מכוחו.
+            </p>
 
-            <h4 class="fw-bold mt-4 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><strong>רמת הנגישות באתר</strong></h4>
-            <p style="color: var(--gd-text); text-align: right !important;">האתר הונגש לפי הנחיות התקן הישראלי (ת"י 5568) לנגישות תכנים באינטרנט ברמת AA, המקבילה לתקן העולמי WCAG 2.0. האתר נבדק ונמצא מותאם לדפדפנים הנפוצים ולשימוש בטלפונים סלולריים.</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-check-circle me-2"></i> 1. רמת הנגישות ותקנים</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                אנו משקיעים מאמצים כדי שהאתר יעמוד בדרישות תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג 2013.<br>
+                התאמות הנגישות בוצעו עפ"י המלצות התקן הישראלי (ת"י 5568) לנגישות תכנים באינטרנט ברמת <strong>AA</strong> ומסמך WCAG 2.0 הבינלאומי.<br>
+                האתר מותאם לתצוגה בדפדפנים הנפוצים (כגון Chrome, Edge, Safari) ולשימוש בטלפונים סלולריים.
+            </p>
 
-            <h4 class="fw-bold mt-4 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><strong>אמצעי הנגישות הקיימים באתר</strong></h4>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-cogs me-2"></i> 2. אמצעי הנגישות באתר</h4>
             <ul style="color: var(--gd-text); text-align: right !important;">
-                <li><strong>תפריט נגישות:</strong> באתר מוטמע תפריט נגישות המאפשר הגדלת גופן, שינוי ניגודיות צבעים לאנשים עם לקויות ראייה, הדגשת קישורים ושינוי לפונט קריא יותר.</li>
-                <li><strong>ניווט מקלדת:</strong> ניתן לנווט באתר ללא שימוש בעכבר, באמצעות כפתור ה-Tab במקלדת.</li>
-                <li><strong>התאמה לקוראי מסך:</strong> האתר מותאם לגלישה באמצעות תוכנות קוראות מסך (כגון NVDA).</li>
-                <li><strong>דילוג לתוכן מרכזי:</strong> בראש האתר קיים קישור נסתר המאפשר דילוג ישיר לתוכן המרכזי כדי לחסוך מעבר על התפריט בכל עמוד.</li>
+                <li><i class="fas fa-keyboard text-muted me-1"></i> <strong>ניווט מקלדת:</strong> האתר תומך בניווט בעזרת מקלדת בלבד. ניתן לעבור בין הקישורים, הכפתורים והטפסים באתר באמצעות מקש ה-Tab, ולהפעילם באמצעות מקש ה-Enter.</li>
+                <li><i class="fas fa-low-vision text-muted me-1"></i> <strong>התאמה לקוראי מסך:</strong> האתר כתוב בצורה סמנטית (HTML5) וכולל שימוש בתגיות ARIA במקומות הנדרשים, כדי לאפשר תמיכה מיטבית בתוכנות קוראות מסך (כגון NVDA, JAWS).</li>
+                <li><i class="fas fa-adjust text-muted me-1"></i> <strong>ניגודיות צבעים (Contrast):</strong> האתר תוכנן תוך הקפדה על יחס ניגודיות גבוה בין צבעי הטקסט לצבעי הרקע, וכולל אפשרות בחירה בין תצוגת יום (בהירה) לתצוגת לילה (כהה).</li>
+                <li><i class="fas fa-search-plus text-muted me-1"></i> <strong>הגדלת טקסט:</strong> האתר תומך בשינוי גודל הגופן באמצעות המקלדת (לחיצה על `Ctrl` ו-`+` או `-`). הדפים מותאמים טכנולוגית להגדלה של עד 200% מבלי לפגוע בקריאות התוכן.</li>
+                <li><i class="fas fa-image text-muted me-1"></i> <strong>טקסט חלופי (Alt text):</strong> תמונות מרכזיות באתר (שאינן תמונות אווירה או עיצוב) כוללות טקסט חלופי המתאר את תוכנן.</li>
             </ul>
 
-            <h4 class="fw-bold mt-4 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><strong>סייגים לנגישות ויצירת קשר</strong></h4>
-            <p style="color: var(--gd-text); text-align: right !important;">חשוב לציין כי האתר מבוסס בחלקו על תוכן המועלה על ידי גולשים (כגון קבצי PDF סרוקים וסיכומי מחברת). ייתכן שחלק מהקבצים אינם מונגשים במלואם מכיוון שנסרקו כתמונה. אנו מספקים כלי AI לסיכום טקסט המנסה לסייע בחילוץ המידע מקבצים אלו.</p>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-file-pdf me-2"></i> 3. סייגים ותוכן גולשים (User Generated Content)</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                פלטפורמת Student Drive מבוססת ברובה על תכנים המועלים על ידי קהילת הסטודנטים עצמם (כגון סיכומים ב-PDF, קבצי Word, מצגות, ותמונות מחברות).<br>
+                בהתאם לחוק, **איננו יכולים להבטיח כי כלל הקבצים המועלים על ידי גולשי האתר מונגשים במלואם**. מסמכים שנסרקו, נכתבו בכתב יד, או הועלו ללא עריכה מתאימה על ידי המשתמשים, עשויים שלא להיתמך על ידי קוראי מסך.<br>
+                עם זאת, אנו פועלים לפיתוח כלים עתידיים מבוססי AI שיסייעו בהמרת תכנים אלו לטקסט קריא ומונגש עד כמה שניתן.
+            </p>
 
-            <p style="color: var(--gd-text); text-align: right !important;">אם נתקלתם בבעיית נגישות באתר, או אם אתם זקוקים לעזרה או קובץ בפורמט מונגש, נשמח לעמוד לרשותכם באמצעות דוא"ל:</p>
-            <div class="p-4 rounded-4 mt-3 border text-center" style="background-color: rgba(26, 115, 232, 0.08); border-color: var(--gd-border) !important;">
-                <strong class="d-block mb-2" style="color: var(--gd-text);">פנייה למייל:</strong>
-                <a href="mailto:studentdrive10@gmail.com" class="fw-bold text-decoration-none" style="color: var(--gd-primary);">studentdrive10@gmail.com</a>
-                <div class="mt-3 small">
-                    <a href="{% url 'terms' %}" class="text-decoration-none fw-bold me-3" style="color: var(--gd-primary);">תקנון ותנאי שימוש</a>
-                    <a href="{% url 'privacy' %}" class="text-decoration-none fw-bold" style="color: var(--gd-primary);">מדיניות פרטיות</a>
-                </div>
+            <h4 class="fw-bold mt-5 mb-3 text-primary border-bottom pb-2" style="text-align: right !important;"><i class="fas fa-headset me-2"></i> 4. פניות בנושא נגישות והצעות לשיפור</h4>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                אנו ממשיכים במאמצים לשפר את נגישות האתר כחלק ממחויבותנו לאפשר שימוש בו לכלל האוכלוסייה. אם נתקלתם בבעיית נגישות באתר, בפעולה שלא הצלחתם לבצע, או אם אתם זקוקים להתאמה מיוחדת לגבי מסמך מסוים – אנו נשמח לשמוע מכם!
+            </p>
+            <p style="color: var(--gd-text); text-align: right !important;">
+                כדי שנוכל לטפל בבעיה בצורה הטובה ביותר, אנא צרפו לפנייה פרטים מלאים ככל הניתן: תיאור הבעיה, באיזה דף גלשתם, סוג הדפדפן והמכשיר, ובאיזו טכנולוגיה מסייעת (כגון קורא מסך) השתמשתם.
+            </p>
+
+            <div class="mt-5 p-4 rounded-4 border text-center" style="background-color: rgba(26, 115, 232, 0.08); border-color: var(--gd-border) !important;">
+                <h5 class="fw-bold mb-3" style="color: var(--gd-text);"><i class="fas fa-envelope text-primary ms-1"></i> רכז/ת נגישות - יצירת קשר</h5>
+                <p class="mb-0" style="color: var(--gd-text);">ניתן לפנות אלינו בכל נושא הנוגע לנגישות באמצעות כתובת הדוא"ל:<br>
+                <a href="mailto:studentdrive10@gmail.com" class="fw-bold text-decoration-none" style="color: var(--gd-primary);">studentdrive10@gmail.com</a></p>
+                <p class="mt-3 mb-0 small" style="color: var(--gd-text-muted);">
+                    זמן המענה המשוער לפנייות נגישות הינו עד 3 ימי עסקים. אנו מתחייבים לעשות את מירב המאמצים לספק מענה הולם לכל פנייה.
+                </p>
             </div>
+
         </div>
     </div>
 </div>
