@@ -11,18 +11,17 @@
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden position-sticky" style="top: 80px;">
 
                 <div class="py-3 py-md-4 text-center border-bottom d-flex flex-md-column align-items-center justify-content-between px-3 px-md-0"
-                     style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;"
+                     style="background-color: var(--gd-bg); border-color: var(--gd-border) !important; cursor: pointer;"
                      data-bs-toggle="collapse" data-bs-target="#courseInfoCollapse" aria-expanded="false" aria-controls="courseInfoCollapse"
-                     id="course-info-header">
-
+                     id="course-info-header" role="button" aria-label="פרטי הקורס - לחץ להצגת או הסתרת מידע">
+                
                     <div class="d-flex align-items-center gap-3 gap-md-0 flex-md-column">
-                        <div class="icon-circle shadow-sm text-primary d-flex align-items-center justify-content-center mb-md-3" style="width: 50px; height: 50px; font-size: 1.5rem; border-radius: 50%; background-color: var(--gd-card);">
+                        <div class="icon-circle shadow-sm text-primary d-flex align-items-center justify-content-center mb-md-3" style="width: 50px; height: 50px; font-size: 1.5rem; border-radius: 50%; background-color: var(--gd-card);" aria-hidden="true">
                             <i class="fas fa-graduation-cap"></i>
                         </div>
-                        <h4 class="fw-bold mb-0 fs-5 fs-md-4 text-start text-md-center" style="color: var(--gd-text);">{{ course.name }}</h4>
+                        <h1 class="fw-bold mb-0 fs-5 fs-md-4 text-start text-md-center" style="color: var(--gd-text);">{{ course.name }}</h1>
                     </div>
-
-                    <i class="fas fa-chevron-down d-md-none text-muted transition-transform" id="course-info-chevron"></i>
+                    <i class="fas fa-chevron-down d-md-none text-muted transition-transform" id="course-info-chevron" aria-hidden="true"></i>
                 </div>
 
                 <div class="collapse d-md-block" id="courseInfoCollapse">
@@ -83,7 +82,7 @@
         </div>
 
         <div class="col-12 col-md-8 col-lg-9">
-            <div class="card shadow-sm border-0 rounded-4" id="drive-main-container" style="min-height: 75vh; overflow: visible !important;">
+            <div class="card shadow-sm border-0 rounded-4" id="drive-main-container" aria-label="מנהל קבצים ותיקיות" style="min-height: 75vh; overflow: visible !important;">
 
                 <div class="border-bottom py-3 px-4" style="background-color: var(--gd-bg); border-color: var(--gd-border) !important;">
                     <nav aria-label="breadcrumb" class="breadcrumb-wrapper w-100" id="drive-breadcrumb"></nav>
@@ -103,7 +102,7 @@
 
                     <h6 class="fw-bold mb-3 drive-section-title d-none" id="folders-title" style="color: var(--gd-text-muted);">תיקיות</h6>
 
-                        <div id="drive-folders" class="list-group list-group-flush border rounded-3 shadow-sm mb-4" style="border-color: var(--gd-border) !important; overflow: visible !important;">                        {% for folder in folders %}
+                        <div id="drive-folders" role="list" aria-label="רשימת תיקיות" class="list-group list-group-flush border rounded-3 shadow-sm mb-4" style="border-color: var(--gd-border) !important; overflow: visible !important;">                        {% for folder in folders %}
                             <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3 px-2 px-md-3 border-0 border-bottom cursor-pointer folder-card folder-ui custom-dropdown-container hover-bg-light transition d-none"                                 data-parent="{% if folder.parent %}folder_{{ folder.parent.id }}{% else %}root{% endif %}"
                                  data-path="folder_{{ folder.id }}"
                                  data-name="{{ folder.name|escapejs }}"
@@ -193,7 +192,7 @@
                         {% endfor %}
                     </div>
                     <h6 class="fw-bold mb-3 drive-section-title d-none" id="files-title" style="color: var(--gd-text-muted);">קבצים</h6>
-                    <div id="drive-files" class="list-group list-group-flush border rounded-3 shadow-sm" style="border-color: var(--gd-border) !important; overflow: visible !important;">                        {% for doc in documents %}
+                    <div id="drive-files" role="list" aria-label="רשימת קבצים" class="list-group list-group-flush border rounded-3 shadow-sm" style="border-color: var(--gd-border) !important; overflow: visible !important;">                        {% for doc in documents %}
                             <div class="file-card d-none"
                                  data-parent="{% if doc.folder %}folder_{{ doc.folder.id }}{% else %}root{% endif %}"
                                  data-doc-id="{{ doc.id }}"
@@ -229,21 +228,21 @@
     </div>
 {% endif %}
 
-<div id="menu-workspace" class="custom-context-menu shadow-lg rounded-3 d-none" dir="rtl">
+<div id="menu-workspace" class="custom-context-menu shadow-lg rounded-3 d-none" dir="rtl" role="menu">
     {% if user.is_authenticated %}
-        <button class="context-action" onclick="triggerQuickUpload()">
-            <i class="fas fa-cloud-upload-alt text-primary"></i> העלאת קבצים לכאן
+        <button class="context-action" role="menuitem" onclick="triggerQuickUpload()">
+            <i class="fas fa-cloud-upload-alt text-primary" aria-hidden="true"></i> העלאת קבצים לכאן
         </button>
-        <button class="context-action" onclick="promptNewFolder()">
-            <i class="fas fa-folder-plus text-success"></i> תיקייה חדשה
+        <button class="context-action" role="menuitem" onclick="promptNewFolder()">
+            <i class="fas fa-folder-plus text-success" aria-hidden="true"></i> תיקייה חדשה
         </button>
         <div class="context-divider"></div>
     {% endif %}
-    <button class="context-action" onclick="navigateUp()">
-        <i class="fas fa-level-up-alt text-secondary"></i> חזור אחורה
+    <button class="context-action" role="menuitem" onclick="navigateUp()">
+        <i class="fas fa-level-up-alt text-secondary" aria-hidden="true"></i> חזור אחורה
     </button>
-    <button class="context-action" onclick="window.location.reload()">
-        <i class="fas fa-sync text-info"></i> רענן עמוד
+    <button class="context-action" role="menuitem" onclick="window.location.reload()">
+        <i class="fas fa-sync text-info" aria-hidden="true"></i> רענן עמוד
     </button>
 </div>
 
@@ -300,15 +299,15 @@
                     <input type="hidden" name="parent_folder" id="parent_folder_input" value="">
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold">שם התיקייה <span class="text-danger">*</span></label>
+                        <label for="create_folder_name_input" class="form-label fw-bold">שם התיקייה <span class="text-danger" aria-hidden="true">*</span></label>
                         <input type="text" name="folder_name" id="create_folder_name_input" class="form-control form-control-lg" placeholder="למשל: סיכומי הרצאות" required autocomplete="off">
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold small" style="color: var(--gd-text-muted);">
-                            <i class="fas fa-user-tie me-1"></i> שיוך מרצה (אופציונלי)
+                        <label for="create_lecturer_select" class="form-label fw-bold small" style="color: var(--gd-text-muted);">
+                            <i class="fas fa-user-tie me-1" aria-hidden="true"></i> שיוך מרצה (אופציונלי)
                         </label>
-
+                    
                         <select name="staff_member_id" id="create_lecturer_select" class="form-select">
                             <option value="">-- ללא שיוך מרצה --</option>
                             {% for lec in uni_lecturers %}
