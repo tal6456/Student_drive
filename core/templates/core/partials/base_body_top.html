@@ -168,3 +168,18 @@
         <span>פרופיל</span>
     </a>
 </nav>
+<style>
+    /* תיקון מרווחים ללוגו במובייל ואייפד (PWA) כדי שהכובע לא ייחתך */
+    @media (max-width: 992px) {
+        .navbar-brand.site-logo {
+            margin-right: 18px !important; /* דוחף את הלוגו קצת שמאלה כדי לפנות מקום לכובע */
+        }
+    }
+    
+    /* למסכי מובייל צרים במיוחד - הקטנה עדינה של הלוגו שלא יתנגש עם הפעמון */
+    @media (max-width: 380px) {
+        .site-logo-text {
+            font-size: 1.1rem !important; 
+        }
+    }
+</style>
