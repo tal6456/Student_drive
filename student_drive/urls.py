@@ -78,8 +78,10 @@ urlpatterns = [
     path('download/<int:document_id>/', views.download_file, name='download_file'),
     path('document/<int:document_id>/view/', views.document_viewer, name='document_viewer'),
     path('document/<int:document_id>/like/', views.like_document, name='like_document'),
-    path('files/match/', views.files_tinder, name='files_tinder'),
-    path('files/match/swipe/', views.files_tinder_swipe, name='files_tinder_swipe'),
+
+    # path('files/match/', views.files_tinder, name='files_tinder'),
+    # path('files/match/swipe/', views.files_tinder_swipe, name='files_tinder_swipe'),
+
     path('report/<int:document_id>/', views.report_document, name='report_document'),
     path('upload-shared-file/', views.ShareTargetView.as_view(), name='share_target_upload'),
     path('upload-shared-file/finish/', views.ShareTargetFinishView.as_view(), name='share_target_finish'),
