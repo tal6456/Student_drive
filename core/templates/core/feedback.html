@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 
-{% block title %}הצעות ודיווחים - הדרייב הסטודנטיאלי{% endblock %}
+{% block title %}הצעות ודיווחים - Student Drive{% endblock %}
 
 {% block content %}
 <div class="container mt-5" dir="rtl">
@@ -9,28 +9,28 @@
 
             <div class="text-center mb-4">
                 <div class="display-4 text-primary mb-3"><i class="fas fa-lightbulb"></i></div>
-                <h2 class="fw-bold">יש לך רעיון לשיפור? מצאת תקלה?</h2>
-                <p class="text-muted">אנחנו כאן כדי להקשיב. כל דיווח עוזר לנו להפוך את הדרייב לטוב יותר עבור כולם!</p>
+                <h2 class="fw-bold" style="color: var(--gd-text);">יש לך רעיון לשיפור? מצאת תקלה?</h2>
+                <p style="color: var(--gd-text-muted);">אנחנו כאן כדי להקשיב. כל דיווח עוזר לנו להפוך את הדרייב לטוב יותר עבור כולם!</p>
             </div>
 
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-body p-5 bg-white rounded-4">
+            <div class="card shadow-lg border-0 rounded-4" style="background-color: var(--gd-card);">
+                <div class="card-body p-5 rounded-4">
                     <form action="{% url 'submit_feedback' %}" method="POST">
                         {% csrf_token %}
 
                         <div class="mb-4 text-end">
-                            <label class="form-label fw-bold text-dark">נושא הפנייה:</label>
-                            <input type="text" name="subject" class="form-control form-control-lg bg-light border-0 shadow-sm" placeholder="למשל: רעיון לפיצ'ר חדש, כפתור לא עובד..." required>
+                            <label class="form-label fw-bold" style="color: var(--gd-text);">נושא הפנייה:</label>
+                            <input type="text" name="subject" class="form-control form-control-lg border-0 shadow-sm feedback-input" placeholder="למשל: רעיון לפיצ'ר חדש, כפתור לא עובד..." required>
                         </div>
 
                         <div class="mb-4 text-end">
-                            <label class="form-label fw-bold text-dark">פירוט ההודעה:</label>
-                            <textarea name="message" class="form-control bg-light border-0 shadow-sm" rows="5" placeholder="ספר לנו מה קרה או מה היית רוצה שנשפר..." required></textarea>
+                            <label class="form-label fw-bold" style="color: var(--gd-text);">פירוט ההודעה:</label>
+                            <textarea name="message" class="form-control border-0 shadow-sm feedback-input" rows="5" placeholder="ספר לנו מה קרה או מה היית רוצה שנשפר..." required></textarea>
                         </div>
 
                         {% if not user.is_authenticated %}
                         <div class="alert alert-warning small text-center rounded-3 border-0">
-                            <i class="fas fa-info-circle"></i> אתה שולח את ההודעה כאורח אנונימי. <br> אם תרצה שנוכל לחזור אליך ולתת לך מטבעות דרייב על רעיונות טובים, <a href="{% url 'account_login' %}" class="fw-bold text-dark">התחבר כאן</a>.
+                            <i class="fas fa-info-circle"></i> אתה שולח את ההודעה כאורח אנונימי. <br> אם תרצה שנוכל לחזור אליך ולתת לך מטבעות דרייב על רעיונות טובים, <a href="{% url 'account_login' %}" class="fw-bold" style="color: var(--gd-primary);">התחבר כאן</a>.
                         </div>
                         {% endif %}
 
@@ -46,6 +46,20 @@
 </div>
 
 <style>
-    .form-control:focus { background-color: #fff !important; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important; border: 1px solid #0d6efd !important; }
+    /* התאמה חכמה של השדות למצב לילה ויום */
+    .feedback-input {
+        background-color: var(--gd-bg) !important;
+        color: var(--gd-text) !important;
+    }
+    .feedback-input::placeholder {
+        color: var(--gd-text-muted) !important;
+        opacity: 0.8;
+    }
+    .feedback-input:focus {
+        background-color: var(--gd-bg) !important;
+        color: var(--gd-text) !important;
+        box-shadow: 0 0 0 0.25rem rgba(26, 115, 232, 0.25) !important;
+        border: 1px solid var(--gd-primary) !important;
+    }
 </style>
 {% endblock %}
