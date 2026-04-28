@@ -753,3 +753,41 @@ class DocumentComment(models.Model):
     def __str__(self):
         # If your user model uses email instead of username, switch this to `self.user.email`
         return f"Comment by {self.user} on {self.document.title}"
+
+
+# ==========================================
+# 9. Analytics and Tracking
+# ==========================================
+
+class SearchLog(models.Model):
+    """
+    Tracks what users are searching for in the global search.
+    Helps identify popular topics and "dead ends" (searches with 0 results).
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    search_query = models.CharField(max_length=255, verbose_name="מילת חיפוש")
+    result_count = models.IntegerField(default=0, verbose_name="מספר תוצאות שנמצאו")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"חיפוש: '{self.search_query}' ({self.result_count} תוצאות)"
+
+
+class AccountDeletionLog(models.Model):
+    """
+    Keeps a completely anonymous record of when a user deleted their account.
+    Used purely for the Admin Analytics Dashboard to calculate churn rate.
+    """
+    deleted_at = models.DateTimeField(auto_now_add=True, verbose_name="תאריך מחיקה")
+    reason = models.CharField(max_length=255, blank=True, null=True, verbose_name="סיבת עזיבה (אופציונלי)")
+
+    # We do NOT save the username or email to respect privacy/GDPR after deletion.
+
+    class Meta:
+        ordering = ['-deleted_at']
+
+    def __str__(self):
+        return f"חשבון נמחק ב-{self.deleted_at.strftime('%Y-%m-%d')}"

@@ -1,26 +1,274 @@
 {% extends "core/base.html" %}
 
-{% block title %}לוח בקרה ואנליטיקס | הדרייב הסטודנטיאלי{% endblock %}
+{% block title %}לוח בקרה ואנליטיקס | Student Drive{% endblock %}
 
 {% block content %}
 <div class="container mt-4 mb-5" dir="rtl">
+    
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
-            <h1 class="fw-bold" style="color: var(--text-main);"><i class="fas fa-chart-line text-primary ms-2"></i>לוח בקרה וניתוח נתונים</h1>
-            <p class="text-muted fs-5">מעקב בזמן אמת אחרי פעילות הדרייב והתפלגות המשתמשים.</p>
+            <h1 class="fw-bold" style="color: var(--gd-text);"><i class="fas fa-rocket text-primary me-3"></i>דשבורד מנהלים</h1>
+            <p class="text-muted fs-5">נתוני פעילות, מעורבות, וצמיחה בזמן אמת.</p>
         </div>
         <div class="col-md-4 text-start">
             <a href="{% url 'home' %}" class="btn btn-outline-secondary fw-bold rounded-pill shadow-sm">
-                <i class="fas fa-arrow-right"></i> חזרה לדף הבית
+                <i class="fas fa-arrow-right me-2"></i> חזרה לדף הבית
             </a>
         </div>
     </div>
 
+    <h5 class="fw-bold mb-3 mt-4" style="color: var(--gd-text);"><i class="fas fa-heartbeat text-danger me-2"></i>דופק המערכת (פעילות)</h5>
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">פעילים היום (DAU)</h6>
+                    <h2 class="fw-bold text-success mb-0">{{ dau }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">פעילים החודש (MAU)</h6>
+                    <h2 class="fw-bold text-primary mb-0">{{ mau }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">סה"כ משתמשים רשומים</h6>
+                    <h2 class="fw-bold mb-0" style="color: var(--gd-text);">{{ total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">סה"כ קבצים בדרייב</h6>
+                    <h2 class="fw-bold text-info mb-0">{{ total_files }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-3 mt-4" style="color: var(--gd-text);"><i class="fas fa-seedling text-success me-2"></i>מעורבות וצמיחה אורגנית</h5>
     <div class="row g-4 mb-5">
         <div class="col-lg-4 col-md-6">
             <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4 text-primary border-right-4"><i class="fas fa-bullhorn me-2"></i>מדד ויראליות (הזמנות)</h6>
+                    <div class="text-center mb-3">
+                        <h1 class="display-5 fw-bold text-primary mb-0">{{ referral_percentage }}%</h1>
+                        <p class="text-muted">מהמשתמשים הגיעו מהזמנת חבר</p>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background-color: var(--gd-bg);">
+                        <span class="text-muted">סה"כ משתמשים מוזמנים:</span>
+                        <span class="fw-bold fs-5" style="color: var(--gd-text);">{{ referred_users_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4 text-success border-right-4" style="border-right-color: #198754;"><i class="fas fa-cloud-upload-alt me-2"></i>קצב העלאת קבצים (תורמים)</h6>
+                    <ul class="list-group list-group-flush" style="background-color: transparent;">
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0" style="background-color: transparent; color: var(--gd-text);">
+                            הועלו היום
+                            <span class="badge bg-success rounded-pill fs-6">{{ files_today }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0" style="background-color: transparent; color: var(--gd-text);">
+                            הועלו השבוע
+                            <span class="badge bg-primary rounded-pill fs-6">{{ files_week }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0" style="background-color: transparent; color: var(--gd-text);">
+                            הועלו החודש
+                            <span class="badge bg-info text-dark rounded-pill fs-6">{{ files_month }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-warning border-right-4"><i class="fas fa-users-cog me-2"></i>הקהילות הפעילות ביותר</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody>
+                                {% for comm in top_communities %}
+                                <tr>
+                                    <td class="fw-bold align-middle pt-3" style="color: var(--gd-text);">{{ comm.name|truncatechars:25 }}</td>
+                                    <td class="text-end align-middle pt-3"><span class="badge bg-warning text-dark rounded-pill">{{ comm.member_count }} חברים</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td class="text-muted text-center py-4">אין קהילות פעילות כרגע.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-3 mt-4" style="color: var(--gd-text);"><i class="fas fa-user-plus text-info me-2"></i>הרשמות ועזיבות</h5>
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">נרשמו היום</h6>
+                    <h2 class="fw-bold text-success mb-0">{{ new_users_today }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">נרשמו השבוע</h6>
+                    <h2 class="fw-bold text-primary mb-0">{{ new_users_week }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">נרשמו החודש</h6>
+                    <h2 class="fw-bold text-info mb-0">{{ new_users_month }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 text-center h-100" style="background-color: var(--gd-card);">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">עזבו אותנו (נמחקו)</h6>
+                    <h2 class="fw-bold text-danger mb-0">{{ deleted_accounts_total }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-3 mt-4" style="color: var(--gd-text);"><i class="fas fa-search text-warning me-2"></i>תובנות חיפוש (7 ימים אחרונים)</h5>
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-warning border-right-4"><i class="fas fa-trophy me-2"></i>החיפושים המובילים</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>מילת חיפוש</th><th>כמות חיפושים</th></tr></thead>
+                            <tbody>
+                                {% for search in top_searches %}
+                                <tr>
+                                    <td class="fw-bold" style="color: var(--gd-text);">{{ search.search_query }}</td>
+                                    <td><span class="badge bg-warning text-dark rounded-pill">{{ search.search_count }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="text-center text-muted py-3">אין עדיין נתוני חיפוש.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-danger border-right-4" style="border-right-color: #dc3545;"><i class="fas fa-ghost me-2"></i>חיפושים ללא תוצאות (Dead Ends)</h6>
+                    <p class="small text-muted mb-3">נושאים שסטודנטים חיפשו ולא מצאו כלום. הזדמנות להעלות תוכן חסר!</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>חיפשו ולא מצאו</th><th>כמות חיפושים</th></tr></thead>
+                            <tbody>
+                                {% for dead in dead_ends %}
+                                <tr>
+                                    <td class="fw-bold text-danger">{{ dead.search_query }}</td>
+                                    <td><span class="badge bg-danger rounded-pill">{{ dead.search_count }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="text-center text-muted py-3">מצוין! אין חיפושים שנשארו ללא מענה.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4 border-right-4 text-primary"><i class="fas fa-fire me-2"></i>קבצים פופולריים (השבוע)</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>שם הקובץ</th><th>הורדות חדשות</th></tr></thead>
+                            <tbody>
+                                {% for doc in trending_docs %}
+                                <tr>
+                                    <td class="small fw-bold" style="color: var(--gd-text);">{{ doc.title }}</td>
+                                    <td><span class="badge bg-primary rounded-pill">{{ doc.recent_downloads }} <i class="fas fa-download ms-1"></i></span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="text-center text-muted py-3">אין נתונים מהשבוע האחרון</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100 border-top border-danger border-4" style="background-color: var(--gd-card);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-danger mb-4"><i class="fas fa-exclamation-circle me-2"></i>דיווחים ממתינים לטיפול</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>קובץ</th>
+                                    <th>סיבה</th>
+                                    <th>פעולה</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in pending_reports %}
+                                <tr>
+                                    <td class="fw-bold small"><a href="{% url 'download_file' report.document.id %}" target="_blank" class="text-decoration-none" style="color: var(--gd-primary);">{{ report.document.title|truncatechars:15 }}</a></td>
+                                    <td><span class="badge bg-warning text-dark">{{ report.get_reason_display }}</span></td>
+                                    <td>
+                                        <a href="/admin/core/report/{{ report.id }}/change/" class="btn btn-sm btn-outline-danger rounded-pill" target="_blank">טפל</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="fas fa-check-circle fa-2x text-success mb-2 opacity-50"></i><br>אין דיווחים חדשים.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-3 mt-4" style="color: var(--gd-text);"><i class="fas fa-chart-pie text-info me-2"></i>נתונים כלליים וותיקים</h5>
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6 col-md-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
                 <div class="card-body p-4 text-center">
-                    <h5 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-chart-pie text-primary ms-2"></i>התפלגות סוגי קבצים</h5>
+                    <h6 class="fw-bold mb-4" style="color: var(--gd-text);">התפלגות סוגי קבצים בדרייב</h6>
                     <div style="height: 250px; display: flex; justify-content: center;">
                         <canvas id="fileTypesChart"></canvas>
                     </div>
@@ -28,127 +276,12 @@
             </div>
         </div>
 
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-6 col-md-12">
             <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
                 <div class="card-body p-4 text-center">
-                    <h5 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-chart-bar text-warning ms-2"></i>הורדות (המובילים)</h5>
-                    <div style="height: 250px; display: flex; justify-content: center;">
-                        <canvas id="topDocsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 col-md-12">
-            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: var(--gd-card);">
-                <div class="card-body p-4 text-center">
-                    <h5 class="fw-bold mb-4" style="color: var(--gd-text);"><i class="fas fa-user-graduate text-success ms-2"></i>סטודנטים לפי תואר</h5>
+                    <h6 class="fw-bold mb-4" style="color: var(--gd-text);">סטודנטים לפי תואר</h6>
                     <div style="height: 250px; display: flex; justify-content: center;">
                         <canvas id="majorsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 border-top border-danger border-4 rounded-4" style="background-color: var(--card-bg);">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold text-danger mb-4"><i class="fas fa-exclamation-circle ms-2"></i>דיווחים הממתינים לטיפול</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>קובץ</th>
-                                    <th>סיבה</th>
-                                    <th>דווח ע"י</th>
-                                    <th>תאריך</th>
-                                    <th>פעולה</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for report in pending_reports %}
-                                <tr>
-                                    <td class="fw-bold"><a href="{% url 'download_file' report.document.id %}" target="_blank" class="text-decoration-none">{{ report.document.title }}</a></td>
-                                    <td><span class="badge bg-warning text-dark">{{ report.get_reason_display }}</span></td>
-                                    <td><i class="fas fa-user-circle text-muted ms-1"></i> {{ report.user.username }}</td>
-                                    <td><small class="text-muted">{{ report.created_at|date:"d/m/y H:i" }}</small></td>
-                                    <td>
-                                        <a href="/admin/core/report/{{ report.id }}/change/" class="btn btn-sm btn-outline-danger rounded-pill px-3" target="_blank">טפל עכשיו</a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-5">
-                                        <i class="fas fa-check-circle fa-3x text-success mb-3 opacity-50"></i><br>
-                                        אין דיווחים חדשים. הכל נראה תקין! ✅
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100 rounded-4" style="background-color: var(--card-bg);">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold mb-4 border-right-4 text-danger" style="color: var(--text-main);"><i class="fas fa-fire ms-2"></i>הקבצים הכי מבוקשים</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" style="color: var(--text-main);">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>שם הקובץ</th>
-                                    <th>הורדות</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for doc in top_docs %}
-                                <tr>
-                                    <td class="small fw-bold">{{ doc.title }}</td>
-                                    <td><span class="badge bg-danger rounded-pill">{{ doc.download_count }} <i class="fas fa-download ms-1"></i></span></td>
-                                </tr>
-                                {% empty %}
-                                <tr><td colspan="2" class="text-center text-muted">אין נתונים</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100 rounded-4" style="background-color: var(--card-bg);">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold mb-4 border-right-4 text-primary" style="color: var(--text-main);"><i class="fas fa-star ms-2"></i>הקורסים הכי פעילים</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" style="color: var(--text-main);">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>שם הקורס</th>
-                                    <th>צפיות</th>
-                                    <th>קבצים</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for course in top_courses %}
-                                <tr>
-                                    <td class="small fw-bold">{{ course.name }}</td>
-                                    <td>{{ course.view_count }} <i class="fas fa-eye text-muted ms-1"></i></td>
-                                    <td>{{ course.document_set.count }} <i class="fas fa-file text-muted ms-1"></i></td>
-                                </tr>
-                                {% empty %}
-                                <tr><td colspan="3" class="text-center text-muted">אין נתונים</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -157,22 +290,19 @@
 </div>
 
 <style>
-    .border-right-4 { border-right: 4px solid #0d6efd; padding-right: 10px; }
-    .hover-scale { transition: transform 0.2s; }
-    .hover-scale:hover { transform: scale(1.02); }
-    [data-theme='dark'] .table { color: white; }
-    [data-theme='dark'] .table-light { background-color: #2c2c2c !important; color: white; }
-    [data-theme='dark'] .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+    .border-right-4 { border-right: 4px solid #ffc107; padding-right: 12px; }
+    .table { color: var(--gd-text); }
+    .table-light { background-color: var(--gd-bg) !important; color: var(--gd-text-muted); }
+    .table-hover tbody tr:hover { background-color: rgba(13, 110, 253, 0.05); }
+    [data-theme='dark'] .table-hover tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // הגדרות עיצוב כלליות לגרפים כדי שיתאימו למצב לילה
         Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--gd-text-muted').trim() || '#666';
         Chart.defaults.font.family = "'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
-        // --- גרף 1: התפלגות קבצים (Doughnut Chart) ---
         const ctxFiles = document.getElementById('fileTypesChart').getContext('2d');
         new Chart(ctxFiles, {
             type: 'doughnut',
@@ -185,47 +315,11 @@
                     hoverOffset: 4
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
 
-        // --- גרף 2: הקבצים המובילים (Bar Chart) ---
-        const docNames = [{% for doc in top_docs %}"{{ doc.title|truncatechars:15 }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
-        const docDownloads = [{% for doc in top_docs %}{{ doc.download_count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
-
-        const ctxDocs = document.getElementById('topDocsChart').getContext('2d');
-        new Chart(ctxDocs, {
-            type: 'bar',
-            data: {
-                labels: docNames,
-                datasets: [{
-                    label: 'מספר הורדות',
-                    data: docDownloads,
-                    backgroundColor: 'rgba(255, 193, 7, 0.8)', // צבע צהוב/זהוב
-                    borderColor: '#ffc107',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
-
-        // --- גרף 3: התפלגות תארים (Pie Chart) ---
-        // שואבים את הנתונים מהמשתנה major_distribution שיש לך בפייתון
-        const majorNames = [
-            {% for m in major_distribution %}"{{ m.major__name|default:'לא מוגדר' }}"{% if not forloop.last %}, {% endif %}{% endfor %}
-        ];
-        const majorCounts = [
-            {% for m in major_distribution %}{{ m.count }}{% if not forloop.last %}, {% endif %}{% endfor %}
-        ];
+        const majorNames = [{% for m in major_distribution %}"{{ m.major__name|default:'לא מוגדר' }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+        const majorCounts = [{% for m in major_distribution %}{{ m.count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
 
         const ctxMajors = document.getElementById('majorsChart').getContext('2d');
         new Chart(ctxMajors, {
@@ -234,17 +328,12 @@
                 labels: majorNames,
                 datasets: [{
                     data: majorCounts,
-                    // פלטת צבעים מגוונת לתארים שונים
                     backgroundColor: ['#198754', '#0dcaf0', '#6f42c1', '#fd7e14', '#e83e8c', '#20c997', '#adb5bd'],
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
     });
 </script>

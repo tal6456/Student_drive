@@ -184,10 +184,18 @@ def change_password(request):
         'has_password': has_password
     })
 
+
 @login_required
 def delete_account(request):
     if request.method == 'POST':
         user = request.user
+
+        # --- NEW: Analytics Log ---
+        # מייצר רשומה אנונימית סטטיסטית בטבלת האנליטיקס לפני שהמשתמש והמידע שלו נמחקים
+        from core.models import AccountDeletionLog
+        AccountDeletionLog.objects.create(reason="נמחק על ידי המשתמש (הגדרות)")
+        # --------------------------
+
         logout(request)
         user.delete()
         messages.info(request, 'חשבונך נמחק לצמיתות מהמערכת. תודה שהיית חלק מהקהילה! 👋')

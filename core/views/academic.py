@@ -257,10 +257,13 @@ def live_search(request):
         return JsonResponse({'results': results})
     return JsonResponse({'results': []})
 
+
 @login_required
 def global_search(request):
     query = request.GET.get('q', '').strip()
     universities, courses, documents, lecturers = [], [], [], []
+
+    total_results = 0  # משתנה לאחסון סך כל התוצאות
 
     if query:
         # Search institutions and courses
@@ -270,10 +273,10 @@ def global_search(request):
         for word in query_words:
             course_q &= (Q(name__icontains=word) | Q(course_number__icontains=word))
         courses = Course.objects.filter(course_q).select_related('major__university')[:15]
-        
+
         # --- Upgrade: search inside extracted file content ---
         documents = Document.objects.filter(
-            Q(title__icontains=query) | 
+            Q(title__icontains=query) |
             Q(file_content__icontains=query) |  # Search inside extracted PDF/Word text
             Q(course__name__icontains=query)
         ).select_related('course').distinct()[:15]
@@ -281,13 +284,25 @@ def global_search(request):
 
         lecturers = Lecturer.objects.filter(name__icontains=query)[:10]
 
+        total_results = len(universities) + len(courses) + len(documents) + len(lecturers)
+
+        # --- NEW: Analytics Log ---
+        # מתעד את החיפוש בטבלת האנליטיקס
+        from core.models import SearchLog
+        SearchLog.objects.create(
+            user=request.user,
+            search_query=query[:255],  # חותך את המחרוזת ל-255 תווים במקרה שמישהו חיפש מגילה
+            result_count=total_results
+        )
+        # --------------------------
+
     context = {
         'query': query,
         'universities': universities,
         'courses': courses,
         'documents': documents,
         'lecturers': lecturers,
-        'total_results': len(universities) + len(courses) + len(documents) + len(lecturers)
+        'total_results': total_results
     }
     return render(request, 'core/search_results.html', context)
 

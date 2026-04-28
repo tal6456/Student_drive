@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.db.models import Count, Sum, Q
 
 # Import only the models needed here
-from core.models import Document, Course, UserProfile, Report, Feedback, Notification
+from core.models import Document, Course, UserProfile, Report, Feedback, Notification, Community
 from django.core.paginator import Paginator
 from core.models import Notification
 from django.core.mail import send_mail
@@ -63,20 +63,95 @@ def analytics_dashboard(request):
     if not request.user.is_staff:
         return redirect('home')
 
+    # --- יבוא של מודלים נוספים שנצטרך לחישובים ---
+    from django.utils import timezone
+    from datetime import timedelta
+    from core.models import SearchLog, AccountDeletionLog, DownloadLog
+    # ----------------------------------------------
+
+    # 1. חישובי זמנים (היום, השבוע, החודש)
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=7)
+    month_start = today_start - timedelta(days=30)
+
+    # 2. משתמשים פעילים (DAU/MAU) וצמיחה
+    total_registered_users = User.objects.count()
+    dau = User.objects.filter(last_login__gte=today_start).count() # Active Today
+    mau = User.objects.filter(last_login__gte=month_start).count() # Active This Month
+
+    new_users_today = User.objects.filter(date_joined__gte=today_start).count()
+    new_users_week = User.objects.filter(date_joined__gte=week_start).count()
+    new_users_month = User.objects.filter(date_joined__gte=month_start).count()
+    deleted_accounts_total = AccountDeletionLog.objects.count()
+
+    # 3. מדד הוויראליות (Referral Success)
+    total_profiles = UserProfile.objects.count()
+    referred_users_count = UserProfile.objects.filter(referred_by__isnull=False).count()
+    referral_percentage = round((referred_users_count / total_profiles * 100), 1) if total_profiles > 0 else 0
+
+    # 4. מעקב קבצים (כמה עלו היום/שבוע/חודש)
     total_files_count = Document.objects.count()
+    files_today = Document.objects.filter(upload_date__gte=today_start).count()
+    files_week = Document.objects.filter(upload_date__gte=week_start).count()
+    files_month = Document.objects.filter(upload_date__gte=month_start).count()
+
+    # 5. מעורבות קהילות ומסלולים
+    # נשלוף את 5 הקהילות עם הכי הרבה חברים
+    top_communities = Community.objects.annotate(member_count=Count('members')).order_by('-member_count')[:5]
+
+    # 6. מדדי חיפושים (Search & Value)
+    recent_searches = SearchLog.objects.filter(created_at__gte=week_start)
+    top_searches = recent_searches.values('search_query') \
+                       .annotate(search_count=Count('search_query')) \
+                       .order_by('-search_count')[:10]
+
+    dead_ends = recent_searches.filter(result_count=0).values('search_query') \
+                    .annotate(search_count=Count('search_query')) \
+                    .order_by('-search_count')[:10]
+
+    # 7. נתונים קיימים ששדרגנו (סוגי קבצים והורדות טרנדיות)
     pdf_count = Document.objects.filter(file__icontains='.pdf').count()
     word_count = Document.objects.filter(Q(file__icontains='.doc') | Q(file__icontains='.docx')).count()
     other_count = total_files_count - (pdf_count + word_count)
 
+    trending_docs = Document.objects.filter(downloads__download_date__gte=week_start) \
+                        .annotate(recent_downloads=Count('downloads')) \
+                        .order_by('-recent_downloads')[:5]
+
     context = {
+        # --- משתמשים וצמיחה ---
+        'total_users': total_registered_users,
+        'dau': dau,
+        'mau': mau,
+        'new_users_today': new_users_today,
+        'new_users_week': new_users_week,
+        'new_users_month': new_users_month,
+        'deleted_accounts_total': deleted_accounts_total,
+
+        # --- ויראליות ---
+        'referred_users_count': referred_users_count,
+        'referral_percentage': referral_percentage,
+
+        # --- קבצים ---
         'total_files': total_files_count,
+        'files_today': files_today,
+        'files_week': files_week,
+        'files_month': files_month,
+
+        # --- קהילות ---
+        'top_communities': top_communities,
+
+        # --- מדדי תוכן וחיפוש ---
+        'top_searches': top_searches,
+        'dead_ends': dead_ends,
+        'trending_docs': trending_docs,
+
+        # --- נתונים כלליים וותיקים ---
         'total_downloads': Document.objects.aggregate(Sum('download_count'))['download_count__sum'] or 0,
         'total_views': Course.objects.aggregate(Sum('view_count'))['view_count__sum'] or 0,
-        'total_users': UserProfile.objects.exclude(university__isnull=True).count(),
-        'major_distribution': UserProfile.objects.values('major__name').annotate(count=Count('id')).order_by('-count'),
-        'top_courses': Course.objects.order_by('-view_count')[:5],
-        'top_docs': Document.objects.order_by('-download_count')[:5],
         'pending_reports': Report.objects.filter(is_resolved=False).order_by('-created_at'),
+        'major_distribution': UserProfile.objects.values('major__name').annotate(count=Count('id')).order_by('-count'),
         'pdf_count': pdf_count,
         'word_count': word_count,
         'other_count': other_count,
