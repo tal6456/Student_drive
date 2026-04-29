@@ -1,0 +1,666 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}החנות - Student Drive{% endblock %}
+
+{% block container_class %}container-fluid px-0{% endblock %}
+
+{% block content %}
+<style>
+    .shop-shell {
+        background:
+            radial-gradient(circle at top right, rgba(70, 121, 255, 0.16), transparent 38%),
+            radial-gradient(circle at top left, rgba(79, 196, 255, 0.16), transparent 34%),
+            linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(245,248,255,0.88) 100%);
+        min-height: calc(100vh - 80px);
+    }
+
+    [data-bs-theme='dark'] .shop-shell {
+        background:
+            radial-gradient(circle at top right, rgba(70, 121, 255, 0.20), transparent 38%),
+            radial-gradient(circle at top left, rgba(79, 196, 255, 0.14), transparent 34%),
+            linear-gradient(180deg, #0f172a 0%, #111827 100%);
+    }
+
+    .shop-hero {
+        background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
+        border: 1px solid var(--gd-border);
+        border-radius: 28px;
+        box-shadow: 0 18px 40px rgba(22, 54, 94, 0.08);
+        transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .shop-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(26, 115, 232, 0.05) 0%, transparent 70%);
+        transition: all 0.35s ease;
+        pointer-events: none;
+    }
+
+    .shop-hero:hover::before {
+        top: -30%;
+        right: -30%;
+    }
+
+    [data-bs-theme='dark'] .shop-hero {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    }
+
+    .shop-pill {
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(114, 137, 218, 0.15);
+        border-radius: 999px;
+        box-shadow: 0 10px 24px rgba(17, 33, 70, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .shop-pill:hover {
+        box-shadow: 0 14px 32px rgba(26, 115, 232, 0.15);
+        transform: translateY(-2px);
+        background: rgba(255,255,255,0.88);
+        border-color: rgba(114, 137, 218, 0.25);
+    }
+
+    .shop-search {
+        border-radius: 999px;
+        border: 1px solid var(--gd-border);
+        background: var(--gd-card);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+        transition: all 0.28s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .shop-search:focus,
+    .shop-search:focus-within {
+        box-shadow: 0 12px 32px rgba(26, 115, 232, 0.15);
+        border-color: rgba(26, 115, 232, 0.2);
+    }
+
+    .shop-chip {
+        border-radius: 999px;
+        padding: 0.55rem 1rem;
+        border: 1px solid var(--gd-border);
+        background: var(--gd-card);
+        color: var(--gd-text);
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        white-space: nowrap;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .shop-chip::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(26,115,232,0.1), rgba(52,168,83,0.1));
+        opacity: 0;
+        transition: opacity 0.18s ease;
+        pointer-events: none;
+    }
+
+    .shop-chip:hover,
+    .shop-chip.active {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+        background: linear-gradient(135deg, rgba(26,115,232,0.12), rgba(52,168,83,0.14));
+        color: var(--gd-primary);
+        border-color: rgba(26,115,232,0.25);
+    }
+
+    .shop-chip:hover::before {
+        opacity: 1;
+    }
+
+    .reward-card {
+        border: 1px solid var(--gd-border);
+        border-radius: 28px;
+        overflow: hidden;
+        background: var(--gd-card);
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+        height: 100%;
+        transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+        position: relative;
+    }
+
+    .reward-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(26,115,232,0.0) 0%, rgba(52,168,83,0.0) 100%);
+        opacity: 0;
+        transition: opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .reward-card:hover {
+        transform: translateY(-12px) scale(1.01);
+        box-shadow: 0 28px 56px rgba(15, 23, 42, 0.16), 0 0 40px rgba(26, 115, 232, 0.12);
+        border-color: rgba(26, 115, 232, 0.3);
+    }
+
+    .reward-card:hover::before {
+        opacity: 0.5;
+    }
+
+    [data-bs-theme='dark'] .reward-card:hover {
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.4), 0 0 40px rgba(79, 196, 255, 0.2);
+    }
+
+    .reward-media {
+        min-height: 170px;
+        background: linear-gradient(180deg, #f4f8ff 0%, #dfe9ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-bs-theme='dark'] .reward-media {
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(25, 40, 60, 0.9) 100%);
+    }
+
+    .reward-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.45s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .reward-card:hover .reward-media img {
+        transform: scale(1.08) rotate(0.5deg);
+    }
+
+    .reward-fallback {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1a73e8, #34a853);
+        color: white;
+        display: grid;
+        place-items: center;
+        font-size: 3rem;
+        box-shadow: 0 14px 32px rgba(26, 115, 232, 0.28);
+        transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .reward-card:hover .reward-fallback {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 20px 48px rgba(26, 115, 232, 0.35);
+    }
+
+    .reward-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        font-weight: 800;
+        font-size: 0.78rem;
+        color: #19324f;
+        background: #ffd35d;
+        box-shadow: 0 6px 16px rgba(255, 211, 93, 0.28);
+        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        transform: scale(1) translateY(0);
+    }
+
+    .reward-card:hover .reward-badge {
+        transform: scale(1.1) translateY(-4px);
+        box-shadow: 0 10px 28px rgba(255, 211, 93, 0.4);
+    }
+
+    .price-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(26, 115, 232, 0.08);
+        color: var(--gd-text);
+        font-weight: 800;
+        transition: all 0.25s ease;
+        transform: translateZ(0);
+    }
+
+    .reward-card:hover .price-pill {
+        background: rgba(26, 115, 232, 0.16);
+        transform: scale(1.05) translateZ(0);
+        box-shadow: 0 6px 16px rgba(26, 115, 232, 0.15);
+    }
+
+    .muted-strong {
+        color: var(--gd-text-muted);
+        transition: color 0.25s ease;
+    }
+
+    .reward-card:hover .muted-strong {
+        color: var(--gd-text);
+    }
+
+    .history-card {
+        border: 1px solid var(--gd-border);
+        border-radius: 24px;
+        background: var(--gd-card);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .history-card:hover {
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+        border-color: rgba(26, 115, 232, 0.2);
+    }
+
+    /* Button styles */
+    .btn-primary {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.28s cubic-bezier(0.4, 0.0, 0.2, 1);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(26, 115, 232, 0.28);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0px);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-primary:focus-visible {
+        outline: 2px solid rgba(26, 115, 232, 0.5);
+        outline-offset: 2px;
+    }
+
+    /* Smooth form transitions */
+    .form-control,
+    .form-select,
+    .input-group {
+        transition: all 0.25s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--gd-primary);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        transform: translateY(-1px);
+    }
+
+    /* History item animations */
+    .vstack > div {
+        transition: all 0.25s ease;
+        cursor: default;
+    }
+
+    .vstack > div:hover {
+        transform: translateX(-4px);
+        background: rgba(26, 115, 232, 0.08) !important;
+        border-color: rgba(26, 115, 232, 0.3) !important;
+    }
+
+    /* Smooth transitions for text elements */
+    h5, h4 {
+        transition: color 0.25s ease;
+    }
+
+    /* Alert animations */
+    .alert {
+        animation: slideInDown 0.3s ease-out;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(0);
+        animation: ripple 0.6s ease-out;
+        pointer-events: none;
+    }
+
+    /* Enhance small text transitions */
+    .small {
+        transition: color 0.25s ease;
+    }
+
+    /* Link hover effects */
+    a.text-decoration-none {
+        transition: all 0.25s ease;
+    }
+
+    a.text-decoration-none:hover {
+        color: var(--gd-primary) !important;
+    }
+
+    /* Badge animations */
+    .badge {
+        transition: all 0.25s ease;
+    }
+
+    .badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(26, 115, 232, 0.2);
+    }
+</style>
+
+<script>
+    // Add smooth interactions to history items
+    document.addEventListener('DOMContentLoaded', function() {
+        const historyItems = document.querySelectorAll('.vstack > div');
+        historyItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(26,115,232,0.08)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+
+        // Add purchase button animations
+        const purchaseButtons = document.querySelectorAll('button[type="submit"]');
+        purchaseButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.className = 'ripple';
+                
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    });
+
+    // Intersection observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reward-card').forEach(card => {
+        observer.observe(card);
+    });
+</script>
+
+<div class="shop-shell py-4 py-md-5">
+    <div class="container px-3 px-md-4" dir="rtl">
+        {% if messages %}
+            <div class="mb-3">
+                {% for message in messages %}
+                    <div class="alert alert-{% if 'error' in message.tags %}danger{% else %}success{% endif %} shadow-sm rounded-4 mb-2" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="shop-hero p-3 p-md-4 mb-4 animate__animated animate__fadeInDown">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div>
+                    <div class="shop-pill d-inline-flex align-items-center gap-2 px-3 py-2 mb-3">
+                        <i class="fas fa-coins" style="color: #f0b400;"></i>
+                        <span class="fw-bold">{{ profile.current_balance|default:0 }}</span>
+                    </div>
+                    <h1 class="fw-black mb-1" style="color: var(--gd-text);">חנות ההטבות</h1>
+                    <p class="mb-0 muted-strong">בחרו שובר, גאדג'ט או פרס דיגיטלי וקנו אותו ישירות עם המטבעות שלכם.</p>
+                </div>
+
+                <div class="text-md-start">
+                    <div class="badge rounded-pill px-3 py-2 fs-6 fw-bold" style="background: rgba(26,115,232,0.10); color: var(--gd-primary);">
+                        {% if featured_items %}{{ featured_items|length }} פריטים מובילים{% else %}קטלוג פעיל{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <form method="get" class="mt-4">
+                <div class="row g-2 align-items-center">
+                    <div class="col-12 col-lg-6">
+                        <div class="input-group shop-search overflow-hidden">
+                            <span class="input-group-text bg-transparent border-0 pe-0"><i class="fas fa-search muted-strong"></i></span>
+                            <input type="search" class="form-control border-0 py-3" name="q" value="{{ query }}" placeholder="חיפוש מוצר, קטגוריה או קוד">
+                        </div>
+                    </div>
+                    <div class="col-7 col-md-4 col-lg-3">
+                        <select name="sort" class="form-select shop-search py-3">
+                            <option value="featured" {% if current_sort == 'featured' %}selected{% endif %}>מומלצים</option>
+                            <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>הכי זול</option>
+                            <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>הכי יקר</option>
+                            <option value="popular" {% if current_sort == 'popular' %}selected{% endif %}>הכי פופולרי</option>
+                        </select>
+                    </div>
+                    <div class="col-5 col-md-2 col-lg-3">
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold">סנן</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mb-4 overflow-auto pb-1">
+            <a class="shop-chip {% if not selected_category %}active{% endif %}" href="{% url 'shop' %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if current_sort %}sort={{ current_sort }}{% endif %}">הכל</a>
+            {% for category_name in categories %}
+                <a class="shop-chip {% if selected_category == category_name %}active{% endif %}" href="{% url 'shop' %}?category={{ category_name|urlencode }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                    {{ category_name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if featured_items %}
+            <div class="mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h4 class="fw-bold mb-0" style="color: var(--gd-text);">פריטים בולטים</h4>
+                    <span class="muted-strong small">כמו בכרטיסי ההשראה ששלחת</span>
+                </div>
+                <div class="row g-3">
+                    {% for item in featured_items %}
+                        <div class="col-12 col-md-4">
+                            <div class="reward-card animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|floatformat:1 }}s;">
+                                <div class="reward-media">
+                                    {% if item.image %}
+                                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                    {% else %}
+                                        <div class="reward-fallback"><i class="fas fa-gift"></i></div>
+                                    {% endif %}
+                                    {% if item.badge_label %}<div class="reward-badge">{{ item.badge_label }}</div>{% endif %}
+                                </div>
+                                <div class="p-3 p-md-4">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div>
+                                            <div class="small muted-strong mb-1">{{ item.category }}</div>
+                                            <h5 class="fw-bold mb-1" style="color: var(--gd-text);">{{ item.name }}</h5>
+                                        </div>
+                                        <span class="price-pill"><i class="fas fa-coins" style="color:#f0b400"></i> {{ item.price_coins }}</span>
+                                    </div>
+                                    <p class="muted-strong small mb-3">{{ item.description|default:"שובר דיגיטלי מוכן למימוש." }}</p>
+                                    <div class="d-flex align-items-center justify-content-between gap-2">
+                                        <span class="small fw-bold {% if item.stock_quantity == 0 %}text-danger{% else %}muted-strong{% endif %}">{{ item.stock_label }}</span>
+                                        {% if user.is_staff %}
+                                            <form method="post" action="{% url 'purchase_shop_item' item.id %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary rounded-pill fw-bold px-4" {% if item.stock_quantity == 0 %}disabled{% endif %}>
+                                                    {% if item.stock_quantity == 0 %}אזל{% else %}קנה עכשיו{% endif %}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="badge bg-secondary rounded-pill px-3">לא זמין כרגע</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row g-4 align-items-start">
+            <div class="col-12 col-lg-8">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h4 class="fw-bold mb-0" style="color: var(--gd-text);">כל הפריטים</h4>
+                    <span class="muted-strong small">{{ items|length }} תוצאות</span>
+                </div>
+
+                {% if items %}
+                    <div class="row g-3">
+                        {% for item in items %}
+                            <div class="col-12 col-md-6">
+                                <div class="reward-card animate__animated animate__fadeInUp">
+                                    <div class="reward-media">
+                                        {% if item.image %}
+                                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                        {% else %}
+                                            <div class="reward-fallback"><i class="fas fa-box-open"></i></div>
+                                        {% endif %}
+                                        {% if item.badge_label %}<div class="reward-badge">{{ item.badge_label }}</div>{% endif %}
+                                    </div>
+                                    <div class="p-3 p-md-4">
+                                        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                            <div>
+                                                <div class="small muted-strong mb-1">{{ item.category }}</div>
+                                                <h5 class="fw-bold mb-1" style="color: var(--gd-text);">{{ item.name }}</h5>
+                                            </div>
+                                            <span class="price-pill"><i class="fas fa-coins" style="color:#f0b400"></i> {{ item.price_coins }}</span>
+                                        </div>
+                                        <p class="muted-strong small mb-3">{{ item.description|default:"שובר דיגיטלי למימוש מידי." }}</p>
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                            <span class="small fw-bold {% if item.stock_quantity == 0 %}text-danger{% else %}muted-strong{% endif %}">{{ item.stock_label }}</span>
+                                            {% if item.redemption_code %}<span class="small fw-bold text-success">קוד מוכן</span>{% endif %}
+                                        </div>
+                                        {% if user.is_staff %}
+                                            <form method="post" action="{% url 'purchase_shop_item' item.id %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary w-100 rounded-pill fw-bold py-2" {% if item.stock_quantity == 0 %}disabled{% endif %}>
+                                                    {% if item.stock_quantity == 0 %}אזל מהמלאי{% else %}רכישה ב-{{ item.price_coins }} מטבעות{% endif %}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="badge bg-secondary w-100 text-center py-2 rounded-pill">זה מנוי לנהלים בלבד</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="reward-card p-5 text-center">
+                        <div class="reward-fallback mx-auto mb-3"><i class="fas fa-gift"></i></div>
+                        <h5 class="fw-bold">לא נמצאו פריטים</h5>
+                        <p class="muted-strong mb-0">נסו לשנות חיפוש, קטגוריה או מיון.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="history-card p-3 p-md-4 mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold mb-0">רכישות אחרונות</h5>
+                        <i class="fas fa-receipt muted-strong"></i>
+                    </div>
+
+                    {% if recent_purchases %}
+                        <div class="vstack gap-3">
+                            {% for purchase in recent_purchases %}
+                                <div class="p-3 rounded-4" style="background: rgba(26,115,232,0.05); border: 1px solid var(--gd-border);">
+                                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                        <div class="fw-bold">{{ purchase.item_name }}</div>
+                                        <span class="price-pill"><i class="fas fa-coins" style="color:#f0b400"></i> {{ purchase.coins_spent }}</span>
+                                    </div>
+                                    <div class="small muted-strong">{{ purchase.category }}</div>
+                                    {% if purchase.delivery_code %}
+                                        <div class="small mt-2"><span class="fw-bold">קוד:</span> {{ purchase.delivery_code }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="muted-strong mb-0">אין עדיין רכישות להצגה.</p>
+                    {% endif %}
+                </div>
+
+                <div class="history-card p-3 p-md-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold mb-0">איך זה עובד</h5>
+                        <i class="fas fa-circle-info muted-strong"></i>
+                    </div>
+                    <ul class="mb-0 muted-strong small ps-3">
+                        <li class="mb-2">רוכשים פריט במטבעות הקיימים בחשבון.</li>
+                        <li class="mb-2">המלאי יורד אוטומטית כשיש הגבלה.</li>
+                        <li>שובר או קוד דיגיטלי נשמרים בהיסטוריית הרכישות.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

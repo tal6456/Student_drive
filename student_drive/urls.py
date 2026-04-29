@@ -101,6 +101,8 @@ urlpatterns = [
     path('complete-profile/', views.complete_profile, name='complete_profile'),
     path('analytics/', views.analytics_dashboard, name='analytics'),
     path('wallet/', views.wallet_view, name='wallet'),
+    path('shop/', views.shop_view, name='shop'),
+    path('shop/buy/<int:item_id>/', views.purchase_shop_item, name='purchase_shop_item'),
 
     # Settings, privacy, and accessibility
     path('settings/', views.settings_view, name='settings'),

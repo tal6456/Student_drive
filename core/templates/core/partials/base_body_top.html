@@ -92,6 +92,9 @@
                     <ul class="navbar-nav flex-column">
                         <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home" aria-hidden="true"></i> דף הבית</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'community_feed' %}"><i class="fas fa-users" aria-hidden="true"></i> הקהילה שלי</a></li>
+                        {% if user.is_staff %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'shop' %}"><i class="fas fa-gift" aria-hidden="true"></i> החנות</a></li>
+                        {% endif %}
 {#                        <li class="nav-item"><a class="nav-link" href="{% url 'files_tinder' %}"><i class="fas fa-fire" aria-hidden="true"></i> פייל-מאץ'</a></li>#}
 
                         {% if user.is_authenticated %}
@@ -159,6 +162,12 @@
         <i class="fas fa-users" aria-hidden="true"></i>
         <span>קהילה</span>
     </a>
+    {% if user.is_staff %}
+        <a href="{% url 'shop' %}" class="nav-item {% if request.resolver_match.url_name == 'shop' %}active{% endif %}">
+            <i class="fas fa-gift" aria-hidden="true"></i>
+            <span>חנות</span>
+        </a>
+    {% endif %}
 {#    <a href="{% url 'files_tinder' %}" class="nav-item {% if request.resolver_match.url_name == 'files_tinder' %}active{% endif %}">#}
 {#        <i class="fas fa-fire" aria-hidden="true"></i>#}
 {#        <span>Match</span>#}

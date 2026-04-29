@@ -35,7 +35,7 @@ from .models import (
     Community, Post, MarketplacePost, VideoPost, Comment,DocumentComment,
     AcademicStaff, Lecturer, TeachingAssistant, StaffReview, CourseSemesterStaff,
     Report, Feedback,Notification, UserCourseSelection,
-    CoinTransaction
+    CoinTransaction, ShopItem, ShopPurchase
 )
 
 
@@ -247,6 +247,21 @@ class CoinTransactionAdmin(BaseAdmin):
         return format_html('<span style="color: {}; font-weight: bold;">{}</span>', color, obj.amount)
 
     colored_amount.short_description = 'סכום'
+
+
+@admin.register(ShopItem)
+class ShopItemAdmin(BaseAdmin):
+    list_display = ('name', 'category', 'price_coins', 'stock_quantity', 'is_featured', 'is_active', 'sort_order', 'created_at')
+    list_filter = ('category', 'is_featured', 'is_active', 'created_at')
+    search_fields = ('name', 'category', 'description', 'redemption_code')
+    prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(ShopPurchase)
+class ShopPurchaseAdmin(BaseAdmin):
+    list_display = ('user', 'item_name', 'coins_spent', 'created_at')
+    list_filter = ('category', 'created_at')
+    search_fields = ('user__username', 'item_name', 'delivery_code')
 # Admin site titles
 admin.site.site_header = 'הדרייב הסטודנטיאלי - מערכת ניהול'
 admin.site.index_title = 'לוח בקרה אסטרטגי'

@@ -23,6 +23,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.urls import reverse
+from django.utils.text import slugify
 import os
 import random
 import string
@@ -702,6 +703,75 @@ class CoinTransaction(BaseActivity):
 
     def __str__(self):
         return f"{self.user.username}: {self.amount} ({self.transaction_type})"
+
+
+class ShopItem(BaseActivity):
+    """A coin-based reward that users can redeem from the shop."""
+
+    name = models.CharField(max_length=120, verbose_name="שם הפריט")
+    slug = models.SlugField(max_length=140, unique=True, blank=True)
+    category = models.CharField(max_length=80, verbose_name="קטגוריה")
+    description = models.TextField(blank=True, verbose_name="תיאור")
+    price_coins = models.PositiveIntegerField(verbose_name="מחיר במטבעות")
+    image = models.ImageField(upload_to='shop_items/', null=True, blank=True, verbose_name="תמונה")
+    badge_label = models.CharField(max_length=40, blank=True, default='', verbose_name="תווית")
+    redemption_code = models.CharField(max_length=120, blank=True, default='', verbose_name="קוד/שובר")
+    redemption_instructions = models.TextField(blank=True, default='', verbose_name="הוראות מימוש")
+    stock_quantity = models.PositiveIntegerField(null=True, blank=True, verbose_name="מלאי")
+    is_featured = models.BooleanField(default=False, verbose_name="מוצג בראש החנות")
+    is_active = models.BooleanField(default=True, verbose_name="פעיל")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="סדר תצוגה")
+
+    class Meta:
+        ordering = ['sort_order', '-is_featured', 'price_coins', 'name']
+        verbose_name = "פריט בחנות"
+        verbose_name_plural = "פריטי חנות"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name) or f"shop-item-{uuid.uuid4().hex[:8]}"
+            slug = base_slug
+            suffix = 1
+            while ShopItem.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                suffix += 1
+                slug = f"{base_slug}-{suffix}"
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    @property
+    def is_limited_stock(self):
+        return self.stock_quantity is not None
+
+    @property
+    def stock_label(self):
+        if self.stock_quantity is None:
+            return "מלאי פתוח"
+        if self.stock_quantity == 0:
+            return "אזל מהמלאי"
+        return f"נותרו {self.stock_quantity}"
+
+    def __str__(self):
+        return f"{self.name} ({self.price_coins} 🪙)"
+
+
+class ShopPurchase(BaseActivity):
+    """Record of a shop redemption made by a user."""
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='shop_purchases')
+    item = models.ForeignKey(ShopItem, on_delete=models.SET_NULL, null=True, blank=True, related_name='purchases')
+    item_name = models.CharField(max_length=120, verbose_name="שם פריט")
+    category = models.CharField(max_length=80, verbose_name="קטגוריה")
+    coins_spent = models.PositiveIntegerField(verbose_name="עלות במטבעות")
+    delivery_code = models.CharField(max_length=120, blank=True, default='', verbose_name="קוד/שובר שנמסר")
+    delivery_instructions = models.TextField(blank=True, default='', verbose_name="הוראות שנמסרו")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "רכישה מהחנות"
+        verbose_name_plural = "רכישות חנות"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.item_name}"
 
 class UserCourseSelection(models.Model):
     """Link a user to a course and track whether the course is starred."""
