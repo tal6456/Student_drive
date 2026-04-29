@@ -5,6 +5,7 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from core.forms import ShopItemForm
 from core.models import ShopItem, ShopPurchase
 from core.utils import InsufficientFunds, process_transaction
 
@@ -15,6 +16,14 @@ def shop_view(request):
     query = request.GET.get('q', '').strip()
     category = request.GET.get('category', '').strip()
     sort = request.GET.get('sort', 'featured').strip()
+    item_form = ShopItemForm(request.POST or None, request.FILES or None)
+
+    if request.method == 'POST':
+        if item_form.is_valid():
+            item = item_form.save()
+            messages.success(request, f'נוסף פריט חדש לחנות: {item.name}.')
+            return redirect('shop')
+        messages.error(request, 'לא הצלחנו לשמור את הפריט. בדקו את השדות המסומנים.')
 
     items = ShopItem.objects.filter(is_active=True)
     if query:
@@ -60,6 +69,8 @@ def shop_view(request):
         'query': query,
         'profile': request.user.profile,
         'recent_purchases': recent_purchases,
+        'item_form': item_form,
+        'show_item_modal': request.method == 'POST' and item_form.errors,
     }
     return render(request, 'core/shop.html', context)
 

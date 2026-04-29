@@ -48,6 +48,29 @@ class ShopFeatureTests(BaseTestCase):
         self.assertContains(response, self.featured_item.name)
         self.assertContains(response, self.unlimited_item.name)
 
+    def test_staff_can_create_shop_item_from_shop_page(self):
+        response = self.client.post(
+            reverse("shop"),
+            data={
+                "name": "New Gift Card",
+                "category": "gift cards",
+                "description": "Created from the shop modal",
+                "price_coins": 25,
+                "badge_label": "חדש",
+                "redemption_code": "NEW-GIFT-001",
+                "redemption_instructions": "Send to the user after approval.",
+                "stock_quantity": 10,
+                "is_featured": "on",
+                "is_active": "on",
+                "sort_order": 5,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        created_item = ShopItem.objects.get(redemption_code="NEW-GIFT-001")
+        self.assertEqual(created_item.name, "New Gift Card")
+        self.assertTrue(created_item.is_featured)
+
     def test_purchase_deducts_coins_and_creates_purchase_record(self):
         response = self.client.post(reverse("purchase_shop_item", args=[self.featured_item.id]))
         self.assertEqual(response.status_code, 302)

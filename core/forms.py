@@ -26,7 +26,7 @@ import re
 
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Document, Course, UserProfile, Folder
+from .models import Document, Course, UserProfile, Folder, ShopItem
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
@@ -222,7 +222,6 @@ class UserProfileForm(BaseStyledModelForm):
 
         if major and not uni:
             self.add_error('university', "חובה לבחור מוסד לימודים אם בחרת מסלול.")
-
         return cleaned_data
 
     def save(self, commit=True):
@@ -234,3 +233,32 @@ class UserProfileForm(BaseStyledModelForm):
             user.save()
             profile.save()
         return profile
+
+
+class ShopItemForm(BaseStyledModelForm):
+    class Meta:
+        model = ShopItem
+        fields = [
+            'name',
+            'category',
+            'description',
+            'price_coins',
+            'image',
+            'badge_label',
+            'redemption_code',
+            'redemption_instructions',
+            'stock_quantity',
+            'is_featured',
+            'is_active',
+            'sort_order',
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'תיאור קצר על המתנה או השובר'}),
+            'redemption_instructions': forms.Textarea(attrs={'rows': 3, 'placeholder': 'איך מממשים את המתנה?'}),
+        }
+
+    def clean_stock_quantity(self):
+        stock_quantity = self.cleaned_data.get('stock_quantity')
+        if stock_quantity is not None and stock_quantity < 0:
+            raise forms.ValidationError('המלאי חייב להיות 0 או מספר חיובי, או ריק למלאי פתוח.')
+        return stock_quantity
