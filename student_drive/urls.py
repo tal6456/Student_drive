@@ -96,6 +96,13 @@ urlpatterns = [
     # Unread notifications count
     path('ajax/unread-notifications-count/', views.unread_notifications_count, name='unread_notifications_count'),
 
+    # ==========================================
+    # Read-Aloud (TTS) Audio Feature
+    # ==========================================
+    path('document/<int:document_id>/audio/', views.get_document_audio, name='get_document_audio'),
+    path('document/<int:document_id>/audio-status/', views.check_audio_status, name='check_audio_status'),
+    path('document/<int:document_id>/text/', views.get_document_text, name='get_document_text'),
+
     # Profile and analytics
     path('profile/', views.profile, name='profile'),
     path('complete-profile/', views.complete_profile, name='complete_profile'),

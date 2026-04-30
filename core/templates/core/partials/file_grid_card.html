@@ -93,6 +93,42 @@
                             <i class="fa{% if user in doc.likes.all %}s{% else %}r{% endif %} fa-thumbs-up"></i>
                             <span class="like-count-{{ doc.id }} fw-bold">{{ doc.likes.count }}</span>
                         </button>
+
+                        <div class="d-flex align-items-center gap-1">
+                            {# Play / Resume button #}
+                            <button id="ra-play-{{ doc.id }}"
+                                    type="button"
+                                    class="btn btn-sm rounded-pill px-3 file-action-btn ra-btn ra-play d-flex align-items-center gap-1 shadow-none"
+                                    onclick="raPlay({{ doc.id }})"
+                                    title="קרא בקול">
+                                <i class="fas fa-volume-up"></i>
+                                <span class="read-aloud-status-{{ doc.id }} ra-status">קרא</span>
+                            </button>
+                            {# Pause button - hidden until playing #}
+                            <button id="ra-pause-{{ doc.id }}"
+                                    type="button"
+                                    class="btn btn-sm rounded-pill px-2 file-action-btn ra-btn ra-pause d-none shadow-none"
+                                    onclick="raPause({{ doc.id }})"
+                                    title="השהה">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            {# Stop button - hidden until playing #}
+                            <button id="ra-stop-{{ doc.id }}"
+                                    type="button"
+                                    class="btn btn-sm rounded-pill px-2 file-action-btn ra-btn ra-stop d-none shadow-none"
+                                    onclick="raStop({{ doc.id }})"
+                                    title="עצור">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                            {# Language toggle #}
+                            <button id="ra-lang-{{ doc.id }}"
+                                    type="button"
+                                    class="btn btn-sm rounded-pill px-2 file-action-btn ra-btn ra-lang shadow-none"
+                                    onclick="raToggleLang({{ doc.id }})"
+                                    title="החלף שפה">
+                                <i class="fas fa-globe me-1"></i>עברית
+                            </button>
+                        </div>
                     </div>
                 {% else %}
                     <span class="badge rounded-pill file-action-btn">

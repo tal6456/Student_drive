@@ -384,6 +384,55 @@ class ExternalResource(models.Model):
 
     def __str__(self):
         return self.title
+
+# ==========================================
+# 3.5 Document Audio (Read-aloud feature)
+# ==========================================
+
+class DocumentAudio(models.Model):
+    """
+    Stores generated audio files for documents to support read-aloud feature.
+    Linked one-to-one to each Document for easy retrieval and playback.
+    """
+    document = models.OneToOneField('Document', on_delete=models.CASCADE, related_name='audio')
+    audio_file = models.FileField(
+        upload_to='audio_files/',
+        null=True,
+        blank=True,
+        verbose_name="קובץ אודיו"
+    )
+    text_used = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="טקסט שהשתמשנו בו",
+        help_text="ערך התייחסות של 500 התווים הראשונים"
+    )
+    is_generated = models.BooleanField(
+        default=False,
+        verbose_name="האם נוצר בהצלחה"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="תאריך יצירה"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="תאריך עדכון"
+    )
+
+    class Meta:
+        verbose_name = "אודיו מסמך"
+        verbose_name_plural = "אודיו מסמכים"
+
+    def __str__(self):
+        return f"Audio for: {self.document.title}"
+
+    def get_audio_url(self):
+        """Return the URL to the audio file if it exists"""
+        if self.audio_file:
+            return self.audio_file.url
+        return None
+
 # ==========================================
 # 4. Community system (social feed)
 # ==========================================
