@@ -27,8 +27,7 @@ media/
 .DS_Store
 *.log
 
-# Ignore only the agents folder inside .github
-.github/agents/
+
 # Ignore the mission file
 mission.json
 # Ignore any worktree folders

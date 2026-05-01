@@ -663,25 +663,7 @@ class Vote(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.value} on {self.document.title}"
 # ==========================================
-# 7. Personal agent component (currently disabled)
-# ==========================================
-
-class AgentKnowledge(models.Model):
-    # Use `CustomUser` because it is the main user model defined above
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='agent_knowledge')
-    file = models.FileField(upload_to='agent_storage/', validators=[validate_file_size])
-    course_name = models.CharField(max_length=100, verbose_name="שיוך לקורס")
-
-    # Store extracted text so future requests do not need to reprocess the file
-    extracted_text = models.TextField(blank=True, null=True, verbose_name="תוכן הטקסט שחולץ")
-
-    upload_date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Agent Knowledge: {self.course_name} ({self.owner.username})"
-
-# ==========================================
-# 8. Notifications and automation
+# 7. Notifications and automation
 # ==========================================
 
 class Notification(models.Model):

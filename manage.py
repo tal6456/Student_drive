@@ -14,7 +14,7 @@ It supports the following actions:
    (`migrate`) according to model changes.
 3. Create users: create superusers (`createsuperuser`) for site management.
 4. Run custom commands: execute custom scripts built for Student Drive,
-   such as the AI agent or cleanup jobs.
+   for cleanup jobs and other tasks.
 5. Testing: run automated checks to verify the code is working correctly.
 
 Important: this file automatically loads the project's settings module,

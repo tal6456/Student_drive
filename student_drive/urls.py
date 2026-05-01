@@ -15,7 +15,7 @@ It also defines error handlers and serves media files during development.
 from django.contrib import admin
 from django.urls import path, include
 # Import the dedicated personal-drive view module
-from core import views, personal_drive #agent_views
+from core import views, personal_drive
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -137,19 +137,12 @@ urlpatterns = [
     path('search-friends/', views.search_users, name='search_users'),
 
     path('search/', views.global_search, name='global_search'),
-    #path('system-architecture-mirror/', views.agent_report, name='agent_report'),
 
     # ==========================================
     # Notifications
     # ==========================================
     path('notifications/', views.notifications_list, name='notifications_list'),
     path('notifications/<int:pk>/resolve/', views.resolve_notification, name='resolve_notification'),
-
-    # ==========================================
-    # Personal AI agent
-    # ==========================================
-    #path('agent/upload/', agent_views.upload_agent_file, name='agent_upload_file'),
-    #path('agent/ask/', agent_views.ask_agent_question, name='agent_ask_question'),
 
        # ==========================================
     # Chat

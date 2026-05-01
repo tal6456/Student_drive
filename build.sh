@@ -10,8 +10,6 @@ This file performs the following steps in order:
    according to the latest code changes.
 4. Apply automatic system setup: creates an initial superuser
    and configures the site domain in the database.
-5. Activate AI features: runs a dedicated command that starts the
-   documentation and AI agent for the system.
 
 The script includes safety guards (such as `set -o errexit`) so it stops
 immediately if something goes wrong, preventing a broken deployment.

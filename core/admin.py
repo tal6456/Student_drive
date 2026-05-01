@@ -75,7 +75,7 @@ class ModerationAdmin(BaseAdmin):
 
 
 # ==========================================
-# 2. File management and the AI agent
+# 2. File management
 # ==========================================
 
 @admin.register(Document)
